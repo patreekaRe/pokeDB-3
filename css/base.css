@@ -321,6 +321,7 @@ body.scrolled .topbar::before { opacity: 1; }
 .dev-settings .vol-slider::-moz-range-progress { background: var(--tone); }
 .set-opt { display: flex; flex-direction: column; gap: 4px; padding: 10px 10px 11px; }
 .set-opt small { font-size: 0.75rem; line-height: 1.4; color: #6a5e48; }
+.reload-log small span { display: block; }
 .set-chips {
   display: grid; grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); gap: 3px; margin-top: 4px; padding: 3px;
   border-radius: 9px; background: #e6dec6; box-shadow: inset 0 2px 0 rgba(36, 28, 20, 0.14);

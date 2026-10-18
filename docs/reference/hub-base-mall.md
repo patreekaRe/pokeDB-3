@@ -713,3 +713,14 @@ Decorations (and a gold dot on its kind's chip), on its tile and filter chip in 
 Furniture tab and the Decorate key, and on the PC's MY PC and DECORATIONS rows. Tapping the piece in either place clears
 it (`seeDesign()`). `b.known` (in the base save) lists the designs seen; a base without it starts out knowing everything it
 owns, so old saves don't light up. A friend's base on a visit and a `?hearts=` peek show none and write none.
+
+## Letting go on the way out (2026-10-18, phone reloads round four)
+- `forgetShops()` in `js/mall-3d.js`: leaving the mall disposes every shop built (Game Corner, Arcade, floors, Outfitter),
+  the hall kept for the doors; walking in again builds it again. Headless, the Clearing after a mall trip held ~220 MB of
+  canvases, now ~151 MB, flat over six trips. A new shop builds everything from `SHOPS[id].build()` (no module state).
+- The PC screens (`js/hub-pc.js`) are held weakly, each by its model (`userData.pcScreen`): the Clearing builds its PC on
+  every return, and each old one was kept and repainted 15 times a second.
+- `stamp()` in `js/arcade-kit.js` caps its canvases at 40 MB (oldest out, zeroed), `once()` in `js/arcade-art.js` at
+  16 MB. The cabinet marquee's sunburst, Who's That's and the showcases' rays are `rayWheel()` canvases, not spinning
+  `repeating-conic-gradient`s (see `rayWheel()` in `js/ui.js`).
+

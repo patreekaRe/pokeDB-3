@@ -3008,3 +3008,17 @@ synthesises ~3x faster (same samples). All 17 journey films already held ~60 fps
 - **Gifting every Gym Leader** (2026-10-18, the user's ask after Phirip couldn't gift John past his kotatsu): the Gift spot is now
   `giftStep()` in `js/event-3d.js`, the tile walkable from the door nearest the leader (in front, then beside, then behind).
   Checked headless in all 11 leader homes: every one gets a reachable tile next to them (John's beside him, the rest in front).
+
+### Phone reloads, round four: a long-session sweep (2026-10-18, the friend's iPhone 17 Pro)
+Round three (2026-10-17: rays painted once, the arena asleep after a fight, the mall's other floors off the GPU) wasn't
+enough. Measured headless at 402 x 874, 3x, with a probe counting live canvases, GL uploads, decoded audio and images
+after a forced GC: a bot playing a run (fights, ? room, Mart, rest, gym) and six trips Clearing -> mall (hall, Game
+Corner, Arcade, 1F) -> base -> Clearing in one page load. No runaway growth, but the Clearing after a mall trip held
+~220 MB of canvases, creeping ~1 MB a trip; now ~151 MB, flat. Fixed: the mall forgets every shop on leaving
+(`forgetShops()`), `gifFrames()` shares decoded GIFs between places (weakly), cries kept only the last 32, a song's MP3
+bytes dropped with its decoded buffer, the Clearing's PC screens held weakly (one more repainted 15 times a second per
+return), the arcade's stamps and machine pictures capped by bytes, the Mart's sprites at 40, the scene's replaced
+full-screen layers zeroed, the Game Corner's three spinning `repeating-conic-gradient` rays (cabinet marquee, Who's
+That, showcases) painted once by `rayWheel()`. Added the reload log in Settings (`js/crumbs.js`). A static audit and the
+probe are how it was found; the probe isn't in the repo (it lived in the session's scratchpad).
+

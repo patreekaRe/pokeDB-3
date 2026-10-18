@@ -127,3 +127,4 @@ the waveform at the join correlates under 0.95. It found Mart's 48.709 s to the 
 
 - 2026-10-17: a preload (`preloadMusic`) of a looped track only fetches its MP3; it decodes on play. Decoding at preload held a boss fight's victory, Sealed Gate and phase-two songs (~40-70 MB each) at once and reloaded iPhones on bosses and Alphas.
 - 2026-10-17: `pause()` drops `this.buffer` too, not only `this.decoded`: kept, every song played once stayed decoded for the page load (headless: 8 songs played, 10 still decoded; ~1GB if all 31 play). The MP3 bytes (~2MB each) stay, so a song comes back in a moment.
+- 2026-10-18: the MP3 bytes go too (`this.bytes`; ~60 MB once every song had played), fetched again from the browser's cache on the next play (`LoopedTrack.fetch()`). Cries: only the last 32 heard stay decoded (`loadCry()`, `CRIES_KEPT`; all 248 were ~50 MB).

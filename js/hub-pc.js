@@ -4,7 +4,9 @@
    rounded. The screen is its glow (glowMats in js/hub-3d.js) and its scan lines roll (livePc()). */
 
 let T, screen = null;
-const screens = [];   // the Clearing's PC and the walk-in Center's (js/center-3d.js) roll together
+// the Clearing's PC and the walk-in places' (Center, Mart, Game Corner) roll together. Held weakly, each by its model: the
+// Clearing builds its PC again on every return, and kept here every old one stayed, repainted 15 times a second, all session
+let screens = [];
 
 /** A box with rounded edges (js/base-mesh.js's rbox()). */
 function rbox(w, h, d, r) {
@@ -69,8 +71,10 @@ function paintScreen(now) {
 
 /** Rolls the screen's scan lines, ~15 times a second. */
 export function livePc(now) {
-  if (!screens.length || now - screens[0].at < 66) return;
-  for (const s of screens) { screen = s; s.at = now; paintScreen(now); }
+  const live = screens.map(r => r.deref()).filter(Boolean);
+  if (live.length < screens.length) screens = live.map(s => new WeakRef(s));
+  if (!live.length || now - live[0].at < 66) return;
+  for (const s of live) { screen = s; s.at = now; paintScreen(now); }
 }
 
 /** The PC, its feet at the origin, its front towards +z. `glows` takes the screen's material (js/hub-3d.js's glowMats). */
@@ -135,7 +139,8 @@ export function pcModel(THREE, glows) {
   const t = new T.CanvasTexture(c);
   t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4;
   screen = { c, g: c.getContext('2d'), t, at: 0 };
-  screens.push(screen);
+  screens.push(new WeakRef(screen));
+  g.userData.pcScreen = screen;
   paintScreen(0);
   const sg = new T.ShapeGeometry(screenShape(new T.Shape(), -0.01), 24), uv = sg.attributes.uv, sp = sg.attributes.position;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, (sp.getX(i) + SX) / (2 * SX), (sp.getY(i) - SY0) / (SY1 - SY0));

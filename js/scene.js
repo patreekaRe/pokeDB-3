@@ -1408,6 +1408,10 @@ let floorAt = null, spanAt = null;   // a place whose floor line and counter the
 let storm = { on: false, level: 0 };
 let smoothArt = null;   // the smooth painter's layers for the scene on screen (js/smooth-clearing.js), when it has one
 let hybridArt = null;   // the hybrid look's still light for the scene on screen (js/hybrid-light.js), when it has one
+/** Hands iOS a replaced scene's full-screen layers back now (a few MB each at 2x), not whenever they're collected. */
+function release(art) {
+  for (const v of Object.values(art || {})) if (v instanceof HTMLCanvasElement) v.width = v.height = 0;
+}
 
 /* The other looks (2026-10-07): ?smooth paints the Clearing smooth on this device for good (the pilot). The hybrid (every
    biome's pixels under smooth light, HD-2D) is the default since 2026-10-08, Settings' Scenery (the save's `scenery`, set by
@@ -1727,8 +1731,8 @@ function paintScene(key, raw, floor = null, span = null) {
   bossPrelude = null;
   clearInterval(timer);
   storm = { on: false, level: 0 };
-  smoothArt = null;
-  hybridArt = null;
+  release(smoothArt); smoothArt = null;
+  release(hybridArt); hybridArt = null;
   const clearing = !!raw && raw.backdrop === 'hills' && !raw.prop;   // the Clearing's own places, not an event's room in it
   document.body.classList.toggle('smooth-scene', clearing && smoothOn());
   const lit = !!raw && HYBRID_BIOMES.has(raw.backdrop) && !raw.prop;   // a biome's own places, not an event's room in it
@@ -1842,6 +1846,7 @@ function resize() {
     const dpr = Math.min(2, devicePixelRatio || 1);
     canvas.width = Math.max(1, Math.round(innerWidth * dpr));
     canvas.height = Math.max(1, Math.round(innerHeight * dpr));
+    release(smoothArt);
     smoothArt = buildClearing({ W, H, horizon, cw: canvas.width, ch: canvas.height, raw: S.raw, life, p: dial(), within: within() });
   }
   if (S.hybrid) {
@@ -1850,6 +1855,7 @@ function resize() {
     light.width = Math.max(1, Math.round(innerWidth * dpr));
     light.height = Math.max(1, Math.round(innerHeight * dpr));
     const far = new Map([...(S.hills || []).map(c => [c, 0.55]), ...(S.farHills || []).map(c => [c, 1])]);
+    release(hybridArt);
     hybridArt = buildLight({ W, H, horizon, cw: light.width, ch: light.height, raw: S.raw, time: timeOfDay(), base, far,
       sun: (S.light === 'sun' || S.light === 'haze') && S.sun ? life.sun : null, moon: S.light === 'moon' ? life.moon : null, glows: GLOWS, abgr,
       skyShare: sky.reduce((n, v) => n + (v ? 1 : 0), 0) / (W * H) });

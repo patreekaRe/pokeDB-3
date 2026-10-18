@@ -5,7 +5,7 @@
 import { cornerEntries, buyCorner } from './shop.js';
 import { getSave } from './storage.js';
 import { playSound, preloadSounds } from './audio.js';
-import { el } from './ui.js';
+import { el, rayWheel, tint } from './ui.js';
 import { openPanel, key } from './corner-panel.js';
 
 export const SHOWCASES = {
@@ -22,6 +22,7 @@ const SOURCES = {};
 export const showcaseSource = (id, src) => { SOURCES[id] = src; };
 const entriesOf = (id) => SOURCES[id]?.entries() ?? cornerEntries(id);
 
+const rays = {};   // each row's, painted once (a conic gradient was a 3x layer, see rayWheel() in js/ui.js)
 let panel = null, row = null, at = 0, armed = false, news = null, onStep = null;
 
 /** Opens on `row`'s entry `start`; `step(i)` follows along (the 3D screen shows the same one), `close` when shut. */
@@ -54,7 +55,8 @@ function move(d) {
 function render(dir = 0) {
   const list = entriesOf(row), e = list[at], coins = getSave().coins ?? 0;
   const screen = el('div', `sc-screen${dir ? (dir > 0 ? ' from-right' : ' from-left') : ''}`);
-  screen.append(el('span', 'sc-rays'));
+  rays[row] ??= rayWheel('sc-rays', tint(SHOWCASES[row].colour, 1, 0.18), { solid: 1, fade: 1, rays: 22, deg: 8 });
+  screen.append(rays[row]);
   if (e.art) screen.append(e.art());
   else if (e.sprite) {
     const img = el('img', `pixel sc-art${e.dark ? ' dark' : ''}`);

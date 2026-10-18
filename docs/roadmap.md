@@ -1054,14 +1054,16 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   the ~0.45 s freeze before a new run's film (the map, scenery and film painted at once) and the crossroads' ~0.4 s
   build behind its plain backdrop; next levers if they're noticed.
 
-- **The phone reloads, round three** (2026-10-17, a friend's report: the game reset entering the Game Corner, and
-  after Gym Leader and Alpha fights). Fixed in this order (`docs/roadmap-done.md`): the relic / chest / card rays painted
-  once on a canvas, the arena asleep once a fight ends, and the mall's other floors off the GPU. The friend plays those
-  three again and says whether it still resets, and on which phone (an older iPhone has far less room). The next lever,
-  the user's idea, is built too: the Arcade Room below. If it still resets, the cabinets' faces are the next lever
-  (smaller, and one picture shared between machines that look alike; `B.arcade` in `js/base-mesh.js`).
-  The 20 new ? rooms were checked the same way (2026-10-17, `docs/reference/walk-in-rooms.md`): none leaks; their
-  per-frame allocations were taken out.
+- **The phone reloads, round four** (2026-10-18, the friend's iPhone 17 Pro still reloads "randomly", other tabs
+  closed). A headless sweep at an iPhone's size (a bot playing a run, and six trips Clearing -> mall -> base in one page
+  load) found no runaway leak, but a lot held for good; cut (archive): the mall's shops let go on the way out (~70 MB),
+  the partner's GIF shared by every 3D place, cries and song bytes no longer kept, the Clearing's old PCs, arcade and Mart
+  caches capped, the Game Corner's spinning CSS rays as canvases. **New: Settings > Save lists "The game reloaded by
+  itself"** (`js/crumbs.js`): where, how many minutes in, and whether the game was on screen or the phone was away from
+  it. The friend plays as usual and, after a reload, reads that line to the user. Next levers, by size: the `shine()`
+  emissive canvases at full size (half of every smooth painting's memory, `fine()` in `js/hub-3d.js`), the mall's hall
+  kept through runs (~36 MB), `KEEP_ROOMS` 3 (~36 MB a ? room). If it says "while away from the game", iOS dropped a
+  hidden tab, and the lever is letting go on `visibilitychange`.
 
 - **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
   after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game

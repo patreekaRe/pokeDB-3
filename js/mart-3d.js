@@ -278,7 +278,9 @@ function image(src) {
   // CORS, as githack can hand an image over from its CDN's domain, and a canvas drawn from it then can't be a texture
   // (the user's phone showed every card and sprite blank)
   if (!images.has(src)) images.set(src, new Promise(done => { const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => done(i); i.onerror = () => done(null); i.src = src; }));
-  return images.get(src);
+  const got = images.get(src);
+  if (images.size > SPRITES_MAX) images.delete(images.keys().next().value);
+  return got;
 }
 
 /** An item or relic's sprite, cut to its pixels and scaled up in whole steps (its emoji if the file is missing). */
@@ -643,11 +645,14 @@ function cardMap(card) {
   for (const [id, old] of [...cardTex].slice(0, Math.max(0, cardTex.size - CARD_TEX_MAX))) { cardTex.delete(id); old.then(o => o.dispose()).catch(() => {}); }
   return t;
 }
-const sprites = new Map();
+// the newest last, and only the last few kept (256 x 256 each): every Mart of every run stocks other items and relics
+const sprites = new Map(), SPRITES_MAX = 40;
 function spriteOf(thing) {
-  const id = thing.sprite || thing.id;
-  if (!sprites.has(id)) sprites.set(id, spriteArt(thing));
-  return sprites.get(id);
+  const id = thing.sprite || thing.id, art = sprites.get(id) ?? spriteArt(thing);
+  sprites.delete(id);
+  sprites.set(id, art);
+  if (sprites.size > SPRITES_MAX) { const old = sprites.keys().next().value; sprites.delete(old); }
+  return art;
 }
 // every picture painted at once, not one after another (that wait was most of the walk in)
 const paintAll = (list) => Promise.all(list.map(w => w.sold || !w.thing ? null : w.kind === 'card' ? cardMap(w.thing) : spriteOf(w.thing)));

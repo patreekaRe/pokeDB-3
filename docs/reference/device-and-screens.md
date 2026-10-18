@@ -86,3 +86,10 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   The move pick after a fight (`layout: 'learn-room'`, `.learn`; the signature-move picks too) and the found item and relic picks (`item-found`) get the bar and hinge too, keeping their own Reroll (since 2026-10-08, the user's calls: their Skip is a round key by Home like it, a double chevron, `.room-skip`, and every confirm, Take it / Put in Bag / Add to deck / a card's focus confirm over a room, is a glowing gold pill beside the hinge's lights saying one word (Take, Add, Learn, Upgrade...: `ONE_WORD` or the label's first word), `#room-ok`, armed by `roomConfirm()` in `js/rewards.js`, greyed in place until a pick and, once pressed, pushed in and lit until the screen moves on (`pressConfirm()`, never hidden under the finger; the user's call, 2026-10-08); Skip and Leave ask "are you sure?" first (`askFirst()`: Leave only while the room still has a pick, Back never); no pills over the scene; and the text box on every `.in-room` screen is the cream speech window, green kept for the device's readouts);
   Those fight reward steps (`.learn`) and the Mart (the user's ask, 2026-10-14; the other rooms don't) also get a Bag key on the hinge, right of the gold confirm pill (moved there from beside Skip, the user's call, 2026-10-14; `#room-bag`, a round key, `roundKey('bag')`; the user's ask, 2026-10-14): it opens the top bar's `#bag` on Items, the hidden top bar brought back fixed and unseen with only the Bag showing, risen over the room bar (`css/screens.css`).
   `showChoice()` sets `#reward-screen.in-room` for all of them. There is no page footer any more; the disclaimer is in About.
+
+## The reload log (2026-10-18)
+`js/crumbs.js` (`startCrumbs()` from `js/main.js`): every 5 s, on `visibilitychange` and on `pagehide` it notes where the
+game is (`pokedb.crumb`); a load finding the last note never closed logs it (`pokedb.reloads`, the last 5), and
+Settings' Save group shows `#reload-log`: "The game reloaded by itself", when, where, minutes in, and "while away from
+the game" if the tab was hidden. For the user's friends to read out after an iPhone reloads the tab.
+

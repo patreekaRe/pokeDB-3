@@ -7,10 +7,14 @@ import { QUIZ_LEN, DAILY_CAP, quizRound, quizPay } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
-import { el } from './ui.js';
+import { el, rayWheel } from './ui.js';
 import { openPanel, key, monPool, spriteOf } from './corner-panel.js';
 import { potWon, payGame, stamp, record, atHome, best } from './corner-pot.js';
 import { bestLine } from './casino-pot.js';
+
+// painted once and moved into each render's stage (a conic gradient there was a 3x layer, see rayWheel() in js/ui.js)
+let rays = null;
+const burst = () => (rays ??= rayWheel('qz-burst', 'rgba(255, 255, 255, 0.35)', { solid: 1, fade: 1, deg: 10 }));
 
 let panel = null, names = null, round = null, st = null, picked = null, done = null, cur = 0;   // cur: the question on show
 
@@ -49,7 +53,7 @@ function render() {
     const stage = el('div', `qz-stage${picked ? ' shown' : ''}`);
     const img = el('img', 'pixel qz-mon');
     img.src = spriteOf(q.answer); img.alt = picked ? names.get(q.answer) : 'A Pokémon in silhouette';
-    stage.append(el('span', 'qz-burst'), img);
+    stage.append(burst(), img);
     if (picked) stage.append(el('span', 'qz-name', `It's ${names.get(q.answer)}!`));
     const opts = el('div', 'qz-opts');
     for (const id of q.options) {
@@ -128,7 +132,7 @@ function renderEndless() {
   const stage = el('div', `qz-stage${picked ? ' shown' : ''}`);
   const img = el('img', 'pixel qz-mon');
   img.src = spriteOf(q.answer); img.alt = picked ? names.get(q.answer) : 'A Pokémon in silhouette';
-  stage.append(el('span', 'qz-burst'), img);
+  stage.append(burst(), img);
   if (picked) stage.append(el('span', 'qz-name', `It's ${names.get(q.answer)}!`));
   const opts = el('div', 'qz-opts');
   for (const id of q.options) {

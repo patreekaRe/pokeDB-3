@@ -1497,6 +1497,23 @@ function back() {
   goPlace('hall', FRONTS.find(f => f.id === P.front).step, 'front');
 }
 
+/** Every shop walked into is let go on the way out of the mall, the hall kept for the doors: kept, each held its 35-45 MB
+    of painted pictures through the Clearing and the runs after (headless at an iPhone's size, 2026-10-18: ~150 MB after
+    one walk round the Game Corner, the Arcade and a floor). Walking in again builds it again, under the curtain. */
+function forgetShops() {
+  for (const [id, p] of Object.entries(places)) {
+    if (id === 'hall') continue;
+    if (P === p) p.leave?.();
+    const own = new Set();
+    p.group.traverse(o => { for (const m of [o.material].flat()) if (m) own.add(m); });
+    mats = mats.filter(m => !own.has(m));
+    scene.remove(p.group);
+    dispose(p.group);
+    delete places[id];
+  }
+  if (!places[P?.id]) P = places.hall;   // left from inside a shop: what it held goes too
+}
+
 export async function leave() {
   const shop = document.getElementById('shop-dialog');
   if (shop?.open) shop.close();
@@ -1504,6 +1521,7 @@ export async function leave() {
   await curtain(true);
   root.remove();
   drags?.off(); drags = null;
+  forgetShops();
   sleepGL(renderer);   // its GPU memory let go; woken as openMall() reopens it
   if (leaveTo) await leaveTo(); else location.href = location.pathname;
   curtain(false);

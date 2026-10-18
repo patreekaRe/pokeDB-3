@@ -68,6 +68,7 @@ import { initPokedex, dexPerkLevel } from './pokedex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
+import { startCrumbs } from './crumbs.js';
 import { initTrainers, onVisit } from './trainers.js';
 import { $, el, confirmDialog } from './ui.js';
 import './no-loupe.js';
@@ -274,6 +275,7 @@ function init() {
   initPokedex();
   initPokedexButton();
   initCloud();
+  startCrumbs();
   initLeaderboard();
   initTrainers();
   initSafariPrep({

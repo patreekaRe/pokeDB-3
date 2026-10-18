@@ -9,7 +9,7 @@
    js/home-arcade.js. */
 
 import { hushBlip, playSound, preloadSounds } from './audio.js';
-import { el, fitText } from './ui.js';
+import { el, fitText, rayWheel, tint } from './ui.js';
 import { calmFx, vibrate } from './prefs.js';
 import { openPanel, key, firstLook, helpKey } from './corner-panel.js';
 import { record, best } from './corner-pot.js';
@@ -57,7 +57,8 @@ export function drawMon(g, id, x, y, h, flip = false) {
   }
   g.imageSmoothingEnabled = smooth;
 }
-const stamps = new Map();
+const stamps = new Map(), STAMP_BYTES = 40e6;
+let stampBytes = 0;
 /** Something painted once onto a canvas of its own at the screen's scale, then stamped every frame: gradients, clips and
     hundreds of little paths redrawn each frame cost the games their frame rate on phones (2026-10-12). `paint(g)` draws
     it in a `w` x `h` box from 0, 0; `key` names what's in it. Call it from the top level of draw(), not under a rotate. */
@@ -71,7 +72,14 @@ export function stamp(g, key, x, y, w, h, paint) {
     cg.scale(s, s);
     paint(cg);
     stamps.set(k, c);
-    if (stamps.size > 500) stamps.delete(stamps.keys().next().value);
+    stampBytes += c.width * c.height * 4;
+    // by bytes too: a full-field stamp is 1-3 MB, and every resize (Safari's toolbar coming and going) keys them all anew
+    while (stamps.size > 1 && (stamps.size > 500 || stampBytes > STAMP_BYTES)) {
+      const [old, oc] = stamps.entries().next().value;
+      stamps.delete(old);
+      stampBytes -= oc.width * oc.height * 4;
+      oc.width = oc.height = 0;
+    }
   }
   g.drawImage(c, x, y, c.width / s, c.height / s);
 }
@@ -163,7 +171,7 @@ export function runArcade(def, onClose) {
   function marquee() {
     const head = el('div', 'vf-head ar-marquee');
     const [mon, kick, name] = MARQUEE[def.id] || [null, '', def.title];
-    head.append(el('span', 'arm-rays'), el('span', 'arm-bulbs'), el('span', 'arm-bulbs arm-bulbs-b'));
+    head.append(rayWheel('arm-rays', tint(def.colour, 0.3), { n: 520, solid: 1, fade: 1, rays: 16, deg: 9 }), el('span', 'arm-bulbs'), el('span', 'arm-bulbs arm-bulbs-b'));
     if (mon) {
       const fig = el('span', 'arm-mon'), img = new Image();
       img.src = `assets/pokemon/${mon}-front.gif`; img.alt = ''; img.draggable = false;

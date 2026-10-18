@@ -4,12 +4,21 @@
    backglass. Only the front of a machine wears its game. */
 
 const TAU = Math.PI * 2;
-const made = new Map();
+// the newest last, up to MADE_BYTES: kept for good, every machine's pictures (7.5 MB of marquees alone) outlived the Arcade Room
+const made = new Map(), MADE_BYTES = 16e6;
+let madeBytes = 0;
 const once = (key, w, h, draw) => {
-  if (made.has(key)) return made.get(key);
-  const c = new OffscreenCanvas(w, h), g = c.getContext('2d');
-  draw(g, w, h);
+  let c = made.get(key);
+  if (c) { made.delete(key); made.set(key, c); return c; }
+  c = new OffscreenCanvas(w, h);
+  draw(c.getContext('2d'), w, h);
   made.set(key, c);
+  madeBytes += w * h * 4;
+  while (made.size > 1 && madeBytes > MADE_BYTES) {
+    const [old, oc] = made.entries().next().value;
+    made.delete(old);
+    madeBytes -= oc.width * oc.height * 4;
+  }
   return c;
 };
 

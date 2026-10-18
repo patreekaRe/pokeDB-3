@@ -298,8 +298,25 @@ function keep(pic, w = pic.width, h = pic.height) {
   return c;
 }
 
-/** Every frame of a GIF with its delay: ImageDecoder where there is one, else js/gif-frames.js (iPhone Safari). */
-export async function gifFrames(src) {
+/** Every frame of a GIF with its delay: ImageDecoder where there is one, else js/gif-frames.js (iPhone Safari). Shared:
+    each 3D place (the Clearing, Center, Mart, rooms, base, mall) decoded its own copy of your partner, every frame a
+    canvas (5 MB for Blastoise, 30 for Eternamax), and kept it asleep. Held weakly, so a GIF no place shows still goes. */
+const decoded = new Map(), decoding = new Map();
+export function gifFrames(src) {
+  const had = decoded.get(src)?.deref();
+  if (had) return Promise.resolve(had);
+  if (!decoding.has(src)) {
+    decoding.set(src, decodeFrames(src).then(frames => {
+      decoding.delete(src);
+      if (frames) decoded.set(src, new WeakRef(frames));
+      else decoded.delete(src);
+      return frames;
+    }));
+  }
+  return decoding.get(src);
+}
+
+async function decodeFrames(src) {
   try {
     const res = await fetch(src);
     if (!res.ok) return null;

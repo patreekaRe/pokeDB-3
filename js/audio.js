@@ -475,7 +475,7 @@ export async function playCry(spriteId, { rate = 1, echo = false } = {}) {
   const id = cryId(spriteId);
   stopCry();
   if (getSave().muted || !CRIES.has(id)) return;
-  const buffer = await loadSound(`cry:${id}`, `assets/audio/cries/${id}.mp3`);
+  const buffer = await loadCry(id);
   if (!buffer || !await awake() || getSave().muted) return;
   stopCry();   // another cry may have been asked for while this one loaded
   const source = ctx.createBufferSource();
@@ -522,7 +522,18 @@ export async function setLoop(name, on) {
 /** Start downloading cries ahead of time so they play without delay. */
 export function preloadCries(...spriteIds) {
   spriteIds.map(cryId).filter(id => CRIES.has(id))
-    .forEach(id => loadSound(`cry:${id}`, `assets/audio/cries/${id}.mp3`));
+    .forEach(loadCry);
+}
+
+/* Only the cries heard last stay decoded (~0.2 MB each): kept, every Pokémon heard in a session stayed, ~50 MB once
+   all 248 had been. */
+const CRIES_KEPT = 32, cryOrder = [];
+function loadCry(id) {
+  const name = `cry:${id}`, at = cryOrder.indexOf(name);
+  if (at >= 0) cryOrder.splice(at, 1);
+  cryOrder.push(name);
+  if (cryOrder.length > CRIES_KEPT) delete buffers[cryOrder.shift()];
+  return loadSound(name, `assets/audio/cries/${id}.mp3`);
 }
 
 const cryId = (spriteId) => spriteId.replace(/-shiny$/, '');
@@ -679,12 +690,17 @@ class LoopedTrack {
     this.paused = true;
     this.offset = 0;        // where it resumes, in seconds into the file
     this.passes = [];       // { source, when, offset } of the passes playing or queued, oldest first
-    this.bytes = fetch(url)
+    this.url = url;
+    this.fetch();
+  }
+  fetch() {
+    this.bytes = fetch(this.url)
       .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.arrayBuffer(); })
-      .catch(() => { onError(); return null; });
+      .catch(() => { this.onError(); return null; });
+    return this.bytes;
   }
   decode() {
-    this.decoded ||= this.bytes.then(data => data && ctx.decodeAudioData(data.slice(0))).catch(() => null);
+    this.decoded ||= (this.bytes || this.fetch()).then(data => data && ctx.decodeAudioData(data)).catch(() => null);
     return this.decoded;
   }
   get currentTime() {
@@ -760,7 +776,8 @@ class LoopedTrack {
     this.passes = [];
     passes.forEach(p => p.source.stop());
     // this.buffer too: kept, every song played once stayed decoded for the page load (~1 GB a long session on an iPhone)
-    if (!keep) this.decoded = this.buffer = null;
+    // and its MP3's bytes (~2 MB a song, 60 MB once every song had played): fetched again from the browser's cache
+    if (!keep) this.decoded = this.buffer = this.bytes = null;
   }
 }
 
