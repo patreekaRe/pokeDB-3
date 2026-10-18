@@ -1056,8 +1056,13 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   pull. No buying one outright (the user's call: it undercut the gacha); the biome's grid only shows what's inside. The reveal: the capsule drops into the
   kiosk's tray, a tap opens it, the shadow holds (a gold one shakes gold), a flash, the shiny. Placed on the floor right
   of the Day Pass dais (tile 13,8), facing the door, no taller than the booth (the user wanted it front-facing and
-  obvious). Mock: https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy. The user says yes or what to change; still open is
-  what an owned Safari shiny shows (the Safari Pokédex, Secret Base residents, Safari runs' catches).
+  obvious). Mock: https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy. Then (same day, the user's calls): duplicates allowed, each
+  raising that shiny's **Sparkle** ★1-★5 (+2 Lucky Stars, +3 past ★5; about 1 plain capsule in 3 still a new one); an
+  owned shiny shows in all three places (the Safari Pokédex, Secret Base residents, and in Safari runs on its signature
+  card and the catch box, framed by its Sparkle; wild ones stay normal); **shiny catching** in Safari runs, look only:
+  ~1 in 150 wilds shiny, the same fight and catch odds, rolled off the daily seed so the run and leaderboard stay the
+  same, a catch adding it or raising its Sparkle. Capsules smooth SVG (biome-coloured, gold, a prism one for the Lucky
+  Star pick; a gold one shows plain until it turns gold in the tray). The user checks the mock's boards 5-7 next.
 
 - **Smoother transitions, on a phone** (2026-10-18, the user's ask; `docs/roadmap-done.md`): a new run's Clearing film,
   its first wild fight's wipe, the Shrine's and Wastes' films (biome and place) were measured headless and fixed. The
