@@ -755,3 +755,16 @@ owns, so old saves don't light up. A friend's base on a visit and a `?hearts=` p
   16 MB. The cabinet marquee's sunburst, Who's That's and the showcases' rays are `rayWheel()` canvases, not spinning
   `repeating-conic-gradient`s (see `rayWheel()` in `js/ui.js`).
 
+
+## The Clearing's draw calls (2026-10-18)
+
+The Clearing drew ~460 times a frame headless at 390 x 844, the most of any place once the towns were merged.
+`mergeStill()` in `js/hub-3d.js` is `mergeStatic()` plus the towns' `stillParts()` steps: each part bent first
+(`bendFine()`), many-material meshes split by face (`byFace()`, moved here from `js/event-3d.js`), roughness rounded to
+quarters, plain colours baked onto vertices (`bakeColours()`, which now takes a `skip` and keeps an untappable part's
+raycast), then one mesh a material. Every place that called `mergeStatic()` calls it (the mall, Nietos, Kurt, the arch,
+the plaza board, the pillar, the dojo, the Sealed Gate, the Safari gate, the dressing), and the Waystone, quest board,
+PC, Safari fence and the plaza board's ball and lanterns are merged too. The cauldron (`makeCauldron(THREE, merge)`)
+joins its pot, logs and stones, and its twelve flame tongues are two instanced meshes. Headless: ~459 -> ~243 GL draws a
+frame (night ~245, winter ~174), 506 meshes -> 312, the same 18 places tappable and the same parts moving, no console
+errors. `tools/draw-probe.mjs --why` lists where a scene's draws go, group by group.

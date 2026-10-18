@@ -53,6 +53,52 @@ async function open(q) {
   return { ctx, page, errors };
 }
 
+/* --why: where a place's draws go. The biggest scene drawn is walked: each mesh in the camera's view (and each shadow
+   caster) is counted under the group it sits in, at depth --depth (3 by default) below the scene, with that group's
+   centre in world units, so a heavy group can be found in the code by where it stands. */
+async function why(page) {
+  return page.evaluate(async (depth) => {
+    const T = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js');
+    const R = T.Scene.prototype, o = R.onBeforeRender;
+    let seen = null;
+    R.onBeforeRender = function (r, s, c) { if (!seen || s.children.length >= seen.s.children.length) seen = { s, c }; };
+    for (let i = 0; i < 30 && !seen; i++) await new Promise(r => requestAnimationFrame(r));
+    await new Promise(r => requestAnimationFrame(r));
+    R.onBeforeRender = o;
+    if (!seen) return 'no scene drawn';
+    const { s, c } = seen, fr = new T.Frustum().setFromProjectionMatrix(new T.Matrix4().multiplyMatrices(c.projectionMatrix, c.matrixWorldInverse));
+    const rows = new Map(), box = new T.Box3(), v = new T.Vector3();
+    let sunCam = null; s.traverse(l => { if (l.isDirectionalLight && l.castShadow) sunCam = l.shadow.camera; });
+    const sf = sunCam && new T.Frustum().setFromProjectionMatrix(new T.Matrix4().multiplyMatrices(sunCam.projectionMatrix, sunCam.matrixWorldInverse));
+    let main = 0, shadow = 0;
+    const walk = (obj, path) => {
+      if (!obj.visible) return;
+      if (obj.isMesh || obj.isSprite || obj.isPoints || obj.isLine) {
+        const n = Array.isArray(obj.material) ? new Set((obj.geometry.groups || []).map(g => g.materialIndex)).size || 1 : 1;
+        const inView = obj.frustumCulled === false || obj.isSprite || (obj.geometry.boundingSphere || obj.geometry.computeBoundingSphere(), fr.intersectsObject(obj));
+        const key = path.slice(0, depth).join('/') || '(scene)';
+        const row = rows.get(key) || rows.set(key, { main: 0, shadow: 0, meshes: 0, kinds: {} }).get(key);
+        row.meshes++;
+        if (inView) { row.main += n; main += n; }
+        if (obj.castShadow && obj.isMesh && (!sf || obj.frustumCulled === false || sf.intersectsObject(obj))) { row.shadow += n; shadow += n; }
+        const k = obj.isInstancedMesh ? 'inst' : obj.isSprite ? 'sprite' : (Array.isArray(obj.material) ? obj.material[0] : obj.material)?.map ? 'tex' : 'plain';
+        row.kinds[k] = (row.kinds[k] || 0) + 1;
+      }
+      obj.children.forEach((ch, i) => walk(ch, [...path, `${i}${ch.name ? ':' + ch.name : ''}`]));
+    };
+    s.children.forEach((ch, i) => walk(ch, [`${i}${ch.name ? ':' + ch.name : ''}`]));
+    const named = (key) => {
+      let obj = s; for (const p of key.split('/')) obj = obj?.children[parseInt(p)];
+      if (!obj) return '';
+      box.setFromObject(obj); box.getCenter(v);
+      return `at ${v.x.toFixed(1)},${v.z.toFixed(1)} size ${box.max.x - box.min.x | 0}x${box.max.z - box.min.z | 0}`;
+    };
+    const top = [...rows].sort((a, b) => (b[1].main + b[1].shadow) - (a[1].main + a[1].shadow)).slice(0, 40);
+    let sprites = 0; s.traverse(o => { if (o.isSprite && o.visible) { let v = true; for (let p = o.parent; p; p = p.parent) v &&= p.visible; if (v) sprites++; } });
+    return [`in view ${main}, shadow casters ${shadow}, sprites shown ${sprites}`, ...top.map(([k, r]) => `  ${k.padEnd(16)} main ${String(r.main).padStart(4)} shadow ${String(r.shadow).padStart(4)} meshes ${String(r.meshes).padStart(4)} ${JSON.stringify(r.kinds)} ${named(k)}`)].join('\n');
+  }, Number(opt('depth')) || 3);
+}
+
 for (const q of queries) {
   const { ctx, page, errors } = await open(q);
   const r = await page.evaluate(async () => {
@@ -63,6 +109,7 @@ for (const q of queries) {
     return { draws: per[per.length >> 1], meshes, awake: window.__gls.filter(g => !g.isContextLost()).length, doors: Object.keys(R?.doors || {}) };
   });
   console.log(q, `draws a frame ${r.draws}, meshes ${r.meshes}, contexts awake ${r.awake}`, errors.length ? errors : '');
+  if (opt('why')) console.log(await why(page));
   await ctx.close();
   if (!opt('doors')) continue;
   for (const door of r.doors) {

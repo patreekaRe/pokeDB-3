@@ -5,7 +5,7 @@
    in front, a palm and ferns either side and a bamboo palisade out to the log fence (js/hub-3d.js's safariFence()). A
    plank threshold across the trail. Shut, a rope hangs across it with a CLOSED plank, and nothing is lit.
    safariGate() builds it at the origin, its front towards +z; tick() sways what moves. */
-import { fine, texOf, glowing, mergeStatic } from './hub-3d.js';
+import { fine, texOf, glowing, mergeStill } from './hub-3d.js';
 
 let T;
 export const TOWER_X = 1.72;      // each tower's middle, off the gate's
@@ -358,7 +358,7 @@ export function safariGate(THREE, { open, glows }) {
     add(new T.PlaneGeometry(0.62, 0.25), std({ map: texOf(closedArt()), side: T.DoubleSide }), 0, 0.6, 0.36, root, false);
   }
 
-  mergeStatic(root, (o) => o.userData.live || o.parent?.userData.live);
+  mergeStill(root, (o) => o.userData.live || o.parent?.userData.live);
 
   /** The pennants ripple, the ball rocks on its crest, the lanterns sway and the torches flicker; held still when calm. */
   const tick = (now, calm) => {
