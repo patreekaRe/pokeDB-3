@@ -143,7 +143,7 @@ true` road joining them; Halloween's pumpkin patch moved off to the south-east l
 (`kurtAt`: Kurt, `assets/trainers/kurt.png` drawn for it, is the room's spot 0 like a shop's keeper). **Shut till the story sends you** (2026-10-15, the user's call: he "just showed up"): `workshopOpen()` in `js/data/towns.js` opens it at the Nietos' Waystone Chime step (`WORKSHOP_STEP`, Law's line now points you there), or on a lit stone, a town questline, anything already made, or `?satchel`; before, it's boarded, its windows dark, a note on the door, no Go in (`kurtWorkshop(..., open)` in `js/hub-3d.js`). The first time in, Kurt slides in (`gymTalk()`, plate APRICORN SMITH) with `homes.workshop.meet` (plus `meetChime` while the chime is your step), then `save.workshop.met`. His window is
 `openWorkshop()` in `js/workshop.js` (since 2026-10-15, the user's ask, a crafting bench, `.dialog.craft`: a wooden window,
 Kurt's line on a tag, a tab per shelf counting made / total and a green dot for how many are ready, the picked recipe on a
-parchment card (where it goes, a gift's reward piece, each material's have / need with a bar, one big Make button), the
+parchment card (where it goes, a gift's reward piece, each material's have / need with a bar, a tap on one opening a box of where it drops, `matHints()` in `js/data/satchel.js`, the Satchel app's lines too, 2026-10-18, the user's ask; one big Make button), the
 shelf below sorted ready / short / made; making plays `forge()`: the materials fly into a glow, sparks, the thing pops out
 stamped MADE!; reduced motion skips to the result); recipes are
 `RECIPES` in `js/data/workshop.js` (pure, `tests/workshop.test.mjs`), each `needs` materials from the Satchel, and

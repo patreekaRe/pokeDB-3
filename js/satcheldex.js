@@ -6,8 +6,8 @@
    Shown only while the towns are on (townsOpen()).
    ============================================================ */
 
-import { MATERIALS, MATERIALS_BY_ID, KEY_ITEMS, satchelOf } from './data/satchel.js';
-import { GIFTS, workshopOf } from './data/workshop.js';
+import { MATERIALS, MATERIALS_BY_ID, KEY_ITEMS, satchelOf, matHints } from './data/satchel.js';
+import { GIFTS, FRIENDS, workshopOf } from './data/workshop.js';
 import { GYM_BY_ID } from './data/gym.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
 import { getSave } from './storage.js';
@@ -19,12 +19,8 @@ import { el } from './ui.js';
 const sat = () => satchelOf(getSave());
 const no = (list, t) => `No.${String(list.indexOf(t) + 1).padStart(2, '0')}`;
 
-/** Where a material turns up (js/data/satchel.js's DROPS and SPARKLES). */
-const where = (m) => {
-  if (m.grown) return 'Grown in your backyard\'s berry plots.';
-  const biome = BIOMES_BY_ID[m.biome]?.name ?? 'wild';
-  return m.from === 'map' ? `Glints in sparkling rooms on the map, in the ${biome}.` : `Dropped by Pokémon in the ${biome}, and found in its sparkling rooms.`;
-};
+/** Where a material turns up (js/data/satchel.js's matHints(), as Kurt's Workshop shows it on a tap). */
+const where = (m) => matHints(m, BIOMES_BY_ID[m.biome]?.name, FRIENDS.some(id => GYM_BY_ID[id]?.biome === m.biome)).map(t => typed('muted', t));
 
 const GROUPS = [
   { id: 'keys', name: 'Key Items', sub: 'One of a kind', b1: '#e8b830', b2: '#6a4a08', list: () => KEY_ITEMS },
@@ -66,8 +62,8 @@ export const satchelApp = () => shelfApp({
       return k ? [typed('', `Held: ${held(t) || 0}`), typed('', t.text), typed('muted', fond ? `${who}'s favourite. You've given them one.` : `Someone's favourite. Give it to them at home.`)]
         : [typed('muted', 'Not made yet.'), typed('muted', `Kurt makes it from ${Object.entries(t.needs).map(([id, n]) => `${n} ${MATERIALS_BY_ID[id].name}`).join(' and ')}.`)];
     }
-    return k ? [typed('', `Held: ${sat().mats[t.id] || 0}`), typed('', t.use), typed('muted', where(t))]
-      : [typed('muted', 'Not found yet.'), typed('muted', where(t))];
+    return k ? [typed('', `Held: ${sat().mats[t.id] || 0}`), typed('', t.use), ...where(t)]
+      : [typed('muted', 'Not found yet.'), ...where(t)];
   },
   tally: (g, done) => (g.id === 'gifts' ? (done ? '★ Every gift made' : 'Made') : done ? `★ Every ${g.id === 'keys' ? 'key item' : 'material'} found` : 'Found'),
   doneSub: 'All found!',
