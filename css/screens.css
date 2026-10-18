@@ -2279,6 +2279,7 @@ body.battle-intro { pointer-events: none; }
 .well-cast { position: absolute; width: auto; max-width: none; translate: -50% -100%; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.35)); }
 .well-cast.wave { transform-origin: 50% 100%; animation: wellWave 1.4s ease-in-out infinite; }
 @keyframes wellWave { 50% { rotate: -4deg; } }
+.well-cast.ghost { opacity: 0.45; filter: drop-shadow(0 0 8px rgba(192, 112, 255, 0.8)); }
 .well-cast.drift { translate: -50% -50%; filter: drop-shadow(0 0 6px rgba(255, 80, 110, 0.5)); animation: wellDrift 9s ease-in-out infinite alternate; }
 @keyframes wellDrift { from { left: 22%; top: 34%; } to { left: 78%; top: 26%; } }
 .well-scene.still .well-mon, .well-scene.still .well-cast, .well-scene.still .well-star { animation: none; transition: none; }

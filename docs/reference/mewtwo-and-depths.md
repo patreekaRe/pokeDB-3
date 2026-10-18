@@ -113,9 +113,10 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   cooling to crystal white, and sets `save.depthsBound` (the **Star of the Depths** badge, `star-depths`, a `LOOK` line in
   `js/trainercard.js`; a peek only shows it in the result window); `'part'` (fewer) only closes the Well ("it will stir
   again", the strength from `sealedMult()`); `'plain'` (the shards don't count yet, `sealOn()` false) says the full lines
-  without the star or badge. Then Mewtwo thanks you, the light rises, and five **epilogue stills** fade in a line each
-  (`SLIDES`: Lantern Village's Waystone at night, the Nietos by the PC, the Gym Leaders you've beaten (all of them if
-  none, two rows past seven; the Nietos as baby Linc alone, `linc.png` cut from their sprite), the empty camp, Eternatus drifting over the title's sky), painted on their own 2D canvas.
+  without the star or badge. Then Mewtwo thanks you, the light rises, and nine **epilogue stills** fade in a line each
+  (`SLIDES`: Lantern Village's Waystone at night, the Nietos by the PC, then each town's two Gym Leaders at home (`HOMES`:
+  the town's room and window view by `ROOMS`, a prop or two each by `PROPS`, JONA faint at Phil's shoulder; the user's ask,
+  2026-10-18, a close-up each like the Nietos'), the empty camp, Eternatus drifting over the title's sky), painted on their own 2D canvas.
   The Well plays `energy-well` (the fanfare gives way to it); the Champion scene and the credits play `credits` (the user's songs, 2026-10-18). After the credits'
   THE END, a black screen, a chime and Mewtwo's last word (the camp's, or the gate's before the shards count).
   **The ending** (part D, 2026-10-03, the user's picks): a Mewtwo win is the **Champion of the Depths**: `winScene()` in

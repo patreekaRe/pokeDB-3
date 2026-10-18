@@ -11,11 +11,10 @@ import { sceneSay } from './evolution.js';
 import { calmFx } from './prefs.js';
 import { tooSoon } from './hd2d.js';
 import { gymTalk } from './gym.js';
-import { getSave } from './storage.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RING } from './data/towns.js';
-import { GYM_LEADERS, gymWins } from './data/gym.js';
+import { GYM_BY_ID } from './data/gym.js';
 import { sealedMult } from './data/difficulty.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -274,12 +273,22 @@ function paint() {
   }
 }
 
-/* ---------- the epilogue: five painted stills, a line each ---------- */
+/* ---------- the epilogue: painted stills, a line each ---------- */
+
+/** Each town's two Gym Leaders at home as the news reaches them (the user's ask, 2026-10-18: a close-up each, like the
+    Nietos'): their town's room and the view from its window, a prop or two each that says who they are. */
+const HOMES = [
+  { town: 'lantern', who: ['john', 'jahmes'], line: ['In Lantern Village, John still can\'t pick which handheld to tell it on.', 'Jahmes hyped it so loud he nearly missed his 11 p.m. bedtime.'] },
+  { town: 'springs', who: ['clarence', 'shaun'], line: ['In Cinder Springs, Clarence put on a show in your honour.', 'Shaun sent you VOD notes on the Eternatus fight.'] },
+  { town: 'lagoon', who: ['pat', 'kayl'], line: ['At Driftwood Landing, Pat "accidentally" wrote a song about it.', 'Kayl played bass on it, between cats.'] },
+  { town: 'canopy', who: ['phil', 'ricky'], line: ['Up in Highbough, JONA swears she felt it through the roots.', 'Ricky stayed up till 2 a.m. telling his friends.'] },
+  { town: 'bazaar', who: ['machew', 'jerome'], line: ['In Sunwell Bazaar, Machew calls it a tale worthy of his blade.', 'Jerome says it\'s still not as big as GTA 6.'] },
+];
 
 const SLIDES = [
   { paint: lanternNight, line: 'The Waystones burn on, all across the land.' },
-  { paint: clearingPC, line: 'Back home, word spreads fast.', cast: () => [{ src: 'assets/trainers/gym/nietos.png', x: 34, y: 82, h: 34, cls: 'wave' }] },
-  { paint: leaderStage, line: 'Every leader you beat heard what you did below.', cast: leaderRow },
+  { paint: clearingPC, line: ['Back home in the Clearing, word spreads fast.', 'Linc hasn\'t taken off his Pikachu suit since.'], cast: () => [{ src: 'assets/trainers/gym/nietos.png', x: 34, y: 82, h: 34, cls: 'wave' }] },
+  ...HOMES.map(home => ({ paint: (c, w, h) => leaderHome(c, w, h, home), line: home.line, cast: () => homeCast(home) })),
   { paint: depthsCamp, line: 'The miners\' camp falls quiet. Nothing stirs under the gate.' },
   { paint: titleSky, line: 'And something old sleeps beneath it all.', cast: () => [{ src: ENEMY_DEFS.eternatus.image, x: 50, y: 40, h: 11, cls: 'drift' }] },
 ];
@@ -307,26 +316,18 @@ async function epilogue(scene) {
     slide.classList.add('in');
     playSound('crystal-1');
     await sleep(still() ? 0 : 700);
-    await say([s.line]);
+    await say([s.line].flat());
     slide.classList.remove('in');
     await sleep(still() ? 0 : 600);
   }
   cast.replaceChildren();
 }
 
-/** The leaders you've beaten in a row along the stage (all of them, if you've beaten none yet). The Nietos' sprite is Law
-    and Britt again with Linc, so they stand as Linc alone, cut out of it, small, in the front row (the user's ask). */
-function leaderRow() {
-  const all = GYM_LEADERS.filter(l => l.sprite), beaten = all.filter(l => gymWins(getSave(), l.id) > 0);
-  const picked = beaten.length ? beaten : all;
-  const list = picked.filter(l => l.id !== 'nietos').map(l => ({ src: l.sprite, size: 1 }));
-  const back = list.length > 7 ? Math.floor(list.length / 2) : 0;   // two rows when it's a crowd
-  if (picked.some(l => l.id === 'nietos')) list.splice(back + Math.ceil((list.length - back) / 2), 0, { src: 'assets/trainers/gym/linc.png', size: 0.62 });
-  const place = (row, y, scale) => row.map((l, i) => {
-    const per = Math.min(16, 88 / row.length);
-    return { src: l.src, x: 50 + (i - (row.length - 1) / 2) * per, y, h: Math.min(26, per * 2.4) * scale * l.size };
-  });
-  return [...place(list.slice(0, back), 72, 0.85), ...place(list.slice(back), 88, 1)];
+/** The two leaders in their room, either side of the window (Phil with JONA, faint, at his shoulder). */
+function homeCast({ who }) {
+  const cast = who.map((id, i) => ({ src: GYM_BY_ID[id].sprite, x: i ? 70 : 30, y: 84, h: 34 }));
+  if (who.includes('phil')) cast.unshift({ src: 'assets/trainers/gym/jona.png', x: 17, y: 80, h: 32, cls: 'ghost' });
+  return cast;
 }
 
 function stars(c, w, h, n, top = 0.6) {
@@ -415,19 +416,145 @@ function clearingPC(c, w, h) {
   c.fillStyle = '#b8b0a0'; c.fillRect(mx + mw / 2 - 3, my + mh + 3, 6, 4);
 }
 
-/** A stage at dusk for the Gym Leaders to stand along. */
-function leaderStage(c, w, h) {
-  c.fillStyle = grad(c, 0, h * 0.7, ['#20184a', '#6a2a5a', '#d8603a', '#f8b048']);
-  c.fillRect(0, 0, w, h);
-  stars(c, w, h, Math.round(w * h / 200), 0.3);
-  halo(c, w / 2, h * 0.7, Math.max(w, h) * 0.5, '#ffd070', 0.5);
-  c.fillStyle = '#3a1a38';
-  c.beginPath(); c.moveTo(0, h * 0.72);
-  for (let i = 0; i <= 8; i++) c.lineTo(w * i / 8, h * (0.66 + hash(i * 3) * 0.05));
-  c.lineTo(w, h); c.lineTo(0, h); c.fill();
-  c.fillStyle = grad(c, h * 0.8, h, ['#c89858', '#8a6034']);
-  c.fillRect(0, h * 0.8, w, h * 0.2);
-  c.fillStyle = '#f0d088'; c.fillRect(0, h * 0.8, w, 2);
+// a town's room: [wall top, wall bottom, trim, floor top, floor bottom], and what the window looks out on
+const ROOMS = {
+  lantern: [['#5a2a2a', '#7a3c30', '#2c1410', '#8a5a38', '#5a3820'], lanternView],
+  springs: [['#6a4a40', '#8a6050', '#3a2418', '#7a6a5a', '#4a3c30'], springsView],
+  lagoon: [['#3a6a80', '#5a8aa0', '#1c3a48', '#c8b088', '#9a8060'], lagoonView],
+  canopy: [['#4a5a30', '#6a7a40', '#2a3418', '#7a5a38', '#4a3420'], canopyView],
+  bazaar: [['#c88a50', '#e0a868', '#6a3c18', '#d8b880', '#a88850'], bazaarView],
+};
+
+function leaderHome(c, w, h, { town, who }) {
+  const [[wt, wb, trim, ft, fb], view] = ROOMS[town], floor = h * 0.72, u = Math.min(w, h) / 100;
+  c.fillStyle = grad(c, 0, floor, [wt, wb]);
+  c.fillRect(0, 0, w, floor);
+  for (let x = 0; x < w; x += Math.max(5, Math.round(w / 18))) { c.fillStyle = 'rgba(0,0,0,0.12)'; c.fillRect(x, 0, 1, floor); }
+  c.fillStyle = grad(c, floor, h, [ft, fb]);
+  c.fillRect(0, floor, w, h - floor);
+  for (let y = floor + 4; y < h; y += 6) { c.fillStyle = 'rgba(0,0,0,0.15)'; c.fillRect(0, y, w, 1); }
+  c.fillStyle = trim; c.fillRect(0, floor - 2, w, 3);
+  const ww = Math.min(w * 0.34, 46 * u), wh = h * 0.24, wx = (w - ww) / 2, wy = h * 0.12;   // the window, on the town
+  c.fillStyle = trim; c.fillRect(wx - 3, wy - 3, ww + 6, wh + 6);
+  c.save(); c.beginPath(); c.rect(wx, wy, ww, wh); c.clip(); view(c, wx, wy, ww, wh); c.restore();
+  c.fillStyle = trim; c.fillRect(wx + ww / 2 - 1, wy, 2, wh); c.fillRect(wx, wy + wh / 2 - 1, ww, 2);
+  who.forEach((id, i) => PROPS[id](c, i ? w * 0.86 : w * 0.14, floor, u, w, h));
+}
+
+const rect = (c, col, x, y, w, h) => { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h))); };
+const disc = (c, col, x, y, r) => { c.fillStyle = col; c.beginPath(); c.arc(x, y, Math.max(1, r), 0, Math.PI * 2); c.fill(); };
+function desk(c, x, floor, u, wide = 22) { rect(c, '#4a2c1a', x - wide * u / 2, floor - 11 * u, wide * u, 2 * u); rect(c, '#3a2214', x - wide * u / 2 + u, floor - 9 * u, 1.5 * u, 9 * u); rect(c, '#3a2214', x + wide * u / 2 - 2.5 * u, floor - 9 * u, 1.5 * u, 9 * u); return floor - 11 * u; }
+function clock(c, x, y, u, hour) {
+  disc(c, '#f0e8d8', x, y, 4.5 * u); c.strokeStyle = '#2a1a10'; c.lineWidth = Math.max(1, u * 0.6);
+  c.beginPath(); c.arc(x, y, 4.5 * u, 0, Math.PI * 2); c.stroke();
+  const a = (hour / 12) * Math.PI * 2 - Math.PI / 2;
+  c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * 2.6 * u, y + Math.sin(a) * 2.6 * u); c.moveTo(x, y); c.lineTo(x, y - 3.6 * u); c.stroke();
+}
+function screen(c, x, y, wd, ht, col, u) { halo(c, x, y, wd * 1.4, col, 0.35); rect(c, '#1a1a22', x - wd / 2 - u, y - ht / 2 - u, wd + 2 * u, ht + 2 * u); rect(c, col, x - wd / 2, y - ht / 2, wd, ht); }
+function note(c, x, y, u, col = '#fff4c0') { disc(c, col, x, y, 1.3 * u); rect(c, col, x + u, y - 4 * u, 0.7 * u, 4 * u); rect(c, col, x + u, y - 4 * u, 2 * u, 0.8 * u); }
+function cat(c, x, floor, u, col) {
+  c.fillStyle = col; c.beginPath(); c.ellipse(x, floor - 2.5 * u, 4 * u, 2.6 * u, 0, 0, Math.PI * 2); c.fill();
+  disc(c, col, x + 3.6 * u, floor - 5.4 * u, 2.2 * u);
+  c.beginPath(); c.moveTo(x + 2 * u, floor - 6.6 * u); c.lineTo(x + 2.6 * u, floor - 9 * u); c.lineTo(x + 3.6 * u, floor - 7 * u); c.moveTo(x + 4 * u, floor - 7 * u); c.lineTo(x + 5 * u, floor - 9 * u); c.lineTo(x + 5.6 * u, floor - 6.4 * u); c.fill();
+}
+
+/** One or two props a leader, at x on their side of the room (the leader stands nearer the window). */
+const PROPS = {
+  john(c, x, floor, u) {   // the three handhelds he can't pick between, on his desk
+    const top = desk(c, x, floor, u);
+    [['#3a3a48', -7], ['#e04040', 0], ['#2a2a30', 7]].forEach(([col, dx]) => { rect(c, col, x + dx * u - 3 * u, top - 3 * u, 6 * u, 3 * u); rect(c, '#8ad0ff', x + dx * u - 1.5 * u, top - 2.5 * u, 3 * u, 2 * u); });
+  },
+  jahmes(c, x, floor, u) {   // his bed, made, and the clock at eleven
+    rect(c, '#5a3a5a', x - 12 * u, floor - 7 * u, 24 * u, 7 * u); rect(c, '#f0f0f8', x - 11 * u, floor - 9 * u, 6 * u, 3 * u); rect(c, '#8a5aa0', x - 4 * u, floor - 8.5 * u, 15 * u, 2.5 * u);
+    clock(c, x, floor - 34 * u, u, 11);
+  },
+  clarence(c, x, floor, u) {   // the disco ball over his little stage, a spotlight on it
+    c.fillStyle = 'rgba(255,240,180,0.25)'; c.beginPath(); c.moveTo(x - 2 * u, 0); c.lineTo(x - 11 * u, floor); c.lineTo(x + 11 * u, floor); c.lineTo(x + 2 * u, 0); c.fill();
+    rect(c, '#2a1a2a', x - 12 * u, floor - 3 * u, 24 * u, 3 * u); rect(c, '#d040a0', x - 12 * u, floor - 3 * u, 24 * u, 0.8 * u);
+    rect(c, '#888', x - 0.3 * u, 0, 0.6 * u, 18 * u); disc(c, '#c8c8d8', x, 22 * u, 4.5 * u);
+    for (let i = 0; i < 9; i++) rect(c, i % 2 ? '#ffffff' : '#8890b0', x - 3.5 * u + (i % 3) * 2.5 * u, 19 * u + Math.floor(i / 3) * 2.5 * u, 1.2 * u, 1.2 * u);
+  },
+  shaun(c, x, floor, u) {   // two monitors, a VOD paused on one, his headset
+    const top = desk(c, x, floor, u, 26);
+    screen(c, x - 6 * u, top - 6 * u, 10 * u, 7 * u, '#58d0a0', u); screen(c, x + 6 * u, top - 6 * u, 10 * u, 7 * u, '#ff6070', u);
+    rect(c, '#1a1a1a', x - 2 * u, top - 1.5 * u, 4 * u, 1.5 * u);
+  },
+  pat(c, x, floor, u) {   // a mic on its stand, the notes escaping it
+    rect(c, '#2a2a30', x - 0.4 * u, floor - 26 * u, 0.8 * u, 26 * u); rect(c, '#2a2a30', x - 4 * u, floor - u, 8 * u, u); disc(c, '#5a5a68', x, floor - 27 * u, 2 * u);
+    note(c, x + 6 * u, floor - 32 * u); note(c, x - 7 * u, floor - 38 * u, u, '#ffd0e0'); note(c, x + 3 * u, floor - 44 * u);
+  },
+  kayl(c, x, floor, u) {   // her bass against the wall, a lavender pot, Spooky and Reya
+    c.save(); c.translate(x - 6 * u, floor); c.rotate(-0.18);
+    c.fillStyle = '#7a4aa8'; c.beginPath(); c.ellipse(0, -6 * u, 4.5 * u, 6 * u, 0, 0, Math.PI * 2); c.fill();
+    rect(c, '#3a2414', -0.8 * u, -30 * u, 1.6 * u, 22 * u); rect(c, '#2a1a10', -1.6 * u, -33 * u, 3.2 * u, 4 * u); c.restore();
+    rect(c, '#a06040', x + 4 * u, floor - 5 * u, 5 * u, 5 * u);
+    for (let i = 0; i < 5; i++) rect(c, '#b088e0', x + 4.5 * u + i * u, floor - 11 * u + (i % 2) * 2 * u, 0.8 * u, 4 * u);
+    cat(c, x + 2 * u, floor + 6 * u, u, '#1a1a1a'); cat(c, x - 9 * u, floor + 8 * u, u, '#e0a050');
+  },
+  phil(c, x, floor, u) {   // his rocking chair in its salt circle, a wisp or two
+    c.strokeStyle = '#f0f0f0'; c.lineWidth = Math.max(1, u * 0.8); c.setLineDash([u, u]);
+    c.beginPath(); c.ellipse(x, floor + 4 * u, 13 * u, 3.5 * u, 0, 0, Math.PI * 2); c.stroke(); c.setLineDash([]);
+    rect(c, '#4a2c1a', x - 5 * u, floor - 18 * u, 1.5 * u, 18 * u); rect(c, '#4a2c1a', x - 5 * u, floor - 8 * u, 10 * u, 1.5 * u); rect(c, '#4a2c1a', x + 3.5 * u, floor - 8 * u, 1.5 * u, 8 * u);
+    c.strokeStyle = '#4a2c1a'; c.beginPath(); c.arc(x, floor - 6 * u, 8 * u, 0.35 * Math.PI, 0.65 * Math.PI); c.stroke();
+    halo(c, x + 8 * u, floor - 30 * u, 6 * u, '#c070ff', 0.7); halo(c, x - 10 * u, floor - 40 * u, 4 * u, '#c070ff', 0.6);
+  },
+  ricky(c, x, floor, u) {   // the tree through his den, his monitor up late, the clock at two
+    rect(c, '#5a3a20', x + 6 * u, 0, 6 * u, floor); rect(c, '#3a2410', x + 7 * u, 0, 1 * u, floor);
+    const top = desk(c, x - 4 * u, floor, u, 18);
+    screen(c, x - 4 * u, top - 5 * u, 11 * u, 7 * u, '#6090ff', u);
+    clock(c, x - 4 * u, floor - 36 * u, u, 2);
+  },
+  machew(c, x, floor, u) {   // the katana on its rack, his hood on a peg
+    rect(c, '#3a2214', x - 10 * u, floor - 30 * u, 20 * u, 1.5 * u); rect(c, '#3a2214', x - 8 * u, floor - 30 * u, 1.5 * u, 4 * u); rect(c, '#3a2214', x + 6.5 * u, floor - 30 * u, 1.5 * u, 4 * u);
+    rect(c, '#e8e8f0', x - 9 * u, floor - 33 * u, 14 * u, 1.2 * u); rect(c, '#a01020', x + 5 * u, floor - 33.5 * u, 6 * u, 2 * u); rect(c, '#d8b040', x + 4.4 * u, floor - 34 * u, 0.8 * u, 3 * u);
+    c.fillStyle = '#1a0408'; c.beginPath(); c.moveTo(x - 3 * u, floor - 20 * u); c.lineTo(x + 3 * u, floor - 20 * u); c.lineTo(x + 5 * u, floor - 8 * u); c.lineTo(x - 5 * u, floor - 8 * u); c.fill();
+  },
+  jerome(c, x, floor, u) {   // the TV on a GTA sunset, and the crib he keeps forgetting is there
+    const tv = floor - 16 * u;
+    rect(c, '#2a2028', x - 8 * u, floor - 8 * u, 16 * u, 8 * u);
+    halo(c, x, tv - 4 * u, 18 * u, '#ff5aa8', 0.35);
+    rect(c, '#101014', x - 9 * u, tv - 11 * u, 18 * u, 11 * u);
+    c.fillStyle = grad(c, tv - 10 * u, tv - u, ['#6a2a9c', '#ff5aa8', '#ffb060']); c.fillRect(x - 8 * u, tv - 10 * u, 16 * u, 9 * u);
+    for (let i = 0; i < 4; i++) rect(c, '#1a0a20', x - 7 * u + i * 4 * u, tv - (3 + (i % 3) * 2) * u, 1.6 * u, (3 + (i % 3) * 2) * u - u);
+    const cx = x - 2 * u, cy = floor + 10 * u;
+    rect(c, '#f0e0c8', cx - 7 * u, cy - 7 * u, 14 * u, 1.2 * u); rect(c, '#f0e0c8', cx - 7 * u, cy - 7 * u, 1 * u, 7 * u); rect(c, '#f0e0c8', cx + 6 * u, cy - 7 * u, 1 * u, 7 * u);
+    for (let i = 1; i < 6; i++) rect(c, '#f0e0c8', cx - 7 * u + i * 2.2 * u, cy - 7 * u, 0.6 * u, 6 * u);
+    rect(c, '#a0d0ff', cx - 6 * u, cy - 2 * u, 12 * u, 2 * u);
+  },
+};
+
+/** What each town's window looks out on. */
+function lanternView(c, x, y, w, h) {
+  c.fillStyle = grad(c, y, y + h, ['#0a0c28', '#2a1a48']); c.fillRect(x, y, w, h);
+  for (let i = 0; i < 12; i++) rect(c, '#fff4d0', x + hash(i * 2.2) * w, y + hash(i * 3.1) * h * 0.5, 1, 1);
+  c.strokeStyle = '#3a2028'; c.beginPath(); c.moveTo(x, y + h * 0.45); c.quadraticCurveTo(x + w / 2, y + h * 0.65, x + w, y + h * 0.45); c.stroke();
+  for (let i = 1; i < 6; i++) { const f = i / 6; halo(c, x + w * f, y + h * (0.47 + Math.sin(f * Math.PI) * 0.1), 4, '#ff9050', 0.6); rect(c, i % 2 ? '#ff7048' : '#ffb050', x + w * f - 1, y + h * (0.47 + Math.sin(f * Math.PI) * 0.1), 2, 3); }
+  rect(c, '#1a1028', x, y + h * 0.8, w, h * 0.2);
+}
+function springsView(c, x, y, w, h) {
+  c.fillStyle = grad(c, y, y + h, ['#3a2040', '#c05a38', '#f0a050']); c.fillRect(x, y, w, h);
+  c.fillStyle = '#3a2a28'; c.beginPath(); c.moveTo(x, y + h); c.lineTo(x, y + h * 0.7); c.lineTo(x + w * 0.3, y + h * 0.55); c.lineTo(x + w * 0.6, y + h * 0.68); c.lineTo(x + w, y + h * 0.6); c.lineTo(x + w, y + h); c.fill();
+  rect(c, '#70c8d8', x + w * 0.2, y + h * 0.82, w * 0.6, h * 0.08);
+  for (let i = 0; i < 6; i++) disc(c, 'rgba(255,255,255,0.35)', x + w * (0.25 + hash(i) * 0.5), y + h * (0.5 + hash(i * 3) * 0.3), 2 + hash(i * 5) * 3);
+}
+function lagoonView(c, x, y, w, h) {
+  c.fillStyle = grad(c, y, y + h * 0.55, ['#58b0f0', '#b0e0ff']); c.fillRect(x, y, w, h * 0.55);
+  c.fillStyle = grad(c, y + h * 0.55, y + h, ['#2a90c0', '#1a5a88']); c.fillRect(x, y + h * 0.55, w, h * 0.45);
+  disc(c, '#fff8d0', x + w * 0.75, y + h * 0.22, Math.min(w, h) * 0.1);
+  for (let i = 0; i < 10; i++) rect(c, '#e8f8ff', x + hash(i * 4.4) * w, y + h * (0.6 + hash(i * 1.1) * 0.35), 3, 1);
+  rect(c, '#8a6038', x + w * 0.1, y + h * 0.66, w * 0.3, 2);
+}
+function canopyView(c, x, y, w, h) {
+  c.fillStyle = grad(c, y, y + h, ['#a8d890', '#4a8a40']); c.fillRect(x, y, w, h);
+  rect(c, '#5a3a20', x + w * 0.62, y, w * 0.1, h);
+  for (let i = 0; i < 16; i++) disc(c, i % 3 ? '#3a7a30' : '#2a5a24', x + hash(i * 2.3) * w, y + hash(i * 5.7) * h, 3 + hash(i) * 5);
+  for (let i = 0; i < 6; i++) rect(c, '#f0ffd0', x + hash(i * 9.1) * w, y + hash(i * 7.3) * h, 1, 1);
+}
+function bazaarView(c, x, y, w, h) {
+  c.fillStyle = grad(c, y, y + h, ['#ffd890', '#ffb060']); c.fillRect(x, y, w, h);
+  disc(c, '#fff4c0', x + w * 0.25, y + h * 0.3, Math.min(w, h) * 0.12);
+  c.fillStyle = '#e0a050'; c.beginPath(); c.moveTo(x, y + h); c.quadraticCurveTo(x + w * 0.3, y + h * 0.55, x + w * 0.6, y + h * 0.8); c.quadraticCurveTo(x + w * 0.8, y + h * 0.6, x + w, y + h * 0.7); c.lineTo(x + w, y + h); c.fill();
+  for (let i = 0; i < 6; i++) rect(c, i % 2 ? '#e04848' : '#fff0d8', x + i * w / 6, y, w / 6, h * 0.12);
 }
 
 /** The Depths camp after: tents, the fire still lit, the crystal cart on its rails empty, the dark mine mouth. */
