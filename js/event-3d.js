@@ -6695,7 +6695,7 @@ function lodge(b, f, L, lit, smoke, leader) {
     mesh(new THREE.CylinderGeometry(0.035, 0.04, tall, 8), dark, x, P + tall / 2, z, g);
     small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
     mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x - s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
-    const hang = new THREE.Group();
+    const hang = moves(new THREE.Group());
     hang.position.set(x - s * 0.22, P + tall - 0.12, z + 0.02);
     g.add(hang);
     small(mesh(new THREE.PlaneGeometry(0.4, 1.6), cloth, 0, -0.8, 0, hang));
@@ -10691,7 +10691,7 @@ const TOWN_STYLES = {
     gate: (town, lit, L, time) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 3.3, town.name, lit, time),
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
   springs: { under: 'rgba(40,26,22,0.5)', scrub: 'rgba(110,84,44,0.4)', flowers: ['#f86030', '#f8a030', '#f8d050', '#e83a3a'], litter: ashLitter,
-    holes: true, fade: true, extras: lavaField, bridge: { planks: ['#4a3e38', '#3e3430', '#564840', '#362c28'], trim: '#1e1816' },
+    holes: true, fade: true, merge: true, extras: lavaField, bridge: { planks: ['#4a3e38', '#3e3430', '#564840', '#362c28'], trim: '#1e1816' },
     look: { stone: ['#b4a08c', '#a08c78', '#8c7864', '#5a4a40'], gap: '#3a2c26', moss: '#6a5a48', grass: ['#b09a60', '#94804a', '#78663a'] },
     trees: crags, house: (b, f, L, lit, smoke) => cabin(b, f, L, lit, smoke), lamp: 'brazier', lampScale: 0.62,
     gate: (town, lit) => mineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.7, town.name, lit),

@@ -53,21 +53,12 @@ any caught one at random). Next, session 3:
 > the Trainer Card's count and a ✨ on the day's leaderboard. Check headless, a patch-notes line, move this entry to
 > docs/roadmap-done.md, push to main and give me the githack link.
 
-**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check). One town a session, the user
-checking each on their phone. How it works: `docs/reference/towns.md`'s "Merged buildings" (`stillParts()` in
-`js/event-3d.js`, `merge: true` on a style, `moves()` on what a tick moves); `tools/draw-probe.mjs` measures a place and
-walks into every door. GL draws a frame headless at the way in, before -> after:
-- **Driftwood Landing** (2026-10-17) 674 -> ~475. **Highbough** (2026-10-18) ~590 -> ~360. **Sunwell Bazaar**
-  (2026-10-18) 557 -> 376. **Lantern Village** (2026-10-18) ~604 -> ~360 (the festival night ~614 -> ~374; `moves()` on
-  `manor()`'s banners). All four wait on the user's phone check (`?town=ruins&towns`, `thornwood`, `savanna`, `shrine`):
-  banners and flags still sway, nothing looks sunk, bent or gapped, roofs still fade when you walk behind them.
-- **Next, Cinder Springs** (~590 a frame on 2026-10-18; the old check's 186 was low):
-> Run in: CLOUD. Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/reference/towns.md's "Merged buildings". Do the
-> towns' draw calls for Cinder Springs (`?town=wastes`, style `springs`): measure first with `tools/draw-probe.mjs
-> --doors` (its header says how), add `merge: true` to the style, mark with `moves()` every part a tick moves or hides in
-> `cabin()`, `forge()`, `cottage()`, `bathhouse()`, `lodge()` and anything they attach (grep `B.ticks` there; check the
-> chimney `smoke` and the bathhouse's `steam` too), then measure again (draws a frame, every door opens, no console
-> errors, one GL context awake; no screenshots), update the roadmap, push to main and give me the githack link.
+**▶ PLAYTEST ON THE LIVE SITE. The towns' draw calls: done, waiting on the user's phone check** (all five towns merged,
+2026-10-17 / 18; numbers in `docs/roadmap-done.md` and `docs/reference/towns.md`'s "Merged buildings"). On a phone, each of
+`?town=ruins&towns`, `thornwood`, `savanna`, `shrine`, `wastes` (`&gymwins=1` for the leaders' homes): smoother, nothing
+sunk, bent or gapped, banners and flags still sway, roofs still fade behind you. Not queued, the user's call: the Clearing
+(~450 draws a frame headless, the most of any place now) and the towns' ground extras (Cinder Springs' lava field,
+Driftwood's rowboats and jungle). `tools/draw-probe.mjs` measures a place and walks into every door.
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

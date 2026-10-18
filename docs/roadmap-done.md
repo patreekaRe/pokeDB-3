@@ -2676,6 +2676,10 @@ the prize counter's turntable (`js/prizes.js`) keeps a small context of its own 
 - **Done (2026-10-17): Driftwood Landing's buildings merged** (the towns' draw calls, one town a session): each house's
   still parts one mesh a material or colour-baked, moving parts lifted out (`stillParts()`, `moves()`), the door's tap
   kept; 674 -> ~495 GL draws a frame headless, ten buildings 428 meshes -> ~194, every door opens. `docs/reference/towns.md`.
+- **Done (2026-10-18): every town's buildings merged** (the towns' draw calls, one town a session after Driftwood):
+  `merge: true` on each style, `moves()` on what a tick moves. GL draws a frame headless at the way in: Highbough ~590 ->
+  ~360, Sunwell Bazaar 557 -> 376, Lantern Village ~604 -> ~360, Cinder Springs ~583 -> ~428 (the 2026-10-17 check's 154
+  and 186 for those two were low). Every door opens, one context awake. `tools/draw-probe.mjs` kept for the next pass.
 - **Done (2026-10-17): a second performance check** (the user's ask). Headless across the hub, base, yard, mall floors,
   Center, Mart, five towns, a gym, the dojo, arena and Sky Pillar: one GL context awake everywhere. Fixed: the shared
   turntable (the prize counter, the Furniture store's and garden's buy windows) now sleeps 4 s after its last draw

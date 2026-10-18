@@ -514,7 +514,11 @@ walked into, the rest knock), no console errors, one context awake. Lantern Vill
 read ~600 and ~590 a frame for them on 2026-10-18, more than the three towns already merged. Headless at 390 x 844:
 Lantern Village ~604 -> ~360 at the way in, ~1,510 -> ~800 from above, ~614 -> ~374 at night with the lantern festival,
 688 meshes -> 333, every home walked into (the shop, John's, Jahmes's, the theater), the rest knock, no console errors,
-one context awake.
+one context awake. Cinder Springs (`springs`, 2026-10-18): only `lodge()`'s two banners needed `moves()`; the chimney
+smoke, the springs' steam and the forge's sparks are built outside the houses (`smoke` / `steam` hold positions, sparks
+are sprites), and the minehead is a `LANDMARK`. Headless: ~583 -> ~428 at the way in, ~1,394 -> ~910 from above,
+576 meshes -> 313, every home walked into (Shaun's, Clarence's, the bathhouse, the forge). Less of a cut than the other
+towns: what's left is mostly the lava field and the ground's extras. Every town's buildings are merged now.
 
 ## Leaving a town lets go of it (2026-10-17)
 
