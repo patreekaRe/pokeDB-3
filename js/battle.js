@@ -290,6 +290,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
   playMusic(def.music ?? (encounter.leader ? 'gym-leader-battle' : encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
   preloadMusic(winTrack(encounter.kind, encounter.leader));
   if (encounter.kind === 'boss' && run.biome >= 2 && !run.safari) preloadMusic('seal');   // the descent follows the last boss (Mewtwo's fall, its third)
+  if (def.music === 'eternatus') preloadMusic('energy-well');   // the Well's ending follows Eternamax
   setupBattleScreen();
 
   log(trial ? def.intro ?? `${def.name} steps onto the mat!` : encounter.kind === 'boss'

@@ -28,7 +28,7 @@ const CRY_WAIT_MAX = 1500;
 
 /** Start downloading the cry (and a Level 5 win's song) before the final boss, so the scene doesn't wait on them. */
 export function preloadWinScene(starter, fame) {
-  preloadMusic(fame ? 'hall-of-fame' : 'run-win');
+  preloadMusic(starter.id === 'mewtwo' ? 'credits' : fame ? 'hall-of-fame' : 'run-win');
   preloadCries(starter.line.at(-1).id);
 }
 
@@ -246,7 +246,7 @@ export async function winScene(entry) {
     const ped = scene.querySelector('.hof-pedestal').getBoundingClientRect();
     paintSummit(peak, ped.top + ped.height * 0.6);
   }
-  playMusic(fame ? 'hall-of-fame' : 'run-win', { restart: true });   // while its file is missing, the victory fanfare from the boss's faint plays on
+  playMusic(depths ? 'credits' : fame ? 'hall-of-fame' : 'run-win', { restart: true });   // the Depths' song carries on into its credits   // while its file is missing, the victory fanfare from the boss's faint plays on
   const canvas = $('hof-fx');
   canvas.hidden = !party;
   const fx = party ? celebrate(canvas, entry.type, { onBoom: () => replay(scene, 'boom') }) : null;

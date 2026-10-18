@@ -67,7 +67,7 @@ export async function wellEnding({ stage = 0, shiny = false, bind = 'plain', sha
   addEventListener('resize', layout);
   last = performance.now();
   raf = requestAnimationFrame(frame);
-  playMusic('seal', { restart: true });   // the victory fanfare gives way to the Depths' own song, the fall's
+  playMusic('energy-well', { restart: true });   // the victory fanfare gives way to the Well's own song
 
   // Eternamax's light gutters out: a white-out and a rumble, the Well showing through as it fades
   playSound('quake');

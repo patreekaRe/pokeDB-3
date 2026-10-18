@@ -49,6 +49,8 @@ const TRACKS = {
   evolution: 'assets/audio/evolution.mp3',   // the evolution scene (evolution.js), cut as the new form cries
   'hall-of-fame': 'assets/audio/hall-of-fame.mp3',   // the Hall of Fame scene after a Level 5 win (halloffame.js)
   'run-win': 'assets/audio/run-win.mp3',             // the same scene after any other won run
+  'energy-well': 'assets/audio/energy-well.mp3',     // the Depths' ending: the Energy Well and its epilogue (well.js; the user's, 2026-10-18)
+  credits: 'assets/audio/credits.mp3',               // ...then the Champion of the Depths' scene and the credits, one song through both
   eternatus: 'assets/audio/eternatus.mp3',   // the final boss's own theme (v1.0 part C; the user's, 2026-10-18)...
   eternamax: 'assets/audio/eternamax.mp3',   // ...and its second form's
   kombat:  'assets/audio/kombat.mp3',   // Chad Master Kenmatta's fight (KEN.music), the user's: an 8-bit Mortal Kombat theme
@@ -78,6 +80,7 @@ const LOOP_POINTS = {
   boss:  [117.35612, 178],  // 60.64 s
   eternatus: [46.25, 167.23327],   // the user's, 2026-10-18: a 120.98 s repeat (0.999 at the join), tools/loop.html
   eternamax: [11.4, 165.44764],    // the user's, 2026-10-18: a 154.05 s repeat (0.988 at the join)
+  'energy-well': [11.45, 59.47],   // the user's, 2026-10-18: a 48.02 s repeat (0.988 at the join); its 16 s one (the finder's first) loops too soon
   // The map files are one pass of their song, then a fade-out over its start coming round again. That start matches
   // the file's own in melody and beat (chroma and onsets, 0.95-0.99) but not sample for sample, so these cross-fade
   // (the third number, seconds) over the join, phase-aligned, instead of fading out and restarting.
@@ -781,7 +784,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15, eternatus: 0.22, eternamax: 0.18, savanna: 0.12, ruins: 0.26, thornwood: 0.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24, 'event-room': 0.36, 'event-outdoor': 0.16, treasure: 0.29, 'shrine-room': 0.2, 'gym-room': 0.52, 'gym-leader-battle': 0.13, 'gym-victory': 0.47, 'town-lantern': 0.45, 'town-cinder': 0.19, 'town-driftwood': 0.26, 'town-sunwell': 0.4 };   // eternatus and eternamax come mastered ~14.5 / ~16 dB louder than boss (-12.8 / -11.2 vs -27.3 LUFS), set level with it; trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8), thornwood ~16.6 dB louder (-15.0), event-room ~9 dB louder than center (-19.2 vs -28.4 LUFS), set level with team-rocket, event-outdoor ~16 dB louder (-12.1 LUFS), treasure ~11 dB louder (-17.2 LUFS), shrine-room ~14 dB louder (-13.9 LUFS); the gym's three set level with event-room, boss and trainer-victory (gym-room -21.5, gym-leader-battle -8.6, gym-victory -21.4 LUFS); the towns' four set level with event-room at about -28 LUFS played (lantern -21.0, cinder -13.5, driftwood -16.2, sunwell -20.0)
+const TRACK_GAIN = { boss: 1.15, eternatus: 0.22, eternamax: 0.18, 'energy-well': 0.17, credits: 0.16, savanna: 0.12, ruins: 0.26, thornwood: 0.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24, 'event-room': 0.36, 'event-outdoor': 0.16, treasure: 0.29, 'shrine-room': 0.2, 'gym-room': 0.52, 'gym-leader-battle': 0.13, 'gym-victory': 0.47, 'town-lantern': 0.45, 'town-cinder': 0.19, 'town-driftwood': 0.26, 'town-sunwell': 0.4 };   // eternatus and eternamax come mastered ~14.5 / ~16 dB louder than boss (-12.8 / -11.2 vs -27.3 LUFS), set level with it; energy-well (-13.8) set level with seal, and credits (-12.8) with hall-of-fame (-28.6); trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8), thornwood ~16.6 dB louder (-15.0), event-room ~9 dB louder than center (-19.2 vs -28.4 LUFS), set level with team-rocket, event-outdoor ~16 dB louder (-12.1 LUFS), treasure ~11 dB louder (-17.2 LUFS), shrine-room ~14 dB louder (-13.9 LUFS); the gym's three set level with event-room, boss and trainer-victory (gym-room -21.5, gym-leader-battle -8.6, gym-victory -21.4 LUFS); the towns' four set level with event-room at about -28 LUFS played (lantern -21.0, cinder -13.5, driftwood -16.2, sunwell -20.0)
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);
