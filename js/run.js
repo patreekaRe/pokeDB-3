@@ -3793,7 +3793,15 @@ function load3d(mount, box, mark = loadingMark()) {
       console.warn('3D place failed to load, trying again', err);
       return new Promise(done => setTimeout(done, 1000)).then(() => { if (!waiting()) throw err; return mount(); });
     })
-    .finally(() => mark?.remove());
+    .finally(() => mark && endLoading(mark));
+}
+
+/** Once shown, the loading screen stays up 0.6 s at least (a room ready just after it came would only flicker it), then
+    fades out over the room. */
+function endLoading(mark) {
+  const shown = performance.now() - mark.since - 500;   // its CSS fades it in after half a second
+  if (shown < 0 || $('reward-screen').hidden) return mark.remove();
+  setTimeout(() => { mark.classList.add('out'); setTimeout(() => mark.remove(), 300); }, Math.max(0, 600 - shown));
 }
 
 /** The place's name on a banner bottom left and your Pokémon hopping by a rolling Poké Ball bottom right, over the
@@ -3813,6 +3821,7 @@ function loadingMark() {
   banner.append(word);
   mark.setAttribute('role', 'status');
   mark.append(banner, buddy);
+  mark.since = performance.now();
   $('reward-screen').append(mark);
   return mark;
 }

@@ -5564,7 +5564,10 @@ body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #back
 /* a 3D place that keeps you waiting (load3d()): its name on a banner bottom left, your Pokémon hopping by a rolling
    Poké Ball bottom right, and the room bar out of the way; all after half a second, so a quick load never flashes it */
 .loading-mark { position: fixed; inset: 0; z-index: 3; pointer-events: none; opacity: 0; animation: loading-in 0.25s 0.5s forwards; }
-body:has(.loading-mark) #reward-screen.in-room .room-bar { animation: loading-out 0.25s 0.5s forwards; pointer-events: none; }
+body:has(.loading-mark:not(.out)) #reward-screen.in-room .room-bar { animation: loading-out 0.25s 0.5s forwards; pointer-events: none; }
+/* once the room is up the screen fades out over it, the room bar fading back in */
+.loading-mark.out { opacity: 1; animation: loading-out 0.3s forwards; }
+body:has(.loading-mark.out) #reward-screen.in-room .room-bar { animation: loading-back 0.3s both; }
 .loading-buddy {
   position: absolute; right: 16px; bottom: calc(24px + env(safe-area-inset-bottom));
   display: flex; align-items: flex-end; gap: 2px;
@@ -5588,6 +5591,7 @@ body:has(.loading-mark) #reward-screen.in-room .room-bar { animation: loading-ou
 .loading-mark.calm :is(.loading-mon, .loading-ball, .loading-banner, .loading-word i) { animation: none; }
 @keyframes loading-in { to { opacity: 1; } }
 @keyframes loading-out { to { opacity: 0; visibility: hidden; } }
+@keyframes loading-back { from { opacity: 0; } }
 @keyframes loading-hop { to { translate: 0 -6px; } }
 @keyframes loading-roll { to { rotate: 1turn; } }
 @keyframes loading-slide { from { translate: -100% 0; } }

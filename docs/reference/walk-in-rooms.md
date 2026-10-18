@@ -67,4 +67,4 @@ reachable is built when it's walked into.
   failure: a failed `import()` fails again from the module map without fetching. A wait past half a second shows
   `.loading-mark` (the user's layout, 2026-10-18: the room bar fades away, a navy banner bottom left with a red stripe and
   gold edges holds the room's name and LOADING with stepping dots, your Pokémon at 56px by a rolling 30px Poké Ball bottom
-  right; still under `calmFx()`), inside `#reward-screen` so it goes with it.
+  right; still under `calmFx()`; once shown it stays 0.6 s at least and fades out over the room, the bar fading back, `endLoading()`), inside `#reward-screen` so it goes with it.
