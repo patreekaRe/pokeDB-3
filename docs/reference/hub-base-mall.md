@@ -341,6 +341,37 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   stands at when that stand is behind it in the same ray (2026-10-15).
 - **Headless**: under software GL, `ImageDecoder` crawls while the mall draws, so Kangaskhan's 135-frame GIF takes a minute
   to load; add `&gifjs` to a headless check (real devices are fine; `?mall=corner&ribbon` does the same with Meowth).
+- **The Shiny Exchange** (2026-10-18, the roadmap's "Safari shinies" session 2; agreed on the mock's boards 1-5): a kiosk
+  right of the Day Pass dais (`KIOSK`, tile 13,8, its step in front, facing the door), no taller than the booth: a navy
+  body with cyan edges, an LED screen (`ledArt()`, a 320 x 240 canvas repainted every 2.6 s) cycling every Safari
+  Pokémon's shiny an area at a time (`LED_ORDER`; a shadow till you've caught it, OWNED ★ once its shiny is yours), a
+  SHINY EXCHANGE plate (`kioskSignArt()`), and a capsule in the tray at its foot (spheres in the lodge's own scene, its
+  top in the screen's area colour, turning slowly, still under `calmFx()`). 10 meshes, 2 casting shadows. A tap is a
+  `game` spot (`direct`) opening `openShinyExchange()` in `js/exchange.js`.
+  - **The rules** (`js/data/exchange.js`, pure, `tests/exchange.test.mjs`): each area is a machine of the Pokémon you've
+    caught there (`machineOf()`, `safariDex.caught`): its wilds are plain capsules, its rare spawns gold ones. Coins only
+    pull (the user's call): `PULL_COST` 150, ten for `TEN_COST` 1,500, and a pull of ten always holds a gold one (its
+    last capsule turns gold if none has) while the area has a rare caught. Gold odds `goldOdds(pity)`: 8% + 4% for each
+    plain capsule since the last gold one (`save.exchange.pity`, one count for every machine). A capsule holds a shiny
+    you don't own yet `NEW_ODDS` of the time (1/3 plain, 1/2 gold) while the machine has both kinds; otherwise a repeat:
+    +1 Sparkle (`addShiny()`). Lucky Stars (`save.exchange.stars`, no cap): 1 a new shiny, 2 a repeat, 3 a repeat at
+    ★5 (`CAPSULE_STARS`); `STARS_FOR_PICK` (10) pick any caught shiny free (`luckyPick()`, a prism capsule, paying no
+    star). `exchangePull()` / `exchangePick()` in `js/storage.js` pay and save; capsules come back plain first, gold
+    last. `?safaridex` lends every Safari Pokémon as caught for the page load (pulls still save; for a githack link).
+  - **The window** (`js/exchange.js`, styles `.shiny-ex` / `.sx-*` at the end of `css/hub.css`): its own modal
+    `<dialog>`, dark and hi-tech in Chakra Petch (not the Pokédex look), built on open and removed on close, timers and
+    all. Home: your shinies out of 514, the Lucky Stars row and its free pick, six biome banners (`EXCHANGE_INK`). A
+    biome: its machine (PULL ×1 / ×10, the gold odds, the stars), chips (All, Owned, Not owned, Rare) and a grid of its
+    Pokémon (a silhouette till caught, its Sparkle once owned; in a free pick, caught ones glow gold and take a tap).
+  - **The reveal**: an LED screen over a capsule tray. The capsule drops in (a gold one lands in its area's colour, then
+    turns gold with a ring), a tap cracks a line of light along its band, the halves fly apart with rays and stars, the
+    screen holds the shadow (a gold one shakes, ★ RARE ★), a flash, the shiny with NEW SHINY / SPARKLE ★2 → ★3 / ★5 · +3
+    LUCKY STARS. A pull of ten steps through with NEXT CAPSULE, or Skip to all, then shows all ten.
+  - **The capsules** (`capsule()`): smooth SVG, so no new GL context: a see-through top in the area's colour (gold, or
+    prism for a Lucky Star pick) over a darker inside with sparkles drifting up in it, a pearl base, a chrome band, a rim
+    light, a soft glow; live, two buttons (front and back) pass across the band as it turns. Everything moves by transform
+    and opacity only (no animated blur or masks); `.calm` (`calmFx()`, reduced motion too) stills it all and skips the
+    crack and burst.
 - **The Furniture store's buy window and price tags** (2026-10-16, the user's ask: a merchant window instead of "tap again", the piece turning and turnable, and legible prices): a tap on a plinth walks there and opens `merchant()` in `js/mall-3d.js` (`.mall-shop`, css/hub.css): the keeper's tag, the department on a ribbon in its `ink`, the name, the piece on a velvet turntable in a spotlit box (`piecePreview()` in `js/mall-furniture.js`, built by `pieceInto()`, the same builder as the plinths), how many styles come with it, the price and your coins (red when short), Buy / Not now; a tap outside is a no. It turns on its own; a drag turns it and tips it, a flick spins on and slows (`spinPiece()` / `spinBy()`). It draws through `js/turntable.js`, one small off-screen renderer shared with Meowth's prize counter (`js/prizes.js`), so a window never adds a WebGL context. The painted price cards are gone: each unsold stand's price is a DOM tag at its plinth's front (`priceTags()`, 13px pixel font with a coin, the department's colour on its border), placed each frame by projection, hidden under the buy window and once sold.
 - **The Furniture store's lift moved to the head of the nave** (2026-10-16, the user's ask: "a better place", and their partner hidden going in): at the back right it stood behind the Plants stand, whose piece hid the lift's doors and your partner at them. `LIFT.x` is `NAVE` now, at the end of the carpet runner with nothing in front of it, 3 tiles wide with a 1.3-tile doorway (`DOORWAY`; a partner's sprite is wider than a tile, so the old 1-tile door clipped it in the car; the doors slide by `userData.slide`) and 2.0 tall, the store's crest painted on its shaft (`liftShaftArt()` takes the floor; `crest()` fits its name to the board). The counter moved left of it (`COUNTER` x 6, 3 wide, a CASHIER plaque over it, the keeper at tile 7), and right of it `GALLERY`: Smeargle's painting over a bench (`bench` added to `hallKit()`) between two topiaries. Checked headless by raycasting from the camera to your partner at the doors, in the car and after the ride: nothing in between.
 

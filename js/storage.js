@@ -18,6 +18,8 @@ import { RENAMED_STARTERS, STARTERS } from './data/starters.js';
 import { GATE_HP, seedGate } from './data/gate.js';
 import { migrateBalls } from './data/balls.js';
 import { addShiny, sparkleOf } from './data/shinies.js';
+import { PULL_COST, STARS_FOR_PICK, machineOf, pullCapsules, luckyPick } from './data/exchange.js';
+import { SAFARI_ROSTER } from './data/safari.js';
 
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
@@ -89,6 +91,7 @@ const freshSave = () => ({
   corner: {},   // the Game Corner's day: Voltorb Flip's (js/data/corner.js) and the Gachapon's week ({ week, pulls })
   safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD"), its tries so far (only the first counts) the days played (`days`, missing in an old save: safariDays()), the day its Day Pass was bought (`pass`) and the Safari Balls left in the run under way (`balls`)
   safariShinies: {},          // Safari Pokémon whose shiny was caught, by id -> its Sparkle 1-5, a duplicate +1 (js/data/shinies.js)
+  exchange: { stars: 0, pity: 0 },   // the Shiny Exchange (js/data/exchange.js): Lucky Stars held, and plain capsules pulled since the last gold one
   safariDex: { seen: [], caught: [], done: [], complete: false },   // Safari Pokémon met and caught, on any try (the Safari Pokédex), the areas whose reward was paid, and Rayquaza's full dex
   ranger: { claimed: [], log: {} },   // the Safari Outfitter's Ranger Task Board (js/data/ranger.js): tasks claimed, and the catches it counts that the Pokédex doesn't (balls, night, first turns, unhurt, best run, bosses, wins, days in a row)
   journal: { claimed: [] },   // the Trainer's Journal at the Clearing's PC (js/data/journal.js): tasks claimed; its progress is counted from the rest of the save
@@ -137,6 +140,7 @@ function load() {
         shiny: { ...base.shiny, ...saved.shiny },
         safariDex: { ...base.safariDex, ...saved.safariDex },
         safariShinies: { ...saved.safariShinies },
+        exchange: { ...base.exchange, ...saved.exchange },
         ranger: { ...base.ranger, ...saved.ranger },
         journal: { ...base.journal, ...saved.journal },
         tower: { ...base.tower, ...saved.tower },
@@ -289,6 +293,30 @@ export function safariSparkle(id) {
 /** A wild shiny caught: its Sparkle goes up (js/data/shinies.js), and what changed. */
 export function gainShiny(id) {
   const gain = addShiny(data.safariShinies, id);
+  persist();
+  return gain;
+}
+
+/** The Safari Pokémon the Shiny Exchange counts as caught; ?safaridex lends every one for the page load (pulls still save). */
+export const exchangeCaught = () => (new URLSearchParams(location.search).has('safaridex') ? SAFARI_ROSTER : data.safariDex.caught);
+
+/** Pull `n` capsules from an area's machine: pays for them, saves each shiny's Sparkle, the Lucky Stars and the gold
+    odds, and returns the capsules (js/data/exchange.js), or null if it can't (nothing caught there, too few coins). */
+export function exchangePull(area, n, roll) {
+  const machine = machineOf(area, exchangeCaught()), cost = PULL_COST * n;
+  if ((!machine.plain.length && !machine.gold.length) || data.coins < cost) return null;
+  const ex = data.exchange, pull = pullCapsules(machine, n, data.safariShinies, ex.pity, roll);
+  data.coins -= cost;
+  data.exchange = { ...ex, stars: ex.stars + pull.stars, pity: pull.pity };
+  persist();
+  return pull.capsules;
+}
+
+/** Ten Lucky Stars on one caught shiny: its gain, or null. */
+export function exchangePick(id) {
+  const gain = luckyPick(data.safariShinies, data.exchange.stars, exchangeCaught(), id);
+  if (!gain) return null;
+  data.exchange = { ...data.exchange, stars: data.exchange.stars - STARS_FOR_PICK };
   persist();
   return gain;
 }
