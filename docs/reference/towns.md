@@ -504,7 +504,12 @@ and textured faces (each painting its own material). Highbough (2026-10-18): onl
 Nursery's wisps needed `moves()`; the crowns' fade, the lit windows' flicker and the gamer's RGB change materials, not
 meshes, and merging keeps every material (transparent, glowing and pictured parts aren't baked). Headless at 390 x 844:
 ~590 -> ~360 GL draws a frame at the way in, ~1,660 -> ~900 from above, 1,062 meshes -> 499, every door's taps the same
-as before, every home walked into, one context awake. Next: add `merge: true` to another style, mark its moving parts.
+as before, every home walked into, one context awake. Sunwell Bazaar (`bazaar`, 2026-10-18): `moves()` on `kasbah()`'s two
+banners and `bazaarTent()`'s flag and turning Poké Ball; the rondavels, caravanserai and wagons have nothing a tick moves
+(the windpump and kopje are `LANDMARKS`, never merged). Headless at 390 x 844: 557 -> 376 GL draws a frame at the way in,
+1,781 -> 1,156 from above, 952 meshes -> 651, every door the same as before (the tent, caravanserai and both kasbahs
+walked into, the rest knock), no console errors, one context awake. Lantern Village (154) and Cinder Springs (186) were
+already cheap; any further pass there is on the user's ask.
 
 ## Leaving a town lets go of it (2026-10-17)
 

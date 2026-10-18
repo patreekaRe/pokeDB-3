@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['fixes', 'Highbough runs lighter on phones.'],
+  ['fixes', 'Highbough and Sunwell Bazaar run lighter on phones.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -60,14 +60,12 @@ Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186). One town a
 phone. How it works: `docs/reference/towns.md`'s "Merged buildings" (`stillParts()` in `js/event-3d.js`, `merge: true` on
 a style, `moves()` on what a tick moves). **Driftwood Landing done 2026-10-17** (674 -> ~495 GL draws a frame headless).
 **Highbough done 2026-10-18** (`canopy`: ~590 -> ~360 a frame at the way in, 1,062 meshes -> 499; `moves()` on the
-manors' banners and the Nursery's wisps). Both wait on the user's phone check (`?town=ruins&towns`,
-`?town=thornwood&towns`). `tools/draw-probe.mjs` measures a place and walks into every door. Next, Savanna:
-> Run in: CLOUD. Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/reference/towns.md's "Merged buildings". Do the
-> towns' draw calls for Sunwell Bazaar (`?town=savanna`, style `bazaar`): measure first with `tools/draw-probe.mjs
-> --doors` (its header says how), add `merge: true` to the style, mark with `moves()` every part a tick moves or hides in
-> `rondavel()`, `kasbah()`, `bazaarTent()`, `caravanserai()`, `wagon()` and anything they attach (grep `B.ticks` there:
-> the kasbahs' banners, the tent's flag and ball at least), then measure again (draws a frame, every door opens, no
-> console errors, one GL context awake; no screenshots), update the roadmap, push to main and give me the githack link.
+manors' banners and the Nursery's wisps). **Sunwell Bazaar done 2026-10-18** (`bazaar`: 557 -> 376 a frame at the way
+in, 1,781 -> 1,156 from above, 952 meshes -> 651; `moves()` on the kasbahs' banners and the tent's flag and ball). All
+three wait on the user's phone check (`?town=ruins&towns`, `?town=thornwood&towns`, `?town=savanna&towns&gymwins=1`):
+banners and flags still sway, the tent's Poké Ball still turns, nothing looks sunk or bent wrong.
+`tools/draw-probe.mjs` measures a place and walks into every door. Lantern Village (154) and Cinder Springs (186) were
+already cheap; nothing more is queued here unless the user asks.
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
