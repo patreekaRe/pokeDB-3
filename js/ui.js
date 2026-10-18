@@ -296,6 +296,9 @@ const fitWatch = new ResizeObserver((entries) => {
   }
 });
 
+/** A card built but never shown (renderHand() kept the one already in the hand) stops waiting to be fitted. */
+export const forgetCard = (node) => fitWatch.unobserve(node);
+
 function fitCard(node) {
   const face = node.querySelector('.card-face');
   const name = node.querySelector('.card-name');

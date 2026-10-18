@@ -504,7 +504,21 @@ and textured faces (each painting its own material). Highbough (2026-10-18): onl
 Nursery's wisps needed `moves()`; the crowns' fade, the lit windows' flicker and the gamer's RGB change materials, not
 meshes, and merging keeps every material (transparent, glowing and pictured parts aren't baked). Headless at 390 x 844:
 ~590 -> ~360 GL draws a frame at the way in, ~1,660 -> ~900 from above, 1,062 meshes -> 499, every door's taps the same
-as before, every home walked into, one context awake. Next: add `merge: true` to another style, mark its moving parts.
+as before, every home walked into, one context awake. Sunwell Bazaar (`bazaar`, 2026-10-18): `moves()` on `kasbah()`'s two
+banners and `bazaarTent()`'s flag and turning Poké Ball; the rondavels, caravanserai and wagons have nothing a tick moves
+(the windpump and kopje are `LANDMARKS`, never merged). Headless at 390 x 844: 557 -> 376 GL draws a frame at the way in,
+1,781 -> 1,156 from above, 952 meshes -> 651, every door the same as before (the tent, caravanserai and both kasbahs
+walked into, the rest knock), no console errors, one context awake. Lantern Village (`village`, 2026-10-18): only
+`manor()`'s two banners needed `moves()` (`house()` has nothing a tick moves; the theater, pagoda and Waystone are
+`LANDMARKS`). The 2026-10-17 check's 154 and 186 for Lantern Village and Cinder Springs were low: `tools/draw-probe.mjs`
+read ~600 and ~590 a frame for them on 2026-10-18, more than the three towns already merged. Headless at 390 x 844:
+Lantern Village ~604 -> ~360 at the way in, ~1,510 -> ~800 from above, ~614 -> ~374 at night with the lantern festival,
+688 meshes -> 333, every home walked into (the shop, John's, Jahmes's, the theater), the rest knock, no console errors,
+one context awake. Cinder Springs (`springs`, 2026-10-18): only `lodge()`'s two banners needed `moves()`; the chimney
+smoke, the springs' steam and the forge's sparks are built outside the houses (`smoke` / `steam` hold positions, sparks
+are sprites), and the minehead is a `LANDMARK`. Headless: ~583 -> ~428 at the way in, ~1,394 -> ~910 from above,
+576 meshes -> 313, every home walked into (Shaun's, Clarence's, the bathhouse, the forge). Less of a cut than the other
+towns: what's left is mostly the lava field and the ground's extras. Every town's buildings are merged now.
 
 ## Leaving a town lets go of it (2026-10-17)
 

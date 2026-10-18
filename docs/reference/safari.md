@@ -98,6 +98,8 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   normal colours whatever you own.
 - **Playtest**: `?wildshiny` makes every Safari wild shiny, and a catch saves nothing (the box says so); `?sparkle=N`
   shows every signature card at ★N for the page load.
+- **The Shiny Exchange** (session 2): the Safari Outfitter's kiosk pulls capsules of caught Pokémon's shinies for coins,
+  through the same `addShiny()` (repeats raise Sparkle); `docs/reference/hub-base-mall.md`'s Safari Outfitter part.
 
 ## Poké Balls (the Game Corner's fourth row)
 

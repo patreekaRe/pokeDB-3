@@ -43,7 +43,8 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['fixes', 'Highbough runs lighter on phones.'],
+  ['mall', 'The Shiny Exchange kiosk in the Safari Outfitter: pull capsules of the Pokémon you\'ve caught for their shinies, repeats raising Sparkle, with gold capsules and Lucky Stars.'],
+  ['fixes', 'Every gateway town runs lighter on phones, and played cards fly smoothly in battle instead of stuttering, and the Ranger Task Board and Trainer\'s Journal show all four tabs on a phone.'],
   ['look', 'A slow 3D room shows your Pokémon hopping by a Poké Ball while it loads, and tries again rather than falling back to the flat room.'],
 ];
 

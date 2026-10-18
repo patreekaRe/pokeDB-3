@@ -5223,7 +5223,7 @@ function manor(b, f, L, lit, leader) {
     mesh(new THREE.CylinderGeometry(0.035, 0.04, tall, 8), dark, x, P + tall / 2, z, g);
     mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g).castShadow = false;
     mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x - sx * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
-    const hang = new THREE.Group();
+    const hang = moves(new THREE.Group());
     hang.position.set(x - sx * 0.22, P + tall - 0.12, z + 0.02);
     g.add(hang);
     const m = mesh(new THREE.PlaneGeometry(0.4, 1.6), cloth, 0, -0.8, 0, hang);
@@ -6695,7 +6695,7 @@ function lodge(b, f, L, lit, smoke, leader) {
     mesh(new THREE.CylinderGeometry(0.035, 0.04, tall, 8), dark, x, P + tall / 2, z, g);
     small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
     mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x - s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
-    const hang = new THREE.Group();
+    const hang = moves(new THREE.Group());
     hang.position.set(x - s * 0.22, P + tall - 0.12, z + 0.02);
     g.add(hang);
     small(mesh(new THREE.PlaneGeometry(0.4, 1.6), cloth, 0, -0.8, 0, hang));
@@ -10103,7 +10103,7 @@ function kasbah(b, f, L, lit, leader) {
     mesh(new THREE.CylinderGeometry(0.035, 0.045, tall, 8), wood, x, P + tall / 2, z, g);
     small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
     mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), wood, x - s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
-    const hang = new THREE.Group();
+    const hang = moves(new THREE.Group());
     hang.position.set(x - s * 0.22, P + tall - 0.12, z + 0.02);
     g.add(hang);
     small(mesh(new THREE.PlaneGeometry(0.4, 1.5), cloth, 0, -0.75, 0, hang));
@@ -10248,7 +10248,7 @@ function bazaarTent(b, f, L, lit) {
   }
   const brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
   mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.7, 8), brass, 0, h + 1.65, 0, g);
-  const flag = mesh(new THREE.PlaneGeometry(0.42, 0.22), std({ color: '#f8d040', roughness: 0.8, side: THREE.DoubleSide }), 0.22, h + 1.88, 0, g);
+  const flag = moves(mesh(new THREE.PlaneGeometry(0.42, 0.22), std({ color: '#f8d040', roughness: 0.8, side: THREE.DoubleSide }), 0.22, h + 1.88, 0, g));
   flag.castShadow = false;
   B.ticks.push((now) => { if (!calm) flag.rotation.y = Math.sin(now / 600) * 0.35; });
   for (const sx of [-1, 1]) {
@@ -10268,7 +10268,7 @@ function bazaarTent(b, f, L, lit) {
     mesh(new THREE.SphereGeometry(0.1, 12, 10), brass, sx * mw / 2, 2.6, mz, g);
   }
   g.attach(panel(marqueeArt(b.name || 'BAZAAR', b.roof), mw - 0.16, mh, f.cx, 1.55 + mh / 2, f.cz + mz + 0.02));
-  const ball = pokeBall(0.26, lit);
+  const ball = moves(pokeBall(0.26, lit));
   ball.position.set(0, 1.55 + mh + 0.3, mz); g.add(ball);
   B.ticks.push((now) => { if (!calm) ball.rotation.y = Math.sin(now / 1400) * 0.5; });
   g.userData.signed = true;
@@ -10686,12 +10686,12 @@ function fireflyArt(col) {
     litter, its forest, houses and gate, what drifts through the air, and its lamps. */
 const TOWN_STYLES = {
   village: { under: 'rgba(30,50,30,0.45)', scrub: 'rgba(40,90,40,0.35)', flowers: ['#ffffff', '#f8d040', '#f890b0', '#f8a060'], litter: mapleLitter,
-    holes: true, fade: true, soft: true, extras: villageExtras, festival: true,
+    holes: true, fade: true, soft: true, merge: true, extras: villageExtras, festival: true,
     trees: (map, L, rnd) => forest(map, L, rnd), house: (b, f, L, lit) => house(b, f, L, lit), lamp: 'stonelantern',
     gate: (town, lit, L, time) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 3.3, town.name, lit, time),
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
   springs: { under: 'rgba(40,26,22,0.5)', scrub: 'rgba(110,84,44,0.4)', flowers: ['#f86030', '#f8a030', '#f8d050', '#e83a3a'], litter: ashLitter,
-    holes: true, fade: true, extras: lavaField, bridge: { planks: ['#4a3e38', '#3e3430', '#564840', '#362c28'], trim: '#1e1816' },
+    holes: true, fade: true, merge: true, extras: lavaField, bridge: { planks: ['#4a3e38', '#3e3430', '#564840', '#362c28'], trim: '#1e1816' },
     look: { stone: ['#b4a08c', '#a08c78', '#8c7864', '#5a4a40'], gap: '#3a2c26', moss: '#6a5a48', grass: ['#b09a60', '#94804a', '#78663a'] },
     trees: crags, house: (b, f, L, lit, smoke) => cabin(b, f, L, lit, smoke), lamp: 'brazier', lampScale: 0.62,
     gate: (town, lit) => mineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.7, town.name, lit),
@@ -10706,7 +10706,7 @@ const TOWN_STYLES = {
     gate: (town, lit, L) => vineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.8, town.name, L, lit),
     extras: canopyExtras,
     drift: (i) => (i % 3 ? { art: leafletArt(CANOPY.leaf[i % 4]), size: 0.16 } : { art: fireflyArt(i % 2 ? '#c890ff' : '#90f0e0'), size: 0.13, rise: true }) },   // will-o'-wisps: it's a ghost town
-  bazaar: { holes: true, fade: true, ground: savannaGround, trees: savannaBush, lamp: 'tikitorch', lampScale: 0.85,
+  bazaar: { holes: true, fade: true, merge: true, ground: savannaGround, trees: savannaBush, lamp: 'tikitorch', lampScale: 0.85,
     house: (b, f, L, lit) => (b.kind === 'shop' ? bazaarTent(b, f, L, lit) : b.kind === 'caravanserai' ? caravanserai(b, f, L, lit) : b.kind === 'wagon' ? wagon(b, f, L, lit) : rondavel(b, f, L, lit)),
     gate: (town, lit, L) => sunGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.3, town.name, L, lit),
     extras: savannaExtras,

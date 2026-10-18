@@ -32,7 +32,7 @@ import { vibrate, battleFx, calmFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
-import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
+import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
@@ -2393,7 +2393,7 @@ function setupBattleScreen() {
   $('player-type').className = `chip type-${type}`;
   $('player-ability').hidden = !b.ability;
   $('player-ability').dataset.type = type;
-  if (b.ability) $('player-ability').textContent = b.ability.name;
+  if (b.ability) $('player-ability').replaceChildren(el('i', 'ability-shine'), b.ability.name);
   showAbilityState();
   $('ability-banner').hidden = true;
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
@@ -2662,38 +2662,48 @@ function badgeFor([icon, value, title, kind = '']) {
   return node;
 }
 
+/* A card still in hand that would look the same keeps its node (its art, its fitted text): rebuilding the whole hand
+   on every tap restyled and re-measured every card, a hitch just as the played card took off (2026-10-18). */
 function renderHand() {
   const b = battle;
   const box = $('hand');
-  box.replaceChildren();
+  const shown = new Map([...box.children].map(node => [Number(node.dataset.uid), node]));
   if (b.busy || !b.hand.some(entry => entry.uid === selectedUid)) selectedUid = null;
 
-  b.hand.forEach((entry, i) => {
+  const nodes = b.hand.map((entry, i) => {
     const { card } = entry;
-    const node = makeCard(asShown(card), { stage: b.stage, cost: costOf(card) });
+    let node = makeCard(asShown(card), { stage: b.stage, cost: costOf(card) });
+    const look = node.innerHTML.replace(/(id="|#)ca[0-9a-z]+/g, '$1'), old = shown.get(entry.uid);   // its art's SVG ids are numbered per drawing
+    if (old?.handLook === look && !entry.fresh && !(old.classList.contains('deal') && dealing())) {
+      forgetCard(node);
+      old.className = node.className;
+      old.style.cssText = node.style.cssText;
+      node = old;
+    } else {
+      node.handLook = look;
+      node.dataset.uid = entry.uid;
+      node.tabIndex = 0;
+      node.setAttribute('role', 'button');
+      node.addEventListener('click', () => tapCard(entry.uid));
+      node.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
+      });
+    }
     node.classList.add('in-hand');
-
     if (choosing) node.classList.toggle('choosable', choosing.only(entry));
     else if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     else if (b.busy) node.classList.add('waiting');
     if (entry.uid === (choosing ? choosing.picked : selectedUid)) node.classList.add('selected');
-    node.dataset.uid = entry.uid;
-
     if (entry.fresh) {                            // cards just drawn slide in
       node.classList.add('deal');
       node.style.animationDelay = `${i * 70}ms`;
       entry.fresh = false;
     }
-
-    node.tabIndex = 0;
-    node.setAttribute('role', 'button');
     node.setAttribute('aria-label', choosing?.only(entry) ? `Choose ${card.name}` : `${card.name}, costs ${costOf(card)}`);
-    node.addEventListener('click', () => tapCard(entry.uid));
-    node.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
-    });
-    box.append(node);
+    return node;
   });
+  for (const node of [...box.children]) if (!nodes.includes(node)) { forgetCard(node); node.remove(); }
+  nodes.forEach((node, i) => { if (box.children[i] !== node) box.insertBefore(node, box.children[i] ?? null); });
   fanHand();
   renderFocus();
   renderPose();

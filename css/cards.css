@@ -423,6 +423,8 @@
 /* card trails (js/cardfx.js): a played card's clone arcs to where it acts and an exhausted one burns away; their
    particles are drawn on one low-res canvas over everything, in whole pixels */
 .exhaust-fx { position: fixed; inset: 0; z-index: 130; pointer-events: none; }
+.exhaust-fx .fly-ghost { will-change: transform, opacity; }
+.fly-glow { position: absolute; inset: 0; border-radius: 8cqw; background: rgba(255, 255, 255, 0.45); box-shadow: 0 0 8px #a8d8ff; opacity: 0; pointer-events: none; }
 .card-fx { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 131; pointer-events: none; image-rendering: pixelated; }
 .pile.bump { animation: pileBump 0.35s ease-out; }
 @keyframes pileBump { 40% { scale: 1.35; } }
