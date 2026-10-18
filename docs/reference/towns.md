@@ -490,7 +490,7 @@ page load, `?mended=shrine,ruins` only those, so the Clearing's Waystone offers 
 The Clearing's Waystone counts a mended town as met (`showWaystone()`), so it isn't shown sealed.
 
 **Merged buildings** (2026-10-17, the towns' draw calls; Driftwood Landing first, one town a session). A town style with
-`merge: true` (`TOWN_STYLES`, only `lagoon` so far) runs `stillParts(g)` on each house `buildTown()` builds (not the
+`merge: true` (`TOWN_STYLES`: `lagoon`, and `canopy` since 2026-10-18) runs `stillParts(g)` on each house `buildTown()` builds (not the
 `LANDMARKS`: the Waystone, pagoda, minehead...), before `fadeBehind()` and the door's `spot` tag, which then lands on the
 merged meshes. It lifts out what a tick moves (marked with `moves()`: a flag's hang, the bait shop's vane, the houseboat's
 `boat` and paddlewheel, the beacon's beam, `tradePost()`'s ball and swinging board), anything hidden, instanced or
@@ -500,7 +500,11 @@ many-material meshes by face (`byFace()`), rounds plain parts' roughness to quar
 still parts inside it. **A new moving or hidden part in a merged town's building needs `moves()`**, or it freezes.
 Headless at 390 x 844: Driftwood Landing 674 -> ~495 GL draws a frame, its ten buildings 428 meshes -> ~194, every door
 still tapped and opened, one context awake. What's left there is mostly the ground's extras (rowboats, columns, jungle)
-and textured faces (each painting its own material). Next: add `merge: true` to another style, mark its moving parts.
+and textured faces (each painting its own material). Highbough (2026-10-18): only `canopyManor()`'s banners and the
+Nursery's wisps needed `moves()`; the crowns' fade, the lit windows' flicker and the gamer's RGB change materials, not
+meshes, and merging keeps every material (transparent, glowing and pictured parts aren't baked). Headless at 390 x 844:
+~590 -> ~360 GL draws a frame at the way in, ~1,660 -> ~900 from above, 1,062 meshes -> 499, every door's taps the same
+as before, every home walked into, one context awake. Next: add `merge: true` to another style, mark its moving parts.
 
 ## Leaving a town lets go of it (2026-10-17)
 

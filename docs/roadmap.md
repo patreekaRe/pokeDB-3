@@ -11,14 +11,17 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 **▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check: Ruins drew 677 times a frame,
 Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186). One town a session, the user checking each on their
-phone. **Driftwood Landing done 2026-10-17** (`stillParts()` in `js/event-3d.js`, `merge: true` on the `lagoon` style;
-how it works in `docs/reference/towns.md`'s "Merged buildings"): 674 -> ~495 GL draws a frame headless, waiting on the
-user's phone check (`?town=ruins&towns`). Next, Thornwood (Highbough), then Savanna:
+phone. How it works: `docs/reference/towns.md`'s "Merged buildings" (`stillParts()` in `js/event-3d.js`, `merge: true` on
+a style, `moves()` on what a tick moves). **Driftwood Landing done 2026-10-17** (674 -> ~495 GL draws a frame headless).
+**Highbough done 2026-10-18** (`canopy`: ~590 -> ~360 a frame at the way in, 1,062 meshes -> 499; `moves()` on the
+manors' banners and the Nursery's wisps). Both wait on the user's phone check (`?town=ruins&towns`,
+`?town=thornwood&towns`). `tools/draw-probe.mjs` measures a place and walks into every door. Next, Savanna:
 > Run in: CLOUD. Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/reference/towns.md's "Merged buildings". Do the
-> towns' draw calls for Highbough (`?town=thornwood`, style `canopy`): add `merge: true` to its style, mark every part a
-> tick moves or hides in `treehouse()`, `greatTree()`, `nursery()`, `canopyManor()` and anything they attach with
-> `moves()`, then check headless (draws a frame before and after, every door opens, no console errors, one GL context
-> awake; no screenshots), update the roadmap, push to main and give me the githack link.
+> towns' draw calls for Sunwell Bazaar (`?town=savanna`, style `bazaar`): measure first with `tools/draw-probe.mjs
+> --doors` (its header says how), add `merge: true` to the style, mark with `moves()` every part a tick moves or hides in
+> `rondavel()`, `kasbah()`, `bazaarTent()`, `caravanserai()`, `wagon()` and anything they attach (grep `B.ticks` there:
+> the kasbahs' banners, the tent's flag and ball at least), then measure again (draws a frame, every door opens, no
+> console errors, one GL context awake; no screenshots), update the roadmap, push to main and give me the githack link.
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
