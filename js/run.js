@@ -3796,15 +3796,23 @@ function load3d(mount, box, mark = loadingMark()) {
     .finally(() => mark?.remove());
 }
 
-/** Your Pokémon hopping by a rolling Poké Ball, over the reward screen (gone with it): shown only once a 3D place has
-    kept you waiting half a second (its CSS), so a quick one never flashes it. */
+/** The place's name on a banner bottom left and your Pokémon hopping by a rolling Poké Ball bottom right, over the
+    reward screen (gone with it), the room bar stepping aside: shown only once a 3D place has kept you waiting half a
+    second (its CSS), so a quick one never flashes it. */
 function loadingMark() {
-  const mark = el('div', `loading-mark${calmFx() ? ' calm' : ''}`), mon = el('img', 'loading-mon'), ball = el('img', 'loading-ball');
+  const mark = el('div', `loading-mark${calmFx() ? ' calm' : ''}`), buddy = el('div', 'loading-buddy');
+  const mon = el('img', 'loading-mon'), ball = el('img', 'loading-ball'), banner = el('div', 'loading-banner');
   mon.src = spriteUrl(run.starter, 'front', run.stage);
   ball.src = 'assets/items/poke-ball.png';
   mon.alt = ball.alt = '';
-  mark.setAttribute('aria-label', 'Loading');
-  mark.append(mon, ball);
+  buddy.append(mon, ball);
+  const place = $('room-title').textContent.trim();
+  if (place) banner.append(el('b', 'loading-place', place));
+  const word = el('span', 'loading-word', 'Loading');
+  word.append(...[0, 1, 2].map(() => el('i', '', '.')));
+  banner.append(word);
+  mark.setAttribute('role', 'status');
+  mark.append(banner, buddy);
   $('reward-screen').append(mark);
   return mark;
 }
