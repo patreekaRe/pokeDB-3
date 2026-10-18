@@ -3047,3 +3047,10 @@ not 2560 (`GROUND_MAX`, ~57 -> ~35 MB); `KEEP_ROOMS` 2 with the newest town neve
 that many rooms. Lantern Village 215 -> 183 MB, the Secret Base 89 -> 74, Mall 2F 173 -> 154, Britt's gym 128 -> 106, a
 boss fight 79 -> 46. Checked headless: every cut MP3 decodes past its loop (ffmpeg and Chromium), the four new joins as clean
 as the old, each song wraps at its new loop end, no page errors; tests pass.
+
+## A loading mark and a second try for the 3D rooms (2026-10-18, the user's ask)
+The Moon Dance showed its pixel room on the user's phone before the 3D one. Not reproduced headless (warmed from the map it
+went blank -> 3D in ~0.35 s); the pixel room only shows when a mount fails. Now every walk-in room retries once a second
+later (with a fresh Three.js URL, since Chrome keeps a failed module import) and shows your Pokémon by a rolling Poké Ball
+past half a second's wait (`load3d()` in `js/run.js`; `walk-in-rooms.md`). Checked headless with the CDN failing once
+(retry -> 3D) and always (pixel room after the retry) on the Moon Dance, Center, Mart and Britt's gym.

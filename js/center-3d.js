@@ -896,6 +896,12 @@ export function warmCenter() {
     onPick(index): press that choice, onLeave(): press Leave }. Resolves the room's controls, or throws if Three.js won't
     load (the pixel room stays). */
 export async function mountCenter(o) {
+  const was = runId;
+  // a failed try is forgotten, so the retry (load3d() in js/run.js) comes in as the first visit it is
+  try { return await enterCenter(o); } catch (err) { if (opts === o) runId = was; throw err; }
+}
+
+async function enterCenter(o) {
   const back = o.run === runId && (view?.isConnected || performance.now() - leftAt < 20000);   // back from a deck picker, standing where it was
   runId = o.run;
   opts = o;

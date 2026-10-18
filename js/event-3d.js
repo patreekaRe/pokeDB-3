@@ -9210,7 +9210,7 @@ function canopyManor(b, f, L, lit, leader) {
     mesh(new THREE.CylinderGeometry(0.035, 0.04, tall, 8), dark, x, P + tall / 2, z, g);
     small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
     mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x - s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
-    const hang = new THREE.Group();
+    const hang = moves(new THREE.Group());
     hang.position.set(x - s * 0.22, P + tall - 0.12, z + 0.02);
     g.add(hang);
     small(mesh(new THREE.PlaneGeometry(0.4, 1.6), cloth, 0, -0.8, 0, hang));
@@ -9302,7 +9302,7 @@ function nursery(b, f, L, lit) {
   for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + 0.3; frond.push([px, py, pz, px + Math.sin(a) * 0.55, py - 0.3 - rnd() * 0.15, pz + Math.cos(a) * 0.45]); }
   beams(frond, 0.03, std({ color: '#7a6a40', roughness: 1 }), { taper: 0.2, sides: 4, shadow: false });
   const wisp = std({ color: '#c8a0ff', emissive: new THREE.Color('#b080ff'), emissiveIntensity: 1.2, transparent: true, opacity: 0.85, roughness: 0.4 });
-  const wisps = [0, 1, 2].map(i => small(mesh(new THREE.SphereGeometry(0.07, 12, 8), wisp, 0, base + 0.6, 0, g)));
+  const wisps = [0, 1, 2].map(i => moves(small(mesh(new THREE.SphereGeometry(0.07, 12, 8), wisp, 0, base + 0.6, 0, g))));
   B.ticks.push((now) => {
     wisps.forEach((m, i) => {
       const t = calm ? i : now / 2600 + i * 2.1;
@@ -10103,7 +10103,7 @@ function kasbah(b, f, L, lit, leader) {
     mesh(new THREE.CylinderGeometry(0.035, 0.045, tall, 8), wood, x, P + tall / 2, z, g);
     small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
     mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), wood, x - s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
-    const hang = new THREE.Group();
+    const hang = moves(new THREE.Group());
     hang.position.set(x - s * 0.22, P + tall - 0.12, z + 0.02);
     g.add(hang);
     small(mesh(new THREE.PlaneGeometry(0.4, 1.5), cloth, 0, -0.75, 0, hang));
@@ -10248,7 +10248,7 @@ function bazaarTent(b, f, L, lit) {
   }
   const brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
   mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.7, 8), brass, 0, h + 1.65, 0, g);
-  const flag = mesh(new THREE.PlaneGeometry(0.42, 0.22), std({ color: '#f8d040', roughness: 0.8, side: THREE.DoubleSide }), 0.22, h + 1.88, 0, g);
+  const flag = moves(mesh(new THREE.PlaneGeometry(0.42, 0.22), std({ color: '#f8d040', roughness: 0.8, side: THREE.DoubleSide }), 0.22, h + 1.88, 0, g));
   flag.castShadow = false;
   B.ticks.push((now) => { if (!calm) flag.rotation.y = Math.sin(now / 600) * 0.35; });
   for (const sx of [-1, 1]) {
@@ -10268,7 +10268,7 @@ function bazaarTent(b, f, L, lit) {
     mesh(new THREE.SphereGeometry(0.1, 12, 10), brass, sx * mw / 2, 2.6, mz, g);
   }
   g.attach(panel(marqueeArt(b.name || 'BAZAAR', b.roof), mw - 0.16, mh, f.cx, 1.55 + mh / 2, f.cz + mz + 0.02));
-  const ball = pokeBall(0.26, lit);
+  const ball = moves(pokeBall(0.26, lit));
   ball.position.set(0, 1.55 + mh + 0.3, mz); g.add(ball);
   B.ticks.push((now) => { if (!calm) ball.rotation.y = Math.sin(now / 1400) * 0.5; });
   g.userData.signed = true;
@@ -10701,12 +10701,12 @@ const TOWN_STYLES = {
     gate: (town, lit, L) => templeArch(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.5, town.name, L, lit),
     extras: lagoonExtras,
     drift: (i) => (i % 2 ? { art: emberArt(i % 4 === 1 ? '#d8ff70' : '#a0f0ff'), size: 0.09, rise: true } : { art: leafletArt(PALM[i % 4]), size: 0.17 }) },
-  canopy: { holes: true, neat: true, ground: canopyGround, trees: canopyRim, lamp: 'lantern', lampScale: 0.8,
+  canopy: { holes: true, neat: true, merge: true, ground: canopyGround, trees: canopyRim, lamp: 'lantern', lampScale: 0.8,
     house: (b, f, L, lit) => (b.kind === 'greattree' ? greatTree(b, f, L, lit) : b.kind === 'nursery' ? nursery(b, f, L, lit) : treehouse(b, f, L, lit)),
     gate: (town, lit, L) => vineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.8, town.name, L, lit),
     extras: canopyExtras,
     drift: (i) => (i % 3 ? { art: leafletArt(CANOPY.leaf[i % 4]), size: 0.16 } : { art: fireflyArt(i % 2 ? '#c890ff' : '#90f0e0'), size: 0.13, rise: true }) },   // will-o'-wisps: it's a ghost town
-  bazaar: { holes: true, fade: true, ground: savannaGround, trees: savannaBush, lamp: 'tikitorch', lampScale: 0.85,
+  bazaar: { holes: true, fade: true, merge: true, ground: savannaGround, trees: savannaBush, lamp: 'tikitorch', lampScale: 0.85,
     house: (b, f, L, lit) => (b.kind === 'shop' ? bazaarTent(b, f, L, lit) : b.kind === 'caravanserai' ? caravanserai(b, f, L, lit) : b.kind === 'wagon' ? wagon(b, f, L, lit) : rondavel(b, f, L, lit)),
     gate: (town, lit, L) => sunGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.3, town.name, L, lit),
     extras: savannaExtras,
@@ -11964,6 +11964,12 @@ export function preloadEvent(kind, at = {}, figs = {}) {
     trainer's reaction once a picker is done), biome (the open-air rooms' look), type (the Shrine's glow), onPick(index): press that choice, onLeave(): press Leave }. Resolves the
     room's controls, or null if it was left while it loaded; throws if Three.js won't load (the pixel room stays). */
 export async function mountEvent(o) {
+  const was = visit;
+  // a failed try is forgotten, so the retry (load3d() in js/run.js) comes in as the first visit it is
+  try { return await enterEvent(o); } catch (err) { if (opts === o) visit = was; throw err; }
+}
+
+async function enterEvent(o) {
   const back = visit && visit.node === o.node && visit.run === o.run && (o.spent || view?.isConnected || performance.now() - leftAt < 30000);   // a done room keeps its eaten berry, its picked-up ball
   visit = { node: o.node, run: o.run };
   opts = o;
