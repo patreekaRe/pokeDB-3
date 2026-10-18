@@ -1052,8 +1052,8 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   of every Safari Pokémon (516 on the pages), its LED screen cycling them (a shadow until caught), opening a hi-tech
   window (not the Pokédex look) of biome banners. Made a gacha the same day (the user's ask, "but fun"): each biome is a
   capsule machine that only draws caught shinies you don't own (never a repeat), a gold capsule for a rare (8%, +4% a
-  plain one), a multi-pull always holding a gold one, a Lucky Star a capsule and 10 to pick any free, and picking one
-  outright still there at a higher price (150 a pull, 300 a wild, 600 a rare). The reveal: the capsule drops into the
+  plain one), a multi-pull always holding a gold one, a Lucky Star a capsule and 10 to pick any free, 150 coins a
+  pull. No buying one outright (the user's call: it undercut the gacha); the biome's grid only shows what's inside. The reveal: the capsule drops into the
   kiosk's tray, a tap opens it, the shadow holds (a gold one shakes gold), a flash, the shiny. Placed on the floor right
   of the Day Pass dais (tile 13,8), facing the door, no taller than the booth (the user wanted it front-facing and
   obvious). Mock: https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy. The user says yes or what to change; still open is
