@@ -43,7 +43,8 @@ type's starter in its area adds it to your duo pool.
 (and pokeDB-sim's `duo-types`), never pushed to `main` until the user says it goes live. A session starts from
 `duo-types`; a session working alongside another (below) works on its own `duo-types-<part>` branch and merges into
 `duo-types` when done, the later one to finish resolving the merge. Playtest links are githack links on its commit.
-**Two at a time** (the user's ask): 2 (real types) can run beside 0 (its rules are settled above and it works with
+**One at a time from now on** (the user's call, 2026-10-19, after 0 and 2 ran side by side): run the sessions
+below in order, one each; the side-by-side rule that follows stays only in case that changes. **Two at a time** (the user's earlier ask): 2 (real types) can run beside 0 (its rules are settled above and it works with
 today's single starter), on `duo-types-realtypes`; 1 runs after 0, and 15 alone at the end.
 From 3 on, two sessions can run together when they are different types (Electric's first beside Ice's first, or a
 type's second beside the next type's first), never two halves of the same type. Since a duo puts two types in one run,
