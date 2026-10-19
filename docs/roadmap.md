@@ -41,8 +41,9 @@ real types in the Safari, why six). Safari only at first: a duo run starts with 
 type's starter in its area adds it to your duo pool. Sessions, in order, each ▶ Run in: CLOUD (both repos):
 0. **Design doc first** (`docs/duo-design.md`, the user approves it before any code): the duo's rules (switch cost, STAB,
    the deck split, rewards), the Duo pass screen, the Safari's real chart (no immunities, x2 cap, Neutral outside it),
-   and per new type 2 archetypes for a ~35-card deck, its Ability, its starter lines and its area. Starting ideas, to
-   check against `docs/card-design.md` so none repeats Burn / Reckless / Kindling, Growth / Drain / Spores, Tsunami /
+   and per new type 3 archetypes for a ~70-card deck (the user's call, 2026-10-19: 70, not 35, like Fire / Grass /
+   Water), its Ability, its starter lines and its area. Starting ideas (a third
+   archetype each still to find), to check against `docs/card-design.md` so none repeats Burn / Reckless / Kindling, Growth / Drain / Spores, Tsunami /
    Shell / Flow or Force / Barrier / Mind Games: Electric Paralysis / Charge, Ice Freeze / Hail, Fighting Combo /
    Counter, Ground Sandstorm / Dig, Flying Evasion / Tailwind (cheap cards, draw), Dark Steal / Punish (the enemy's
    intent). Starters (Gen 5 sprites; dual types fine under the real chart; the Pokémon caught in the Safari may be the
@@ -51,9 +52,9 @@ type's starter in its area adds it to your duo pool. Sessions, in order, each �
    Zorua / Poochyena / Purrloin.
 1. **The duo and the Duo pass** on today's three types, sim mirror, bot check.
 2. **Real types in the Safari**: the chart, every Safari Pokémon and move retyped, the super-effective hint on cards.
-3-8. **One new type a session**: its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
+3-14. **One new type in two sessions** (~35 cards each, 70 a type; card rewards split 50/50 between a duo's types): its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
    `SPRITE_FIT`, cries), its themed area and the catch that adds it to the pool; sim mirror and a bot check of its pairs.
-9. **The balance pass** over all 36 pairs, then patch notes and a githack link.
+15. **The balance pass** over all 36 pairs, then patch notes and a githack link.
 Prompt for session 0: "Read CLAUDE.md, docs/roadmap.md's 'Six new types for the Safari's duo pool' and 'Safari duos,
 real types and new areas' entries, docs/reference/safari.md, docs/reference/cards.md and docs/card-design.md. Write
 docs/duo-design.md as that entry's session 0 lists, show me the open choices, and change nothing else until I approve."
@@ -1003,8 +1004,8 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   effectively; the best 3 more reach 15, 4 reach 16, 5 reach 17, and 6 is the fewest that gives every one of the 18 a
   counter (only Fighting hits Normal). Suggested six, all Gen 1-5 types: **Electric, Ice, Fighting, Ground, Flying,
   Dark** (Poison works in Electric's place; a set with Steel and Fairy also covers all 18, but Fairy is Gen 6). Psychic
-  (Mewtwo's) could be a 10th later. Each new type's deck can be ~35 cards (Monster Train's clans), as a duo's pool is two
-  types together (~70). One themed area per new type (so ~9-12 areas, 3 a day), its starters caught there. Starters and
+  (Mewtwo's) could be a 10th later. Each new type gets ~70 cards like Fire / Grass / Water (the user's call, 2026-10-19; 35 was
+  suggested, as a duo's pool is two types together). One themed area per new type (so ~9-12 areas, 3 a day), its starters caught there. Starters and
   enemies may be dual types under the Safari's real chart.
 - **More playable types, discussed 2026-10-19**: skins with their own decks stay "nah" for now; the six new types are a go
   (Open, ready to build). Notes kept from the talk:
