@@ -23,6 +23,7 @@ import { dexTally, safariOpen } from './data/pokedex.js';
 import { safariDexCount } from './safaridex.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { ENEMY_DEFS } from './data/enemies.js';
+import { shinyImage } from './data/shinies.js';
 import { isStarterUnlocked } from './progress.js';
 import { shelfApp, typed } from './bagdex.js';
 import { playCry, playSound } from './audio.js';
@@ -168,7 +169,8 @@ function sprite(key) {
   const save = getSave();
   if (kind === 'mon' && ENEMY_DEFS[id]) {
     const met = [...save.dex.seen, ...save.dex.defeated, ...(save.safariDex?.seen || []), ...(save.safariDex?.caught || [])].includes(id);
-    return { src: ENEMY_DEFS[id].image, name: met ? ENEMY_DEFS[id].name : '???', masked: !met, cry: ENEMY_DEFS[id].spriteId ?? id };
+    const shiny = a === 'shiny' && met;   // a Safari shiny partner (2026-10-19)
+    return { src: shiny ? shinyImage(id) : ENEMY_DEFS[id].image, name: met ? `${shiny ? 'Shiny ' : ''}${ENEMY_DEFS[id].name}` : '???', masked: !met, cry: ENEMY_DEFS[id].spriteId ?? id };
   }
   const st = kind === 'starter' && STARTERS_BY_ID[id];
   if (!st) return { src: spriteUrl(STARTERS_BY_ID.charmander, 'front', 0), name: 'Charmander', cry: 'charmander' };

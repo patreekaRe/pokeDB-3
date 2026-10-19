@@ -3843,6 +3843,36 @@ body.has-scene.hybrid-scene #scene-light { display: block; }
 .sdx-device .bdx-slot.rare { background: linear-gradient(180deg, #ffe08a, #d8a020); }
 .sdx-device .bdx-slot.on { background: #ffe36b; }
 .sdx-device .bdx-slot.caught::after { content: ""; position: absolute; top: 2px; right: 2px; z-index: 1; width: 7px; height: 7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px #3a0a0e; }
+.sdx-device .bdx-slot.shiny::before {   /* a shiny that's yours: a gold four-point star in the slot's corner */
+  content: ""; position: absolute; left: 1px; bottom: 1px; z-index: 1; width: 11px; height: 11px; background: #ffd34a;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 1px #6a4a00);
+}
+.sdx-device .bdx-slot.sealed { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), 0 0 0 2px #5a6a8a; }
+.sdx-slot-art { display: block; width: 100%; height: 100%; }
+.sdx-slot-cap { position: absolute; left: -3px; top: -3px; z-index: 1; width: 16px; height: 16px; }
+.sdx-slot-cap svg, .sdx-cap svg { display: block; width: 100%; height: 100%; }
+/* the shinies and sealed capsules: over the banners, and under an area's slots */
+.sdx-shinybar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; font: 0.75rem/1.3 var(--pixel-font); font-synthesis-weight: none; }
+.sdx-shinybar.whole { margin-bottom: 8px; }
+.sdx-shinycount { color: #7a5600; }
+.sdx-sealedcount { display: inline-flex; align-items: center; gap: 5px; color: #2a3858; }
+.sdx-cap { display: inline-block; width: 20px; height: 20px; flex: none; }
+.sdx-nobar { display: none; }
+/* its page: the ✨ switch, the sealed capsule badge and the lines */
+.sdx-shinyflip {
+  position: absolute; left: 8px; bottom: 8px; z-index: 3; padding: 5px 8px; border: 2px solid #a07000; border-radius: 999px; cursor: pointer;
+  background: rgba(0, 0, 0, 0.5); color: #ffe590; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none;
+}
+.sdx-shinyflip.on { background: linear-gradient(180deg, #fff3b8, #f0b830); color: #4a3000; box-shadow: 0 0 10px rgba(248, 208, 48, 0.7); }
+.sdx-screen.sdx-shiny .pdx-mon { filter: drop-shadow(0 0 6px rgba(255, 220, 90, 0.75)); }
+.sdx-screen .shiny-aura { z-index: 2; }
+.sdx-sealbadge {
+  position: absolute; right: 8px; top: 8px; z-index: 3; display: flex; align-items: center; gap: 3px; padding: 3px 7px 3px 4px; border-radius: 999px;
+  background: rgba(10, 14, 26, 0.72); box-shadow: 0 0 0 2px #5a6a8a; color: #cfe0ff; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none;
+}
+.sdx-sealbadge .sdx-cap { width: 22px; height: 22px; }
+.pdx-text.sdx-sealedline { background: #1a2238; color: #cfe0ff; font: 0.75rem/1.4 var(--pixel-font); font-synthesis-weight: none; }
+.pdx-text.sdx-sparkleline { background: linear-gradient(90deg, #fff3b8, #f2dc8a); color: #6a4a00; font: 0.75rem/1.4 var(--pixel-font); font-synthesis-weight: none; }
 .sdx-sig { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .sdx-sig h4 { align-self: stretch; margin: 0; font: 0.75rem/1.3 var(--pixel-font); font-synthesis-weight: none; }
 .sdx-sig .card { width: 130px; flex: none; }
@@ -4143,6 +4173,7 @@ body.scene-peek #backdrop { display: none; }
 .lb-aug-row .aug-icon, .lb-aug-row .aug-emoji { flex: none; width: 22px; height: 22px; font-size: 16px; line-height: 22px; }
 .lb-aug-more { color: var(--lb-dim); }
 .lb-crown { margin-right: 4px; }
+.lb-shiny { margin-left: 5px; color: #ffd84a; text-shadow: 0 0 6px rgba(255, 216, 74, 0.6); }
 .lb-you-tag { margin-right: 6px; padding: 2px 4px; border-radius: 4px; background: #5ad08a; color: #0c2416; }
 .lb-row.gold { border-color: rgba(255, 210, 90, 0.6); background: linear-gradient(90deg, rgba(255, 210, 90, 0.28), rgba(255, 210, 90, 0.04)); box-shadow: 0 0 12px rgba(255, 210, 90, 0.25); }
 .lb-row.silver { border-color: rgba(200, 210, 235, 0.4); background: linear-gradient(90deg, rgba(200, 210, 235, 0.2), rgba(200, 210, 235, 0.03)); }

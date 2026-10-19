@@ -49,7 +49,7 @@ const KINDS = {
     now: () => safariDay(), offset: dayOffset, step: 1,
     check: (entry) => checkEntry(entry, safariDay()), rank: rankBoards,
     header: (day) => { const d = safariDaily(day); return `${day} · ${d.starter.line[0].name} · ${d.areas.map(a => a.name).join(' · ')}`; },
-    mine: (e) => `Your try: ${e.won ? 'crossed the Safari Zone' : `fainted in area ${e.area}`} · ${e.turns} turn${e.turns === 1 ? '' : 's'} · ${formatTime(e.time)} · ${e.caught} caught`,
+    mine: (e) => `Your try: ${e.won ? 'crossed the Safari Zone' : `fainted in area ${e.area}`} · ${e.turns} turn${e.turns === 1 ? '' : 's'} · ${formatTime(e.time)} · ${e.caught} caught${e.shinies ? ` · ✨ ${e.shinies} shiny` : ''}`,
     signin: 'Sign in to post your first try of the day.', period: 'today\'s',
   },
   tower: {
@@ -191,7 +191,12 @@ async function post(k = K()) {
     const ref = s.F.doc(s.db, k.collection, entryId(entry[k.field], entry.uid));
     try {
       if ((await s.F.getDoc(ref)).exists()) { store.set(k.postKey, null); return 'already'; }
-      await s.F.setDoc(ref, { ...entry, at: s.F.serverTimestamp() });
+      try { await s.F.setDoc(ref, { ...entry, at: s.F.serverTimestamp() }); } catch (err) {
+        // the rules from before the shinies (until they're published again) refuse the key: it goes up without its ✨
+        if (err?.code !== 'permission-denied' || !('shinies' in entry)) throw err;
+        const { shinies, ...plain } = entry;
+        await s.F.setDoc(ref, { ...plain, at: s.F.serverTimestamp() });
+      }
     } catch (err) {
       if (err?.code === 'permission-denied') { store.set(k.postKey, null); return 'already'; }
       return 'offline';
@@ -269,6 +274,7 @@ function facts(e) {
   if (kind === 'arcade') box.append(fact('Game', ARCADE_BY_ID[e.game]?.name ?? e.game), fact('Score', arcadeValue(e)));
   else if (kind === 'tower') box.append(fact('Floor', `${e.floor}`), fact('Turns', `${e.turns}`), fact('Time', formatTime(e.time)));
   else box.append(fact('Result', e.won ? 'Crossed' : `Area ${e.area}`), fact('Turns', `${e.turns}`), fact('Time', formatTime(e.time)), fact('Caught', `${e.caught}`));
+  if (kind === 'safari' && e.shinies > 0) box.append(fact('Shinies', `✨ ${e.shinies}`));
   const s = STARTERS_BY_ID[e.starter];
   if (s) box.append(fact('Pokémon', s.line[0].name));
   return box;
@@ -384,6 +390,11 @@ function tableApp(boards, day) {
     if (r.mine) name.append(el('span', 'lb-you-tag', 'YOU'));
     if (r.rank === 1) name.append(el('span', 'lb-crown', '♛'));
     name.append(r.entry.name);
+    if (kind === 'safari' && r.entry.shinies > 0) {   // caught a wild shiny on that try
+      const mark = el('span', 'lb-shiny', r.entry.shinies > 1 ? `✨${r.entry.shinies}` : '✨');
+      mark.title = `Caught ${r.entry.shinies} shiny Pokémon on this try`;
+      name.append(mark);
+    }
     who.append(name, el('small', 'lb-sub', subLine(b.id, r.entry)), ...augStrip(r.entry));
     head.append(el('span', `lb-rk${medal ? ' medal' : ''}`, pinned ? `#${r.rank}` : `${r.rank}`), mon(r.entry, 'lb-mon'), who, el('span', 'lb-val', value(b.id, r.entry)));
     head.addEventListener('click', () => toggle(item, r));
@@ -500,7 +511,8 @@ function sampleEntries(day, k) {
     const base = { [k.field]: day, uid, name: name === 'ME' ? (nameFor() || 'YOU') : name, starter };
     if (k === KINDS.tower) return [{ ...base, floor: 6 + n, turns: 40 + n * 8, time: 900 + n * 260, augments: AUGMENTS.slice(i % 5, i % 5 + Math.min(9, Math.floor(n / 3))).map(a => a.id) }];
     if (k === KINDS.arcade) return ARCADE_GAMES.slice(0, i % 3 ? 7 : 4).map((g, j) => ({ ...base, game: g.id, score: n * (97 + j * 31) }));
-    return [{ ...base, won: i % 4 !== 3, area: i % 4 === 3 ? 2 : 3, bosses: i % 4 === 3 ? 1 : 3, turns: 30 + i * 3 + (i % 5), time: 700 + i * 75 + (i % 3) * 40, caught: (i * 7) % 11 }];
+    return [{ ...base, won: i % 4 !== 3, area: i % 4 === 3 ? 2 : 3, bosses: i % 4 === 3 ? 1 : 3, turns: 30 + i * 3 + (i % 5), time: 700 + i * 75 + (i % 3) * 40, caught: (i * 7) % 11,
+      ...(i % 6 === 1 && (i * 7) % 11 ? { shinies: i === 7 ? 2 : 1 } : {}) }];
   });
 }
 

@@ -2566,9 +2566,9 @@ function gymLeader(node) {
 const bossWin = () => (run.map?.boss && gymLeader(run.map.boss) ? 'gym-victory' : 'trainer-victory');
 
 /** What a Safari catch tells the Ranger Task Board (js/ranger.js): the Pokémon, its ball, night, first turn, unhurt,
-    and how many this run has caught. */
+    shiny (never a ?wildshiny one), and how many this run has caught. */
 const rangerInfo = (node, result) => ({ id: node.enemyId, rare: !!node.rare, ball: result.ball, night: timeOfDay() === 'night',
-  turn: result.tally?.turns, flawless: !!result.tally && !result.tally.taken, inRun: run.tally.caught });
+  turn: result.tally?.turns, flawless: !!result.tally && !result.tally.taken, inRun: run.tally.caught, shiny: !!result.shiny && !wildShinyFlag() });
 
 function afterFight(node, result) {
   // a Gym Leader's last words and badge come before the rewards (and before a last boss's ending); a refresh replays
@@ -2647,6 +2647,7 @@ function afterFight(node, result) {
     : [];
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
+    if (shinyCatch && !lentShiny) run.tally.shinies = (run.tally.shinies || 0) + 1;   // the leaderboard's ✨
     if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
     if (shinyCatch) dexNews.unshift(shinyLine(ENEMY_DEFS[node.enemyId].name, shinyCatch) + (lentShiny ? ' (A playtest: nothing is saved.)' : ''));
     if (opened.length) dexNews.splice(shinyCatch ? 1 : 0, 0, ...opened.map(g => `🔓 Sealed capsule opened! ${shinyLine(ENEMY_DEFS[node.enemyId].name, g).replace(/^✨ /, '')}`));
@@ -5502,7 +5503,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   if (safari) lines.push(run.safari.first ? '🦺 Your first try of the day, the one that counts: played without perks, like everyone\'s.' : '🦺 A replay: only the first try of the day counts (perks are back on).');
   if (safari && run.safari.first && !peeking) {   // the leaderboard's: posted once, never in the way of the end screens
     const line = postSafariResult(runResult({ day: run.safari.day, starter: run.starter.id, won, biome: run.biome,
-      turns: run.tally.turns, startedAt: run.tally.startedAt, caught: run.tally.caught || 0 }));
+      turns: run.tally.turns, startedAt: run.tally.startedAt, caught: run.tally.caught || 0, shinies: run.tally.shinies || 0 }));
     if (line) lines.push(line);
   }
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);

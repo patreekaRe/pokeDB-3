@@ -201,8 +201,8 @@ function plaqueRow(e, i) {
   const img = el('img', 'pixel');
   const starter = STARTERS_BY_ID[e.starter];
   if (starter) { img.src = spriteUrl(starter, 'front', 0); img.alt = ''; }
-  li.append(el('span', 'tower-plaque-rank', `${i + 1}`), img, el('span', 'tower-plaque-name', e.name), el('span', 'tower-plaque-floor', `${e.caught} caught`));
-  li.title = `${e.name}: ${e.caught} caught${e.won ? ', crossed the Safari Zone' : ''}`;
+  li.append(el('span', 'tower-plaque-rank', `${i + 1}`), img, el('span', 'tower-plaque-name', `${e.name}${e.shinies ? ' ✨' : ''}`), el('span', 'tower-plaque-floor', `${e.caught} caught`));
+  li.title = `${e.name}: ${e.caught} caught${e.shinies ? `, ${e.shinies} of them shiny` : ''}${e.won ? ', crossed the Safari Zone' : ''}`;
   return li;
 }
 

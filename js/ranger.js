@@ -15,6 +15,7 @@ import { checkBadges } from './progress.js';
 import { showBadgeNews } from './trainercard.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { BALLS } from './data/balls.js';
+import { shinyImage } from './data/shinies.js';
 import { TABS, progressOf, readyTasks, rankOf, rewardText, logCatch, logDay, logWeekCatch, logWeekTick, logWeekDay, expeditionWeek, tasksOn, taskById } from './data/ranger.js';
 import { JOURNAL_TABS, JOURNAL_TASKS, JOURNAL_BY_ID, journalProgress, journalReady, journalRank } from './data/journal.js';
 
@@ -90,6 +91,7 @@ function note(task, save, i) {
   else {
     if (pic.ball) { img.src = ballSprite(pic.ball); shot.classList.add('ball'); }
     else if (pic.src) { img.src = pic.src; shot.classList.add('trainer'); }
+    else if (pic.shiny) { img.src = shinyImage(pic.mon); shot.classList.add('shiny'); }
     else { img.src = ENEMY_DEFS[pic.mon]?.image ?? ''; if (!pic.seen) shot.classList.add('unseen'); }
     shot.append(img);
   }

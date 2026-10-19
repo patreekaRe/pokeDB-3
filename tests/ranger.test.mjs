@@ -114,3 +114,20 @@ test('a catch that finishes a task is told once, before it\'s logged; the ranks 
   assert.ok(scout && !scout.test({}, save));
   assert.ok(scout.test({}, { ...save, ranger: { claimed: ['species-5', 'species-10', 'species-25', 'rare-1', 'ball-great-1'] } }));
 });
+
+test('shiny tasks: wild shinies caught from the log, shinies owned and the brightest Sparkle from the save', () => {
+  let l = logCatch({}, { ball: 'safari', shiny: true, rare: false, inRun: 1 });
+  l = logCatch(l, { ball: 'safari', shiny: true, rare: true, inRun: 2 });
+  l = logCatch(l, { ball: 'safari', shiny: false, rare: true, inRun: 3 });
+  assert.equal(l.shiny, 2);
+  assert.equal(l.shinyRare, 1);
+  const save = { ...blank(), ranger: { claimed: [], log: l }, safariShinies: { a: 5, b: 1, c: 2 } };
+  assert.equal(progressOf(TASKS_BY_ID['feat-shiny-1'], save).done, true);
+  assert.equal(progressOf(TASKS_BY_ID['feat-shiny-3'], save).n, 2);
+  assert.equal(progressOf(TASKS_BY_ID['feat-shiny-rare-1'], save).done, true);
+  assert.equal(progressOf(TASKS_BY_ID['feat-shinies-10'], save).n, 3);
+  assert.equal(progressOf(TASKS_BY_ID['feat-sparkle-5'], save).done, true);
+  assert.equal(progressOf(TASKS_BY_ID['feat-sparkle-5'], { ...blank(), safariShinies: {} }).n, 0);
+  assert.deepEqual(TASKS_BY_ID['feat-shiny-1'].pic(save), { mon: 'a', shiny: true });
+  assert.deepEqual(TASKS_BY_ID['feat-shiny-1'].pic(blank()), { emoji: '✨' });
+});

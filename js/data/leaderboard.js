@@ -14,7 +14,10 @@ export const NAME_MAX = 16;
 export const LIMITS = {
   area: [1, 3], bosses: [0, 3], turns: [0, 3000], time: [0, 7 * 24 * 3600], caught: [0, 300],
 };
-export const ENTRY_KEYS = ['day', 'uid', 'name', 'starter', 'won', 'area', 'bosses', 'turns', 'time', 'caught', 'at'];
+export const ENTRY_KEYS = ['day', 'uid', 'name', 'starter', 'won', 'area', 'bosses', 'turns', 'time', 'caught', 'at', 'shinies'];
+/* Keys an entry may leave out: shinies (wild shinies caught that run, 2026-10-19) is only posted when there's one, so a
+   result goes up the same way under rules from before it. */
+export const OPTIONAL_LIMITS = { shinies: [1, 300] };
 
 export const entryId = (day, uid) => `${day}_${uid}`;
 
@@ -35,10 +38,11 @@ export function cleanName(name) {
 const clamp = (n, [lo, hi]) => Math.min(hi, Math.max(lo, Math.round(Number(n) || 0)));
 
 /** What a finished Safari run posts, before the uid and name are known: day, starter, won, area reached (1-3), bosses
-    beaten, turns, run time in seconds, Pokémon caught. */
-export function runResult({ day, starter, won, biome, turns, startedAt, endedAt = Date.now(), caught }) {
+    beaten, turns, run time in seconds, Pokémon caught, and the shinies among them when there are any. */
+export function runResult({ day, starter, won, biome, turns, startedAt, endedAt = Date.now(), caught, shinies = 0 }) {
   const start = Date.parse(startedAt);
   return {
+    ...(shinies > 0 ? { shinies: clamp(shinies, OPTIONAL_LIMITS.shinies) } : {}),
     day,
     starter: String(starter),
     won: Boolean(won),
@@ -67,6 +71,7 @@ export function checkEntry(e, today) {
   if (typeof e.starter !== 'string' || !e.starter || e.starter.length > 32) return 'bad starter';
   if (typeof e.won !== 'boolean') return 'bad won';
   for (const key of Object.keys(LIMITS)) if (!inRange(e[key], LIMITS[key])) return `bad ${key}`;
+  for (const key of Object.keys(OPTIONAL_LIMITS)) if (key in e && !inRange(e[key], OPTIONAL_LIMITS[key])) return `bad ${key}`;
   if (e.won !== (e.bosses === 3)) return 'won must mean 3 bosses';
   return null;
 }

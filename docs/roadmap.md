@@ -9,57 +9,11 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**▶ Run in: CLOUD. Safari shinies: catching, Sparkle levels and the Shiny Exchange** (the user's asks, 2026-10-18;
-agreed on the mock https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy, boards 1-7). Decided:
-- **Shiny catching**, look only: any wild in a Safari room is shiny at `SHINY_ODDS` (1 in 150), rares too; the same
-  fight, HP, moves and catch odds, so the roll is cosmetic (`Math.random`, off the daily seed: the run and leaderboard
-  stay the same for everyone). It comes out in the starters' ✨ burst (`shinySparkle()` in `js/battle.js`) under a gold
-  "A SHINY X APPEARED!" banner and sparkles all fight; the ball's shakes trail gold. Knocked out, it's gone. Caught, the
-  GOTCHA box says NEW SHINY (and fills its Safari Pokédex page if new), or raises its Sparkle if owned.
-- **Sparkle** ★1-★5 per owned Safari shiny (a duplicate +1). Shown on its signature card (★1 shiny art, ★2 a burst when
-  played, ★3 a glowing edge, ★4 sparkles over the art, ★5 a gold frame and foil, under `calmFx()`), the catch box, the
-  Safari Pokédex and its Secret Base resident. Wild Pokémon stay their normal colours whatever you own.
-- **The Shiny Exchange**: a kiosk on the Outfitter's floor right of the Day Pass dais (tile 13,8), facing the door, no
-  taller than the booth; its LED screen cycles the Safari shinies (a shadow until caught); a capsule tray at its base.
-  Its window (dark hi-tech, not the Pokédex look): six biome banners, each a capsule machine of the shinies you've
-  caught. Coins only pull, never buy outright (the user's call): 150 a pull, x10 for 1,500 always holding a gold one.
-  Duplicates allowed (a duplicate is +1 Sparkle and 2 Lucky Stars, 3 past ★5; about 1 plain capsule in 3 is a shiny you
-  don't own yet). A gold capsule is a rare (8%, +4% each plain one, back to 8% after a gold). Every capsule is a Lucky
-  Star; 10 pick any caught shiny free (a prism capsule). The reveal: the capsule drops in the tray (a gold one shows
-  plain, then turns gold), a tap opens it (rays, stars), the shadow holds (a gold one shakes), a flash, the shiny.
-  Capsules are smooth SVG in the window (no new GL context); the tray's one is a sphere in the lodge's own scene.
-  Make them look cool (the user's only ask; the design is session 2's call): start from the mock's glossy capsule
-  (biome colour, gold, prism; pearl base, chrome band and button), and push it: a see-through top with sparkles
-  drifting inside, a rim light in its colour, a slow idle turn in the tray, a crack of light along the band before it
-  opens. Animate only transform and opacity, no animated blur or masks, and all of it off under `calmFx()`.
-- Sprites: every Safari Pokémon (514, all Gen 1-5) has PokeAPI's black-white animated shiny, the source of the normal
-  ones; numbers from `raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv` (pokeapi.co is blocked).
-
-Three sessions, in order. **Session 1 done 2026-10-18, on `main`** (patch 1.26): the 514 shiny GIFs, `save.safariShinies`,
-the roll, the battle's entrance, banner, twinkles, gold shakes and catch box, the signature card's Sparkle looks; how it
-works is `docs/reference/safari.md`'s "Wild shinies and Sparkle". The user plays a Safari run with `?wildshiny` (every
-wild shiny, a catch saves nothing) and looks at the cards with `?sparkle=1` to `?sparkle=5`, and says what to change.
-**Session 2 done 2026-10-18, on `main`**: the Shiny Exchange kiosk right of the Day Pass dais (LED screen, tray
-capsule), its window, the pulls and the reveal; how it works is `docs/reference/hub-base-mall.md`'s Safari Outfitter part
-("The Shiny Exchange"), the rules `js/data/exchange.js` (`tests/exchange.test.mjs`). The user tries it at
-`?mall=outfitter&ribbon&coins=5000&safaridex` (every Safari Pokémon counted caught) and says what to change. **Session 2b done 2026-10-19, on `main`: sealed capsules** (the user's catch: with one
-Pokémon caught in an area its machine held one shiny, so a pull was a sure buy). A machine holds the area's every
-Pokémon, `NEW_ODDS` is a floor (else any of the machine), and one you haven't caught comes out sealed (its shadow, 1
-Lucky Star, saved by id). A Safari catch of it opens it as the first reward step: the Exchange's reveal alone, the
-smoked glass clearing as it lands, a tap, the shiny; the box says it and the signature card shows the new Sparkle. How
-it works: `docs/reference/hub-base-mall.md`'s "Sealed capsules". **The user tries it** at
-`?mall=outfitter&ribbon&coins=5000` (a fresh save: pulls come out sealed), then on a Safari run catches a Pokémon
-they hold sealed. One call made for them: the opening is its own window right after the catch, before the reward box
-tells the GOTCHA, not inside the box (simpler, and it never covers the box's lines); say if it should move. Next,
-session 3:
-
-> Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md's Safari Pokédex part, hub-base-mall.md's residents and the
-> Ranger Task Board, and this roadmap entry. Session 3, shinies everywhere else: the Safari Pokédex shows owned shinies
-> and their Sparkle (a shiny toggle on a page) and sealed capsules (a capsule badge with the count on a Pokémon's page,
-> "2 sealed — catch to open", the same mark on the list and a "Sealed: N" total; the user's ask, 2026-10-19), Secret
-> Base residents come out shiny, Ranger tasks for shiny catches,
-> the Trainer Card's count and a ✨ on the day's leaderboard. Check headless, a patch-notes line, move this entry to
-> docs/roadmap-done.md, push to main and give me the githack link.
+**▶ PLAYTEST ON THE LIVE SITE. Safari shinies everywhere: done 2026-10-19, on `main`, waiting on the user** (the three
+sessions are in `docs/roadmap-done.md`). Look at `?sparkle=3` (every Safari shiny lent at ★3: the Safari Pokédex's ✨
+switch, Secret Base residents with `?base&guests&sparkle=3`), `?lbsample=safari` (the ✨ rows) and the Ranger board's
+Feats tab, and say what to change. **One thing only the user can do**: publish `firestore.rules` again in the Firebase
+console (the leaderboard's steps in `docs/reference/safari.md`), or a result with shinies posts without its ✨.
 
 **▶ PLAYTEST ON THE LIVE SITE. The towns' and the Clearing's draw calls: done, waiting on the user's phone check** (all five towns merged,
 2026-10-17 / 18; numbers in `docs/roadmap-done.md` and `docs/reference/towns.md`'s "Merged buildings"). On a phone, each of

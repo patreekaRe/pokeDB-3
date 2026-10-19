@@ -914,6 +914,7 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .rb-photo.emoji { background: linear-gradient(#fffaf0, #f0e4c8); }
 .rb-emoji { font-size: 34px; line-height: 1; }
 .rb-photo.trainer img { background: linear-gradient(#f4e0d0, #e8d0b8); image-rendering: pixelated; }
+.rb-photo.shiny img { background: radial-gradient(circle at 50% 45%, #fffbe6, #ffe590 45%, #f0b830); image-rendering: pixelated; }
 
 /* the Trainer's Journal (js/data/journal.js): the same board in a stitched leather frame under a red plaque */
 .ranger-board.journal .rb-frame {
