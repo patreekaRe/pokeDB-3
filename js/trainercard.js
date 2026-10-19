@@ -337,7 +337,7 @@ function autoPartner(save) {
 }
 
 /** Safari shinies owned (the Trainer Card's SHINIES). */
-const shinyTotal = (save) => SAFARI_ROSTER.filter(id => sparkleOf(save.safariShinies, id)).length;
+export const shinyTotal = (save) => SAFARI_ROSTER.filter(id => sparkleOf(save.safariShinies, id)).length;
 
 /** Every Pokémon the card can show, by group: your starters at each stage, the Pokédex's defeated, the Safari's caught.
     Keys are what `save.partner` holds: 'starter:<id>:<stage>[:shiny]' or 'mon:<enemy id>[:shiny]'. A starter or Safari

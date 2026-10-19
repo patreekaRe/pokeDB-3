@@ -53,6 +53,7 @@ export const NEXT = [
   ['hub', 'The Refresh button in the Clearing is a small round key up in the top right corner now, in your Pokédex\'s colour.'],
   ['dex', 'Chad Master Kenmatta has his own page in the Gym Leaders app: his profile, your wins and losses against him, your belt and trials.'],
   ['modes', 'Safari shinies show up everywhere: the Safari Pokédex (sealed capsules too), Secret Base residents, your partner, the Trainer Card, Ranger tasks and a ✨ on the leaderboard.'],
+  ['dex', 'A friend\'s Trainer Card in the Trainers app scrolls to more: their Safari catches, shinies and Ranger Rank.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

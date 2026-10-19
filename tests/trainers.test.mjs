@@ -104,4 +104,6 @@ test('the card\'s newer numbers: kept in bounds, and "none" on a page from befor
   const old = cardDoc({ tier: 'gold', wins: 3 });
   assert.deepEqual([old.rank, old.top, old.fave, old.pillar], [-1, -1, '', 0]);
   assert.deepEqual([cardDoc({ top: -1 }).top, cardDoc({ top: 0 }).top, cardDoc({ rank: 99 }).rank], [-1, 0, 20]);
+  assert.deepEqual([cardDoc({ shinies: 7, ranger: 3 }).shinies, cardDoc({ shinies: 7, ranger: 3 }).ranger], [7, 3]);
+  assert.deepEqual([old.shinies, old.ranger], [0, -1]);
 });

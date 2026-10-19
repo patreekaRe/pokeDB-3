@@ -1061,6 +1061,10 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **A friend's card scrolls** (2026-10-18, on `main`): the Trainers app's stat grid shows two rows and scrolls to a
+  third (Safari, Shinies, Ranger). Shinies and Ranger stay "-" on everyone's page until `firestore.rules` is published
+  again (the same publish as the graves and the leaderboard's ✨ cover it). Then look at a friend's page and say what else
+  should join the grid.
 - **Friends' graves** (2026-10-18, branch `claude/friends-tombstones`, on `main` too): paste the new `firestore.rules` into
   the Firebase console (Firestore Database > Rules > Publish): it adds `graves/`. Until then a lost run is kept in the
   save but friends can't see it, and nothing else changes. Then playtest: `?graves=3` on any run's map and in the
