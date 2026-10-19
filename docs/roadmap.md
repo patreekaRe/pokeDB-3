@@ -39,7 +39,7 @@ rowboats and jungle). `tools/draw-probe.mjs` measures a place and walks into eve
 "let's add the 6"). The plan and its reasons are in Ideas' "Safari duos, real types and new areas" (the duo, the Duo pass,
 real types in the Safari, why six). Safari only at first: a duo run starts with Fire / Water / Grass, and catching a new
 type's starter in its area adds it to your duo pool. Sessions, in order, each ▶ Run in: CLOUD (both repos):
-0. **Design doc first** (`docs/duo-design.md`, the user approves it before any code): the duo's rules (switch cost, STAB,
+0. **Design doc first** (effort: high) (`docs/duo-design.md`, the user approves it before any code): the duo's rules (switch cost, STAB,
    the deck split, rewards), the Duo pass screen, the Safari's real chart (no immunities, x2 cap, Neutral outside it),
    and per new type 3 archetypes for a ~70-card deck (the user's call, 2026-10-19: 70, not 35, like Fire / Grass /
    Water), its Ability, its starter lines and its area. Starting ideas (a third
@@ -50,11 +50,12 @@ type's starter in its area adds it to your duo pool. Sessions, in order, each �
    very ones that join the pool, checked against the rules for adding Pokémon): Electric Shinx / Mareep / Blitzle, Ice
    Vanillite / Snorunt, Fighting Timburr / Machop, Ground Sandshrew / Drilbur / Phanpy, Flying Starly / Pidgey, Dark
    Zorua / Poochyena / Purrloin.
-1. **The duo and the Duo pass** on today's three types, sim mirror, bot check.
-2. **Real types in the Safari**: the chart, every Safari Pokémon and move retyped, the super-effective hint on cards.
-3-14. **One new type in two sessions** (~35 cards each, 70 a type; card rewards split 50/50 between a duo's types): its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
+1. **The duo and the Duo pass** (effort: high) on today's three types, sim mirror, bot check.
+2. **Real types in the Safari** (effort: high): the chart, every Safari Pokémon and move retyped, the super-effective hint on cards.
+3-14. **One new type in two sessions** (effort: high for a type's first session, which brings its new mechanics;
+   medium for its second, which follows them) (~35 cards each, 70 a type; card rewards split 50/50 between a duo's types): its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
    `SPRITE_FIT`, cries), its themed area and the catch that adds it to the pool; sim mirror and a bot check of its pairs.
-15. **The balance pass** over all 36 pairs, then patch notes and a githack link.
+15. **The balance pass** (effort: high) over all 36 pairs, then patch notes and a githack link.
 Prompt for session 0: "Read CLAUDE.md, docs/roadmap.md's 'Six new types for the Safari's duo pool' and 'Safari duos,
 real types and new areas' entries, docs/reference/safari.md, docs/reference/cards.md and docs/card-design.md. Write
 docs/duo-design.md as that entry's session 0 lists, show me the open choices, and change nothing else until I approve."

@@ -17,7 +17,9 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
   cache), its own empty save, so add `?coins=` and what the test needs. Every URL flag is under "Playtest URLs" below.
 - **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
   (layout, art, animation). No Node/Python there, so no bot runs.
-Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.
+Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one. Give each its **effort** too
+(low / medium / high; the user's ask, 2026-10-19): high for design, engine or sim changes and balance passes, medium for
+work that follows a pattern already set (data, more cards of a set mechanic), low only for docs or one-line fixes.
 
 ## No screenshots unless the user asks (their rule, 2026-10-14)
 
