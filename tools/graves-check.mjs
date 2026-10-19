@@ -160,7 +160,8 @@ if (!OLD) {
 
   // and in the Clearing, MISTY's Squirtle walks the Trainer Plaza
   const A2 = await account(browser, 'uidA', saveA);
-  check(await until(() => A2.evaluate(() => !!document.querySelector('.buddy-foot')), 15000), 'MISTY\'s buddy is out in the Trainer Plaza');
+  // the Clearing's build stalls its page for a minute or more in software GL with three pages open (as much without buddies)
+  check(await until(() => A2.evaluate(() => !!document.querySelector('.buddy-foot')), 120000), 'MISTY\'s buddy is out in the Trainer Plaza');
 }
 
 console.log(errors.length ? `page errors:\n${errors.join('\n')}` : 'no page errors');
