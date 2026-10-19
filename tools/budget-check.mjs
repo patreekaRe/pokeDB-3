@@ -5,7 +5,7 @@
    the memory it holds (tools/memory-probe.mjs's count: canvases, textures, drawing buffers, audio, images), the 3D places
    awake, page errors, and every canvas still drawn into many times while it can't be seen (the scenery under a 3D fight,
    a title light behind the Clearing: work a phone pays for, for nothing). Then one page walks the Clearing -> mall ->
-   Clearing -> Secret Base -> Clearing three times and checks the second and third trips hold no more than the first.
+   Clearing -> Secret Base -> Clearing four times and checks the later trips hold no more than the first.
    It fails (exit 1) on a place over its budget in tools/budgets.json: draws or memory more than 10% (and a little) over
    the recorded figure, more 3D places awake than recorded (never over two), a new canvas drawn while hidden, or a page
    error. A change that means to cost more (a bigger town) reruns it with --update, which records today's figures, and
@@ -26,10 +26,21 @@ const PLACES = {
   center: '?center', mart: '?mart', 'event-spring': '?event=spring', gym: '?gym=britt', dojo: '?dojo',
   tower: '?tower=25', 'run-map': '?biome=ruins&starter=charmander',
 };
-const SETTLE = 11000, TRIPS = 3;
+const SETTLE = 11000, TRIPS = 4;
 
-/* In the page: 2D drawing into each on-page canvas, counted while `__watch` is on. */
+/* In the page: 2D drawing into each on-page canvas, counted while `__watch` is on. And a lost context heard of late,
+   as an iPhone may: Chromium tells three.js at once, so a frame drawn on a renderer just put to sleep (the Clearing's
+   ~5 MB a trip leak, 2026-10-19) never happened headless. Held back 400 ms here, it would, every trip. */
 function watchCanvases() {
+  const late = new WeakMap();
+  addEventListener('webglcontextlost', (e) => {
+    if (e.late) return;
+    e.preventDefault();   // still restorable
+    e.stopImmediatePropagation();
+    const t = e.target;
+    late.set(t, setTimeout(() => { late.delete(t); const l = new Event('webglcontextlost', { cancelable: true }); l.late = true; t.dispatchEvent(l); }, 400));
+  }, true);
+  addEventListener('webglcontextrestored', (e) => { clearTimeout(late.get(e.target)); late.delete(e.target); }, true);
   const calls = new Map();
   window.__watch = false;
   for (const m of ['drawImage', 'putImageData', 'fillRect', 'clearRect', 'fill', 'stroke', 'fillText']) {
@@ -68,8 +79,10 @@ async function dom(page) {
   const cdp = await page.context().newCDPSession(page);
   await page.evaluate(() => window.__probe());   // its forced GC first
   const c = await cdp.send('Memory.getDOMCounters');
+  // the JS heap and the ArrayBuffers it holds (three.js's geometry arrays), which performance.memory leaves out
+  const h = await cdp.send('Runtime.getHeapUsage');
   await cdp.detach();
-  return { nodes: c.nodes, listeners: c.jsEventListeners };
+  return { nodes: c.nodes, listeners: c.jsEventListeners, heap: ((h.usedSize || 0) + (h.backingStorageSize || 0)) / 1048576 };
 }
 
 const three = await threeCopy(opt('three') || '');
@@ -103,7 +116,7 @@ if (!only || only.includes('trips')) {
       await page.evaluate(back); await page.waitForTimeout(6000);
     }
     const p = await page.evaluate(() => window.__probe());
-    at.push({ mb: p.totalMB, heap: p.heapMB, ...(await dom(page)) });
+    at.push({ mb: p.totalMB, ...(await dom(page)) });
   }
   const [a, z] = [at[0], at[at.length - 1]];
   got.trips = { growthMB: Math.round((z.mb - a.mb) * 10) / 10, growthHeapMB: Math.round((z.heap - a.heap) * 10) / 10, growthNodes: z.nodes - a.nodes, growthListeners: z.listeners - a.listeners };

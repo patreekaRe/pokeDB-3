@@ -210,4 +210,5 @@ export function instrument() {
 }
 
 /* The Clearing's doors, for a probe walking between places in one page: served with js/hub-3d.js only, never shipped. */
-export const HUB_PEEK = (path, body) => path === '/js/hub-3d.js' ? body.toString() + '\nwindow.__hub = { enterBase, enterMall };\n' : body;
+export const HUB_PEEK = (path, body) => path === '/js/hub-3d.js' ? body.toString() + '\nwindow.__hub = { enterBase, enterMall };\n'
+  : path === '/js/hd2d.js' ? body.toString() + '\nwindow.__hooked = () => hooked.size;\n' : body;
