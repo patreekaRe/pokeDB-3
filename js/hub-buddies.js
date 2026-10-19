@@ -3,7 +3,8 @@
    Each stands about on the paved plaza with their trainer's name over its head on a tag in their card's colour, one
    strolling at a time like the Halloween ghosts (js/hub-spooky.js, whose speech window this borrows); a tap and it
    stops, hops, cries and says whose it is, when they last played and where their last run ended (their grave's on that
-   map). Billboards in the Clearing's own scene: no renderer or GL context of their own, their GIF frames on CPU canvases. */
+   map), and past the last line their Trainer Card opens in the Trainers app (the user's ask, 2026-10-18). Billboards
+   in the Clearing's own scene: no renderer or GL context of their own, their GIF frames on CPU canvases. */
 
 import { playCry, playSound } from './audio.js';
 
@@ -15,28 +16,35 @@ const FONT = '"PokeDB Pixel", "Press Start 2P", monospace';
 
 const between = ([a, b]) => a + Math.random() * (b - a);
 
-/** A name tag over a buddy's head: their trainer's name on their card's colour. */
+/** A name tag over a buddy's head: their trainer's name in white on a dark plate rimmed in their card's colour (white on
+    the card colour itself read too faintly on gold and silver, 2026-10-18). Drawn at 4x and sized to the name, so it
+    stays crisp and at least 12px tall on a phone. */
 function nameTag(THREE, name, tier) {
-  const c = Object.assign(document.createElement('canvas'), { width: 192, height: 40 }), g = c.getContext('2d');
+  const H = 128, PAD = 30, RIM = 8, PX = 0.4 / H;
+  const g = document.createElement('canvas').getContext('2d');
+  let size = 64;
+  do { g.font = `${size}px ${FONT}`; } while (g.measureText(name).width > 560 && --size > 36);
+  const W = Math.ceil(Math.max(g.measureText(name).width + PAD * 2, H * 2));
+  Object.assign(g.canvas, { width: W, height: H });
   const [hi, lo] = TIER[tier] ?? TIER.green;
-  g.fillStyle = lo; g.beginPath(); g.roundRect(2, 4, 188, 34, 10); g.fill();
-  g.fillStyle = hi; g.beginPath(); g.roundRect(2, 2, 188, 32, 10); g.fill();
-  let size = 20;
-  do { g.font = `${size}px ${FONT}`; } while (g.measureText(name).width > 172 && --size > 10);
+  g.fillStyle = hi; g.beginPath(); g.roundRect(0, 0, W, H, 40); g.fill();
+  g.fillStyle = 'rgba(16, 20, 32, 0.92)'; g.beginPath(); g.roundRect(RIM, RIM, W - RIM * 2, H - RIM * 2, 32); g.fill();
+  g.font = `${size}px ${FONT}`;
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.lineWidth = 4; g.strokeStyle = lo; g.strokeText(name, 96, 19);
-  g.fillStyle = '#fff'; g.fillText(name, 96, 19);
-  const t = new THREE.CanvasTexture(c);
+  g.lineJoin = 'round'; g.lineWidth = 10; g.strokeStyle = lo; g.strokeText(name, W / 2, H / 2 + 3);
+  g.fillStyle = '#fff'; g.fillText(name, W / 2, H / 2 + 3);
+  const t = new THREE.CanvasTexture(g.canvas);
   t.colorSpace = THREE.SRGBColorSpace;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.2), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, fog: false }));
+  t.anisotropy = 4;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(W * PX, H * PX), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, fog: false }));
   m.raycast = () => {};
   m.renderOrder = 2;
   return m;
 }
 
 /** `H` lends the hub's pieces (THREE, scene, camera, root, monBoard, drawMon, dispose, route, free, byDoor, tileX, tileZ,
-    PITCH, centre and reach: the plaza's middle tile and how far from it they may stand, spawns, and others(c) for a tile
-    someone else stands on). `friends` from plazaBuddies(): { uid, name, tier, mon: { src, name, masked, cry }, talk }. */
+    PITCH, onCard(uid) to open a trainer's page, centre and reach: the plaza's middle tile and how far from it they may
+    stand, spawns, and others(c) for a tile someone else stands on). `friends` from plazaBuddies(): { uid, name, tier, mon: { src, name, masked, cry }, talk }. */
 export function makeBuddies(H, friends) {
   const { THREE } = H;
   const pals = [];
@@ -69,7 +77,7 @@ export function makeBuddies(H, friends) {
     if (fr.mon.masked) m.board.material.color.set('#000');   // a Pokémon you haven't met stays a silhouette
     const tag = nameTag(THREE, fr.name, fr.tier);
     tag.rotation.x = -H.PITCH;
-    tag.position.y = m.top + 0.32;
+    tag.position.y = m.top + 0.4;
     m.group.add(tag);
     const p = { fr, m, tag, phase: Math.random() * 6, w: { x: 0, z: 0, tile: null, path: [], facing: 'front', flip: Math.random() < 0.5, hop: 0 } };
     p.w.tile = standAt(H.spawns[i % H.spawns.length], p);
@@ -98,9 +106,9 @@ export function makeBuddies(H, friends) {
     if (!talking) return;
     talking.i++;
     const lines = talking.p.fr.talk;
-    if (talking.i >= lines.length) return hush();
+    if (talking.i >= lines.length) { const { uid } = talking.p.fr; hush(); return H.onCard?.(uid); }
     if (talking.i) playSound('select');
-    show(talking.p, lines[talking.i], talking.i < lines.length - 1);
+    show(talking.p, lines[talking.i], true);
   }
 
   /** The speech window put away, its buddy free to wander again. True if it was a tapped talk. */
@@ -175,7 +183,7 @@ export function makeBuddies(H, friends) {
         p.m.group.position.set(w.x, 0, w.z);
         p.m.board.position.y = y;
         p.m.board.scale.x = w.flip ? -1 : 1;
-        p.tag.position.y = p.m.top + 0.32 + y;
+        p.tag.position.y = p.m.top + 0.4 + y;
         H.drawMon(p.m, w, dt);
       }
       if (quiet && line.classList.contains('on')) { hush(); fade(); }

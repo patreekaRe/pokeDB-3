@@ -148,7 +148,9 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
 - **The Trainer Plaza's buddies** (the same day): up to 4 trainers on your list, on most lately first, walk the paved
   plaza as their buddies (`makeBuddies()` in `js/hub-buddies.js`, from `plazaBuddies()`), a name tag over each in their
   card's colour, one strolling at a time; a tap and it hops, cries and talks in the Halloween ghosts' speech window
-  (whose it is and when they played, where their last run ended, Visit). Billboards in the Clearing's own scene (no
+  (whose it is and when they played, where their last run ended), and a tap past its last line opens their Trainer Card
+  (`onCard` -> the Trainers app at their uid; 2026-10-18, the user's ask). Tags are white on a dark plate rimmed in the
+  card's colour, drawn at 4x and sized to the name (white on gold read faintly, the same day). Billboards in the Clearing's own scene (no
   renderer of its own), read again at most every 10 minutes and rebuilt only when who's there changed
   (`friendBuddies()` in `js/hub-3d.js`). Memory (tools/memory-probe.mjs, 2026-10-18): the Clearing 123.8 MB -> 125.3 MB
   with 4, a map unchanged at 32 MB, one GL context awake either way.

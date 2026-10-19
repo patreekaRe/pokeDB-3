@@ -208,7 +208,8 @@ export function openGrave(g, { avenge = null, onChange = null, playtest = false 
 
 /* ---------- the Trainer Plaza's buddies ---------- */
 
-/** What a friend's buddy says when tapped: whose it is and when they played, where their last run ended, and Visit. */
+/** What a friend's buddy says when tapped: whose it is and when they played, where their last run ended, then their
+    Trainer Card (makeBuddies() opens it past the last line). */
 function buddyTalk(fr, mon) {
   const seen = lastSeen(fr.at), f = fr.falls.at(-1);
   const when = seen === 'Online just now' ? `${fr.name} is playing right now!` : seen.startsWith('Seen ') ? `${fr.name} last played ${seen.slice(5)}.` : '';
@@ -217,7 +218,7 @@ function buddyTalk(fr, mon) {
     `It's ${fr.name}'s ${mon.masked ? 'Pokémon' : mon.name}, out for a walk. ${when}`.trim(),
     f ? `It looks a little down. ${fr.name}'s ${nameOf(f)} fell in ${where}. ${f.mode === 'run' ? 'Pass that floor and you\'ll find their grave.' : `Their grave stands there ${f.mode === 'safari' ? 'for that day\'s Safari' : 'for that week\'s climb'}.`}`
       : `It hums happily. ${fr.name} hasn't lost a run lately.`,
-    `You can walk round ${fr.name}'s Secret Base: tap Visit on their page in your Pokédex's Trainers app.`,
+    `Here's ${fr.name}'s Trainer Card. Tap Visit on it to walk round their Secret Base.`,
   ];
 }
 

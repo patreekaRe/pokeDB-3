@@ -4374,7 +4374,7 @@ async function friendBuddies() {
   buddies = makeBuddies({ THREE, scene, camera, root, monBoard, drawMon, dispose, route, free, tileX, tileZ, PITCH,
     byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
     centre: START, reach: PLAZA_R + 0.6, spawns: [{ x: 13, y: 11 }, { x: 17, y: 13 }, { x: 13, y: 14 }, { x: 17, y: 10 }],
-    others: (c) => (c.x === walker.tile?.x && c.y === walker.tile?.y) }, list);
+    others: (c) => (c.x === walker.tile?.x && c.y === walker.tile?.y), onCard: (uid) => acts.onApp?.('trainers', uid) }, list);
   buddies.key = key;
 }
 
