@@ -35,6 +35,29 @@ sunk, bent or gapped, banners and flags still sway, roofs still fade behind you.
 every place still tapped. Not queued, the user's call: the towns' ground extras (Cinder Springs' lava field, Driftwood's
 rowboats and jungle). `tools/draw-probe.mjs` measures a place and walks into every door.
 
+**Six new types for the Safari's duo pool: Electric, Ice, Fighting, Ground, Flying, Dark** (the user's go, 2026-10-19:
+"let's add the 6"). The plan and its reasons are in Ideas' "Safari duos, real types and new areas" (the duo, the Duo pass,
+real types in the Safari, why six). Safari only at first: a duo run starts with Fire / Water / Grass, and catching a new
+type's starter in its area adds it to your duo pool. Sessions, in order, each ▶ Run in: CLOUD (both repos):
+0. **Design doc first** (`docs/duo-design.md`, the user approves it before any code): the duo's rules (switch cost, STAB,
+   the deck split, rewards), the Duo pass screen, the Safari's real chart (no immunities, x2 cap, Neutral outside it),
+   and per new type 2 archetypes for a ~35-card deck, its Ability, its starter lines and its area. Starting ideas, to
+   check against `docs/card-design.md` so none repeats Burn / Reckless / Kindling, Growth / Drain / Spores, Tsunami /
+   Shell / Flow or Force / Barrier / Mind Games: Electric Paralysis / Charge, Ice Freeze / Hail, Fighting Combo /
+   Counter, Ground Sandstorm / Dig, Flying Evasion / Tailwind (cheap cards, draw), Dark Steal / Punish (the enemy's
+   intent). Starters (Gen 5 sprites; dual types fine under the real chart; the Pokémon caught in the Safari may be the
+   very ones that join the pool, checked against the rules for adding Pokémon): Electric Shinx / Mareep / Blitzle, Ice
+   Vanillite / Snorunt, Fighting Timburr / Machop, Ground Sandshrew / Drilbur / Phanpy, Flying Starly / Pidgey, Dark
+   Zorua / Poochyena / Purrloin.
+1. **The duo and the Duo pass** on today's three types, sim mirror, bot check.
+2. **Real types in the Safari**: the chart, every Safari Pokémon and move retyped, the super-effective hint on cards.
+3-8. **One new type a session**: its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
+   `SPRITE_FIT`, cries), its themed area and the catch that adds it to the pool; sim mirror and a bot check of its pairs.
+9. **The balance pass** over all 36 pairs, then patch notes and a githack link.
+Prompt for session 0: "Read CLAUDE.md, docs/roadmap.md's 'Six new types for the Safari's duo pool' and 'Safari duos,
+real types and new areas' entries, docs/reference/safari.md, docs/reference/cards.md and docs/card-design.md. Write
+docs/duo-design.md as that entry's session 0 lists, show me the open choices, and change nothing else until I approve."
+
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
 set is built (the helpers' brief, budgets, the check) is its "Building a set" section. Done so far: every kind
@@ -983,7 +1006,8 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   (Mewtwo's) could be a 10th later. Each new type's deck can be ~35 cards (Monster Train's clans), as a duo's pool is two
   types together (~70). One themed area per new type (so ~9-12 areas, 3 a day), its starters caught there. Starters and
   enemies may be dual types under the Safari's real chart.
-- **More playable types, discussed 2026-10-19, the user said "nah" for now**: skins with their own decks, a 4th type.
+- **More playable types, discussed 2026-10-19**: skins with their own decks stay "nah" for now; the six new types are a go
+  (Open, ready to build). Notes kept from the talk:
   If it comes back: Fighting / Dark / Psychic is the real chart's second clean triangle (Fighting > Dark > Psychic >
   Fighting; starters Timburr or Machop, Zorua, Gothita or Abra; Psychic would stop being neutral, so Mewtwo re-checked),
   Ground / Rock / Ice a weaker one; enemies can take all 18 real types cheaply, but playable decks cap near 9-10 types at
