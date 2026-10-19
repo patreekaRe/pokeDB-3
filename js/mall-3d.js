@@ -800,6 +800,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     k.mon.group.position.set(k.x, k.lift ?? 0.3, k.z);   // on a step behind the counter, so it shows over it
     k.mon.group.traverse(o => { o.userData.front = spot; });
     built.group.add(k.mon.group);
+    if (k.sign) k.label = keeperSign(k);
     places[id] = { id, front: SHOPS[id].front, ...built };
     if (id !== 'f2' && id !== 'f3') addDoor(places[id]);   // upstairs the way out is the lift down
     smallNoShadow(built.group);
@@ -811,6 +812,8 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
       say, partner: () => walker, keeper: () => places.gc.keeper, calm: () => calm,
     });
   }
+  const kl = places[id].keeper?.label;
+  if (kl) kl.show(places[id].keeper.sign(loadBase()));   // the yard may have been built since
   setPlace(places[id], (typeof at === 'function' ? at(places[id]) : at) ?? places[id].door ?? DOOR, facing);
   if ((id === 'f1' || id === 'f2') && ballroomOpen(loadBase())) loadStatues(statueStands().map(k => PIECES[k].statueOf));   // 3F's, fetched ahead
   if (id === 'hall') syncRibbon();
@@ -824,6 +827,55 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     return talk('You came! Welcome to my shop! Every piece on the stands is fresh today. Tap one and I\'ll tell you about it.', 5600);
   }
   if (P.keeper) talk(pickLine(P.keeper.hello), 4200);
+}
+
+let signFont;
+/** The words floating over a shopkeeper whose tap opens a catalogue: Bungee letters in the store's gold with a soft glow,
+    on a board facing the camera, bobbing a little in the frame loop. `show(text)` repaints it, '' hides it. */
+function keeperSign(k) {
+  const c = document.createElement('canvas');
+  c.width = 640; c.height = 120;
+  c.fine = true;
+  const map = texOf(c);
+  const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, fog: false });
+  const w = 2.4, mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, w * c.height / c.width), m);
+  const board = k.mon.board;
+  board.geometry.computeBoundingBox();
+  const y = board.geometry.boundingBox.max.y + 0.32;
+  mesh.rotation.x = -PITCH;
+  mesh.renderOrder = 3;
+  mesh.raycast = () => {};
+  k.mon.group.add(mesh);
+  let text = null;
+  const paint = () => {
+    const d = c.getContext('2d');
+    d.clearRect(0, 0, c.width, c.height);
+    if (!text) return;
+    let px = 76;
+    do d.font = `${px -= 2}px Bungee, "Arial Black", sans-serif`; while (px > 30 && d.measureText(text).width > c.width - 40);
+    d.textAlign = 'center'; d.textBaseline = 'middle'; d.lineJoin = 'round';
+    const cx = c.width / 2, cy = c.height / 2;
+    d.shadowColor = 'rgba(255, 220, 140, 0.9)'; d.shadowBlur = 18;
+    d.lineWidth = 12; d.strokeStyle = 'rgba(240, 190, 80, 0.5)';
+    d.strokeText(text, cx, cy);
+    d.shadowBlur = 0;
+    d.lineWidth = 7; d.strokeStyle = d.fillStyle = '#3a2408';
+    for (let i = 4; i > 0; i -= 2) { d.strokeText(text, cx, cy + i); d.fillText(text, cx, cy + i); }
+    d.strokeStyle = '#5a3a10';
+    d.strokeText(text, cx, cy);
+    const grad = d.createLinearGradient(0, cy - px * 0.42, 0, cy + px * 0.42);
+    grad.addColorStop(0, '#fffbe8'); grad.addColorStop(0.55, '#fff2c0'); grad.addColorStop(1, '#f0c860');
+    d.fillStyle = grad;
+    d.fillText(text, cx, cy);
+    map.needsUpdate = true;
+  };
+  signFont ??= new FontFace('Bungee', 'url(https://fonts.gstatic.com/s/bungee/v17/N0bU2SZBIuF2PU_0DXR1.woff2)').load()
+    .then((f) => document.fonts.add(f));
+  signFont.then(paint, () => {});
+  return {
+    show(t) { if (t === text) return; text = t; mesh.visible = !!t; paint(); },
+    tick(now) { mesh.position.y = y + (calm ? 0 : Math.sin(now / 700) * 0.05); },
+  };
 }
 
 const pickLine = (lines) => lines[Math.floor(Math.random() * lines.length)];
@@ -1446,6 +1498,7 @@ function frame(now) {
     k.board.scale.x = walker.x > P.keeper.x + 0.3 ? -1 : 1;
     const left = (P.keeper.hopUntil || 0) - now;
     k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
+    P.keeper.label?.tick(now);
   }
   P.tick?.(now, dt, hud);
   if (P.id === 'hall') for (const t of dressed) t(now, dt);

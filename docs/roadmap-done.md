@@ -3163,3 +3163,8 @@ bobs. The jeep opens it too. +6 draws in the Outfitter (246 -> 252 headless). De
 hard refresh). Stale cached files after many pushes in a day. `load3d()` in `js/run.js` now asks once a page load after its
 second failure, and Reload fetches the game's scripts past the cache first (`freshReload()`). Checked in the browser pane
 with a forced failure (No walks out, Reload reloads); tests pass (367). Detail in `docs/reference/walk-in-rooms.md`.
+
+**Catalogue signs over the mall's shopkeepers, a walkable Garden pond** (2026-10-19, the user's ask: players didn't know to
+tap Smeargle). GARDEN CATALOGUE floats over Smeargle once you have a backyard, GRAND CATALOGUE over Gardevoir; the Garden
+pond is a rug-layer piece now. Checked headless (sign shown/hidden, no errors) and within the phone budget. Detail in
+`docs/reference/hub-base-mall.md`.
