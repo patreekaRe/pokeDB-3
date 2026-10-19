@@ -1,0 +1,328 @@
+# Safari duos and six new types: the design (roadmap session 0)
+
+**Status: a draft for the user's approval (2026-10-19).** Nothing is built. Branch `duo-types` (both repos; pokeDB-sim
+gets its `duo-types` in session 1). The roadmap's "Six new types for the Safari's duo pool" is the build list and its
+Ideas entry "Safari duos, real types and new areas" the reasons; this doc is the rules those sessions build to. Every
+**(open N)** is a choice for the user, listed at the end with a recommendation; the text below assumes the
+recommendation until the user says otherwise.
+
+In short: in the Safari you can bring **two starters of different types**, one out at a time. One HP bar, one deck
+(half each type). Switching costs 1 PP; the one out takes the enemy's hits as its type, gets STAB on its own type's
+cards and is the only Ability that works. The Safari moves to the **real Gen 5 type chart** (no immunities, capped at one
+step). Six new playable types join the **duo pool** when you catch their starters in their own new Safari areas:
+**Electric, Ice, Fighting, Ground, Flying, Dark**, each with ~74 cards on three new archetypes, an Ability, starters and
+an area. With Fire / Grass / Water that makes 9 types and 36 duos.
+
+## 1. The duo (session 1, on Fire / Grass / Water)
+
+| Rule | Proposal |
+|---|---|
+| Where | Safari runs only (`run.safari`), from the Duo Run screen (section 2). The Daily run stays one dealt starter. |
+| HP | **One HP bar** for the trainer, as now (`BASE_HP` + perks + `HP_PER_STAGE`): no fainting of one partner, every heal and relic works unchanged **(open 1)**. |
+| Stage | Shared: both evolve together at the bosses, like `run.stage` today. The evolution card pick offers both types' evo cards. |
+| Switch | A tap on the benched partner's chip on your nameplate, then a second tap on "⇄ Go, Shinx! 1 PP" (the pile picker's two-tap pattern, no accidental switches). **1 PP**, any number of times on your turn, never on the enemy's; it doesn't end the turn **(open 2)**. A few cards and one relic make it free (Volt Switch, Baton Pass, Shed Shell). |
+| Who's out at a fight's start | Whoever was out when the last fight ended; the first fight, the one you picked first **(open 8)**. |
+| Defending type | The one out's **deck type** (Shinx defends as Electric; a Charizard skin as Fire, not Fire / Flying) **(open 4)**. |
+| STAB | A card of the type that's out deals **x1.2** damage (attack damage only: not block, Burn, Leech Seed, Tide, Static...). Neutral cards never **(open 3)**. |
+| Abilities | Only the one out's. A "fight's start" Ability (Torrent's 2 Tide, Snow Warning's Hail) fires the first time that partner comes out each fight, so switching can't farm it; "after a fight" ones (Overgrow) go by who's out at the knockout **(open 5)**. |
+| What stays when you switch | Everything on the battle: block, strength, Focus, Tide, powers, the enemy's Burn / Seed / Static. Only the defending type, STAB and the Ability change. |
+| Starting deck | 10 cards, half each: each type's 2 basic attacks, 2 basic blocks and its Bash-like signature (Fire: Ember x2, Flame Wall x2, Scorch; Grass: Vine Whip x2, Block x2, Seed Bomb; Water: Water Gun x2, Withdraw x2, Water Pulse) **(open 6)**. |
+| Card rewards | Three cards: one of each type, the third either (50/50); Neutral cards come in at their usual share. The Mart's cards, Move Tutor, Metronome and the ? events' type pools are both types' pools together **(open 7)**. |
+| Relics and items | The Bag is the trainer's: both types' `only` relics and items are in the pools, and a type's held-item relic (Charcoal, Miracle Seed...) boosts its type's cards whoever is out. |
+| The intent | The bubble shows the move's type icon, with ▲ when it's super effective on the one out and ▼ when resisted; the bench chip shows the same mark for the partner, so you see at a glance whether a switch helps. |
+| Screen | The one out's back sprite on your pad; the partner a small portrait chip on your nameplate (its type colour, its ▲/▼). The switch plays the games' "come back / go" (a red-light recall into a ball, the partner's GIF out) under `battleFx()`, a cut without. |
+| The save | `run.duo = { ids: [a, b], out: 0 }` beside `run.starter` (which stays the lead, so the ~100 places reading `run.starter.type` keep working until each is moved to a `runTypes()` / `outType()` helper). Additive, so no `RUN_SAVE_VERSION` bump. |
+| Off the board | A duo run never posts to the leaderboard; coins as a Replay; catches, signature cards and Safari Pokédex pages count as usual. |
+| The sim | `sim/engine.js` mirrors switching, STAB and the out-only Ability. The bot switches when the coming hit is ▲ on the one out and not on the partner and it can spare the PP, or when its hand is mostly the partner's type; checked on the 3 pairs against the same bot's solo runs. |
+
+## 2. The Duo Run screen (session 1)
+
+The Safari lobby's (`js/safariprep.js`) third way in, beside the Daily run and Replay: **Duo Run** (the roadmap's "Duo
+pass", renamed so it isn't confused with the 100-coin Day Pass **(open 9)**). A fourth key on the device, **Duo**,
+slides its app over the LCD like Pokédex / Ranks / Buy:
+1. **Today's road**: the day's 3 areas in order (`safariDaily()`), each with its 2-3 main types as chips, 4 of its
+   Pokémon (sprites if seen, else silhouettes with their type chips) and its rare spawns' ✦ silhouettes. The point is to
+   plan: "the Power Plant is Electric, bring Ground".
+2. **Your duo pool**: one portrait per type you hold (the 3 free ones from the start, a new type once caught), greyed
+   ones for the types not caught yet with "Catch Shinx in the Power Plant". A tap picks; a second pick of the same type
+   swaps. Each pick's look is any owned starter of that type (◀ ▶ under the portrait, like the character select) **(open 11)**.
+3. Under the picks, per area, how the duo fares: ▲ how many of its main types your two hit super effectively, ▼ how
+   many hit you.
+4. A = **Start Duo** (the Day Pass's rules, below). B steps back.
+
+**Tries** **(open 10)**: a Duo Run is a kind of replay: open once the day's free try is used, needing the day's Day Pass
+(100), perks on, coins as Replay, never posted. So it can't be a second free run a day or a way round the pass.
+
+## 3. The duo pool, and catching new types (sessions 1 and 3-14)
+
+- The pool starts as Fire / Grass / Water (the free starters, and every owned skin as a look).
+- Each new type's **starter lines** live in that type's own new Safari area (section 5), moved there from the areas
+  they're in today. **Catching any stage of a starter line** in any Safari run (Daily, Replay or Duo) adds that type to the
+  pool, and that species as a look for it: catching Mareep adds Electric with Mareep's look; Shinx later adds Shinx's. The
+  reward box says so ("Shinx joined your duo pool! Electric unlocked").
+- **Catches already in the save count** (`save.safariDex.caught`): a Shinx caught in the Meadow last week already
+  unlocks Electric when this lands **(open 12)**.
+- The new starters stay out of `safariStarters()` (the Daily run's dealt starter: listing them would change every
+  day's starter, as Rayquaza would have), out of the main game's character select, and out of the Game Corner's skins.
+  They're Safari-only until the user says otherwise.
+- Saved as `save.duoPool = { electric: ['mareep', ...], ... }` (types and looks), filled from the Safari Pokédex on load
+  for the old catches. Follows the cloud save.
+
+## 4. The Safari's real chart (session 2)
+
+- **Safari only** (`run.safari`); the main game keeps its triangle (`TYPES` in `js/data/cards.js`) until this has proven
+  itself.
+- **The Gen 5 chart and Gen 5 typings** (no Fairy: every Pokémon here is Gen 1-5 with its Gen 5 sprite, so Clefairy is
+  Normal, Marill Water, Gardevoir Psychic) **(open 13)**.
+- **No immunities**: an immunity counts as a resistance (Ground hits Flying for x0.5, not 0).
+- **The x2 cap**, in this game's numbers: multiply the real factors of the move's type against each of the
+  defender's types, clamp to x0.5 .. x2, then map: x2 → **x1.3** (`SUPER_EFFECTIVE`), x1 → x1, x0.5 → **x0.75**
+  (`NOT_VERY_EFFECTIVE`). So a 4x weakness is no worse than a 2x one, and Grass into Water / Ground (4x) is x1.3.
+- **Neutral cards are outside the chart**, x1 against everything. Enemy Normal moves follow the chart, which is x1
+  against all nine player types anyway.
+- **Every Safari Pokémon gets its real (dual) types** and **every enemy move its real type** (a `types` field on each
+  `SAFARI_MONS` line and the borrowed wilds' Safari entries; a move-type table for the move names, replacing the `N()`
+  wrapper). Elites and bosses stay typeless, as everywhere.
+- **On screen**: the enemy's plate shows its one or two type chips; the intent its move's type (section 1); a card in
+  your hand a small ▲ / ▼ corner against this enemy (the "super-effective hint"), counted with STAB in a duo; the map's
+  "tough" mark (`run.js`, a wild whose type beats yours) reads the real chart.
+- **Psychic, Ghost, Dragon... chips**: the Safari has hidden Psychic until now so nothing gave Mewtwo's type away. With
+  real types they show; the mask keeps hiding *Mewtwo's* type and cards, not that Psychic exists **(open 14)**.
+- **Watch Grass**: on the real chart Grass is resisted by 7 types (Fire, Grass, Poison, Flying, Bug, Dragon, Steel), and
+  many of today's "Neutral" Safari Pokémon are Flying, Poison or Bug. Session 2's bot check runs the solo Daily run per
+  type before and after; if Grass drops past the noise, the fix is a Grass tweak in the Safari, not a softer chart.
+
+### What each of the nine hits and fears (real chart, before the cap)
+
+| Type | Super effective on | Resisted by | Weak to | Resists |
+|---|---|---|---|---|
+| Fire | Grass, Ice, Bug, Steel | Fire, Water, Rock, Dragon | Water, Ground, Rock | Fire, Grass, Ice, Bug, Steel |
+| Water | Fire, Ground, Rock | Water, Grass, Dragon | Grass, Electric | Fire, Water, Ice, Steel |
+| Grass | Water, Ground, Rock | Fire, Grass, Poison, Flying, Bug, Dragon, Steel | Fire, Ice, Poison, Flying, Bug | Water, Electric, Grass, Ground |
+| Electric | Water, Flying | Electric, Grass, Dragon, Ground* | Ground | Electric, Flying, Steel |
+| Ice | Grass, Ground, Flying, Dragon | Fire, Water, Ice, Steel | Fire, Fighting, Rock, Steel | Ice |
+| Fighting | Normal, Ice, Rock, Dark, Steel | Poison, Flying, Psychic, Bug, Ghost* | Flying, Psychic | Bug, Rock, Dark |
+| Ground | Fire, Electric, Poison, Rock, Steel | Grass, Bug, Flying* | Water, Grass, Ice | Poison, Rock, Electric* |
+| Flying | Grass, Fighting, Bug | Electric, Rock, Steel | Electric, Ice, Rock | Grass, Fighting, Bug, Ground* |
+| Dark | Psychic, Ghost | Fighting, Dark, Steel | Fighting, Bug | Ghost, Dark, Psychic* |
+
+\* an immunity in the games, a resistance here. Fighting is the only type that hits Normal, the Safari's most common
+type, which is why six is the fewest that covers all 18.
+
+## 5. The six new types
+
+Each type is built like Fire / Grass / Water (`docs/card-design.md`'s ground rules all hold): **~74 cards, StS's split**
+(20 common, 32 uncommon with bridges, 14 rare, plus 8 evolution cards), every card on a Slay the Spire 1 card at
+x~1.2 with its model in a comment and a hand-picked upgrade, **3 archetypes** of ~6 common / ~8 uncommon / ~5 rare each,
+bridges between them. A full 10-card starting deck (4 attacks, 4 blocks, 2 signatures) even though a duo uses half, so
+solo play stays possible later. Card names are that type's moves, Abilities and items first, made-up names (like
+Kindle, Stoke) where those run out: Ice and Electric have only ~20 moves each in Gen 1-5, so later moves' names are
+allowed too (a name is only text). Each type session writes its full card table into this doc first, as 6c did.
+
+**Keywords** were checked against the twelve archetypes (Burn / Reckless / Kindling, Growth / Drain / Spores, Tsunami /
+Shell / Flow, Force / Barrier / Mind Games), every `cardTerms()` term, the status cards and the existing card names.
+Three of the roadmap's starting ideas clashed and are renamed or moved (table after the types).
+
+### Electric: Static, Overcharge, Volt Switch
+
+Fast and disruptive. Hits Water and Flying; only Ground hurts it.
+- **Ability: Static.** While it's out, each time the enemy attacks you it gains 2 Static.
+- **Starters**: **Shinx** (Shinx, Luxio, Luxray: the deck), Mareep (Mareep, Flaaffy, Ampharos), Blitzle (Blitzle,
+  Zebstrika; a 2-stage line, see open 20). Pikachu's line could join later (it's a Safari Meadow Pokémon today).
+- **Area: the Power Plant** (Gen 1's): Gate, Turbine Hall, Generator Room, the Reactor (the boss). Its goal ahead: the
+  cooling tower's light. Holds the Shinx / Mareep / Blitzle / Pikachu / Elekid lines, Voltorb, Magnemite, Electrike,
+  Plusle, Minun, Emolga, Joltik, Tynamo; rares Electabuzz, Rotom.
+
+| Archetype | The rule | StS roots | Example cards |
+|---|---|---|---|
+| **Static** | `static: N` on the enemy (⚡ badge), lasting all fight. At the start of its turn, at 10 Static (elites 15, bosses 20) it's **Paralyzed**: it loses that move and Static goes back to 0, and the next one takes 5 more. The intent shows "⚡ Paralyzed" as soon as the meter is full. | Pressure Points (build a mark, then it fires), Vault | Thunder Wave (1: Static 5; Deadly Poison), Nuzzle (1: deal 6, Static 3; Poisoned Stab), Discharge (1: deal 6, +1 per Static; Bane), Thunder Fang (1: deal 8, +8 if it'll be Paralyzed), Zap Cannon (R, 3: deal 20, Static 10) |
+| **Overcharge** | PP now and next turn, and big-cost payoffs: 3-4 cost bombs and X costs. A rare power keeps unspent PP. | Defect's Turbo, Double Energy, Aggregate, Meteor Strike; Ice Cream | Charge (0: gain 2 PP, shuffle a Sludge into your draw pile; Turbo), Electrify (1: double your PP. Exhaust; Double Energy), Magnet Pull (1: +1 PP per 4 cards in your draw pile; Aggregate), Thunder (U, 4: deal 38; Meteor Strike-lite), Battery (R power: unspent PP carries over; Ice Cream) |
+| **Volt Switch** | The switch type: cards that switch you for free, and payoffs **whenever you switch**. | Watcher's stance dance (Flurry of Blows, Mental Fortress, Rushdown) | Volt Switch (1: deal 8, switch free; Flurry), Shock Wave (1: deal 7; if you switched this turn, +1 PP, draw 1; Rushdown), Wired (U power: whenever you switch, block 5; Mental Fortress), Volt Tackle (R, 2: deal 12, +6 per switch this fight; Perfected Strike) |
+
+Starting deck: Thunder Shock x4 (deal 7), Magnet Rise x4 (block 7), **Spark** (2: deal 10, Static 4; Bash), Thunder
+Wave.
+
+### Ice: Frostbite, Icicle, Hail
+
+Glassy and punishing. Hits Grass, Ground, Flying, Dragon; fears Fire, Fighting, Rock, Steel.
+- **Ability: Snow Warning.** The first time it comes out each fight, Hail for 2 turns.
+- **Starters**: **Vanillite** (Vanillite, Vanillish, Vanilluxe: the deck), Snorunt (Snorunt, Glalie; 2 stages),
+  maybe Swinub (Swinub, Piloswine, Mamoswine; Ice / Ground, fine as an Ice deck).
+- **Area: the Ice Cave** (Seafoam / Icefall): Frozen Falls, Ice Cave, Crystal Hall, the Frozen Lake (the boss). Takes
+  the Ice Pokémon, most of them the Peak's today (Vanillite, Snorunt, Swinub, Cubchoo, Sneasel lines; Delibird, Smoochum,
+  Cryogonal...); rares such as Jynx and Lapras.
+
+| Archetype | The rule | StS roots | Example cards |
+|---|---|---|---|
+| **Frostbite** | `frostbite: N` on the enemy (❄️ badge): every hit on it deals +1 per Frostbite, then it thaws by 1 at the end of its turn. Every hit means the partner's and multi-hits too, so it's a duo's glue. (The roadmap's "Freeze", see open 15.) | Lock-On; Silent's Envenom shape | Icy Wind (1: deal 6, Frostbite 2), Frost Breath (1: deal 6, +2 per Frostbite; Bane), Ice Beam (2: deal 12, Frostbite 3), Sheer Cold (R, 1: double the Frostbite. Exhaust; Catalyst), Permafrost (R power: Frostbite no longer thaws) |
+| **Icicle** | 0-cost **Icicle** cards: whenever one is played, every Icicle card deals +2 this fight. | Defect's Claw, All for One | Ice Shard (0: deal 3. Icicle; Claw), Icicle Spear (1: deal 2 three times. Icicle), Icicle Crash (U, 2: deal 16. Icicle), Glaciate (R, 2: deal 10, return every 0-cost card from your discard pile to your hand; All for One) |
+| **Hail** | **Weather** (below): Hail N turns. At the end of your turn the enemy takes 3; your Ice attacks deal +3 in Hail. | Noxious Fumes; Watcher's "while in a stance" payoffs | Hail (1: Hail 4), Blizzard (2: deal 18, costs 0 in Hail; Carnage), Aurora Veil (1: block 8, 14 in Hail; Dodge and Roll), Icy Rock (relic: weather lasts 3 turns longer) |
+
+Starting deck: Powder Snow x4 (deal 7), Frost Shield x4 (block 7), **Icy Wind** as the Bash (2: deal 10, Frostbite 3),
+Ice Shard.
+
+**Weather** (shared by Ice and Ground, one at a time; open 16): `battle.weather = { kind, turns }`, a badge with the
+turns left. A new weather replaces the old. Hail and Sandstorm both chip the enemy 3 at the end of your turn; Hail
+adds +3 to Ice attacks, Sandstorm +3 to Ground blocks. An Ice + Ground duo can run both, one at a time. (The
+brainstorm's "Biome weather as a battle rule" could later set a weather on this same engine.)
+
+### Fighting: Follow-up, Counter, Guts
+
+The only type that hits Normal, the Safari's most common. Fears Flying and Psychic.
+- **Ability: Guts.** While it's out and you hold a status card, your attacks deal +3. (Both starters' real Ability; it
+  turns the Safari's paralyzer / confuser / poisoner / clogger junk into power.)
+- **Starters**: **Timburr** (Timburr, Gurdurr, Conkeldurr: the deck), Machop (Machop, Machoke, Machamp). Both pure
+  Fighting, 3 stages.
+- **Area: Dojo Mountain** (the roadmap's): Trailhead, Training Steps, Waterfall Dojo, the Summit Ring (the boss). Takes
+  the Fighting Pokémon from the Peak and Forest (Machop, Timburr, Mankey, Tyrogue, Riolu, Makuhita, Meditite lines; Throh,
+  Sawk, Mienfoo, Scraggy); rares Hitmonlee, Hitmonchan, Hitmontop.
+
+| Archetype | The rule | StS roots | Example cards |
+|---|---|---|---|
+| **Follow-up** | "Follow-up (attack)" / "Follow-up (skill)": a bonus if the last card you played this turn was an attack / a skill. Chains of jabs and throws. (The roadmap's "Combo": renamed, as Combo N is already Fire's keyword.) | Watcher's Follow-Up, Sash Whip, Crush Joints | Mach Punch (0: deal 4; Follow-up (attack): draw 1), Double Kick (1: deal 4 twice; Follow-up (skill): a third time), Sky Uppercut (2: deal 14; Follow-up (attack): Vulnerable 2; Crush Joints), Fighting Spirit (U power: when you play an attack after a skill or a skill after an attack, block 3) |
+| **Counter** | `counter: N` (🥊 badge): until your next turn, each enemy attack on you deals N back. Payoffs read the hits you took **last enemy turn** (backward-looking; Dark's Punish reads the coming one). | Flame Barrier, Caltrops (one turn), Wallop | Vital Throw (1: block 8, Counter 4), Revenge (1: deal 8, 16 if you were hit last turn), Counter (U, 2: deal twice the HP you lost last enemy turn), Detect (U, 1: Counter 10. Exhaust), Bide (R, 1: store the HP you lose over the next 2 enemy turns, then deal twice that) |
+| **Guts** | Big moves hurt you: they add **Sore** (a new status card: Unplayable. Ethereal) to your hand or pile. Payoffs per status card held or exhausted, which the enemy's junk feeds too. | Wild Strike, Reckless Charge, Power Through; Evolve | Close Combat (1: deal 14, add a Sore to your hand), Superpower (2: deal 24, shuffle 2 Sores into your draw pile), Reversal (U, 1: deal 6, +6 per status card in your hand), Steadfast (U power: whenever you draw a status card, draw 1; Evolve) |
+
+Starting deck: Rock Smash x4 (deal 7), Mat Block x4 (block 7), **Low Kick** (2: deal 10, Vulnerable 2; Bash), Mach
+Punch.
+
+### Ground: Dig, Fault, Sandstorm
+
+Heavy and patient. Hits Fire, Electric, Poison, Rock, Steel; fears Water, Grass, Ice.
+- **Ability: Sturdy.** While it's out, once a fight, a hit that would knock you out leaves you at 1 HP.
+- **Starters** (open 20): **Sandshrew** (Sandshrew, Sandslash; 2 stages: the deck) or **Sandile** (Sandile, Krokorok,
+  Krookodile; 3 stages, Ground / Dark, fine as a Ground deck), Phanpy (Phanpy, Donphan; 2 stages), maybe Trapinch
+  (Trapinch, Vibrava, Flygon). **Not Drilbur**: Excadrill is a main-game enemy, and no starter line may be one.
+- **Area: the Quarry** (the Desert keeps its Fire and cacti): the Dig Site, Mudflats, the Sinkhole, the Fault Line (the
+  boss). Takes the Ground Pokémon, most of them the Desert's today (Sandshrew, Phanpy, Sandile, Trapinch, Diglett, Cubone, Hippopotas, Gligar,
+  Baltoy...); rares the session picks.
+
+| Archetype | The rule | StS roots | Example cards |
+|---|---|---|---|
+| **Dig** | A **Dig** card goes underground when played (out of your hand, a ⛏️ counter on your plate) and surfaces at the start of your next turn, resolving its "Surface:" part then. Many block now and hit later. | Phantasmal Killer, Nightmare, Doppelganger | Dig (1: block 5. Surface: deal 12), Drill Run (U, 2: Surface: deal 22), Earth Power (U, 1: deal 6, +6 per card underground), Arena Trap (U power: whenever a card surfaces, draw 1) |
+| **Fault** | `fault: N` on the enemy (🪨 badge): at the start of its turn, if its HP is at or below its Fault, it's knocked out. Elites and bosses count half their Fault. The execute, not a damage-over-time. | StS 2's Doom | Mud Bomb (1: deal 6, Fault 3), Bonemerang (1: deal 4 twice, Fault 2), Earthquake (U, 2: deal 12, Fault 5), Sand Tomb (U power: Fault 2 at the start of each turn), Fissure (R, 2: Fault 20. Exhaust) |
+| **Sandstorm** | **Weather** (see Ice): Sandstorm N turns. At the end of your turn the enemy takes 3; your Ground blocks give +3 in Sandstorm. | as Hail | Sandstorm (1: Sandstorm 4), Sand Veil (as the basic block, +3 in Sandstorm), Sand Force (U power: in Sandstorm, your attacks deal +2), Smooth Rock (relic: as Icy Rock) |
+
+Starting deck: Mud Shot x4 (deal 7), Sand Veil x4 (block 7), **Bulldoze** (2: deal 10, Weak 2; Bash), Dig.
+
+### Flying: Evasion, Tailwind, Unburden
+
+Light and quick: cheap cards, an empty hand, dodging. Hits Grass, Fighting, Bug; fears Electric, Ice, Rock.
+- **Ability: Keen Eye.** When it comes out (the fight's start too, once a turn), draw 1.
+- **Starters**: **Starly** (Starly, Staravia, Staraptor: the deck), Pidgey (Pidgey, Pidgeotto, Pidgeot), maybe Pidove
+  (Pidove, Tranquill, Unfezant). All Normal / Flying, fine as a Flying deck.
+- **Area: the Windy Cliffs**: the Cliff Path, Nesting Ledges, the Rope Bridge, the Eyrie (the boss). Takes the
+  birds from the Meadow, Forest, Wetland and Peak (Pidgey, Starly, Pidove, Spearow, Taillow, Hoothoot, Wingull, Swablu, Rufflet, Ducklett...);
+  rares such as Skarmory and Aerodactyl.
+
+| Archetype | The rule | StS roots | Example cards |
+|---|---|---|---|
+| **Evasion** | `evasion: N` on you (🪶 badge): each of the next N hits you take deals half, one stack per hit. | Silent's Blur, Wraith Form (Intangible, softened), Dodge and Roll | Feather Dance (1: Evasion 1, Weak 1), Air Slash (1: deal 8, +8 if you have Evasion), Fly (U, 2: Evasion 2, deal 12), Gale (U power: whenever Evasion halves a hit, deal 6) |
+| **Tailwind** | `tailwind: N` turns (🌬️ badge): draw 1 more card each turn. Payoffs "in Tailwind". The neutral card called Tailwind (+1 PP next turn) gets a new name, its id kept (open 18). | Tools of the Trade, Wraith Form's timer | Tailwind (U, 1: Tailwind 3), Sky Attack (R, 2: deal 30, costs 0 in Tailwind), Hurricane (U, 2: deal 6 three times, four in Tailwind), Roost (C, 1: heal 4, block 6) |
+| **Unburden** | "Unburden:" a bonus if your hand is empty after this card. Lots of 0-1 cost cards and small draws, the opposite of Water's Flow (which keeps cards). | Defect's FTL and Claw spam, Silent's Finesse, Grand Finale | Peck (0: deal 4. Unburden: draw 1), Acrobatics (1: deal 6, 12 if Unburden), Pluck (0: deal 3, draw 1), Brave Bird (R, 1: deal 20; Unburden: gain 1 PP) |
+
+Starting deck: Gust x4 (deal 7), Feather Guard x4 (block 7), **Wing Attack** (2: deal 10, Evasion 1; Bash), Peck.
+
+### Dark: Steal, Punish, Illusion
+
+Sly. Hits Psychic and Ghost; fears Fighting and Bug.
+- **Ability: Intimidate.** When it comes out (the fight's start too, once a turn), Weak 1 on the enemy.
+- **Starters** (all 2-stage; open 20): **Zorua** (Zorua, Zoroark: the deck), Poochyena (Poochyena, Mightyena), Purrloin
+  (Purrloin, Liepard). A 3-stage option is Deino (Deino, Zweilous, Hydreigon; Dark / Dragon).
+- **Area: Night Alley** (the roadmap's): the Back Streets, the Night Market, the Rooftops, the Moonlit Square (the boss).
+  Takes the Dark Pokémon, most of them the Forest's today (Poochyena, Purrloin, Zorua, Murkrow, Pawniard, Deino
+  lines...); rares Absol, Umbreon. (Sableye is a main-game enemy, so it stays out.)
+
+| Archetype | The rule | StS roots | Example cards |
+|---|---|---|---|
+| **Steal** | "Steal N": take up to N of the enemy's strength (it loses it, you gain it), or its block. Payoffs when it has buffs, and a little ₽ on knockouts. | Disarm, Sap (in reverse), Hand of Greed | Thief (1: deal 7, Steal 1), Knock Off (1: deal 8, +8 and remove its block if it has any), Snatch (U power: whenever the enemy gains strength, you gain 1), Covet (U, 1: deal 9; a knockout gives +15 ₽) |
+| **Punish** | "Punish:" a bonus if the enemy **intends to attack** this turn (forward-looking), and Taunt to make it. | Spot Weakness, Go for the Eyes, Wallop | Payback (1: deal 7; Punish: +7), Assurance (1: block 7; Punish: Vulnerable 2), Taunt (U, 0: its next move becomes an attack. Exhaust), Punishment (U, 2: deal 10, +3 per strength it has) |
+| **Illusion** | Zorua's trick, a duo one: an **Illusion** card counts as your partner's type too (STAB whoever's out), and Disguise cards let you defend as your partner's type without switching. | Watcher's stance tricks; Mimic / Dual Wield | Disguise (1: block 8; until your next turn you defend as your partner's type), Night Daze (2: deal 14. Illusion), Copycat (U, 1: copy the last card of your partner's type you played this turn), Mirage (R power: your Dark cards count as both types) |
+
+Starting deck: Bite x4 (deal 7), Obstruct x4 (block 7), **Thief** as the Bash (2: deal 10, Steal 2), Payback.
+
+### The clash check
+
+| Starting idea (roadmap) | Clash found | Now |
+|---|---|---|
+| Electric "Paralysis" | **Paralysis** is already the Wound-like status card enemies give you | The meter is **Static**, its effect "Paralyzed" (a word on the intent, not a card) |
+| Ice "Freeze" | Another enemy-skips-a-turn meter would be Static again | **Frostbite**, a damage amp (open 15) |
+| Ice "Hail" + Ground "Sandstorm" | Two weather keywords for one idea | **One Weather** with two kinds, one at a time (open 16) |
+| Fighting "Combo" | **Combo N** is Fire's (Sizzly Slide) | **Follow-up** (the last card played, not how many) |
+| Fighting "Counter" vs Dark "Punish" | Both "when it attacks" | Counter reads the hits you took; Punish the coming intent |
+| Flying "Tailwind" | **Tailwind** is a neutral card | The neutral card is renamed (open 18) |
+| Flying "cheap cards, draw" | Water's Flow is draw, Kindling cheap Cinders, Ice's Icicles 0-costs | **Unburden**: an *empty* hand, not a big one; Icicles grow, Peck draws |
+| Dark "Steal" | Grass's Sap only lowers | Steal moves it to you |
+| Ground "Dig" vs Flying "Fly" | Same move in the games | Dig is Ground's; Fly is one Evasion card |
+| Electric Static vs Psychic Barrier | none | — |
+
+Every type session also re-runs `tests/cards.test.mjs` with its new pool (no two cards a run can meet with the same
+cost and text: a duo can meet two types' pools, the neutral pool and the Safari's signature cards), and the later of two
+sessions run side by side does it after merging.
+
+## 6. What every new type needs (the plumbing)
+
+From the ~100 places that read `run.starter.type` today, per type: a `TYPES` entry (label, icon, colour) and the
+real-chart row; its theme (`setTheme()`, the CSS type colours, card frame); `ABILITIES`; `POWER_LENS`; its held-item
+relic in `TYPE_RELIC` (Magnet, Never-Melt Ice, Black Belt, Soft Sand, Sharp Beak, Black Glasses); its `only` relics
+(**6 a type** to start, not Fire's 13: a duo's pool already holds two types' worth; open 21) and 2 items (a Gem and a
+Drive); `BASICS` (the Unown Tablet); the PC Box; `describe()` and `cardTerms()` lines for each keyword, `TERM_KIND`
+colours; `ART` lines for every card; the starter's front / back / shiny GIFs per stage, `SPRITE_FIT`, `BODY_X`, cries in
+`CRIES`; the Safari Pokédex moves (pages are built from the areas, earned stays earned); the sim mirror and its relic
+ranks.
+
+## 7. Sessions (the roadmap's list, refined)
+
+0. This doc, approved.
+1. **The duo, the Duo Run screen and the duo pool** on Fire / Grass / Water (sections 1-3): the helpers, switching,
+   STAB, the bench chip, the save, the sim mirror and its bot policy, a bot check of the 3 pairs vs solo.
+2. **The real chart in the Safari** (section 4): types on every Safari Pokémon and move, the chart, the hints, the solo
+   Daily run's bot check per type.
+3-14. **Each type in two sessions**, in the order Electric, Ice, Fighting, Ground, Flying, Dark (Ground after Ice:
+   Sandstorm uses the Weather engine Ice builds). The first session builds the mechanics, the Ability, the starting
+   deck and ~35 cards; the second the other ~35, the starters (sprites, cries) and the area's **data** (its roster moved
+   in, its stages, the catch that adds the type), on an existing area's painter recoloured **(open 22)**.
+   - **The new areas are date-gated** (`areasFor(day)`): days before the launch keep their 6, so a launch mid-day can't
+     change that day's run and leaderboard; from launch on, 3 of the 12 a day.
+15. **The balance pass** over all 36 pairs and the solo Daily run, patch notes, a githack link.
+- After 15, or beside it: **the new areas' art** (each area's scene, intro film, boss prelude and arena, map palette,
+  like Safari phases 5b-5d), one or two areas a session, if open 22 goes that way.
+
+## 8. Open choices (the recommendation first)
+
+1. **HP**: one shared bar (recommended) / a bar each, the duo lost when both faint.
+2. **Switch cost**: 1 PP every time, with a few free-switch cards and a relic (recommended; a free switch every turn
+   would dodge every super-effective hit for nothing) / the first switch each turn free.
+3. **STAB**: x1.2 on attack damage (recommended: below super effective's x1.3, so the chart still matters more) / x1.25
+   / no bonus, the off-type card x0.85 instead.
+4. **Your defending type**: the deck's type (recommended: skins stay looks, and the Daily run's dealt starter can't
+   be luckier one day for its second type) / the species' real types (Charizard Fire / Flying, Swampert Water / Ground).
+5. **Abilities**: only the one out's; fight-start ones the first time each comes out (recommended) / both always.
+6. **The starting deck**: 5 + 5, each type's 2 attacks, 2 blocks and Bash-like signature (recommended) / 6 + 6 with both
+   signatures (12 cards).
+7. **Card rewards**: one of each type and the third 50/50 (recommended) / every slot 50/50.
+8. **Who's out first in a fight**: whoever was out at the last fight's end (recommended) / always your first pick.
+9. **The name**: Duo Run (recommended) / Duo pass, as the roadmap had it (close to Day Pass).
+10. **Duo tries**: a replay that needs the day's Day Pass (recommended) / unlimited and free / one free a day.
+11. **Picking**: a type from your pool, its look any owned starter of that type (recommended) / owned starters only.
+12. **Old catches**: a Shinx caught before this lands counts (recommended) / only catches made after, in the new area.
+13. **The chart**: Gen 5, no immunities, capped to x1.3 / x0.75 (recommended) / a 4x weakness as x1.5.
+14. **Psychic chips on Safari wilds**: shown (recommended: the mask hides Mewtwo's type, not that Psychic exists) /
+    ??? until Mewtwo is unlocked.
+15. **Freeze**: Electric's Static is the stun and Ice gets Frostbite (recommended) / Ice's Freeze is the stun and
+    Electric gets an orb-like Charge instead.
+16. **Weather**: one engine, Hail for Ice and Sandstorm for Ground (recommended) / Hail only, and Ground's third
+    archetype is Rollout (Defense Curl, growing each turn in a row).
+17. **Fighting's Combo** renamed Follow-up (recommended) / keep "Combo" and rename Fire's (Sizzly Slide's) instead.
+18. **The neutral Tailwind card** renamed (e.g. "Quick Step", id `tailwind` kept) so Flying owns Tailwind
+    (recommended) / Flying's keyword is "Gale" instead.
+19. **Dark's third archetype**: Illusion (recommended: Zorua's trick, made for a duo) / Crit (every third attack a turn
+    deals x1.5).
+20. **Starters**: Shinx / Mareep / Blitzle, Vanillite / Snorunt, Timburr / Machop, Sandshrew or Sandile / Phanpy,
+    Starly / Pidgey, Zorua / Poochyena / Purrloin, the first of each the deck's (recommended; Drilbur out). A **2-stage
+    line** stays its first form until the second evolution (Zorua until the last area, then Zoroark) (recommended) / evolves
+    at the first.
+21. **Type relics**: 6 per new type plus its held item (recommended) / 13 like Fire / Grass / Water.
+22. **The new areas' art**: data on a recoloured existing area in the type sessions, the full art (scene, film,
+    prelude, arena) in visual sessions after (recommended: a type session already holds 35 cards) / everything in the
+    type's two sessions.

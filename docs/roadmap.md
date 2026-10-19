@@ -50,7 +50,9 @@ type's second beside the next type's first), never two halves of the same type. 
 the later of the pair re-runs `tests/cards.test.mjs` after merging and fixes any same cost + same text twin across
 types, and any clash of two new keywords for the same idea.
 Sessions, in order, each ▶ Run in: CLOUD (both repos):
-0. **Design doc first** (effort: high) (`docs/duo-design.md`, the user approves it before any code): the duo's rules (switch cost, STAB,
+0. **Design doc first** (effort: high) (`docs/duo-design.md`, the user approves it before any code). **Drafted 2026-10-19 on
+   `duo-types`, waiting on the user's answers to its 22 open choices (its section 8)**; once answered, the doc is updated
+   to the answers and session 1 starts. What the draft covers: the duo's rules (switch cost, STAB,
    the deck split, rewards), the Duo pass screen, the Safari's real chart (no immunities, x2 cap, Neutral outside it),
    and per new type 3 archetypes for a ~70-card deck (the user's call, 2026-10-19: 70, not 35, like Fire / Grass /
    Water), its Ability, its starter lines and its area. Starting ideas (a third
