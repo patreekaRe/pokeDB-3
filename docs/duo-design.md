@@ -1,7 +1,7 @@
 # Safari duos and six new types: the design (roadmap session 0)
 
 **Status: approved 2026-10-19.** The user answered all 22 open choices by clicking through them (section 8 records
-each answer). Nothing is built yet. Branch `duo-types` (both repos; pokeDB-sim
+each answer), and session 1b's six. Sessions 1, 1b and 2 are built. Branch `duo-types` (both repos; pokeDB-sim
 gets its `duo-types` in session 1). The roadmap's "Six new types for the Safari's duo pool" is the build list and its
 Ideas entry "Safari duos, real types and new areas" the reasons; this doc is the rules those sessions build to. Every
 **(open N)** points to the user's answer in section 8; the text below follows those answers.
@@ -15,8 +15,8 @@ an area. With Fire / Grass / Water that makes 9 types and 36 duos.
 
 ## 1. The duo (session 1, on Fire / Grass / Water)
 
-**Two decks, not one** (the user's call, 2026-10-19, after session 1: "it should be as if you're controlling two
-completely different starters"; built in session 1b, its six rules the user's answers 23-28 in section 8). Each partner
+**Two decks, not one** (built in session 1b, 2026-10-19; the user's call after session 1: "it should be as if you're controlling two
+completely different starters"; its six rules are the user's answers 23-28 in section 8). Each partner
 keeps its own deck and its own piles in battle; it replaced answer 6's shared 5 + 5 and refined answer 7.
 
 | Rule | Proposal |
@@ -342,3 +342,32 @@ The 22 open choices, clicked through as answer cards. Where the user wrote their
     deck's). No 2-stage rule is needed.
 21. **Type relics**: 6 per new type plus its held item.
 22. **The new areas' art**: data first on a recoloured existing area; the full art in visual sessions afterwards.
+
+### Session 1b's answers: two decks (2026-10-19)
+
+The user's call after session 1 ("as if you're controlling two completely different starters"), then six answer cards:
+
+23. **Hands**: two hands a turn. Asked first about discard-and-draw ("You really would do a discard?"): Claude agreed it
+    let a switch back and forth draw a new 5 each time, and proposed this instead: each partner has its own hand, a
+    switch swaps which you hold, its first time out in a turn draws its own, and both hands discard at the turn's end.
+24. **Switch cost**: 1 PP, re-measured with two decks.
+25. **The bench's piles**: untouched while benched.
+26. **Card rewards**: one of each type, the third either; each joins its type's deck; a Neutral card asks who takes it.
+27. **Deck picks** (Mart, Center, PC, events): both decks in one picker, grouped under each partner.
+28. **The save**: `run.duo.decks`; a session 1 duo save on the branch is dropped.
+
+**Bot check** (human bot, Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`, the bot that fetches the
+partner's hand keeping 2 PP back; 300 a duo cell, 150 the rest; noise ~±6 / ±8), win %:
+
+| | fire+grass | fire+water | grass+water |
+|---|---|---|---|
+| two decks, the default bot | 80.0 | 55.7 | 49.7 |
+| `noFetch` (switch only to dodge a ▲ hit) | 70.0 | 55.3 | 46.0 |
+| `fetchHold1` (keep only the switch's PP back) | 56.7 | 33.3 | 36.0 |
+
+Solo, the same bot, 150 a type: fire 81.3, grass 78.7, water 67.3. Session 1's 5 + 5 under its own bot: 66.7 / 56.0 / 59.3.
+- **Fire + Grass is level with solo**; the Water pairs trail their solo types by ~15-25 points (grass+water dies in the
+  first biome a quarter of the time with the fetch, 3% without), so Water in a duo is the balance pass's first job.
+- **Is the switch worth 1 PP now?** (session 1's finding b): for a fresh hand, yes when 2 PP stay back to play it
+  (+10 on fire+grass, level on the others); keeping only 1 back loses 13-22 points. A cheaper switch isn't needed; how
+  much a fetch buys depends on the pair, so the free-switch cards stay as planned. Left for session 15.

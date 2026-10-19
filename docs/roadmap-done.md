@@ -3189,3 +3189,12 @@ days): solo fire / grass / water 85.7 / 78.0 / 76.3 (300); duos with the design'
 dodge-only (the sim's default now) 66.7 / 56.0 / 59.3 (150); the lead's solo deck 92.7 / 82.7 / 67.3 and two-signature
 halves 83.3 / 72.7 / 78.7 (150): the 5 + 5 deck is the gap, put to the user (the roadmap). Detail in
 `docs/reference/safari.md`'s "The duo and the Duo Run" and pokeDB-sim's README.
+
+
+**Duo types, session 1b: two decks** (2026-10-19, branch `duo-types`, both repos). The user's call after session 1: each
+partner its own solo deck, piles and hand. Six answer cards (`docs/duo-design.md` answers 23-28: two hands a turn, 1 PP,
+an untouched bench, a type's card to its deck and a Neutral one asked, grouped pickers, `run.duo.decks`). `syncDecks()`
+in `js/data/duo.js` keeps the decks in step with `run.deck`; the battle's `duo.piles` / `swapPiles()` / `benchEndsTurn()`;
+`whoTakes()`, `deckGroups()` / `inDeck()` in `js/run.js`. The sim mirrors it, with a bot that fetches the partner's hand.
+Bot (300 a duo cell): fire+grass / fire+water / grass+water 80.0 / 55.7 / 49.7 vs solo fire / grass / water 81.3 / 78.7 /
+67.3 (150): the Water pairs trail, for the balance pass.
