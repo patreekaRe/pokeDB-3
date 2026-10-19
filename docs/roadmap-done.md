@@ -3198,3 +3198,15 @@ in `js/data/duo.js` keeps the decks in step with `run.deck`; the battle's `duo.p
 `whoTakes()`, `deckGroups()` / `inDeck()` in `js/run.js`. The sim mirrors it, with a bot that fetches the partner's hand.
 Bot (300 a duo cell): fire+grass / fire+water / grass+water 80.0 / 55.7 / 49.7 vs solo fire / grass / water 81.3 / 78.7 /
 67.3 (150): the Water pairs trail, for the balance pass.
+
+**Duo types, session 3: Electric's first** (2026-10-19, branch `duo-types`, both repos). Its card table went into
+`docs/duo-design.md` first (section 5, "Electric's first session"): 30 pool cards (10 / 14 / 6) and 8 evolution cards,
+each on a StS card, art in `js/card-art-electric.js`. New rules in `js/battle.js`: Static (`enemy.static`, `STATIC_CAP`,
+"⚡ Paralyzed" on the intent, a Paralyzed enemy loses its move), the Static Ability (2 a hit on you), Overcharge
+(`energyMult`, `energyPer`, Electric Surge, Battery), card switches (`switch`, `comeOut()` / `switched()`; alone a switch
+still counts), Shed Shell (a `duo: true` relic) and Baton Pass (a `duo: true` Neutral card). Shinx is a `DUO_STARTERS`
+entry (never in `STARTERS`) with back GIFs, fits and cries; catching Shinx / Luxio / Luxray adds Electric
+(`DUO_LINES`), `?duopool` lends it. `tools/electric-probe.mjs` checks the rules in a real fight. pokeDB-sim mirrors it all
+(`cap=` and `deck=` variants). The first draft trailed by 15-70 points; Fire's deck shape, Vulnerable on Spark, Weak on
+Thunder Wave, caps 7 / 11 / 15 +3 and Thunder Shock 8 fixed it: electric+fire / +grass / +water 69 / 45 / 42 against
+fire+grass 78, fire+water 57, grass+water 44 (300 each); solo electric 78 (150). Numbers in pokeDB-sim's README.

@@ -97,6 +97,8 @@ export const RELICS = [
   { id: 'spell-tag',      name: 'Spell Tag',      icon: '🏷️', rarity: 'uncommon', text: 'Every 3rd card that isn\'t an attack you play in a turn deals 5 damage to the enemy.' },   // Letter Opener
   { id: 'helix-fossil',   name: 'Helix Fossil',   icon: '🐚', rarity: 'rare',     text: 'The first time you would lose HP in each battle, you don\'t.' },   // Fossilized Helix
   { id: 'bright-powder',  name: 'Bright Powder',  icon: '✨', rarity: 'rare',     text: 'Every 6th turn of a battle, the enemy\'s attack misses you (Guard).' },   // Incense Burner
+  // a Duo Run's (docs/duo-design.md section 1): `duo` keeps it out of every other run
+  { id: 'shed-shell',     name: 'Shed Shell',     icon: '🐚', rarity: 'uncommon', duo: true, text: 'Your first switch each turn is free.' },   // (the duo's own: StS has no switching)
   { id: 'sacred-ash',     name: 'Sacred Ash',     icon: '🕯️', rarity: 'rare',     text: 'Once this run, when you would faint, you come back with half your max HP.' },   // Lizard Tail
   { id: 'assault-vest',   name: 'Assault Vest',   icon: '🦺', rarity: 'rare',     text: 'Whenever an enemy hurts you, you lose 1 less HP.' },   // Tungsten Rod
   { id: 'protective-pads', name: 'Protective Pads', icon: '🧤', rarity: 'rare',   text: 'An enemy hit that would hurt you for 5 or less hurts you for 1.' },   // Torii
@@ -156,6 +158,8 @@ export function relicTerms(relic) {
     says(/Vulnerable/) && term('Vulnerable'),
     says(/strength/i) && term('Strength'),
     says(/Focus/) && term('Focus'),
+    says(/Static/) && term('Static'),
+    says(/\bswitch/i) && term('Switch'),
     says(/Status cards/) && ['Status cards', 'Junk enemies put in your deck, for this fight only.'],
     says(/Sludge/) && ['Sludge', 'Junk: costs 1 PP, does nothing, then exhausts.'],
   ].filter(Boolean);
@@ -169,4 +173,5 @@ export const ABILITIES = {
   grass: { id: 'overgrow', name: 'Overgrow', icon: '🌿', sprite: 'ability-capsule', amount: 3, text: 'After each fight you win, heal 3 HP.' },
   water: { id: 'torrent',  name: 'Torrent',  icon: '🌊', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Tide.' },
   psychic: { id: 'pressure', name: 'Pressure', icon: '🔮', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Focus: your next attack deals +2 damage.' },
+  electric: { id: 'static', name: 'Static', icon: '⚡', sprite: 'ability-capsule', amount: 2, text: 'Each time the enemy attacks you, it gains 2 Static.' },
 };

@@ -9,12 +9,12 @@ const { RELICS, ENERGY_RELICS } = await import('../js/data/relics.js');
 const { ITEMS } = await import('../js/data/items.js');
 const { CARD_ART_IDS } = await import('../js/card-art.js');
 
-const STARTER = { fire: 'charmander', grass: 'bulbasaur', water: 'squirtle', psychic: 'mewtwo' };
+const STARTER = { fire: 'charmander', grass: 'bulbasaur', water: 'squirtle', psychic: 'mewtwo', electric: 'shinx' };
 
 test('no two cards a run can meet share a cost and text (CLAUDE.md\'s rule)', () => {
   for (const [type, id] of Object.entries(STARTER)) {
     const cards = new Map();
-    for (const c of [...poolForType(type), ...STARTERS_BY_ID[id].deck.map(x => CARDS_BY_ID[x])]) cards.set(c.id, c);
+    for (const c of [...poolForType(type, type === 'electric'), ...STARTERS_BY_ID[id].deck.map(x => CARDS_BY_ID[x])]) cards.set(c.id, c);
     const seen = new Map(), dupes = [];
     for (const c of cards.values()) {
       const key = `${c.cost}|${describe(c)}|${!!c.exhaust}|${!!c.retain}|${!!c.power}|${!!c.innate}|${!!c.ethereal}`;
@@ -28,10 +28,10 @@ test('no two cards a run can meet share a cost and text (CLAUDE.md\'s rule)', ()
 // a Duo Run meets two types' pools (docs/duo-design.md): same-text cards of two types still play differently there (STAB,
 // the chart), so the type is part of the key; same type or Neutral twins would still be caught
 test('no two cards a duo can meet share a type, cost and text', () => {
-  const types = ['fire', 'grass', 'water'];
+  const types = ['fire', 'grass', 'water', 'electric'];
   for (const [i, a] of types.entries()) for (const b of types.slice(i + 1)) {
     const cards = new Map();
-    for (const t of [a, b]) for (const c of [...poolForType(t), ...STARTERS_BY_ID[STARTER[t]].deck.map(x => CARDS_BY_ID[x])]) cards.set(c.id, c);
+    for (const t of [a, b]) for (const c of [...poolForType(t, true), ...STARTERS_BY_ID[STARTER[t]].deck.map(x => CARDS_BY_ID[x])]) cards.set(c.id, c);
     const seen = new Map(), dupes = [];
     for (const c of cards.values()) {
       const key = `${c.type}|${c.cost}|${describe(c)}|${!!c.exhaust}|${!!c.retain}|${!!c.power}|${!!c.innate}|${!!c.ethereal}`;
@@ -71,4 +71,25 @@ test('Leech Seed doesn\'t grow with evolution (the 2026-10-16 balance pass), Bur
   assert.equal(STAGE_STATUS.seed, 0);
   assert.equal(scaledEffects(CARDS_BY_ID['worry-seed'], 2).seed, CARDS_BY_ID['worry-seed'].effects.seed);
   assert.equal(scaledEffects(CARDS_BY_ID['will-o-wisp'], 2).burn, CARDS_BY_ID['will-o-wisp'].effects.burn + 2);
+});
+
+test('a Duo Run\'s own cards and relic stay out of every other run (Baton Pass, Shed Shell)', async () => {
+  const { fitsRun } = await import('../js/data/duo.js');
+  assert.ok(!poolForType('fire').some(c => c.id === 'baton-pass'));
+  assert.ok(poolForType('fire', true).some(c => c.id === 'baton-pass'));
+  const shed = RELICS.find(r => r.id === 'shed-shell');
+  assert.ok(!fitsRun(shed, { starter: STARTERS_BY_ID.charmander, relics: [] }));
+  assert.ok(fitsRun(shed, { starter: STARTERS_BY_ID.charmander, duo: { ids: ['charmander', 'shinx'], out: 0 }, relics: [] }));
+});
+
+test('Electric: a full starting deck, its evolution cards, its Ability', async () => {
+  const { ABILITIES } = await import('../js/data/relics.js');
+  const { evolutionCardsFor } = await import('../js/data/cards.js');
+  const deck = STARTERS_BY_ID.shinx.deck.map(id => CARDS_BY_ID[id]);
+  assert.equal(deck.length, 10);
+  assert.equal(deck.filter(c => c.effects.damage && !c.effects.static).length, 3);   // Fire's shape: 3 attacks, 4 blocks and an Iron Wave
+  assert.equal(deck.filter(c => c.effects.block && !c.effects.damage).length, 5);
+  assert.equal(evolutionCardsFor('electric', 1).length, 4);
+  assert.equal(evolutionCardsFor('electric', 2).length, 4);
+  assert.equal(ABILITIES.electric.id, 'static');
 });

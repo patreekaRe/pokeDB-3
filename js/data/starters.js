@@ -38,6 +38,8 @@
 const FIRE_DECK  = ['ember', 'ember', 'ember', 'flame-body', 'flame-wall', 'flame-wall', 'flame-wall', 'flame-wall', 'scorch', 'will-o-wisp'];
 const GRASS_DECK = ['vine-whip', 'vine-whip', 'vine-whip', 'vine-whip', 'cotton-guard', 'block', 'block', 'block', 'seed-bomb', 'absorb'];
 const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'water-pulse', 'withdraw', 'withdraw', 'withdraw', 'withdraw', 'bubble', 'dive'];
+// Fire's shape (3 attacks, an Iron Wave): with a 4th Thunder Shock instead of Eerie Impulse it trailed ~25 points in the bot
+const ELECTRIC_DECK = ['thunder-shock', 'thunder-shock', 'thunder-shock', 'eerie-impulse', 'magnet-rise', 'magnet-rise', 'magnet-rise', 'magnet-rise', 'spark', 'thunder-wave'];
 const PSYCHIC_DECK = ['psywave', 'psywave', 'psywave', 'psywave', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-confusion', 'psystrike'];
 
 export const STARTERS = [
@@ -375,7 +377,23 @@ export const STARTERS = [
   },
 ];
 
-export const STARTERS_BY_ID = Object.fromEntries(STARTERS.map(s => [s.id, s]));
+/* The Safari's duo pool (docs/duo-design.md section 3): a new type's starters play only in a Duo Run, once caught. They
+   stay out of STARTERS (the character select, the Game Corner, the statues, every "own every starter" count) and are
+   only looked up by id. Every one is a 3-stage line (the user's call). */
+export const DUO_STARTERS = [
+  {
+    id: 'shinx', type: 'electric', duoOnly: true,
+    line: [
+      { id: 'shinx',  name: 'Shinx' },
+      { id: 'luxio',  name: 'Luxio' },
+      { id: 'luxray', name: 'Luxray' },
+    ],
+    blurb: 'Quick and shocking. Builds Static until the enemy is Paralyzed, and switches out in a flash.',
+    deck: ELECTRIC_DECK,
+  },
+];
+
+export const STARTERS_BY_ID = Object.fromEntries([...STARTERS, ...DUO_STARTERS].map(s => [s.id, s]));
 
 /** Path to one of a starter's images at a given evolution stage. kind is 'front' or 'back'. `shiny` defaults to
     whether its shiny colours are switched on (the Game Corner sells them). */

@@ -6,7 +6,7 @@
 import { poolForType, evolutionCardsFor, MAX_COPIES, baseId, upgradeId, CARDS_BY_ID, SAFARI_ONLY_CARDS } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { ITEM_WEIGHTS } from './data/items.js';
-import { runTypes, runItems, fitsTypes, rewardSlots } from './data/duo.js';
+import { runTypes, runItems, fitsRun, rewardSlots } from './data/duo.js';
 import { playSound } from './audio.js';
 import { random, shuffled, pickOne } from './rng.js';
 import { textPace, textHold } from './prefs.js';
@@ -43,7 +43,7 @@ export function cardChoices(run, source, count = 3, { reward = false } = {}) {
   // Bait and Rock are only ever offered in the Safari Zone
   const extra = run.safari ? SAFARI_ONLY_CARDS : [];
   const fits = (c) => copies(c.id) < MAX_COPIES;
-  let pool = [...new Set(types.flatMap(poolForType)), ...extra].filter(fits);
+  let pool = [...new Set(types.flatMap(t => poolForType(t, !!run.duo))), ...extra].filter(fits);
   const chosen = [];
   // a duo's fight reward deals a slot per type, the third either: each slot from that type's pool, Neutral at its usual share
   const slots = run.duo && reward ? rewardSlots(types, count, random()) : null;
@@ -55,7 +55,7 @@ export function cardChoices(run, source, count = 3, { reward = false } = {}) {
   };
   while (chosen.length < count && pool.length) {
     const slot = slots?.[chosen.length];
-    const from = slot ? [...poolForType(slot), ...extra].filter(c => fits(c) && !chosen.includes(c)) : pool;
+    const from = slot ? [...poolForType(slot, true), ...extra].filter(c => fits(c) && !chosen.includes(c)) : pool;
     const card = draw(from.length ? from : pool);
     chosen.push(card);
     pool = pool.filter(c => c !== card);
@@ -96,7 +96,7 @@ const TIERS = ['common', 'uncommon', 'rare'];
  * A boss offers its own boss relics, or the normal pool once you hold them all.
  */
 export function relicChoices(run, { boss = false, source = 'normal' } = {}) {
-  const fits = RELICS.filter(r => !r.unique && !run.relics.includes(r.id) && fitsTypes(r.only, runTypes(run)));
+  const fits = RELICS.filter(r => !r.unique && !run.relics.includes(r.id) && fitsRun(r, run));
   const bossPool = boss ? fits.filter(r => r.boss) : [];
   if (bossPool.length) return shuffled(bossPool).slice(0, 3);
   let pool = fits.filter(r => !r.boss);

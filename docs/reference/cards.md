@@ -155,6 +155,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (Block: Grass's starting Defend, which offered doubled Water's Withdraw); Tackle is Pommel Strike (6 + draw 1) and Fire
   Lash burns. Cross-type twins (Scorch / Seed Bomb, Firestorm / Solar Beam...) never meet in a run, so they stay.
 
+- **Electric** (2026-10-19, the Safari's duo pool; `docs/duo-design.md` section 5, `docs/reference/safari.md`'s duo
+  section): `ELECTRIC_CARDS` / `ELECTRIC_EVO_*`, art in `js/card-art-electric.js`. New keys: `static`, `perStatic`,
+  `ifFull`, `energyMult`, `energyPer`, `switch`, `ifSwitched`, `perSwitch`, `growOnPlay: { discount }`; powers
+  `staticEachTurn`, `paraEnergy`, `attackStatic`, `energyEachTurn`, `keepEnergy`, `switchBlock`, `switchDraw`,
+  `switchStrength`. Boxes: Static, Paralyzed, Switch. A `duo: true` card (Baton Pass) is offered only in a Duo Run
+  (`poolForType(type, duo)`). `TYPES.electric` has no triangle match-ups: outside the Safari it's neutral.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,

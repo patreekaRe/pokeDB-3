@@ -341,9 +341,21 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   the base three are every owned starter of the type. `duoNews()` in `js/run.js` (from `creditSafari()`) adds a type
   when a stage of one of its `DUO_LINES` starter lines is in `save.safariDex.caught`, old catches included, with the
   reward box's "Shinx joined your duo pool! Electric unlocked." `DUO_LINES` is empty until the type sessions.
-- **Not built yet**: the free switches (Volt Switch, Baton Pass, Shed Shell) come with Electric's session; Duo Runs
-  have no leaderboard tab.
-- **Playtest**: `?duorun` (the Duo key open), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+- **Electric** (session 3, 2026-10-19; its rules and card table are `docs/duo-design.md` section 5's "Electric's first
+  session"): the first new type. **Shinx** (`DUO_STARTERS` in `js/data/starters.js`: looked up by id only, never in
+  `STARTERS`, so no character select, Game Corner, statue or "every starter" count sees it; its back GIFs, `SPRITE_FIT`,
+  `BODY_X` and cries came with it), `DUO_LINES.electric` (catching Shinx, Luxio or Luxray adds Electric; session 4
+  adds Mareep / Pichu / Elekid / Tynamo and moves them to the Power Plant). In `js/battle.js`: **Static**
+  (`applyStatic()`, `enemy.static`, the ⚡ badge; `staticCap()` 10 / Alpha 15 / boss 20, +5 per `enemy.paras`;
+  `paralyzing()`: the intent reads "⚡ Paralyzed" and `enemyTurn()`'s step 1c skips the move), the **Static Ability**
+  (an enemy attack adds 2), **Overcharge** (`energyMult`, `energyPer`, powers `energyEachTurn`, `keepEnergy`),
+  **switches** (`switch: true` sets `b.switchAfter`; `playCard()` then calls `comeOut()` free in a duo and `switched()`
+  always: `b.switches` / `b.switchesTurn`, powers `switchBlock` / `switchDraw` / `switchStrength`; `ifSwitched`,
+  `perSwitch`). `switchOut()` is now only the chip's paid switch (`switchCost()`: **Shed Shell**, a `duo: true` relic,
+  makes the turn's first free). **Baton Pass** is a `duo: true` Neutral card: `poolForType(type, duo)` and `fitsRun()`
+  keep both out of every other run. `?duopool` lends every built type for the page load; `tools/electric-probe.mjs`
+  checks the mechanics in a real fight. The Card index has no Electric tab yet. Duo Runs have no leaderboard tab.
+- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 

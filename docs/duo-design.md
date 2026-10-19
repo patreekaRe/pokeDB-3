@@ -166,6 +166,87 @@ Fast and disruptive. Hits Water and Flying; only Ground hurts it.
 Starting deck: Thunder Shock x4 (deal 7), Magnet Rise x4 (block 7), **Spark** (2: deal 10, Static 4; Bash), Thunder
 Wave.
 
+#### Electric's first session: its cards (session 3, 2026-10-19)
+
+Written here before the code, as 6c did. 30 cards in the pools (10 common, 14 uncommon, 6 rare) and all 8 evolution
+cards, so a run with Electric is whole; session 4 adds the other ~36 (10 common, 18 uncommon, 8 rare). Each card is on
+a StS 1 card at x~1.2 (its model in the last column and in a comment on its line) with a hand-picked upgrade.
+
+**The rules**, as built (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- **Static** (`static: N`, `enemy.static`, a ⚡ badge on the enemy): lasts all fight. At the start of the enemy's turn
+  (after Burn and Leech Seed), at **7** Static (an Alpha 11, a boss 15, +3 for each time it's been Paralyzed this
+  fight; `STATIC_CAP` in `js/data/cards.js`, 10 / 15 / 20 +5 in the first draft, see the bot check below) it's **Paralyzed**: it loses that move (the next one comes up), and its Static goes back to 0. The intent shows
+  "⚡ Paralyzed" as soon as the meter is full. Static doesn't grow with evolution (Burn's +1 a stage does).
+- **Overcharge**: PP now (`energy`), next turn (`nextEnergy`), doubled (`energyMult`), per 4 cards in the draw pile
+  (`energyPer`), each turn (power `energyEachTurn`), kept (power `keepEnergy`: unspent PP carries over), and the 3-5 cost
+  bombs and X costs that spend it.
+- **Switch** (`switch: true`): once the card has done its thing (and gone to its pile), the partner comes out free.
+  Alone (a solo run) it still counts as a switch. Payoffs: `ifSwitched` (you switched this turn), `perSwitch` (+N per
+  switch this fight), powers `switchBlock`, `switchDraw`, `switchStrength` (every switch, paid or free, card or chip).
+- **Static** the Ability: while Electric is out, each enemy attack gives the enemy 2 Static (blocked or not).
+- **Shed Shell** (relic, Duo Runs only): your first switch each turn is free. **Baton Pass** (Neutral, offered only in
+  Duo Runs, `duo: true`): 0 PP, block 3, switch.
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Thunder Shock | C | 1 | Deal 8 *(up 11)* | — | Strike |
+| Magnet Rise | C | 1 | Block 8 *(up 11)* | — | Defend |
+| Spark | C | 2 | Deal 10, Static 4, Vulnerable 2 *(up 12, 6, 3)* | Static | Bash |
+| Thunder Wave | C | 1 | Static 5, Weak 1 *(up 7, 2)* | Static | Deadly Poison (+ Will-O-Wisp's Weak) |
+| Nuzzle | C | 1 | Deal 6, Static 3 *(up 8, 4)* | Static | Poisoned Stab |
+| Eerie Impulse | C | 1 | Block 10, Static 3 *(up 13, 4)* | Static | Iron Wave: Electric's Flame Body |
+| Charge | C | 0 | Gain 2 PP; shuffle a Sludge into your draw pile *(up 3 PP)* | Overcharge | Turbo |
+| Rising Voltage | C | 2 | Deal 16; costs 1 less each time you play it this fight *(up 20)* | Overcharge | Streamline |
+| Volt Switch | C | 1 | Deal 8. Switch *(up 11)* | Volt Switch | Flurry of Blows |
+| Shock Wave | C | 1 | Deal 7; if you switched this turn, +1 PP and draw 1 *(up 10)* | Volt Switch | Rushdown's payoff, as an attack |
+| Discharge | U | 1 | Deal 6, +1 per Static on the enemy *(up 9)* | Static | Bane |
+| Thunder Fang | U | 1 | Deal 8; if the enemy will be Paralyzed, +8 *(up 10, +10)* | Static | Bane (the meter full) |
+| Zing Zap *(bridge)* | U | 1 | Deal 7, Static 3; if you switched this turn, Static 3 more *(up 9, 4 / 4)* | Static/Volt Switch | Poisoned Stab |
+| Electric Terrain | U | 1 | Power: Static 2 at the start of each turn *(up 3)* | Static | Noxious Fumes |
+| Lightning Rod | U | 1 | Power: whenever the enemy is Paralyzed, +2 PP next turn *(up cost 0)* | Static/Overcharge | (Static's Vault payoff) |
+| Electrify | U | 1 | Double your PP. Exhaust *(up cost 0)* | Overcharge | Double Energy |
+| Magnet Pull | U | 1 | Gain 1 PP per 4 cards in your draw pile *(up per 3)* | Overcharge | Aggregate |
+| Thunder | U | 4 | Deal 36, Static 8 *(up 44, 10)* | Overcharge/Static | Meteor Strike-lite |
+| Electric Surge | U | 2 | Power: +1 PP at the start of each turn *(up cost 1)* | Overcharge | Fusion (a Plasma a turn) |
+| Magnetic Flux | U | X | Block 8, X times *(up 10)* | Overcharge | Reinforced Body |
+| Wired | U | 1 | Power: whenever you switch, block 5 *(up 7)* | Volt Switch | Mental Fortress |
+| Motor Drive | U | 1 | Power: whenever you switch, draw 2 *(up cost 0)* | Volt Switch | Rushdown |
+| Electro Drift | U | 1 | Deal 9; if you switched this turn, +9 *(up 11, +11)* | Volt Switch | Tantrum / Follow-Up |
+| Overdrive *(bridge)* | U | 1 | Block 8; if you switched this turn, +1 PP *(up 11)* | Volt Switch/Overcharge | Escape Plan |
+| Zap Cannon | R | 3 | Deal 20, Static 10 *(up 26, 12)* | Static | Bludgeon + Static |
+| Static Field | R | 2 | Power: whenever a hit of yours gets through, Static 1 *(up cost 1)* | Static | Envenom |
+| Battery | R | 1 | Power: unspent PP carries over to your next turn *(up cost 0)* | Overcharge | Ice Cream |
+| Gigavolt Havoc | R | 5 | Deal 50; +3 PP next turn *(up 60)* | Overcharge | Meteor Strike |
+| Volt Tackle | R | 2 | Deal 12, +5 per switch this fight *(up +7)* | Volt Switch | Perfected Strike |
+| Plus | R | 2 | Power: whenever you switch, your hits deal +1 all fight *(up cost 1)* | Volt Switch | Demon Form, per switch |
+
+Evolution cards (evo-only, 1 copy; one per archetype and one general a tier):
+
+| Card | Tier | Cost | Effect | Arch |
+|---|---|---|---|---|
+| Thunder Punch | 1st | 1 | Deal 9, Static 4 | Static |
+| Charge Beam | 1st | 1 | Deal 8, draw 1, +1 PP next turn | Overcharge |
+| Wild Charge | 1st | 2 | Deal 16. Switch | Volt Switch |
+| Thunderbolt | 1st | 2 | Deal 17, Weak 1 (16 read like Fraxure's signature card) | — |
+| Fusion Bolt | final | 2 | Deal 22, Static 8 | Static |
+| Electro Shot | final | 3 | Deal 34; +2 PP next turn | Overcharge |
+| Supercell Slam | final | 2 | Deal 24. Switch | Volt Switch |
+| Bolt Strike | final | 3 | Deal 32, draw 2 | — |
+
+Electric so far: 10 common, 14 uncommon, 6 rare, 8 evolution = **38**, plus Baton Pass (Neutral, Duo Runs only).
+
+**Starting deck, as built**: Thunder Shock x3, **Eerie Impulse**, Magnet Rise x4, Spark, Thunder Wave: Fire's shape
+(3 attacks, 4 blocks and an Iron Wave), not the 4 + 4 above. The bot check below says why.
+
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`; solo the
+main game at Level 0, `humanCfg(type, 0)`), win %. The first draft (the table's numbers before the bot: Thunder Shock 7
+x4, Magnet Rise 7, Spark and Thunder Wave without Vulnerable or Weak, Static at 10 / 15 / 20 +5), 150 a cell: solo
+Electric 8-10 against Fire 76; electric+fire 33, electric+grass 11, electric+water 9 against fire+grass 79, fire+water
+56, grass+water 52. What it took, screened 150 a cell on solo Electric: Fire's shape (Flame Body traded for a 4th Ember
+took Fire itself from 61 to 35), Spark's Vulnerable and Thunder Wave's Weak (17 -> 51 together), lower caps (-> ~60),
+then on the duos Thunder Shock 8 (electric+grass 35 -> 48, electric+water 39 -> 45). Rejected, within noise: the Static
+Ability at 3, caps 7 / 10 / 13, Overdrive 10 and Nuzzle with Weak. The shipped numbers' check is in the roadmap's entry.
+
 ### Ice: Frostbite, Icicle, Hail
 
 Glassy and punishing. Hits Grass, Ground, Flying, Dragon; fears Fire, Fighting, Rock, Steel.

@@ -125,6 +125,10 @@ import { SAFARI_MONS } from './safari-mons.js';
 export const SUPER_EFFECTIVE = 1.3;
 export const NOT_VERY_EFFECTIVE = 0.75;
 
+/** Electric's Static: the meter that Paralyzes the enemy, a wild one's, an Alpha's and a boss's, and how much each
+    Paralysis this fight raises it (docs/duo-design.md section 5). */
+export const STATIC_CAP = { fight: 7, elite: 11, boss: 15, step: 3 };   // 10 / 15 / 20 +5 at first: Electric's pairs trailed 15-40 points (2026-10-19)
+
 /** StS's Weak and Vulnerable. Both wear off by one at the end of each enemy turn. */
 export const WEAK_MULT = 0.75;
 export const VULNERABLE_MULT = 1.5;
@@ -136,6 +140,7 @@ export const TYPES = {
   grass:  { label: 'Grass',   icon: '🌿', beats: 'water', losesTo: 'fire'  },
   normal: { label: 'Neutral', icon: '🔯', beats: null,    losesTo: null    },
   psychic: { label: 'Psychic', icon: '🔮', beats: null,    losesTo: null    },
+  electric: { label: 'Electric', icon: '⚡', beats: null,   losesTo: null    },   // the Safari's duo pool: there the real chart decides (js/data/real-types.js)
 };
 
 /* Every card is modelled on a Slay the Spire 1 card (named in its comment), at StS's numbers
@@ -172,6 +177,8 @@ const NEUTRAL_CARDS = [
   { id: 'pay-day',      name: 'Pay Day',      type: 'normal', cost: 2, art: '🪙', sprite: 'amulet-coin', effects: { damage: 24, payDay: 20 }, rarity: 'rare', upgrade: { effects: { damage: 30, payDay: 25 } } },   // Hand of Greed
   { id: 'sketch',       name: 'Sketch',       type: 'normal', cost: 0, art: '🖌️', sprite: 'silk-scarf', effects: { sketch: 1 }, exhaust: true, rarity: 'rare', upgrade: { exhaust: false } },   // Secret Technique / Secret Weapon
   { id: 'mega-evolution', name: 'Mega Evolution', type: 'normal', cost: 2, art: '🧬', sprite: 'dna-splicers', effects: { upgradeAll: true }, exhaust: true, rarity: 'rare', upgrade: { cost: 1 } },   // Apotheosis
+  // a Duo Run's free switch (docs/duo-design.md section 5): `duo: true` keeps it out of every other run's pools
+  { id: 'baton-pass',   name: 'Baton Pass',   type: 'normal', cost: 0, art: '🪄', sprite: 'shed-shell', effects: { block: 3, switch: true }, duo: true, upgrade: { effects: { block: 6 } } },   // Finesse, its draw a switch
   { id: 'last-resort',  name: 'Last Resort',  type: 'normal', cost: 0, art: '⭐', sprite: 'normal-gem', effects: { damage: 60, needsEmptyDraw: true }, rarity: 'rare', upgrade: { effects: { damage: 72 } } },   // Grand Finale
 ];
 
@@ -489,6 +496,43 @@ const PSYCHIC_CARDS = [
   { id: 'mind-control',        name: 'Mind Control',        type: 'psychic', cost: 2, art: '🎭', effects: { vulnerable: 3, weaken: 3, sap: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { vulnerable: 4, weaken: 4, sap: 3 } } }, // Malaise, fixed cost
 ];
 
+/* Electric (the Safari's duo pool, docs/duo-design.md section 5): Static builds on the enemy until it's Paralyzed and
+   loses a move (Vault, as a meter), Overcharge makes PP now and next turn for 3-5 cost bombs and X costs (Defect's Turbo,
+   Double Energy, Aggregate), Volt Switch switches you free and pays off on every switch (Watcher's stance dance). Session
+   3 built 30 of its ~66 pool cards and all 8 evolution cards. */
+const ELECTRIC_CARDS = [
+  { id: 'thunder-shock',  name: 'Thunder Shock',  type: 'electric', cost: 1, art: '⚡', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike (8: without Burn or Tide, 7 left Electric's pairs 10-15 points under, 2026-10-19's bot check)
+  { id: 'magnet-rise',    name: 'Magnet Rise',    type: 'electric', cost: 1, art: '🧲', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend (8, like Flame Wall and Withdraw)
+  { id: 'spark',          name: 'Spark',          type: 'electric', cost: 2, art: '✨', effects: { damage: 10, static: 4, vulnerable: 2 }, upgrade: { effects: { damage: 12, static: 6, vulnerable: 3 } } },   // Bash, plus Static
+  { id: 'thunder-wave',   name: 'Thunder Wave',   type: 'electric', cost: 1, art: '〰️', effects: { static: 5, weaken: 1 }, upgrade: { effects: { static: 7, weaken: 2 } } },   // Deadly Poison, plus Weak like Will-O-Wisp
+  { id: 'nuzzle',         name: 'Nuzzle',         type: 'electric', cost: 1, art: '🐭', effects: { damage: 6, static: 3 }, upgrade: { effects: { damage: 8, static: 4 } } },   // Poisoned Stab
+  { id: 'eerie-impulse',  name: 'Eerie Impulse',  type: 'electric', cost: 1, art: '📡', effects: { block: 10, static: 3 }, upgrade: { effects: { block: 13, static: 4 } } },   // Iron Wave, Static for the hit: Electric's Flame Body
+  { id: 'charge',         name: 'Charge',         type: 'electric', cost: 0, art: '🔋', effects: { energy: 2, addCard: { id: 'sludge', to: 'draw' } }, upgrade: { effects: { energy: 3 } } },   // Turbo
+  { id: 'rising-voltage', name: 'Rising Voltage', type: 'electric', cost: 2, art: '📈', effects: { damage: 16 }, growOnPlay: { discount: 1 }, upgrade: { effects: { damage: 20 } } },   // Streamline
+  { id: 'volt-switch',    name: 'Volt Switch',    type: 'electric', cost: 1, art: '🔄', effects: { damage: 8, switch: true }, upgrade: { effects: { damage: 11 } } },   // Flurry of Blows
+  { id: 'shock-wave',     name: 'Shock Wave',     type: 'electric', cost: 1, art: '💫', effects: { damage: 7, ifSwitched: { energy: 1, draw: 1 } }, upgrade: { effects: { damage: 10 } } },   // Rushdown's payoff, as an attack
+  { id: 'discharge',      name: 'Discharge',      type: 'electric', cost: 1, art: '🌩️', effects: { damage: 6, perStatic: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 9 } } },   // Bane
+  { id: 'thunder-fang',   name: 'Thunder Fang',   type: 'electric', cost: 1, art: '🦷', effects: { damage: 8, ifFull: { bonus: 8 } }, rarity: 'uncommon', upgrade: { effects: { damage: 10, ifFull: { bonus: 10 } } } },   // Bane, on a full meter
+  { id: 'zing-zap',       name: 'Zing Zap',       type: 'electric', cost: 1, art: '⚡', effects: { damage: 7, static: 3, ifSwitched: { static: 3 } }, rarity: 'uncommon', upgrade: { effects: { damage: 9, static: 4, ifSwitched: { static: 4 } } } },   // Poisoned Stab, a Static / Volt Switch bridge
+  { id: 'electric-terrain', name: 'Electric Terrain', type: 'electric', cost: 1, art: '🟨', effects: { staticEachTurn: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { staticEachTurn: 3 } } },   // Noxious Fumes
+  { id: 'lightning-rod',  name: 'Lightning Rod',  type: 'electric', cost: 1, art: '🗼', effects: { paraEnergy: 2 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // (Static's payoff: PP when it's Paralyzed)
+  { id: 'electrify',      name: 'Electrify',      type: 'electric', cost: 1, art: '🔌', effects: { energyMult: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Double Energy
+  { id: 'magnet-pull',    name: 'Magnet Pull',    type: 'electric', cost: 1, art: '🧲', effects: { energyPer: 4 }, rarity: 'uncommon', upgrade: { effects: { energyPer: 3 } } },   // Aggregate
+  { id: 'thunder',        name: 'Thunder',        type: 'electric', cost: 4, art: '🌩️', effects: { damage: 36, static: 8 }, rarity: 'uncommon', upgrade: { effects: { damage: 44, static: 10 } } },   // Meteor Strike-lite
+  { id: 'electric-surge', name: 'Electric Surge', type: 'electric', cost: 2, art: '🔆', effects: { energyEachTurn: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 1 } },   // Fusion: a Plasma a turn
+  { id: 'magnetic-flux',  name: 'Magnetic Flux',  type: 'electric', cost: 'X', art: '🧭', effects: { perX: { block: 8 } }, rarity: 'uncommon', upgrade: { effects: { perX: { block: 10 } } } },   // Reinforced Body
+  { id: 'wired',          name: 'Wired',          type: 'electric', cost: 1, art: '🔗', effects: { switchBlock: 5 }, power: true, rarity: 'uncommon', upgrade: { effects: { switchBlock: 7 } } },   // Mental Fortress
+  { id: 'motor-drive',    name: 'Motor Drive',    type: 'electric', cost: 1, art: '⚙️', effects: { switchDraw: 2 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Rushdown
+  { id: 'electro-drift',  name: 'Electro Drift',  type: 'electric', cost: 1, art: '🏎️', effects: { damage: 9, ifSwitched: { bonus: 9 } }, rarity: 'uncommon', upgrade: { effects: { damage: 11, ifSwitched: { bonus: 11 } } } },   // Follow-Up, after a switch
+  { id: 'overdrive',      name: 'Overdrive',      type: 'electric', cost: 1, art: '🎸', effects: { block: 8, ifSwitched: { energy: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 11 } } },   // Escape Plan, a Volt Switch / Overcharge bridge
+  { id: 'zap-cannon',     name: 'Zap Cannon',     type: 'electric', cost: 3, art: '🔫', effects: { damage: 20, static: 10 }, rarity: 'rare', upgrade: { effects: { damage: 26, static: 12 } } },   // Bludgeon with Static
+  { id: 'static-field',   name: 'Static Field',   type: 'electric', cost: 2, art: '🌐', effects: { attackStatic: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Envenom
+  { id: 'battery',        name: 'Battery',        type: 'electric', cost: 1, art: '🔋', effects: { keepEnergy: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // Ice Cream, as a power
+  { id: 'gigavolt-havoc', name: 'Gigavolt Havoc', type: 'electric', cost: 5, art: '💥', effects: { damage: 50, nextEnergy: 3 }, rarity: 'rare', upgrade: { effects: { damage: 60 } } },   // Meteor Strike
+  { id: 'volt-tackle',    name: 'Volt Tackle',    type: 'electric', cost: 2, art: '🐭', effects: { damage: 12, perSwitch: 5 }, rarity: 'rare', upgrade: { effects: { perSwitch: 7 } } },   // Perfected Strike, per switch
+  { id: 'plus',           name: 'Plus',           type: 'electric', cost: 2, art: '➕', effects: { switchStrength: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Demon Form, a switch at a time
+];
+
 /* ============================================================
    EVOLUTION CARDS  -  powerful, signature moves you don't win from
    normal fights. There are two TIERS per type, one per evolution:
@@ -555,6 +599,19 @@ const PSYCHIC_EVO_HIGH = [
   { id: 'mindstorm',      name: 'Mindstorm',      type: 'psychic', cost: 'X', art: '🌪️', effects: { damage: 8, perX: { hits: 1 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11 } } }, // Force: Whirlwind
   { id: 'absolute-barrier', name: 'Absolute Barrier', type: 'psychic', cost: 2, art: '🛡️', effects: { keepBlock: 1, blockEachTurn: 5 }, power: true, evoOnly: true, maxCopies: 1, upgrade: { cost: 1 } }, // Barrier: Barricade + Metallicize
   { id: 'psycho-annihilation', name: 'Psycho Annihilation', type: 'psychic', cost: 3, art: '🌌', effects: { damage: 30, vulnerable: 3, weaken: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 38, vulnerable: 4 } } }, // Mind Games
+];
+
+const ELECTRIC_EVO_MID = [
+  { id: 'thunder-punch',  name: 'Thunder Punch',  type: 'electric', cost: 1, art: '👊', effects: { damage: 9, static: 4 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 12, static: 5 } } },   // Static
+  { id: 'charge-beam',    name: 'Charge Beam',    type: 'electric', cost: 1, art: '🔦', effects: { damage: 8, draw: 1, nextEnergy: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11 } } },   // Overcharge: Pommel Strike + a Plasma
+  { id: 'wild-charge',    name: 'Wild Charge',    type: 'electric', cost: 2, art: '🦁', effects: { damage: 16, switch: true }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 21 } } },   // Volt Switch
+  { id: 'thunderbolt',    name: 'Thunderbolt',    type: 'electric', cost: 2, art: '⚡', effects: { damage: 17, weaken: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 21, weaken: 2 } } },   // Clothesline
+];
+const ELECTRIC_EVO_HIGH = [
+  { id: 'fusion-bolt',    name: 'Fusion Bolt',    type: 'electric', cost: 2, art: '🐉', effects: { damage: 22, static: 8 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 28, static: 10 } } },   // Static
+  { id: 'electro-shot',   name: 'Electro Shot',   type: 'electric', cost: 3, art: '☄️', effects: { damage: 34, nextEnergy: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42 } } },   // Overcharge
+  { id: 'supercell-slam', name: 'Supercell Slam', type: 'electric', cost: 2, art: '⛈️', effects: { damage: 24, switch: true }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 30 } } },   // Volt Switch
+  { id: 'bolt-strike',    name: 'Bolt Strike',    type: 'electric', cost: 3, art: '🌠', effects: { damage: 32, draw: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 40 } } },
 ];
 
 /* Fight-only cards made by other cards (`addCard`): never offered, not in the Card index, never in your run deck. */
@@ -641,9 +698,9 @@ export const SIGNATURE_FOR = Object.fromEntries(SIGNATURE_CARDS.map(c => [c.from
 /** Every card you can be offered (the Card index lists these), and a lookup by id of every card there is,
     upgraded ones included: CARDS_BY_ID['ember'], CARDS_BY_ID['ember+']. */
 export const ALL_CARDS = [
-  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS,
+  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS,
   ...FIRE_EVO_MID, ...FIRE_EVO_HIGH, ...GRASS_EVO_MID, ...GRASS_EVO_HIGH, ...WATER_EVO_MID, ...WATER_EVO_HIGH,
-  ...PSYCHIC_EVO_MID, ...PSYCHIC_EVO_HIGH,
+  ...PSYCHIC_EVO_MID, ...PSYCHIC_EVO_HIGH, ...ELECTRIC_EVO_MID, ...ELECTRIC_EVO_HIGH,
 ];
 
 /* ---------- PP Up: upgraded cards ----------
@@ -656,12 +713,13 @@ export const canUpgrade = (card) => !card.upgraded && !card.status;
 
 /** The default upgrade, StS-sized: +3 damage (less per hit on multi-hits) and +3 block; else +3 heal; else +1 of
     the card's first status or buff; powers +1 on their number; anything else costs 1 less (or stops exhausting). */
-const UPGRADE_STEPS = [['burn', 2], ['seed', 2], ['weaken', 1], ['vulnerable', 1], ['sap', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['flex', 2], ['draw', 1]];
+const UPGRADE_STEPS = [['burn', 2], ['seed', 2], ['static', 2], ['weaken', 1], ['vulnerable', 1], ['sap', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['flex', 2], ['draw', 1]];
 const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, strengthEachTurn: 1, thorns: 2, blaze: 3,
   exhaustBlock: 1, exhaustDraw: 1, discardTide: 1, discardBlock: 1, cardDamage: 1, cardBlock: 1,
   rupture: 1, combust: 2, brutality: 1, drought: 1, cinderDamage: 2, exhaustBurn: 1,
   tideEachTurn: 1, drizzle: 1, riptide: 2, retainN: 1, tideSpendBlock: 1, tideSurge: 1,
-  healStrength: 1, attackHeal: 1, attackSeed: 1, debuffDamage: 2, weakEachTurn: 1, weakBlock: 2, strengthHeal: 1 };
+  healStrength: 1, attackHeal: 1, attackSeed: 1, debuffDamage: 2, weakEachTurn: 1, weakBlock: 2, strengthHeal: 1,
+  staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -685,7 +743,7 @@ const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id
 export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS].map(c => [c.id, c]));
 for (const card of [...ALL_CARDS, ...TOKEN_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
-const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS };
+const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS };
 // Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
 // 2 = your final evolution (high tier).
 const EVO_SETS = {
@@ -693,11 +751,13 @@ const EVO_SETS = {
   grass: { 1: GRASS_EVO_MID, 2: GRASS_EVO_HIGH },
   water: { 1: WATER_EVO_MID, 2: WATER_EVO_HIGH },
   psychic: { 1: PSYCHIC_EVO_MID, 2: PSYCHIC_EVO_HIGH },
+  electric: { 1: ELECTRIC_EVO_MID, 2: ELECTRIC_EVO_HIGH },
 };
 
-/** The cards a starter of this type can win as rewards: its own type + neutral cards. */
-export function poolForType(type) {
-  return [...TYPE_SETS[type], ...NEUTRAL_CARDS].filter(c => !c.noOffer);
+/** The cards a starter of this type can win as rewards: its own type + neutral cards. A Duo Run's (`duo`) also offers
+    the cards that only make sense with a partner (`duo: true`, Baton Pass). */
+export function poolForType(type, duo = false) {
+  return [...TYPE_SETS[type], ...NEUTRAL_CARDS].filter(c => !c.noOffer && (duo || !c.duo));
 }
 
 /** Only your type's own reward cards (Metronome's random card). */
@@ -738,7 +798,7 @@ export function scaledEffects(card, stage = 0) {
  * on your nameplate while it's switched on (battle.js adds up every power you play).
  */
 /** The Power Lens shown when a power card is played, in the starter's colours (purple for any other type). */
-export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪' };
+export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨' };
 
 export const POWERS = {
   blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
@@ -783,6 +843,14 @@ export const POWERS = {
   strengthBlock:    { icon: '🌳', text: (n) => `At the end of your turn, gain block equal to your strength${n > 1 ? ` x${n}` : ''}.` },
   focusEachTurn:    { icon: '🧘', text: (n) => `At the start of each turn, your next attack deals +${n} damage.` },
   focusKeep:        { icon: '🌈', flag: true, text: () => 'Focus is no longer used up: every attack adds it.' },
+  staticEachTurn:   { icon: '🟨', text: (n) => `At the start of each turn, Static ${n}.` },
+  paraEnergy:       { icon: '🗼', text: (n) => `Whenever the enemy is Paralyzed, gain ${n} energy next turn.` },
+  attackStatic:     { icon: '🌐', text: (n) => `Whenever a hit of yours gets through, Static ${n}.` },
+  energyEachTurn:   { icon: '🔆', text: (n) => `At the start of each turn, gain ${n} energy.` },
+  keepEnergy:       { icon: '🔋', flag: true, text: () => 'Energy you don\'t spend carries over to your next turn.' },
+  switchBlock:      { icon: '🔗', text: (n) => `Whenever you switch, gain ${n} block.` },
+  switchDraw:       { icon: '⚙️', text: (n) => `Whenever you switch, draw ${plural(n, 'card')}.` },
+  switchStrength:   { icon: '➕', text: (n) => `Whenever you switch, your hits deal +${n} all fight.` },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -814,6 +882,8 @@ function sentences(e) {
   if (e.perPlayed)    parts.push(`+${e.perPlayed} for each other card you've played this turn.`);
   if (e.perDiscard)   parts.push(`+${e.perDiscard} for each card you've discarded this turn.`);
   if (e.perDebuff)    parts.push(`+${e.perDebuff} for each kind of debuff on the enemy.`);
+  if (e.perStatic)    parts.push(`+${e.perStatic} for each Static on the enemy.`);
+  if (e.perSwitch)    parts.push(`+${e.perSwitch} for each time you've switched this fight.`);
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
   if (e.burn)         parts.push(e.burnTimes > 1 ? `Burn ${e.burn}, ${TIMES[e.burnTimes] ?? `${e.burnTimes} times`}.` : `Burn ${e.burn}.`);
   if (e.burnMult)     parts.push(`${MULT[e.burnMult] ?? `Multiply by ${e.burnMult}`} the enemy's Burn.`);
@@ -821,6 +891,7 @@ function sentences(e) {
   if (e.weaken)       parts.push(`Apply ${e.weaken} Weak.`);
   if (e.vulnerable)   parts.push(`Apply ${e.vulnerable} Vulnerable.`);
   if (e.seed)         parts.push(`Leech Seed ${e.seed}.`);
+  if (e.static)       parts.push(`Static ${e.static}.`);
   if (e.sap)          parts.push(`Apply ${e.sap} Sap.`);
   if (e.tempSap)      parts.push(`The enemy's attacks deal ${e.tempSap} less this turn.`);
   if (e.skipEnemy)    parts.push('The enemy skips its next turn.');
@@ -842,6 +913,8 @@ function sentences(e) {
   if (e.doubleStrength) parts.push('Double your strength.');
   if (e.focus)        parts.push(`Your next attack deals +${e.focus} damage.`);
   if (e.energy)       parts.push(`Gain ${e.energy} energy.`);
+  if (e.energyMult)   parts.push(`${MULT[e.energyMult] ?? `Multiply by ${e.energyMult}`} your energy.`);
+  if (e.energyPer)    parts.push(`Gain 1 energy for every ${e.energyPer} cards in your draw pile.`);
   if (e.discardHand) {
     parts.push('Discard your hand.');
     const each = e.perDiscarded || {};
@@ -867,6 +940,7 @@ function sentences(e) {
   if (e.copyPick)     parts.push(`Choose a card in your hand. Add ${e.copyPick > 1 ? `${e.copyPick} copies` : 'a copy'} of it to your hand.`);
   if (e.randomCard)   parts.push('Add a random card of your type to your hand. It costs 0 this turn.');
   if (e.endure)       parts.push('Until your next turn, you can\'t drop below 1 HP.');
+  if (e.switch)       parts.push('Switch.');
   if (e.addCard) {
     const { id, n = 1, to = 'hand' } = e.addCard;
     const name = CARDS_BY_ID[id]?.name ?? id;
@@ -889,6 +963,8 @@ function sentences(e) {
   if (e.ifSeeded)     parts.push(`If the enemy has Leech Seed: ${sentences(e.ifSeeded).join(' ')}`);
   if (e.ifHealed)     parts.push(`If you've healed this turn: ${sentences(e.ifHealed).join(' ')}`);
   if (e.ifEnemyAttacks) parts.push(`If the enemy intends to attack: ${sentences(e.ifEnemyAttacks).join(' ')}`);
+  if (e.ifFull)       parts.push(`If the enemy will be Paralyzed: ${sentences(e.ifFull).join(' ')}`);
+  if (e.ifSwitched)   parts.push(`If you've switched this turn: ${sentences(e.ifSwitched).join(' ')}`);
   return parts;
 }
 
@@ -909,7 +985,8 @@ export function describe(card, stage = 0) {
     if (grows.length) parts.push(`Grows ${grows.join(' and ')} each turn it stays.`);
     if (g.discount) parts.push(`Costs ${g.discount} less each turn it stays.`);
   }
-  if (card.growOnPlay) parts.push(`Each time you play it, it deals ${card.growOnPlay.damage} more this fight.`);
+  if (card.growOnPlay?.damage) parts.push(`Each time you play it, it deals ${card.growOnPlay.damage} more this fight.`);
+  if (card.growOnPlay?.discount) parts.push(`Each time you play it, it costs ${card.growOnPlay.discount} less this fight.`);
   if (!parts.length && card.status) parts.push(card.exhaust ? 'Does nothing.' : 'Clogs your hand.');
   return parts.join(' ');
 }
@@ -928,6 +1005,9 @@ export const TERMS = {
   Strength: 'Added to every hit you deal.',
   Focus: 'Adds damage to your next attack.',
   Power: 'Lasts all fight. Played once.',
+  Static: `Builds up on the enemy. At ${STATIC_CAP.fight} (Alpha ${STATIC_CAP.elite}, boss ${STATIC_CAP.boss}) it's Paralyzed. Lasts all fight.`,
+  Paralyzed: `It loses its next move and its Static drops to 0. The next takes ${STATIC_CAP.step} more Static.`,
+  Switch: 'Your partner comes out, free. Alone, it still counts as a switch.',
   Bait: 'Catch odds +50% each, its attacks +3 each. All fight.',
   Rock: 'A wild one may run off on its turn (no reward). A rare one leaves sooner.',
 };
@@ -985,10 +1065,13 @@ export function cardTerms(card) {
     uses(/vulnerable/i) && term('Vulnerable'),
     uses(/strength|^flex$/i) && term('Strength'),
     uses(/^focus/i) && term('Focus'),
+    uses(/static/i) && term('Static'),
+    uses(/static|^ifFull$|^paraEnergy$/i) && term('Paralyzed'),
+    uses(/switch/i) && term('Switch'),
     uses(/^tempSap$/) && ['Charmed', 'Its attacks this turn deal less. Gone after it acts.'],
     uses(/^statusDamage$/) && ['Status cards', 'Junk enemies (and some of your moves) put in your deck, for this fight only.'],
     uses(/^upgradeAll$/) && ['PP Up', 'A card\'s upgraded form (its name gets a +).'],
-    card.growOnPlay && ['Grows', 'Stronger each time it\'s played, until the fight ends.'],
+    card.growOnPlay && (card.growOnPlay.discount ? ['Grows', 'Cheaper each time it\'s played, until the fight ends.'] : ['Grows', 'Stronger each time it\'s played, until the fight ends.']),
     uses(/^bait$/) && term('Bait'),
     uses(/^rock$/) && term('Rock'),
     uses(/debuff/i) && ['Debuffs', 'Weak, Vulnerable, Leech Seed, Sap, Burn.'],

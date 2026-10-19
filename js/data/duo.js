@@ -21,8 +21,10 @@ export const STAB = 1.2;
 export const DUO_BASE = ['fire', 'grass', 'water'];
 
 /** A new type's starter lines, type -> { look: [every stage's species id] }: catching any stage adds the type with that
-    look. Empty until the type sessions bring Electric, Ice, Fighting, Ground, Flying and Dark. */
-export const DUO_LINES = {};
+    look. Each type's sessions fill it (Electric's first brought Shinx's line; its second the other four lines). */
+export const DUO_LINES = {
+  electric: { shinx: ['shinx', 'luxio', 'luxray'] },
+};
 
 /** The two starters of a duo, lead first. */
 export const duoStarters = (duo) => duo.ids.map(id => STARTERS_BY_ID[id]);
@@ -112,13 +114,15 @@ export function syncDecks(run, aim = {}) {
 const unique = (list) => [...new Set(list)];
 
 /** Every card a run's types can be offered, Neutral cards once (the Mart, the Move Tutor, the ? events). */
-export const runPool = (run) => unique(runTypes(run).flatMap(poolForType));
+export const runPool = (run) => unique(runTypes(run).flatMap(t => poolForType(t, !!run.duo)));
 /** Every card of the run's own types, no Neutral (Metronome's). */
 export const runTypePool = (types) => unique(types.flatMap(typePool));
 /** Items for the run's types: a type's `only` ones for either. */
 export const runItems = (types) => unique(types.flatMap(itemsForType));
 /** Whether a relic or item limited to one type (`only`) fits a run of these types. */
 export const fitsTypes = (only, types) => !only || types.includes(only);
+/** Whether a relic fits a run: its type (`only`), and a Duo Run's own (`duo`: Shed Shell) only in one. */
+export const fitsRun = (relic, run) => fitsTypes(relic.only, runTypes(run)) && (!relic.duo || !!run.duo);
 
 /** A duo card reward's type for each of its 3 slots: one of each, the third either (answer 7). `coin` is a 0-1 roll. */
 export const rewardSlots = (types, count, coin) => [types[0], types[1], types[coin < 0.5 ? 0 : 1]].slice(0, count);

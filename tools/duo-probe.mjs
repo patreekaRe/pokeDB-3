@@ -22,7 +22,7 @@ const check = (ok, what) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}`); if
 const click = (sel) => page.evaluate(s => { const n = document.querySelector(s); if (!n) return false; n.click(); return true; }, sel);
 const screen = () => page.evaluate(() => document.body.dataset.screen || [...document.querySelectorAll('section')].find(s => !s.hidden)?.id || '');
 
-await page.goto(`http://localhost:${port}/?duorun&coins=500`);
+await page.goto(`http://localhost:${port}/?duorun&duopool&coins=500`);
 await page.waitForTimeout(9000);
 await page.evaluate(() => import('/js/safariprep.js').then(m => m.openSafariPrep()));
 await page.waitForTimeout(1500);

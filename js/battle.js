@@ -21,7 +21,7 @@
 
 import { gymTalk } from './gym.js';
 import { talkOf } from './data/gym.js';
-import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
+import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT, STATIC_CAP } from './data/cards.js';
 import { spriteUrl, stageName, STARTERS_BY_ID } from './data/starters.js';
 import { ITEMS_BY_ID, ITEM_SLOTS } from './data/items.js';
 import { heldFires, heldHeal, clearsCard } from './data/held.js';
@@ -273,6 +273,9 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     played: 0,         // cards played this turn (this one included, while it resolves)
     attacks: 0,        // attacks played this turn
     discarded: 0,      // cards discarded from your hand by a card this turn
+    switches: 0,       // switches this fight, a card's or the chip's (Volt Tackle); alone, a card's switch still counts
+    switchesTurn: 0,   // ...and this turn (Shock Wave, Electro Drift)
+    shed: false,       // Shed Shell's free switch is spent this turn
 
     // the piles of cards
     drawPile: trial ? deck : piles ? piles[run.duo.out].drawPile : innateUp(deck),   // innate cards on top: always in the first hand
@@ -291,6 +294,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
       burn: run.relics.includes('flame-orb') ? 3 : 0,
       seed: (run.relics.includes('gooey-mulch') ? 2 : 0) + (aug.startSeed || 0),   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
       sap: 0,                         // its attacks deal this much less, all fight
+      static: 0,                      // Electric's meter: at staticCap() it's Paralyzed and loses its move
+      paras: 0,                       // times it's been Paralyzed this fight: each raises the next cap by 5
       weak: (aug.startWeak || 0) + (run.relics.includes('sachet') ? 2 : 0),               // turns left dealing WEAK_MULT damage
       vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
       bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
@@ -546,13 +551,14 @@ function beginPlayerTurn() {
   b.blockNext = 0;
   if (b.block) statFx('player');
   const bossEnergy = ENERGY_RELICS.filter(hasRelic).length;
-  const leftover = hasRelic('casteliacone') ? b.energy : 0;   // Casteliacone (StS's Ice Cream): unspent PP carries over
-  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('exp-share') ? 1 : 0) + bossEnergy + leftover + (hasRelic('soothe-bell') && b.turn % 3 === 0 ? 1 : 0)
+  const leftover = hasRelic('casteliacone') || p.keepEnergy ? b.energy : 0;   // Casteliacone (StS's Ice Cream), Battery: unspent PP carries over
+  b.energy = ENERGY_PER_TURN + (p.energyEachTurn || 0) + b.nextEnergy + (hasRelic('exp-share') ? 1 : 0) + bossEnergy + leftover + (hasRelic('soothe-bell') && b.turn % 3 === 0 ? 1 : 0)
     + (b.turn === 1 && hasRelic('lemonade') ? 1 : 0) + (b.turn === 1 ? a.turn1Energy || 0 : 0) + (a.energyEachTurn || 0) + b.abyss
     + (a.lowEnergy && b.hp < b.maxHp / 4 ? a.lowEnergy : 0);
   b.turnEnergy = b.energy;
   b.nextEnergy = 0;
-  b.played = b.attacks = b.discarded = 0;
+  b.played = b.attacks = b.discarded = b.switchesTurn = 0;
+  b.shed = false;
   b.hurtThisTurn = false;
   b.healedThisTurn = false;
   b.endure = false;
@@ -577,6 +583,7 @@ function beginPlayerTurn() {
   if (p.strengthEachTurn) gainStrength(p.strengthEachTurn);
   if (p.focusEachTurn) { b.focus += p.focusEachTurn; pop('player-zone', `🧘 +${p.focusEachTurn} next attack`, 'note good', 120); }   // Meditate
   if (p.weakEachTurn) applyDebuff('weaken', p.weakEachTurn);
+  if (p.staticEachTurn) applyStatic(p.staticEachTurn);
   if (p.tideEachTurn) gainTide(p.tideEachTurn);
   if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
   if (hasRelic('blue-flute')) gainTide(1);
@@ -698,6 +705,20 @@ function applyDebuff(kind, n) {
 function debuffKinds() {
   const en = battle.enemy;
   return [en.weak, en.vulnerable, en.seed, en.sap, en.burn].filter(n => n > 0).length;
+}
+
+/** The Static that Paralyzes the enemy (Electric, docs/duo-design.md section 5): STATIC_CAP by the fight's kind, and
+    more for each time it's been Paralyzed this fight. */
+const staticCap = () => (STATIC_CAP[battle.kind] ?? STATIC_CAP.fight) + STATIC_CAP.step * battle.enemy.paras;
+/** Its Static is full: at the start of its turn it's Paralyzed. */
+const paralyzing = () => battle.enemy.static >= staticCap();
+
+/** Static on the enemy, from a card, a power or the Ability. */
+function applyStatic(n, delay = 0) {
+  battle.enemy.static += n;
+  pop('enemy-zone', `⚡ Static ${n}`, 'note', delay);
+  playSound('stat-down');
+  statFx('enemy', 'down');
 }
 
 /** You lose HP by your own doing (a card or a power): never below 1. Raging Fury turns it into strength. */
@@ -865,7 +886,9 @@ function effectsOf(card, x = 0) {
   if (e.ifVulnerable && b.enemy.vulnerable > 0) addExtras(e, e.ifVulnerable);
   if (e.ifSeeded && b.enemy.seed > 0) addExtras(e, e.ifSeeded);
   if (e.ifHealed && b.healedThisTurn) addExtras(e, e.ifHealed);
-  if (e.ifEnemyAttacks && ['attack', 'drain'].includes(currentMove().kind)) addExtras(e, e.ifEnemyAttacks);
+  if (e.ifEnemyAttacks && ['attack', 'drain'].includes(currentMove().kind) && !paralyzing()) addExtras(e, e.ifEnemyAttacks);
+  if (e.ifFull && paralyzing()) addExtras(e, e.ifFull);
+  if (e.ifSwitched && b.switchesTurn) addExtras(e, e.ifSwitched);
   return e;
 }
 
@@ -893,6 +916,8 @@ function damageFor(card, e) {
   if (e.perDiscard) amount += e.perDiscard * b.discarded;
   if (e.perExhausted) amount += e.perExhausted * (e.exhausted || 0);
   if (e.perDebuff) amount += e.perDebuff * debuffKinds();
+  if (e.perStatic) amount += e.perStatic * b.enemy.static;
+  if (e.perSwitch) amount += e.perSwitch * b.switches;
   if (baseId(card.id) === 'cinder') amount += b.powers.cinderDamage || 0;
   amount += b.strength * (e.strengthMult || 1);
   if (b.powers.blaze && low) amount += b.powers.blaze;
@@ -986,6 +1011,14 @@ async function playCard(uid) {
 
   if (battle !== b) return;                      // the player left the battle
   if (b.enemy.hp <= 0) return finish(true);
+  if (b.switchAfter) {   // Volt Switch: the partner comes out free; alone, it still counts as a switch
+    b.switchAfter = false;
+    if (b.duo) await comeOut(b);
+    else pop('player-zone', '🔄 Switch!', 'note good');
+    if (battle !== b) return;
+    switched();
+    renderAll();
+  }
   if (!b.hand.length && hasRelic('magnet')) { draw(1); pop('player-zone', '🧿 Magnet', 'note good'); }
   b.busy = false;
   renderAll();
@@ -1042,6 +1075,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
       const dealt = hurtEnemy(amount);
       through += dealt;
       if (dealt > 0 && b.powers.attackSeed) applyDebuff('seed', b.powers.attackSeed);
+      if (dealt > 0 && b.powers.attackStatic) applyStatic(b.powers.attackStatic);
       hitSound(dealt, multiplier);
       hitEffect('enemy-portrait-box');
       bigHit(dealt, b.enemy.maxHp, 'enemy-img');
@@ -1088,6 +1122,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
 
   // --- everything else a card can do ---
   applyEffects(e);
+  if (e.switch) b.switchAfter = true;   // once the card has gone to its pile (playCard()), so it lands in its own
   if (e.perDiscarded && e.discardedNow) applyEffects(timesEach(e.perDiscarded, e.discardedNow));
   if (e.combo && b.played - 1 >= e.combo.at) {
     pop('player-zone', '✨ Combo!', 'note good', 150);
@@ -1178,6 +1213,7 @@ function applyEffects(e) {
   if (e.weaken)     applyDebuff('weaken', e.weaken);
   if (e.vulnerable) applyDebuff('vulnerable', e.vulnerable);
   if (e.seed)       applyDebuff('seed', e.seed);
+  if (e.static)     applyStatic(e.static);
   if (e.sap)        applyDebuff('sap', e.sap);
   if (e.block)      gainBlock(cardBlock(e.block));
   if (e.blockMult && b.block) gainBlock(b.block * (e.blockMult - 1));
@@ -1197,6 +1233,8 @@ function applyEffects(e) {
   if (e.endure)     { b.endure = true; pop('player-zone', '🎗️ Enduring', 'note good', 150); statFx('player'); }
   if (e.randomCard) addRandomCards(e.randomCard);
   if (e.energy)     { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
+  if (e.energyMult && b.energy) { const more = b.energy * (e.energyMult - 1); b.energy += more; b.turnEnergy += more; pop('player-zone', `⚡ ×${e.energyMult}`, 'note good'); }   // Electrify
+  if (e.energyPer)  { const more = Math.floor(b.drawPile.length / e.energyPer); if (more) { b.energy += more; b.turnEnergy += more; pop('player-zone', `⚡ +${more}`, 'note good'); } }   // Magnet Pull
   if (e.heal && healPlayer(e.heal + healBonus())) playSound('heal-hp');
   if (e.healPerStrength && b.strength > 0 && healPlayer(e.healPerStrength * b.strength + healBonus())) playSound('heal-hp');
   if (e.healPerSeed && b.enemy.seed > 0 && healPlayer(e.healPerSeed * b.enemy.seed + healBonus())) playSound('heal-hp');
@@ -1345,8 +1383,12 @@ const settled = (card) => card.orig || card;
 /** Blazing Torque (StS's Rampage): the copy it goes to the discard pile as hits harder, for the rest of the fight. */
 function grownCopy(card) {
   const effects = { ...card.effects };
-  for (const [key, n] of Object.entries(card.growOnPlay)) effects[key] = (effects[key] || 0) + n;
-  return { ...card, effects };
+  let discount = card.discount || 0;
+  for (const [key, n] of Object.entries(card.growOnPlay)) {
+    if (key === 'discount') discount += n;   // Rising Voltage (StS's Streamline)
+    else effects[key] = (effects[key] || 0) + n;
+  }
+  return { ...card, effects, discount };
 }
 
 /** Mega Evolution (StS's Apotheosis): every card in your hand and piles becomes its PP Upped copy for this fight. */
@@ -2061,93 +2103,109 @@ async function enemyTurn() {
     if (b.enemy.hp <= 0) { b.felledBy = 'seed'; return finish(true); }
   }
 
-  // 2. Then it uses its move (with its own sound, if it has one: Kenmatta's FORTIFY YOUR MIND), yelling its `say` first.
-  if (move.say) {
-    log(`${b.def.name}: "${move.say}"`);
-    await pause(1100);
-    if (battle !== b) return;
+  // 1c. Static: a full meter Paralyzes it, and it loses this move (the next one comes up). Static goes back to 0, and
+  // the next Paralysis takes 5 more.
+  const stuck = paralyzing();
+  if (stuck) {
+    en.static = 0;
+    en.paras += 1;
+    $('enemy-portrait-box').classList.remove('charging');
+    pop('enemy-zone', '⚡ Paralyzed!', 'note good');
+    playSound('stat-down');
+    log(`${b.def.name} is paralyzed! It can't use ${move.name}!`);
+    if (b.powers.paraEnergy) { b.nextEnergy += b.powers.paraEnergy; pop('player-zone', `🗼 +${b.powers.paraEnergy} PP next turn`, 'note good', 300); }   // Lightning Rod
   }
-  if (move.sound) playSound(move.sound);
-  $('enemy-portrait-box').classList.remove('charging');
-  if (move.kind === 'attack' || move.kind === 'drain') {
-    const damage = attackDamage(move);
-    $('enemy-portrait-box').classList.add('attacking');
-    await pause(300);
-    $('enemy-portrait-box').classList.remove('attacking');
-    if (battle !== b) return;
 
-    if (b.guard) {
-      b.guard = false;
-      pop('player-zone', '✋ Guarded!', 'block');
-      log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
-    } else {
-      const shield = b.block;
-      soakShield();
-      b.struck = true;
-      const through = hurtPlayer(Math.max(0, damage - (b.aug.hitReduce || 0)), move.name);
-      const effect = enemyTypeMultiplier(move);
-      hitSound(through, effect);
-      hitEffect('player-sprite');
-      bigHit(through, b.maxHp);
-      pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? (effect > 1 ? 'dmg super' : 'dmg') : 'block');
-      if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
-      if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
-      log(withRevive(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, damage) ? `, ${Math.min(shield, damage)} blocked` : ''}.`));
-      if (hasRelic('rocky-helmet')) {
-        hurtEnemy(3);
-        pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
-      }
-      if (hasRelic('big-pearl') && through === 0 && damage > 0) gainTide(2);
-      if (hasRelic('wave-incense') && through === 0 && damage > 0) {
-        hurtEnemy(5);
-        pop('enemy-zone', '-5 🌊', 'dmg', 320);
-      }
-      if (b.powers.thorns) {
-        hurtEnemy(b.powers.thorns);
-        pop('enemy-zone', `-${b.powers.thorns} 🔮`, 'dmg', 400);
-      }
-      const back = (b.aug.thorns || 0) + (b.aug.seedThorns && en.seed > 0 ? b.aug.seedThorns : 0) + Math.floor(damage * (b.aug.reflect || 0));
-      if (back) { const dealt = hurtEnemy(back); pop('enemy-zone', dealt > 0 ? `-${dealt} 🪞` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 450); }
+  // 2. Then it uses its move (with its own sound, if it has one: Kenmatta's FORTIFY YOUR MIND), yelling its `say` first.
+  if (!stuck) {
+    if (move.say) {
+      log(`${b.def.name}: "${move.say}"`);
+      await pause(1100);
+      if (battle !== b) return;
     }
-    if (move.kind === 'drain') {
-      en.hp = Math.min(en.maxHp, en.hp + move.heal);
-      pop('enemy-zone', `+${move.heal} HP`, 'heal', 200);
+    if (move.sound) playSound(move.sound);
+    $('enemy-portrait-box').classList.remove('charging');
+    if (move.kind === 'attack' || move.kind === 'drain') {
+      const damage = attackDamage(move);
+      $('enemy-portrait-box').classList.add('attacking');
+      await pause(300);
+      $('enemy-portrait-box').classList.remove('attacking');
+      if (battle !== b) return;
+
+      if (b.guard) {
+        b.guard = false;
+        pop('player-zone', '✋ Guarded!', 'block');
+        log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
+      } else {
+        const shield = b.block;
+        soakShield();
+        b.struck = true;
+        const through = hurtPlayer(Math.max(0, damage - (b.aug.hitReduce || 0)), move.name);
+        const effect = enemyTypeMultiplier(move);
+        hitSound(through, effect);
+        hitEffect('player-sprite');
+        bigHit(through, b.maxHp);
+        pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? (effect > 1 ? 'dmg super' : 'dmg') : 'block');
+        if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
+        if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
+        log(withRevive(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, damage) ? `, ${Math.min(shield, damage)} blocked` : ''}.`));
+        if (hasRelic('rocky-helmet')) {
+          hurtEnemy(3);
+          pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
+        }
+        if (hasRelic('big-pearl') && through === 0 && damage > 0) gainTide(2);
+        if (hasRelic('wave-incense') && through === 0 && damage > 0) {
+          hurtEnemy(5);
+          pop('enemy-zone', '-5 🌊', 'dmg', 320);
+        }
+        if (b.powers.thorns) {
+          hurtEnemy(b.powers.thorns);
+          pop('enemy-zone', `-${b.powers.thorns} 🔮`, 'dmg', 400);
+        }
+        const back = (b.aug.thorns || 0) + (b.aug.seedThorns && en.seed > 0 ? b.aug.seedThorns : 0) + Math.floor(damage * (b.aug.reflect || 0));
+        if (back) { const dealt = hurtEnemy(back); pop('enemy-zone', dealt > 0 ? `-${dealt} 🪞` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 450); }
+      }
+      if (hasAbility('static')) applyStatic(b.ability.amount, 450);   // Static: each attack on you charges it
+      if (move.kind === 'drain') {
+        en.hp = Math.min(en.maxHp, en.hp + move.heal);
+        pop('enemy-zone', `+${move.heal} HP`, 'heal', 200);
+      }
+      if (move.grow) {
+        en.grown[move.name] = (en.grown[move.name] || 0) + move.grow;
+        pop('enemy-zone', `📈 ${move.name} +${move.grow}`, 'note bad', 450);
+      }
+    } else if (move.kind === 'charge') {
+      // a turn's warning before a huge hit: the intent already showed it, so there's time to block it or finish the boss
+      pop('enemy-zone', '⚠️ Charging!', 'note bad');
+      playSound('charge');
+      statFx('enemy');
+      $('enemy-portrait-box').classList.add('charging');
+      log(`${b.def.name} is gathering energy for ${move.name}! Brace yourself!`);
+    } else if (move.kind === 'defend') {
+      en.block += move.amount;
+      pop('enemy-zone', `+${move.amount} 🛡️`, 'block');
+      statFx('enemy');
+      log(`${b.def.name} used ${move.name} and raised a shield.`);
+    } else if (move.kind === 'buff') {
+      en.strength += move.amount;
+      pop('enemy-zone', `💪 +${move.amount}`, 'note bad');
+      playSound('stat-up');
+      statFx('enemy');
+      log(`${b.def.name} used ${move.name}! Its attacks hit harder.`);
     }
-    if (move.grow) {
-      en.grown[move.name] = (en.grown[move.name] || 0) + move.grow;
-      pop('enemy-zone', `📈 ${move.name} +${move.grow}`, 'note bad', 450);
-    }
-  } else if (move.kind === 'charge') {
-    // a turn's warning before a huge hit: the intent already showed it, so there's time to block it or finish the boss
-    pop('enemy-zone', '⚠️ Charging!', 'note bad');
-    playSound('charge');
-    statFx('enemy');
-    $('enemy-portrait-box').classList.add('charging');
-    log(`${b.def.name} is gathering energy for ${move.name}! Brace yourself!`);
-  } else if (move.kind === 'defend') {
-    en.block += move.amount;
-    pop('enemy-zone', `+${move.amount} 🛡️`, 'block');
-    statFx('enemy');
-    log(`${b.def.name} used ${move.name} and raised a shield.`);
-  } else if (move.kind === 'buff') {
-    en.strength += move.amount;
-    pop('enemy-zone', `💪 +${move.amount}`, 'note bad');
-    playSound('stat-up');
-    statFx('enemy');
-    log(`${b.def.name} used ${move.name}! Its attacks hit harder.`);
-  }
-  if (move.adds) {
-    // junk for your deck (a `kind: 'status'` move does only this; an attack can do it too)
-    const { card, n = 1, to = 'discard' } = move.adds;
-    if (b.shut === card) {
-      pop('player-zone', `🛡️ No ${CARDS_BY_ID[card].name}!`, 'note good', 120);
-      if (move.kind === 'status') log(`${b.def.name} used ${move.name}! The ${CARDS_BY_ID[card].name} didn't take.`);
-      else { b.revived = [b.revived, `The ${CARDS_BY_ID[card].name} didn't take.`].filter(Boolean).join(' '); logMore(); }
-    } else {
-      addCards({ id: card, n, to });
-      playSound('stat-down');
-      if (move.kind === 'status') log(`${b.def.name} used ${move.name}! ${n > 1 ? `${n} ${CARDS_BY_ID[card].name} cards` : CARDS_BY_ID[card].name} went into your deck.`);
-      if (heldGoes('status', { card })) logMore();
+    if (move.adds) {
+      // junk for your deck (a `kind: 'status'` move does only this; an attack can do it too)
+      const { card, n = 1, to = 'discard' } = move.adds;
+      if (b.shut === card) {
+        pop('player-zone', `🛡️ No ${CARDS_BY_ID[card].name}!`, 'note good', 120);
+        if (move.kind === 'status') log(`${b.def.name} used ${move.name}! The ${CARDS_BY_ID[card].name} didn't take.`);
+        else { b.revived = [b.revived, `The ${CARDS_BY_ID[card].name} didn't take.`].filter(Boolean).join(' '); logMore(); }
+      } else {
+        addCards({ id: card, n, to });
+        playSound('stat-down');
+        if (move.kind === 'status') log(`${b.def.name} used ${move.name}! ${n > 1 ? `${n} ${CARDS_BY_ID[card].name} cards` : CARDS_BY_ID[card].name} went into your deck.`);
+        if (heldGoes('status', { card })) logMore();
+      }
     }
   }
 
@@ -2541,11 +2599,14 @@ function swapPiles(b, to) {
   ({ drawPile: b.drawPile, hand: b.hand, discard: b.discard, exhaust: b.exhaust } = piles[to]);
 }
 
-/** Why the benched partner can't come out now, or '' if it can: your turn only, for DUO_SWITCH_PP. */
+/** What switching from the chip costs now: DUO_SWITCH_PP, the turn's first free with Shed Shell. */
+const switchCost = () => (hasRelic('shed-shell') && !battle.shed ? 0 : DUO_SWITCH_PP);
+
+/** Why the benched partner can't come out now, or '' if it can: your turn only, for switchCost(). */
 function whyNotSwitch() {
   const b = battle;
   if (!b?.duo || b.busy || b.over || b.enemyActing || choosing || pilePick) return 'Not now.';
-  if (b.energy < DUO_SWITCH_PP) return `Switching costs ${DUO_SWITCH_PP} PP.`;
+  if (b.energy < switchCost()) return `Switching costs ${DUO_SWITCH_PP} PP.`;
   return '';
 }
 
@@ -2561,18 +2622,29 @@ function tapBench() {
   renderBench();
 }
 
-/** "Come back! Go!": the one out is recalled in a red light, the partner comes out of its ball. It costs PP, never
-    ends the turn, and changes only who's out: the defending type, STAB and the Ability. Block, powers, Tide and the
-    enemy's debuffs all stay. */
+/** The chip's switch: it costs PP (Shed Shell's first a turn is free) and never ends the turn. */
 async function switchOut() {
   const b = battle;
   if (!b?.duo?.armed) return;
   b.duo.armed = false;
   const problem = whyNotSwitch();
   if (problem) { log(problem); playSound('no-pp'); renderBench(); return; }
-  const d = b.duo, from = b.starter, motion = battleFx();
-  b.energy -= DUO_SWITCH_PP;
+  const cost = switchCost();
+  if (!cost) b.shed = true;
+  b.energy -= cost;
   b.busy = true;
+  await comeOut(b);
+  if (battle !== b) return;
+  switched();
+  b.busy = false;
+  renderAll();
+}
+
+/** "Come back! Go!": the one out is recalled in a red light, the partner comes out of its ball. It changes only who's
+    out: the defending type, STAB and the Ability. Block, powers, Tide and the enemy's debuffs all stay. The chip's
+    switch (switchOut()) and a card's (Volt Switch) both come here. */
+async function comeOut(b) {
+  const d = b.duo, from = b.starter, motion = battleFx();
   selectedUid = null;
   if (d.piles) swapPiles(b, 1 - d.run.out);
   d.run.out = 1 - d.run.out;
@@ -2612,8 +2684,17 @@ async function switchOut() {
     if (hasAbility('torrent')) { gainTide(b.ability.amount); abilityBanner(); }
     if (hasAbility('pressure')) { b.focus += b.ability.amount; abilityBanner(); }
   }
-  b.busy = false;
-  renderAll();
+}
+
+/** Every switch, paid or free, a card's or the chip's (alone, a card's still counts): its payoffs (Wired, Motor Drive,
+    Plus) and the counts Volt Tackle and Shock Wave read. */
+function switched() {
+  const b = battle, p = b.powers;
+  b.switches += 1;
+  b.switchesTurn += 1;
+  if (p.switchBlock) gainBlock(p.switchBlock);
+  if (p.switchDraw) draw(p.switchDraw);
+  if (p.switchStrength) gainStrength(p.switchStrength);
 }
 
 /** The partner's chip: its portrait in its type's colour, with ▲ when the coming hit is super effective on it and ▼
@@ -2625,7 +2706,7 @@ function renderBench() {
   if (!b?.duo) return;
   const mate = STARTERS_BY_ID[b.duo.run.ids[1 - b.duo.run.out]], name = stageName(mate, b.stage);
   const move = !b.over && currentMove();
-  const hits = move && (move.kind === 'attack' || move.kind === 'drain');
+  const hits = move && (move.kind === 'attack' || move.kind === 'drain') && !paralyzing();
   const edge = hits ? enemyTypeMultiplier(move, mate.type) : 1;
   const mark = edge > 1 ? '▲' : edge < 1 ? '▼' : '';
   const face = el('img', 'bench-face pixel');
@@ -2639,9 +2720,10 @@ function renderBench() {
   chip.replaceChildren(face, ...(mark ? [el('b', `bench-mark ${edge > 1 ? 'up' : 'down'}`, mark)] : []), ...(cards ? [cards] : []));
   const coming = hits ? ` ${move.name} would be ${edge > 1 ? 'super effective' : edge < 1 ? 'not very effective' : 'neutral'} on it.` : '';
   const piles = own ? held ? ` Its hand: ${own.hand.length} cards.` : ` It draws its own hand when it comes out (${own.drawPile.length} in its draw pile).` : '';
-  chip.title = `${name} (${TYPES[mate.type].label}) is on the bench. Tap to switch for ${DUO_SWITCH_PP} PP.${piles}${coming}`;
+  const cost = switchCost(), price = cost ? `${cost} PP` : 'free (Shed Shell)';
+  chip.title = `${name} (${TYPES[mate.type].label}) is on the bench. Tap to switch for ${price}.${piles}${coming}`;
   chip.setAttribute('aria-label', chip.title);
-  go.textContent = `⇄ Go, ${name}! ${DUO_SWITCH_PP} PP`;
+  go.textContent = `⇄ Go, ${name}! ${cost ? `${cost} PP` : 'Free'}`;
   go.disabled = !!whyNotSwitch();
 }
 
@@ -2779,13 +2861,17 @@ function renderIntent() {
   } else {
     icon = '💪'; kind = 'buff'; value = `+${move.amount}`; detail = `+${move.amount} strength`;
   }
+  if (paralyzing()) {   // Static is full: it loses this move
+    icon = '⚡'; kind = 'paralyzed'; value = ''; detail = `Paralyzed: its Static is full, so it loses ${move.name}`;
+  }
   // The bubble pops in like the games' "!" emote, but only when the enemy picks a new move.
-  const key = `${b.turn}:${move.name}`;
+  const key = `${b.turn}:${move.name}:${kind}`;
   const fresh = box.dataset.move !== key;
   box.dataset.move = key;
   box.className = `intent ${kind} fresh`;
   if (fresh) { box.classList.remove('fresh'); void box.offsetWidth; box.classList.add('fresh'); }
-  box.replaceChildren(el('span', 'intent-icon', icon), el('b', 'intent-value', value), el('span', 'intent-name', move.name));
+  box.replaceChildren(el('span', 'intent-icon', icon), el('b', 'intent-value', value), el('span', 'intent-name', kind === 'paralyzed' ? 'Paralyzed' : move.name));
+  if (kind === 'paralyzed') { box.title = `Next turn: ${detail}`; return; }
   if (move.adds && move.kind !== 'status') box.append(el('span', 'intent-icon intent-adds', CARDS_BY_ID[move.adds.card].art));
   if (move.adds) {
     const junk = `puts ${move.adds.n || 1} ${CARDS_BY_ID[move.adds.card].name} into your ${{ hand: 'hand', draw: 'draw pile' }[move.adds.to] || 'discard pile'}`;
@@ -2809,6 +2895,7 @@ function renderStatus() {
   if (en.weak)     enemyBadges.push(['📉', en.weak, `Weak ${en.weak}: deals 25% less damage for ${en.weak} more turn${en.weak > 1 ? 's' : ''}`]);
   if (en.vulnerable) enemyBadges.push(['💔', en.vulnerable, `Vulnerable ${en.vulnerable}: takes 50% more damage from your attacks for ${en.vulnerable} more turn${en.vulnerable > 1 ? 's' : ''}`]);
   if (en.seed)     enemyBadges.push(['🌱', en.seed, `Leech Seed ${en.seed}: at the start of its turn it loses ${en.seed} HP and you heal ${en.seed}${b.powers.seedKeep ? '' : ', then it drops by 1'}`]);
+  if (en.static)   enemyBadges.push(['⚡', en.static, `Static ${en.static}: at ${staticCap()} it's Paralyzed and loses its next move${paralyzing() ? ' (full!)' : ''}`, paralyzing() ? 'good' : '']);
   if (en.sap)      enemyBadges.push(['🍂', en.sap, `Sap ${en.sap}: its attacks deal ${en.sap} less damage, all fight`]);
   if (en.tempSap)  enemyBadges.push(['💕', en.tempSap, `Charmed: its attacks deal ${en.tempSap} less damage this turn`]);
   if (b.skipEnemy) enemyBadges.push(['🌀', '', 'Eye of the Storm: it skips its next turn']);
@@ -3193,7 +3280,7 @@ function showPreview(entry) {
  */
 function shieldPreview(block, ghost = false) {
   const b = battle, move = currentMove();
-  const hits = !b.guard && !b.struck && (move.kind === 'attack' || move.kind === 'drain');
+  const hits = !b.guard && !b.struck && (move.kind === 'attack' || move.kind === 'drain') && !paralyzing();
   const incoming = hits ? Math.max(0, attackDamage(move) - (b.aug.hitReduce || 0)) : 0;
   return shieldChunk('player', Math.min(block, incoming, b.hp), b.hp, b.maxHp, ghost);
 }

@@ -32,7 +32,7 @@ import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, baseId, upgradeId, canUpgr
 import { realBeats } from './data/real-types.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
-import { runTypes, outStarter, runPool, runItems, fitsTypes, newDuo, restoreDuo, syncDecks, duoGains, duoStarters } from './data/duo.js';
+import { runTypes, outStarter, runPool, runItems, fitsRun, newDuo, restoreDuo, syncDecks, duoGains, duoStarters } from './data/duo.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
 import { openSealed } from './data/exchange.js';
@@ -178,7 +178,7 @@ const martPrice = (price) => Math.round(price * (1 - MART_DISCOUNT[perk('martCar
 
 /** Pick one random relic for the Starting Relic Charm passive (a common or uncommon one: rare and boss relics are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
-  const pool = RELICS.filter(r => r.rarity !== 'rare' && !r.boss && !r.unique && r.id !== 'cleanse-tag' && fitsTypes(r.only, runTypes(run)));
+  const pool = RELICS.filter(r => r.rarity !== 'rare' && !r.boss && !r.unique && r.id !== 'cleanse-tag' && fitsRun(r, run));
   return pickOne(pool);
 }
 
@@ -3879,7 +3879,7 @@ function rollEvent(node, event) {
   if (event.askHp) { node.event.asked = 0; node.event.moves = shuffled(runPool(run).filter(c => c.type === 'normal')).map(c => c.id); }
   if (event.up) {   // Kecleon: which two of your relics it asks for, and what it trades for each, in a rolled order
     node.event.rolls = [random(), random()];
-    node.event.relics = shuffled(RELICS.filter(r => !r.boss && !r.unique && fitsTypes(r.only, runTypes(run)) && Object.values(event.up).includes(r.rarity))).map(r => r.id);
+    node.event.relics = shuffled(RELICS.filter(r => !r.boss && !r.unique && fitsRun(r, run) && Object.values(event.up).includes(r.rarity))).map(r => r.id);
   }
   if (event.books) node.event.books = libraryShelf(event, shuffled(runPool(run))).map(c => c.id);
   if (event.lose) node.event.lose = random();

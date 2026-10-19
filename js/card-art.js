@@ -18,6 +18,7 @@ import { GRASS } from './card-art-grass.js';
 import { PSYCHIC } from './card-art-psychic.js';
 import { NEUTRAL } from './card-art-neutral.js';
 import { NEW } from './card-art-new.js';
+import { ELECTRIC } from './card-art-electric.js';
 import { ALL_CARDS } from './data/cards.js';
 
 const OFF = new URLSearchParams(location.search).has('pixelcards');
@@ -30,6 +31,7 @@ const ART = {
   ...PSYCHIC,
   ...NEUTRAL,
   ...NEW,
+  ...ELECTRIC,
   /* ---------- Neutral ---------- */
   tackle: `<defs>${radial('a', [[0, '#fff'], [0.35, '#fff3a0'], [1, '#ffb030']])}</defs>
     <path d="M3 18h9M2 25h11M4 32h8" ${line(2.4)} opacity="0.85"/>

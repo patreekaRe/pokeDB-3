@@ -51,6 +51,7 @@ export const NEXT = [
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
   ['modes', 'Safari wild Pokémon fight on their real types and moves, on Gen 5\'s type chart; a ▲ on a card means super effective, and Net Balls suit Water and Bug.'],
   ['modes', 'Duo Run: once the day\'s Safari run is done, replay it with two of your own starters, each with its own deck and hand; switch for 1 PP.'],
+  ['modes', 'Electric joins the Duo Run: catch a Shinx in the Safari, then build Static to Paralyze foes, overcharge your PP and Volt Switch out free.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

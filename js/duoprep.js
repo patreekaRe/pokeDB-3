@@ -7,7 +7,7 @@
 
 import { safariDaily } from './data/safari.js';
 import { ENEMY_DEFS } from './data/enemies.js';
-import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { STARTERS, STARTERS_BY_ID, DUO_STARTERS, spriteUrl } from './data/starters.js';
 import { TYPES } from './data/cards.js';
 import { REAL_TYPES, speciesTypes, realFactor } from './data/real-types.js';
 import { DUO_BASE, DUO_LINES, duoPool, duoOpen } from './data/duo.js';
@@ -21,6 +21,15 @@ export const duoLent = () => new URLSearchParams(location.search).has('duorun');
 export const duoUnlocked = () => duoLent() || duoOpen(getSave().safari, safariDaily().day);
 
 const owned = (s) => !s.comingSoon && isStarterUnlocked(s);
+
+/** ?duopool lends every new type built so far (its starters' looks) for the page load: a playtest, nothing saved. */
+const poolLent = () => new URLSearchParams(location.search).has('duopool');
+/** Your duo pool, with ?duopool's lent types. */
+function poolNow() {
+  const pool = duoPool(getSave(), STARTERS, owned);
+  if (poolLent()) for (const s of DUO_STARTERS) pool[s.type] = [...new Set([...(pool[s.type] || []), s.id])];
+  return pool;
+}
 
 let host = null, start = null;
 const pick = { order: [], look: {} };   // the types picked, lead first, and the look shown for each type
@@ -130,7 +139,7 @@ function hintFor(type) {
 
 function render() {
   if (!host) return;
-  const daily = safariDaily(), pool = duoPool(getSave(), STARTERS, owned);
+  const daily = safariDaily(), pool = poolNow();
   const open = duoUnlocked();
   const types = [...new Set([...DUO_BASE, ...Object.keys(pool), ...Object.keys(DUO_LINES)])];
   const parts = [];
@@ -147,7 +156,7 @@ function render() {
 
 /** The picked pair as starter ids, lead first, or null until two are picked. */
 function pair() {
-  const pool = duoPool(getSave(), STARTERS, owned);
+  const pool = poolNow();
   if (pick.order.length !== 2) return null;
   return pick.order.map(t => (pool[t].includes(pick.look[t]) ? pick.look[t] : pool[t][0]));
 }

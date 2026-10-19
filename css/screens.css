@@ -443,6 +443,7 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .bench-chip[data-type="fire"]  { --c1: #ff8f4d; --c2: #b8321a; }
 .bench-chip[data-type="grass"] { --c1: #72dc70; --c2: #257a38; }
 .bench-chip[data-type="water"] { --c1: #5cbcff; --c2: #1d58b8; }
+.bench-chip[data-type="electric"] { --c1: #ffe066; --c2: #b88a00; }
 .bench-chip.armed { box-shadow: 0 0 0 2px #ffd84a, 0 0 8px 2px rgba(255, 216, 74, 0.7); }
 .bench-face { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
 .bench-mark {
@@ -650,6 +651,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 .intent.defend { --kind: #3878f0; }
 .intent.buff   { --kind: #30a040; }
 .intent.status { --kind: #707078; }
+.intent.paralyzed { --kind: #d8a800; }   /* Static full: it loses its move (Electric) */
 .intent.charge { --kind: #ff2a6a; animation: chargeWarn 0.6s steps(2) infinite; }   /* charging a huge hit (Eternamax's Eternabeam): it blinks */
 @keyframes chargeWarn { 50% { --kind: #ffd23a; } }   /* shuffles junk (a status card) into your deck, or hidden by the Dusk Stone */
 .intent.fresh { animation: intentPop 0.35s ease-out, bob 1.8s ease-in-out 0.35s infinite; }
@@ -1359,12 +1361,14 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .run-ability[data-type="fire"]    { background-color: #6a3008; color: #ffd0a0; border-color: #ffa650; }
 .run-ability[data-type="water"]   { background-color: #173a78; color: #cfe2ff; border-color: #6aaaf8; }
 .run-ability[data-type="psychic"] { background-color: #4e1666; color: #f0c8ff; border-color: #d670f0; }
+.run-ability[data-type="electric"] { background-color: #5c4800; color: #fff3b0; border-color: #f8d030; }
 @keyframes abilitySheen { 0%, 55% { transform: translateX(-170%); } 100% { transform: translateX(170%); } }
 @keyframes abilityGlow { 50% { opacity: 1; } }
 .run-ability[data-type="grass"]   { --glow: #62d474; }
 .run-ability[data-type="fire"]    { --glow: #ffa650; }
 .run-ability[data-type="water"]   { --glow: #6aaaf8; }
 .run-ability[data-type="psychic"] { --glow: #d670f0; }
+.run-ability[data-type="electric"] { --glow: #f8d030; }
 .run-ability[data-state="off"] { filter: saturate(0.7) brightness(0.85); }
 .run-ability[data-state="on"] { box-shadow: 0 0 6px #ff5010; animation: blazeCapsule 0.8s steps(2) infinite; }
 .run-ability[data-state="on"]::after { animation: none; }
@@ -2428,6 +2432,7 @@ body.battle-intro { pointer-events: none; }
 .hof-entry.type-grass { border-left-color: #2e8a40; }
 .hof-entry.type-water { border-left-color: #2a68c8; }
 .hof-entry.type-psychic { border-left-color: #8a45c0; }
+.hof-entry.type-electric { border-left-color: #c89a10; }
 .hof-entry-pic { display: grid; place-items: center; flex: none; width: 96px; height: 96px; }
 .hof-entry-pic img { max-width: 96px; max-height: 96px; image-rendering: pixelated; }
 .hof-entry .hof-plate { flex: 1; min-width: 0; padding: 0; border: 0; background: none; box-shadow: none; }
@@ -2443,6 +2448,7 @@ body.battle-intro { pointer-events: none; }
 .loss-chart.type-fire { --hp: #c8402a; }
 .loss-chart.type-water { --hp: #2a68c8; }
 .loss-chart.type-psychic { --hp: #8a45c0; }
+.loss-chart.type-electric { --hp: #c89a10; }
 .loss-plot { position: relative; height: 84px; }
 .loss-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .loss-line { fill: none; stroke: var(--hp); stroke-width: 3px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
@@ -3104,6 +3110,7 @@ body.battle-intro { pointer-events: none; }
 .index-only.type-grass { background: #2e8a40; }
 .index-only.type-water { background: #2a68c8; }
 .index-only.type-psychic { background: #7138a8; }
+.index-only.type-electric { background: #b88a00; }
 /* the Safari's real types (js/data/real-types.js) */
 .index-only.type-normal { background: #86866a; }
 .index-only.type-electric { background: #b08a00; }
@@ -4186,6 +4193,7 @@ body.scene-peek #backdrop { display: none; }
 .duo-pick.type-fire .duo-face  { background: radial-gradient(circle at 50% 35%, #ffd2b0, #ff8f4d); }
 .duo-pick.type-grass .duo-face { background: radial-gradient(circle at 50% 35%, #d4f5c8, #72dc70); }
 .duo-pick.type-water .duo-face { background: radial-gradient(circle at 50% 35%, #cfeaff, #5cbcff); }
+.duo-pick.type-electric .duo-face { background: radial-gradient(circle at 50% 35%, #fff6c0, #ffd84a); }
 .duo-face img { width: 100%; height: 100%; object-fit: contain; }
 .duo-face-type { position: absolute; left: -4px; top: -4px; font-size: 0.8rem; }
 .duo-face-no { position: absolute; right: -8px; bottom: -6px; padding: 1px 4px; border-radius: 4px; background: #e2a92c; color: #303038; font-style: normal; font-size: 0.75rem; }
@@ -5445,6 +5453,7 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 .duo-take[data-type="fire"]  { --c1: #ff8f4d; --c2: #b8321a; }
 .duo-take[data-type="grass"] { --c1: #72dc70; --c2: #257a38; }
 .duo-take[data-type="water"] { --c1: #5cbcff; --c2: #1d58b8; }
+.duo-take[data-type="electric"] { --c1: #ffe066; --c2: #b88a00; }
 .duo-take-face { width: 72px; height: 72px; object-fit: contain; }
 #reward-screen:has(> .deck-pick) .reward-bottom { order: 1; position: static; flex: none; margin: 0; align-self: center; }
 #reward-screen:has(> .deck-pick) .reward-log { box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px var(--shell-rim); border-color: var(--shell-rim); }

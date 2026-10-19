@@ -87,11 +87,23 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
 15. **The balance pass** (effort: high) over all 36 pairs, then patch notes and a githack link.
 - **The new areas' art** (the user's pick: data first, art after): each new area's scene, intro film, boss prelude and
   arena, one or two areas a session, after the type sessions or beside the balance pass.
-Prompt for session 3, Electric's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start from
-branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md (approved), the roadmap's duo entry (the two decks of 1b) and docs/reference/safari.md's duo section, cards.md and card-design.md. Build Electric's
-first session (the doc's section 5 and 7): write its card table into the doc first, then Static, Overcharge and Volt
-Switch, the Static Ability, the starting deck and ~35 cards with art, describe() / cardTerms() lines, the free switch,
-and the sim mirror with a bot check of Electric's pairs. Push only to duo-types in both repos and give me a githack link."
+3. ~~**Electric's first**~~ done 2026-10-19 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Electric's
+   first session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 30 pool cards + 8 evolution cards
+   with art, Static / Overcharge / Volt Switch, the Static Ability, Shinx (`DUO_STARTERS`), Shed Shell and Baton Pass
+   (Duo Runs only), the sim mirror. The bot made the starting deck Fire's shape (Thunder Shock 8 x3, Eerie Impulse,
+   Magnet Rise 8 x4, Spark + Vulnerable, Thunder Wave + Weak) and the caps 7 / 11 / 15 +3. Bot (300 a duo): electric+fire
+   69, electric+grass 45, electric+water 42 vs fire+grass 78, fire+water 57, grass+water 44; solo electric 78 (150; fire 71,
+   grass 69, water 59). Playtest: the githack link with `?duorun&duopool&coins=500` (the Duo key, Electric lent), or a
+   solo fight `?arena=fight&starter=shinx&cards=volt-switch,discharge,electric-terrain`. **Waiting on the user**: the
+   playtest, and whether Static's numbers feel right (a wild one Paralyzed at 7).
+Prompt for session 4, Electric's second, **next** (▶ Run in: CLOUD, effort: medium; attach both pokeDB-3 and pokeDB-sim,
+start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md section 5 (Electric, and its first session's
+card table and bot check), docs/reference/safari.md's duo section, cards.md and card-design.md. Build Electric's second
+session: write the other ~36 cards' table into the doc first (10 common, 18 uncommon, 8 rare, defence-leaning: the first
+half is attack-heavy), then the cards with art (js/card-art-electric.js), the other four starter lines (Mareep, Pichu,
+Elekid, Tynamo: back GIFs, SPRITE_FIT, BODY_X, cries, DUO_STARTERS, DUO_LINES), the Power Plant's data on a recoloured
+area (date-gated, the five lines moved in), Magnet + 6 Electric relics + 2 items, the Card index's Electric tab, the sim
+mirror and a bot check of Electric's pairs. Push only to duo-types in both repos and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

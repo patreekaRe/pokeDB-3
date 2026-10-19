@@ -434,6 +434,7 @@ export const SPRITE_FIT = {
   'doduo-front': [4, 0, 1, 4],
   'skitty-front': [6, 0, 1, 7],
   'bidoof-front': [3, 1, 3, 4],
+  'shinx-back': [1, 0, 1, 3],
   'shinx-front': [2, 0, 1, 1],
   'starly-front': [2, 0, 1, 2],
   'kricketot-front': [1, 0, 6, 6],
@@ -812,7 +813,9 @@ export const SPRITE_FIT = {
   'metang-front': [7, 4, 5, 4],
   'metagross-front': [6, 0, 4, 2],
   'staraptor-front': [6, 0, 9, 5],
+  'luxio-back': [2, 0, 2, 4],
   'luxio-front': [1, 0, 3, 1],
+  'luxray-back': [1, 0, 2, 3],
   'luxray-front': [1, 0, 3, 4],
   'buneary-front': [13, 1, 5, 3],
   'glameow-front': [11, 0, 0, 17],
@@ -920,6 +923,12 @@ export const BODY_X = {
   'manaphy-back': 8,
   'keldeo-front': -4,
   'mewtwo-front': 2,
+  'shinx-front': -4,
+  'shinx-back': 6,
+  'luxio-front': -10,
+  'luxio-back': 8,
+  'luxray-front': -12,
+  'luxray-back': 10,
 };
 
 /** GIF pixels to add to a sprite's pose-box centring so its body, not its box, stands in the middle. */
