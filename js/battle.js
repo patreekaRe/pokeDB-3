@@ -30,7 +30,7 @@ import { isShiny, getSave, updateSave, markSeen, safariSparkle } from './storage
 import { shinyImage } from './data/shinies.js';
 import { vibrate, battleFx, calmFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
-import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems } from './data/duo.js';
+import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems, syncDecks } from './data/duo.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
@@ -141,6 +141,9 @@ export function abandonBattle() {
   setLoop('low-hp', false);
 }
 
+/** A shuffled draw pile with its innate cards on top, so they're in the first hand. */
+const innateUp = (deck) => [...deck.filter(c => !c.innate), ...deck.filter(c => c.innate)];
+
 export const isBattleRunning = () => battle !== null && !battle.over;
 
 const hasRelic = (id) => battle.relics.includes(id);
@@ -184,13 +187,20 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
   // a dojo trial (js/data/dojo.js) draws its set deck in order, `deck[0]` first
   const trial = encounter.trial ?? null;
   const deck = trial ? run.deck.map(id => CARDS_BY_ID[id]).reverse() : shuffle([...run.deck.map(id => CARDS_BY_ID[id]), ...junk]);
+  // a duo's two decks (docs/duo-design.md section 1, rule 1b): each partner its own piles, the one out's live in
+  // drawPile / hand / discard / exhaust and the other's wait in `duo.piles`, untouched while it's benched
+  if (run.duo) syncDecks(run);
+  const piles = run.duo?.decks && !trial
+    ? run.duo.decks.map((ids, i) => ({ drawPile: innateUp(shuffle([...ids.map(id => CARDS_BY_ID[id]), ...(i === run.duo.out ? junk : [])])), hand: [], discard: [], exhaust: [] }))
+    : null;
   choosing = null;
 
   battle = {
     starter: out,
     // a Duo Run's pair (js/data/duo.js): `run` is the run's own { ids, out }, switched in place so the next fight starts
     // with whoever's out; `came` the partners already out this fight (a fight-start Ability fires once each)
-    duo: run.duo ? { run: run.duo, types: runTypes(run), came: [run.duo.out], armed: false, switches: 0 } : null,
+    // `piles` each partner's own (the one out's written back on a switch), `drew` who has drawn its hand this turn
+    duo: run.duo ? { run: run.duo, types: runTypes(run), came: [run.duo.out], armed: false, switches: 0, piles, drew: [false, false] } : null,
     stage: run.stage,
     biome: run.biome,
     def,
@@ -265,10 +275,10 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     discarded: 0,      // cards discarded from your hand by a card this turn
 
     // the piles of cards
-    drawPile: trial ? deck : [...deck.filter(c => !c.innate), ...deck.filter(c => c.innate)],   // innate cards on top: always in the first hand
-    hand: [],
-    discard: [],
-    exhaust: [],       // exhausted and power cards: gone for the rest of THIS fight only
+    drawPile: trial ? deck : piles ? piles[run.duo.out].drawPile : innateUp(deck),   // innate cards on top: always in the first hand
+    hand: piles ? piles[run.duo.out].hand : [],
+    discard: piles ? piles[run.duo.out].discard : [],
+    exhaust: piles ? piles[run.duo.out].exhaust : [],       // exhausted and power cards: gone for the rest of THIS fight only
 
     // the enemy
     enemy: {
@@ -580,10 +590,8 @@ function beginPlayerTurn() {
   }
   if (hasRelic('exp-share')) { playSound('fortify'); pop('player-zone', '🎓 +1 card', 'block', 150); }   // the user's call: his shout every time his relic draws
   if (a.infiniteLoop && b.discard.length) { b.drawPile = shuffle([...b.drawPile, ...b.discard]); b.discard = []; }   // Infinite Loop
-  draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
-    + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
-    + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0)
-    + (hasRelic('water-stone') ? 1 : 0) + b.drawNext);
+  if (b.duo) b.duo.drew = b.duo.drew.map((_, i) => i === b.duo.run.out);
+  draw(turnDraw() + b.drawNext);
   b.drawNext = 0;
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (a.randomCard) addRandomCards(a.randomCard);
@@ -593,6 +601,15 @@ function beginPlayerTurn() {
   if (b.turn === 1 && !b.safari) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
   else if (b.turn === HINT_TURNS + 1) hideHandHint();
   renderAll();
+}
+
+/** The hand a turn draws (Lagging Tail's extra aside): also what a duo's partner draws the first time it comes out in a turn. */
+function turnDraw() {
+  const b = battle, p = b.powers, a = b.aug;
+  return HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
+    + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
+    + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0)
+    + (hasRelic('water-stone') ? 1 : 0);
 }
 
 /* The opening hand can't be tapped until it has finished sliding in: a tap meant for the intro, or one landing on a
@@ -1970,6 +1987,7 @@ async function endTurn() {
   }
   b.discard.push(...b.hand.filter(h => !kept.has(h)).map(h => h.card));
   b.hand = b.hand.filter(h => kept.has(h));
+  if (b.duo) benchEndsTurn(b);
   // a card kept in hand grows (Aqua Cutter, Life Dew, Hydro Cannon) and Ebb and Flow makes it cheaper, for this fight:
   // it becomes its own copy, so the deck's card stays as it was
   for (const h of b.hand) {
@@ -2504,6 +2522,25 @@ function renderAll() {
 
 /* ---------- a Duo Run's switch (docs/duo-design.md section 1) ---------- */
 
+/** The benched partner's hand at the end of your turn, like the one out's (rule 1): its Ethereal cards fade, its Retain
+    cards (and all of it under Slowpoke Tail) stay with it, the rest goes to its own discard pile. */
+function benchEndsTurn(b) {
+  const bench = b.duo.piles[1 - b.duo.run.out];
+  if (!bench.hand.length) return;
+  for (const h of bench.hand) h.card = settled(h.card);
+  bench.exhaust.push(...bench.hand.filter(h => h.card.ethereal).map(h => h.card));
+  const keep = (h) => !h.card.ethereal && (h.card.retain || hasRelic('slowpoke-tail'));
+  bench.discard.push(...bench.hand.filter(h => !h.card.ethereal && !keep(h)).map(h => h.card));
+  bench.hand = bench.hand.filter(keep);
+}
+
+/** Swap the live piles to partner `to`'s: the one going back keeps its own, as they stand. */
+function swapPiles(b, to) {
+  const { piles, run } = b.duo;
+  piles[run.out] = { drawPile: b.drawPile, hand: b.hand, discard: b.discard, exhaust: b.exhaust };
+  ({ drawPile: b.drawPile, hand: b.hand, discard: b.discard, exhaust: b.exhaust } = piles[to]);
+}
+
 /** Why the benched partner can't come out now, or '' if it can: your turn only, for DUO_SWITCH_PP. */
 function whyNotSwitch() {
   const b = battle;
@@ -2537,6 +2574,7 @@ async function switchOut() {
   b.energy -= DUO_SWITCH_PP;
   b.busy = true;
   selectedUid = null;
+  if (d.piles) swapPiles(b, 1 - d.run.out);
   d.run.out = 1 - d.run.out;
   d.switches += 1;
   const to = STARTERS_BY_ID[d.run.ids[d.run.out]];
@@ -2565,6 +2603,10 @@ async function switchOut() {
   await Promise.all([Promise.race([playCry(to.line[b.stage].id), sleep(CRY_WAIT_MAX)]), pause(motion ? 600 : 0)]);
   if (battle !== b) return;
   sprite.classList.remove('released');
+  if (d.piles && !d.drew[d.run.out]) {   // its first time out this turn: it draws its own hand (rule 1)
+    d.drew[d.run.out] = true;
+    draw(turnDraw());
+  }
   if (!d.came.includes(d.run.out)) {   // a fight-start Ability fires the first time each partner comes out, so switching can't farm it
     d.came.push(d.run.out);
     if (hasAbility('torrent')) { gainTide(b.ability.amount); abilityBanner(); }
@@ -2591,9 +2633,13 @@ function renderBench() {
   face.alt = '';
   chip.dataset.type = mate.type;
   chip.classList.toggle('armed', b.duo.armed);
-  chip.replaceChildren(face, ...(mark ? [el('b', `bench-mark ${edge > 1 ? 'up' : 'down'}`, mark)] : []));
+  // its own piles: the hand it holds this turn, else its draw pile (it draws a hand the first time it comes out)
+  const own = b.duo.piles?.[1 - b.duo.run.out], held = own && b.duo.drew[1 - b.duo.run.out];
+  const cards = own ? el('b', 'bench-cards', held ? `✋${own.hand.length}` : `📚${own.drawPile.length}`) : null;
+  chip.replaceChildren(face, ...(mark ? [el('b', `bench-mark ${edge > 1 ? 'up' : 'down'}`, mark)] : []), ...(cards ? [cards] : []));
   const coming = hits ? ` ${move.name} would be ${edge > 1 ? 'super effective' : edge < 1 ? 'not very effective' : 'neutral'} on it.` : '';
-  chip.title = `${name} (${TYPES[mate.type].label}) is on the bench. Tap to switch for ${DUO_SWITCH_PP} PP.${coming}`;
+  const piles = own ? held ? ` Its hand: ${own.hand.length} cards.` : ` It draws its own hand when it comes out (${own.drawPile.length} in its draw pile).` : '';
+  chip.title = `${name} (${TYPES[mate.type].label}) is on the bench. Tap to switch for ${DUO_SWITCH_PP} PP.${piles}${coming}`;
   chip.setAttribute('aria-label', chip.title);
   go.textContent = `⇄ Go, ${name}! ${DUO_SWITCH_PP} PP`;
   go.disabled = !!whyNotSwitch();

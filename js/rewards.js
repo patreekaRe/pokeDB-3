@@ -172,9 +172,13 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   const groups = {};
   // a deck picker's cards sit on the device's dark screen, which scrolls inside the glass (the box)
   const glass = layout.split(' ').includes('deck-pick') ? box.appendChild(el('div', 'deck-pick-screen')) : box;
-  const home = (group) => {
+  // a duo's deck picker groups each partner's cards under its name (`groupLabel`), on the device's screen
+  const home = (group, label) => {
     if (!group) return glass;
-    if (!groups[group]) box.append(groups[group] = el('div', `choice-group group-${group}`));
+    if (!groups[group]) {
+      glass.append(groups[group] = el('div', `choice-group group-${group}`));
+      if (label) groups[group].append(el('div', 'choice-group-head', label));
+    }
     return groups[group];
   };
 
@@ -202,7 +206,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
         sayLines([option.disabled || option.info ? option.peek : `${option.peek} Tap it again to choose.`]);
       });
     } else btn.addEventListener('click', () => (option.ask ? openFocus(option, btn, take) : take()));
-    home(option.group).append(btn);
+    home(option.group, option.groupLabel).append(btn);
   }
 
   // a deck picker's confirm waits, greyed, left of Skip under the text box until a card is picked (the user's call,

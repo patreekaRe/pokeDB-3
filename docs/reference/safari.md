@@ -290,14 +290,26 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 ## The duo and the Duo Run (2026-10-19, the roadmap's "Six new types", session 1)
 
 `docs/duo-design.md` sections 1-3 are the rules (the user's 22 answers); this is where they live.
-- **The pure part**: `js/data/duo.js` (the sim imports it): `DUO_SWITCH_PP` 1, `STAB` 1.2, `DUO_DECK` (each type's 5:
-  2 basic attacks, 2 basic blocks, its Bash-like signature), `validDuo()`, `duoDeck()`, `runTypes()` / `outStarter()` /
+- **The pure part**: `js/data/duo.js` (the sim imports it): `DUO_SWITCH_PP` 1, `STAB` 1.2, `validDuo()`, `newDuo()`
+  (the pair with its **two decks**, each partner's own solo starting deck: session 1b), `duoDeck()` (both decks and the
+  loose cards, what `run.deck` mirrors), `restoreDuo()`, `ownerOf()`, `asksOwner()`, `syncDecks()`, `runTypes()` / `outStarter()` /
   `benchStarter()`, the pools (`runPool()` both types' cards with Neutral once, `runTypePool()`, `runItems()`,
   `fitsTypes()` for `only` relics and items), `rewardSlots()`, `duoPool()`, `duoGains()` and `duoOpen()`. Pinned by
   `tests/duo.test.mjs`; `tests/cards.test.mjs` checks no two cards a duo can meet share a type, cost and text.
-- **The run** (`js/run.js`): `run.duo = { ids: [lead, partner], out }` beside `run.starter` (the lead), saved with the
-  run (additive, no `RUN_SAVE_VERSION` bump; restored through `validDuo()`, Safari runs only). `beginSafari(daily, pair)`
-  starts one: the 5 + 5 deck, `first: false` (never posted, coins as a replay, perks on), and it never spends the day's
+- **Two decks** (session 1b, 2026-10-19, the user's call; `docs/duo-design.md` section 1 and answers 23-28):
+  `run.duo.decks = [lead's, partner's]` and `run.duo.loose` (Neutral cards not yet given) are the decks; `run.deck` stays
+  the whole deck in their order, so every place that pushes, splices or swaps in it still works, and `syncDecks(run, aim)`
+  carries each change into the right deck (a type's card to its type, an upgrade or swap to the deck it was in, a
+  removal from the deck `aim.from` names or its type's, a status card or token to the one out, a Neutral one into
+  `loose`). It runs at `checkpoint()`, `showMap()`, a fight's start and the deck window. `showMap()` asks "Who learns it?"
+  for each loose card (`whoTakes()`: the two partners' portraits) before the map. The deck pickers (PP Up, Forget, the
+  Bonfire, Ditto, Day Care, Smeargle, Bill's PC) take their cards from `deckGroups()` and their options through
+  `inDeck()`: each partner's cards under its name (`groupLabel`, `.choice-group-head` in `showChoice()`), the pick
+  syncing that partner's deck. The Bag's deck window (`js/deckpreview.js`) groups them too. A duo saved before the
+  decks is dropped (`restoreDuo()`).
+- **The run** (`js/run.js`): `run.duo = { ids: [lead, partner], out, decks, loose }` beside `run.starter` (the lead), saved with the
+  run (additive, no `RUN_SAVE_VERSION` bump; restored through `restoreDuo()`, Safari runs only). `beginSafari(daily, pair)`
+  starts one: both solo decks (`newDuo()`), `first: false` (never posted, coins as a replay, perks on), and it never spends the day's
   free try. The map's run card shows the one out and both names; the Bag's relics list both Abilities ("while out");
   a boss evolves both (the one out on screen, a line for the partner). Card rewards (`cardChoices()` in
   `js/rewards.js`): one of each type, the third either, each slot from its type's pool with Neutral at its usual
@@ -305,7 +317,12 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   `only` relics and items of either type; the tough match-up prize only when the wild beats both. The places that
   still read one type (Bill's PC, the Unown Tablet, the Litwick Bonfire) read the one out.
 - **The battle** (`js/battle.js`): `battle.starter` is the one out (`outStarter()`), `battle.duo = { run, types, came,
-  armed, switches }`. The chip on your nameplate (`#player-bench`, `renderBench()`) is the partner's portrait in its
+  armed, switches, piles, drew }`. **Each partner's piles**: `drawPile` / `hand` / `discard` / `exhaust` are the one
+  out's, live as ever; `duo.piles[i]` holds each partner's, the one out's written back on a switch (`swapPiles()`), so
+  every rule that reads the piles reads the one out's and the bench's stay untouched. `drew[i]`: a partner's first time
+  out in a turn draws its hand (`turnDraw()`, the turn's count without Lagging Tail's extra); at the end of your turn the
+  benched hand fades, keeps its Retain cards and discards the rest (`benchEndsTurn()`). The chip shows ✋ its hand this
+  turn, else 📚 its draw pile. The chip on your nameplate (`#player-bench`, `renderBench()`) is the partner's portrait in its
   type's colour with ▲ / ▼ for the coming hit on it; a tap arms `#switch-go` ("⇄ Go, Squirtle! 1 PP"), a second tap
   switches (`switchOut()`), a tap elsewhere puts it away. Only on your turn, any number of times, never ending it. The
   switch swaps the sprite (a red-light `recalled`, then the ball's `released`, under `battleFx()`, a cut without), the
@@ -326,8 +343,9 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   reward box's "Shinx joined your duo pool! Electric unlocked." `DUO_LINES` is empty until the type sessions.
 - **Not built yet**: the free switches (Volt Switch, Baton Pass, Shed Shell) come with Electric's session; Duo Runs
   have no leaderboard tab.
-- **Playtest**: `?duorun` (the Duo key open), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch,
-  the reward, the save). The sim: `cfg.duo` (pokeDB-sim's README).
+- **Playtest**: `?duorun` (the Duo key open), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+  and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
+  the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 
 ## The areas' scenes (phase 5b, 2026-10-02)
 

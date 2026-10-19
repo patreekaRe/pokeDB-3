@@ -32,7 +32,7 @@ import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, baseId, upgradeId, canUpgr
 import { realBeats } from './data/real-types.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
-import { runTypes, outStarter, runPool, runItems, fitsTypes, validDuo, duoDeck, duoGains, duoStarters } from './data/duo.js';
+import { runTypes, outStarter, runPool, runItems, fitsTypes, newDuo, restoreDuo, syncDecks, duoGains, duoStarters } from './data/duo.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
 import { openSealed } from './data/exchange.js';
@@ -302,6 +302,7 @@ function missionTally(t) {
 
 function checkpoint() {
   if (peeking) return;   // a ?event= playtest run is never saved
+  syncDecks(run);
   const { floors, byId } = run.map;
   for (const id of run.deck) markSeen('cards', id);   // a move you chose is met in the Index (the user's call); played ones in battle.js
   for (const id of run.items) markSeen('items', id);   // an item is found once it's in the Bag, used or not (the user's call)
@@ -441,7 +442,8 @@ function restoreRun(saved) {
       || !known(saved.deck, CARDS_BY_ID) || !known(saved.relics, RELICS_BY_ID) || !known(saved.items, ITEMS_BY_ID) || !(saved.itemChance >= 0)
       || !saved.unlocks.every(starterById) || (saved.safari && !saved.safari.areas.every(id => SAFARI_AREAS_BY_ID[id]))
       || (saved.route && !saved.route.every((id, i) => id === null || canWalk(id, i)))
-      || (saved.roads && !(FORKS.every(i => POOL.includes(saved.roads[i])) && saved.roads[1] !== saved.roads[2]))) {
+      || (saved.roads && !(FORKS.every(i => POOL.includes(saved.roads[i])) && saved.roads[1] !== saved.roads[2]))
+      || (saved.duo && !(saved.safari && restoreDuo(saved.duo, saved.deck)))) {   // a duo saved before its two decks is dropped (rule 6)
     throw new Error('bad run save');
   }
 
@@ -461,7 +463,7 @@ function restoreRun(saved) {
     starter,
     route: saved.route ?? BIOMES.slice(0, saved.biome + 1).map(b => b.id),   // saved before the crossroads: the default road
     tower: saved.tower && { ...freshAugments(null), ...saved.tower },
-    duo: saved.safari ? validDuo(saved.duo) : null,   // a climb saved before augments has none, and owes none
+    duo: saved.safari ? restoreDuo(saved.duo, saved.deck) : null,   // a climb saved before augments has none, and owes none
     mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome, weaknessShards(getSave())),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     gift: ITEMS_BY_ID[saved.gift] ? saved.gift : null,
@@ -531,8 +533,8 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     biome: 0,
     route: [BIOMES[0].id],   // the biome taken at each slot (the crossroads, js/crossroads.js), saved with the run
     roads: null,           // the pool biome each fork offers beside its default, rolled below (rollRoads())
-    deck: duo ? duoDeck(duo) : [...starter.deck],
-    duo,                   // a Duo Run's two starters, { ids: [lead, partner], out } (js/data/duo.js); `starter` is the lead
+    deck: duo ? [...duo.decks[0], ...duo.decks[1]] : [...starter.deck],   // a duo's: both decks, kept in step by syncDecks()
+    duo,                   // a Duo Run's two starters, { ids: [lead, partner], out, decks, loose } (js/data/duo.js); `starter` is the lead
     relics: [],
     items: [],             // one-use items in the Bag (ids), at most ITEM_SLOTS
     held: null,            // the held berry packed for the run: { id, used } (js/data/held.js, packKit())
@@ -608,7 +610,7 @@ export function beginSafari(daily = safariDaily(), pair = null) {
   const days = safariDays(getSave()) + (tries ? 0 : 1);   // the Safari Regular Badge's
   // a Duo Run (js/duoprep.js): a replay with two starters of your own, whoever you picked first out first; it never
   // spends the day's free try (only ?duorun can start one before it)
-  const duo = pair && validDuo({ ids: pair, out: 0 });
+  const duo = pair && newDuo(pair);
   updateSave(d => { d.safari = { day: daily.day, tries: tries + (duo ? 0 : 1), days: duo ? safariDays(d) : days, pass: d.safari.pass, done: d.safari.done, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
   rangerDay(daily.day);
   beginRun(duo ? STARTERS_BY_ID[duo.ids[0]] : daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 && !duo }, null, null, duo);
@@ -1104,6 +1106,7 @@ function showAbility() {
 }
 
 function showMap() {
+  if (run.duo) { syncDecks(run); if (run.duo.loose.length) return whoTakes(run.duo.loose[0]); }
   const biome = land();
   scoping = rubbing = false;
   showBadgeNews();
@@ -3729,7 +3732,7 @@ function upgradeMove(back, done = showMap, { title = 'PP Up', sub = 'Choose a mo
   showChoice({
     title,
     sub,
-    options: groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => canUpgrade(card)).map(({ card, count }) => {
+    options: deckGroups().filter(({ card }) => canUpgrade(card)).map(inDeck(({ card, count }) => {
       const better = CARDS_BY_ID[upgradeId(card.id)];
       const option = cardOption(better, run.stage, () => {
         run.deck.splice(run.deck.indexOf(card.id), 1, better.id);
@@ -3746,10 +3749,57 @@ function upgradeMove(back, done = showMap, { title = 'PP Up', sub = 'Choose a mo
         confirm: 'PP Up',
         confirmSound: 'stat-up',
       };
-    }),
+    })),
     skipLabel,
     layout: 'deck-pick',
     onSkip: back,
+  });
+}
+
+/** A deck picker's cards: groupDeck() of the run's deck, or a duo's two decks, each under its partner's name (rule 5),
+    every entry's `owner` the deck it's from. */
+function deckGroups() {
+  if (!run.duo) return groupDeck(run.deck, CARDS_BY_ID);
+  syncDecks(run);
+  return duoStarters(run.duo).flatMap((s, i) => groupDeck(run.duo.decks[i], CARDS_BY_ID)
+    .map(g => ({ ...g, owner: i, group: `duo-${i}`, groupLabel: `${stageName(s, run.stage)}'s deck` })));
+}
+
+/** A deck picker's option maker, for deckGroups()' entries: a duo's option sits under its partner's heading, and its
+    pick changes that partner's deck (syncDecks() with the pick's `owner`). */
+const inDeck = (make) => (entry) => {
+  const option = make(entry);
+  if (entry.owner === undefined) return option;
+  const pick = option.onPick, aim = { from: entry.owner, to: entry.owner };
+  return { ...option, group: entry.group, groupLabel: entry.groupLabel, onPick: (...args) => { const r = pick(...args); syncDecks(run, aim); return r; } };
+};
+
+/** A Neutral card a duo has gained asks which partner takes it (rule 4), back on the map; a type's own card needed no ask. */
+function whoTakes(id) {
+  const card = CARDS_BY_ID[id];
+  showChoice({
+    title: 'Who learns it?',
+    sub: `${card.name} is a Neutral move. Which of your two takes it into their deck?`,
+    options: duoStarters(run.duo).map((s, i) => {
+      const node = el('div', 'duo-take');
+      const face = el('img', 'duo-take-face pixel');
+      face.src = spriteUrl(s, 'front', run.stage);
+      face.alt = '';
+      node.dataset.type = s.type;
+      node.append(face, el('b', '', stageName(s, run.stage)), el('span', '', `${run.duo.decks[i].length} cards`));
+      return {
+        node,
+        onPick: () => {
+          run.duo.loose.splice(run.duo.loose.indexOf(id), 1);
+          run.duo.decks[i].push(id);
+          syncDecks(run);
+          tell(`${stageName(s, run.stage)} learned ${card.name}!`);
+          checkpoint();
+          showMap();
+        },
+      };
+    }),
+    layout: 'duo-takes',
   });
 }
 
@@ -3758,7 +3808,7 @@ function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep ever
   showChoice({
     title: 'Forget a move',
     sub: `Choose a card to remove from your deck. It can't go below ${MIN_DECK} cards.`,
-    options: groupDeck(run.deck, CARDS_BY_ID).map(({ card, count }) => ({
+    options: deckGroups().map(inDeck(({ card, count }) => ({
       ...cardOption(card, run.stage, () => {
         run.deck.splice(run.deck.indexOf(card.id), 1);
         run.tally.forgotten += 1;
@@ -3769,7 +3819,7 @@ function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep ever
       ask: `Forget ${card.name}?`,
       confirm: 'Forget it',
       confirmSound,
-    })),
+    }))),
     skipLabel,
     layout: 'deck-pick',
     onSkip: back,
@@ -4814,7 +4864,7 @@ function studioRepaint(entries, price, pay, back, done) {
   showChoice({
     title: "Smeargle's Studio",
     sub: `Choose a move for Smeargle to repaint, for ₽${price}. What it becomes is a surprise.`,
-    options: entries.map(({ card, count, gets }) => ({
+    options: entries.map(inDeck(({ card, count, gets }) => ({
       ...cardOption(card, run.stage, () => {
         pay(price);
         run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
@@ -4822,7 +4872,7 @@ function studioRepaint(entries, price, pay, back, done) {
       }, count),
       ask: `Repaint ${card.name}?`,
       confirm: 'Repaint it',
-    })),
+    }))),
     skipLabel: 'Back',
     layout: 'deck-pick',
     onSkip: back,
@@ -4842,7 +4892,7 @@ function bonfirePick(event, back, done) {
   showChoice({
     title: 'Litwick Bonfire',
     sub: 'Choose a move to offer to the flames. It\'s gone for the rest of the run.',
-    options: groupDeck(run.deck, CARDS_BY_ID).map(({ card, count }) => {
+    options: deckGroups().map(inDeck(({ card, count }) => {
       const gift = bonfireGift(event, card, type, run.biome);
       const gives = gift.maxHp ? `Full heal and max HP +${gift.maxHp}` : gift.heal >= 1 ? 'A full heal' : `Heals ${Math.round(gift.heal * 100)}% of your max HP`;
       return {
@@ -4862,7 +4912,7 @@ function bonfirePick(event, back, done) {
         confirm: 'Burn it',
         note: gives,
       };
-    }),
+    })),
     skipLabel: 'Back',
     layout: 'deck-pick',
     onSkip: back,
@@ -5004,10 +5054,10 @@ const copiesOf = (id) => run.deck.filter(x => baseId(x) === baseId(id)).length;
 const pickable = (card) => card && !card.evoOnly && !card.unplayable;
 
 /** The moves Ditto can copy: any of yours you hold fewer than MAX_COPIES of. */
-const dittoCopies = () => groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => pickable(card) && copiesOf(card.id) < MAX_COPIES);
+const dittoCopies = () => deckGroups().filter(({ card }) => pickable(card) && copiesOf(card.id) < MAX_COPIES);
 
 /** The moves Ditto can Transform, each with what it becomes (rolled as the biome started). */
-const dittoMorphs = (state) => groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => pickable(card))
+const dittoMorphs = (state) => deckGroups().filter(({ card }) => pickable(card))
   .map(entry => ({ ...entry, gets: CARDS_BY_ID[dittoMorph(state.offers, CARDS_BY_ID[baseId(entry.card.id)], copiesOf, MAX_COPIES)] }))
   .filter(entry => entry.gets);
 
@@ -5016,7 +5066,7 @@ function dittoPick(kind, entries, back, done) {
   showChoice({
     title: 'Ditto',
     sub: copy ? 'Choose a move for Ditto to copy.' : 'Choose a move for Ditto to Transform. What it becomes is a surprise.',
-    options: entries.map(({ card, count, gets }) => ({
+    options: entries.map(inDeck(({ card, count, gets }) => ({
       ...cardOption(card, run.stage, () => {
         if (copy) run.deck.push(card.id);
         else run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
@@ -5025,7 +5075,7 @@ function dittoPick(kind, entries, back, done) {
       }, count),
       ask: copy ? `Copy ${card.name}?` : `Transform ${card.name}?`,
       confirm: copy ? 'Copy it' : 'Transform it',
-    })),
+    }))),
     skipLabel: 'Back',
     layout: 'deck-pick',
     onSkip: back,
@@ -5039,7 +5089,7 @@ function pcStore(done) {
   showChoice({
     title: "Bill's PC",
     sub: 'Choose a move to store in your Box. A later run of this type will find it here.',
-    options: groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => pickable(card)).map(({ card, count }) => ({
+    options: deckGroups().filter(({ card }) => pickable(card)).map(inDeck(({ card, count }) => ({
       ...cardOption(card, run.stage, () => {
         run.deck.splice(run.deck.indexOf(card.id), 1);
         if (!peeking) updateSave(s => { s.pcBox = { ...s.pcBox, [type]: card.id }; });
@@ -5048,7 +5098,7 @@ function pcStore(done) {
       }, count),
       ask: `Store ${card.name}?`,
       confirm: 'Store it',
-    })),
+    }))),
     layout: 'deck-pick',
   });
 }
@@ -5056,7 +5106,7 @@ function pcStore(done) {
 /** The deck's common and uncommon cards, each with the card it trades for (the first rolled one you hold fewer than MAX_COPIES of). */
 function dayCareTrades(event, state) {
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
-  return groupDeck(run.deck, CARDS_BY_ID)
+  return deckGroups()
     .filter(({ card }) => !card.evoOnly && event.upgrade[card.rarity || 'common'])
     .map(entry => ({ ...entry, gets: CARDS_BY_ID[state.offers[event.upgrade[entry.card.rarity || 'common']].find(id => copies(id) < MAX_COPIES)] }))
     .filter(entry => entry.gets);
@@ -5066,14 +5116,14 @@ function dayCare(trades, back, done = showMap) {
   showChoice({
     title: 'Day Care',
     sub: 'Choose a move to trade. A common comes back uncommon, and an uncommon comes back rare.',
-    options: trades.map(({ card, count, gets }) => ({
+    options: trades.map(inDeck(({ card, count, gets }) => ({
       ...cardOption(card, run.stage, () => {
         run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
         revealCard('Day Care', gets, [`The Day-Care Lady brought your ${card.name} back...`, `It came back as ${gets.name}!`], done);
       }, count),
       ask: `Trade ${card.name}?`,
       confirm: 'Trade it',
-    })),
+    }))),
     skipLabel: 'Back',
     layout: 'deck-pick',
     onSkip: back,

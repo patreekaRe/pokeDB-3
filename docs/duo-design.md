@@ -6,8 +6,8 @@ gets its `duo-types` in session 1). The roadmap's "Six new types for the Safari'
 Ideas entry "Safari duos, real types and new areas" the reasons; this doc is the rules those sessions build to. Every
 **(open N)** points to the user's answer in section 8; the text below follows those answers.
 
-In short: in the Safari you can bring **two starters of different types**, one out at a time. One HP bar, one deck
-(half each type). Switching costs 1 PP; the one out takes the enemy's hits as its type, gets STAB on its own type's
+In short: in the Safari you can bring **two starters of different types**, one out at a time. One HP bar, **two decks**
+(each partner its own, with its own hand and piles in battle). Switching costs 1 PP; the one out takes the enemy's hits as its type, gets STAB on its own type's
 cards and is the only Ability that works. The Safari moves to the **real Gen 5 type chart** (no immunities, capped at one
 step). Six new playable types join the **duo pool** when you catch their starters in their own new Safari areas:
 **Electric, Ice, Fighting, Ground, Flying, Dark**, each with ~74 cards on three new archetypes, an Ability, starters and
@@ -15,29 +15,33 @@ an area. With Fire / Grass / Water that makes 9 types and 36 duos.
 
 ## 1. The duo (session 1, on Fire / Grass / Water)
 
-**Changing (the user's call, 2026-10-19, after session 1): two decks, not one.** Each partner keeps its own deck and
-piles, as if you control two starters; it replaces the Starting deck and Card rewards rows below (answers 6 and 7). The
-rest stands. Session 1b settles the details (the roadmap's entry 1b) and rewrites this section.
+**Two decks, not one** (the user's call, 2026-10-19, after session 1: "it should be as if you're controlling two
+completely different starters"; built in session 1b, its six rules the user's answers 23-28 in section 8). Each partner
+keeps its own deck and its own piles in battle; it replaced answer 6's shared 5 + 5 and refined answer 7.
 
 | Rule | Proposal |
 |---|---|
 | Where | Safari runs only (`run.safari`), from the Duo Run screen (section 2). The Daily run stays one dealt starter. |
 | HP | **One HP bar** for the trainer, as now (`BASE_HP` + perks + `HP_PER_STAGE`): no fainting of one partner, every heal and relic works unchanged **(open 1)**. |
 | Stage | Shared: both evolve together at the bosses, like `run.stage` today. The evolution card pick offers both types' evo cards. |
-| Switch | A tap on the benched partner's chip on your nameplate, then a second tap on "⇄ Go, Shinx! 1 PP" (the pile picker's two-tap pattern, no accidental switches). **1 PP**, any number of times on your turn, never on the enemy's; it doesn't end the turn **(open 2)**. A few cards and one relic make it free (Volt Switch, Baton Pass, Shed Shell). |
+| Switch | A tap on the benched partner's chip on your nameplate, then a second tap on "⇄ Go, Shinx! 1 PP" (the pile picker's two-tap pattern, no accidental switches). **1 PP**, any number of times on your turn, never on the enemy's; it doesn't end the turn **(open 2; kept for two decks, answer 24)**. A few cards and one relic make it free (Volt Switch, Baton Pass, Shed Shell). |
+| Two decks | Each partner's deck is its **own solo starting deck** (10 cards: Charmander's, Squirtle's...), so neither is thinned. In battle each has its own draw, discard and exhaust piles and its own hand; the one out's are live, the other's wait. |
+| Hands | **Two hands a turn** (answer 23). At the start of your turn the one out draws its hand. The first time the partner comes out in that turn it draws its own hand (the same count: Scope Lens and the rest count, Lagging Tail's extra only once); a switch back brings back the hand it left, never a new one. At the end of your turn both hands go to their own discard piles: Ethereal cards fade, Retain cards (all of them under Slowpoke Tail) stay with their owner. Poison, Grip Claw and Still Waters read only the one out's hand. |
+| The bench's piles | **Untouched while it's benched** (answer 25). What the enemy shuffles into "your deck" (Sludge, Confusion...) and every card a card makes goes to the one out's piles; so does Griseous Orb's Sludge at a fight's start. The chip shows the partner's hand this turn (✋5), else its draw pile (📚10). |
 | Who's out at a fight's start | Whoever was out when the last fight ended; the first fight, the one you picked first **(open 8)**. |
 | Defending type | The one out's **deck type** (Shinx defends as Electric; a Charizard skin as Fire, not Fire / Flying) **(open 4)**. |
 | STAB | A card of the type that's out deals **x1.2** damage (attack damage only: not block, Burn, Leech Seed, Tide, Static...). Neutral cards never **(open 3)**. |
 | Abilities | Only the one out's. A "fight's start" Ability (Torrent's 2 Tide, Snow Warning's Hail) fires the first time that partner comes out each fight, so switching can't farm it; "after a fight" ones (Overgrow) go by who's out at the knockout **(open 5)**. |
 | What stays when you switch | Everything on the battle: block, strength, Focus, Tide, powers, the enemy's Burn / Seed / Static. Only the defending type, STAB and the Ability change. |
-| Starting deck | 10 cards, half each: each type's 2 basic attacks, 2 basic blocks and its Bash-like signature (Fire: Ember x2, Flame Wall x2, Scorch; Grass: Vine Whip x2, Block x2, Seed Bomb; Water: Water Gun x2, Withdraw x2, Water Pulse) **(open 6)**. |
-| Card rewards | Three cards: one of each type, the third either (50/50); Neutral cards come in at their usual share. The Mart's cards, Move Tutor, Metronome and the ? events' type pools are both types' pools together **(open 7)**. |
+| Starting deck | ~~10 cards, half each (open 6)~~ replaced by two decks, each partner's solo 10 (above). |
+| Card rewards | Three cards: one of each type, the third either (50/50); Neutral cards come in at their usual share. The Mart's cards, Move Tutor, Metronome and the ? events' type pools are both types' pools together **(open 7)**. **Whose deck** (answer 26): a type's card joins its type's deck, wherever it came from (a reward, the Mart, an event, an evolution card); a Neutral card you'd pick asks "Who learns it?" when you're back on the map; a status card or token goes to the one out. An upgrade or a swap stays in the deck it was in. |
+| Deck picks | The Center's PP Up and Forget, the ? events' picks (Bonfire, Ditto, Day Care, Smeargle, Bill's PC) show **both decks in one picker**, each under its partner's name (answer 27); the pick changes that partner's deck. The Bag's deck window groups them the same way. |
 | Relics and items | The Bag is the trainer's: both types' `only` relics and items are in the pools, and a type's held-item relic (Charcoal, Miracle Seed...) boosts its type's cards whoever is out. |
 | The intent | The bubble shows the move's type icon, with ▲ when it's super effective on the one out and ▼ when resisted; the bench chip shows the same mark for the partner, so you see at a glance whether a switch helps. |
 | Screen | The one out's back sprite on your pad; the partner a small portrait chip on your nameplate (its type colour, its ▲/▼). The switch plays the games' "come back / go" (a red-light recall into a ball, the partner's GIF out) under `battleFx()`, a cut without. |
-| The save | `run.duo = { ids: [a, b], out: 0 }` beside `run.starter` (which stays the lead, so the ~100 places reading `run.starter.type` keep working until each is moved to a `runTypes()` / `outType()` helper). Additive, so no `RUN_SAVE_VERSION` bump. |
+| The save | `run.duo = { ids: [a, b], out, decks: [lead's, partner's], loose: [] }` beside `run.starter` (which stays the lead, so the ~100 places reading `run.starter.type` keep working until each is moved to a `runTypes()` / `outType()` helper), and `run.deck` stays the whole deck, both decks in order, so the ~60 places that change it still work: `syncDecks()` carries each change into the right deck (answer 28). A duo saved before the two decks (session 1, the branch only) is dropped. Additive, so no `RUN_SAVE_VERSION` bump. |
 | Off the board | A duo run never posts to the leaderboard; coins as a Replay; catches, signature cards and Safari Pokédex pages count as usual. |
-| The sim | `sim/engine.js` mirrors switching, STAB and the out-only Ability. The bot switches when the coming hit is ▲ on the one out and not on the partner and it can spare the PP, or when its hand is mostly the partner's type; checked on the 3 pairs against the same bot's solo runs. |
+| The sim | `sim/engine.js` mirrors switching, STAB, the out-only Ability and the two decks' piles. The bot dodges (it switches when the coming hit is ▲ on the one out and not on the partner, with 2+ PP), then fetches the partner's hand (it plays its own keeping 2 PP back, switches and plays the partner's), then guards (with PP left, it switches to whoever the hit isn't ▲ on); a Neutral card goes to the smaller deck. Checked on the 3 pairs against the same bot's solo runs (section 8, answer 24). |
 
 ## 2. The Duo Run screen (session 1)
 

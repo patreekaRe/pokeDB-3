@@ -452,6 +452,11 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 }
 .bench-mark.up { color: #ff7a6b; }
 .bench-mark.down { color: #9fd8ff; }
+/* the partner's own piles (two decks, rule 1): its hand this turn, else its draw pile */
+.bench-cards {
+  position: absolute; left: -10px; bottom: -6px; padding: 1px 3px; border-radius: 4px; background: #303038; color: #fff;
+  font-size: 0.75rem; line-height: 1; white-space: nowrap;
+}
 .switch-go {
   position: absolute; right: 0; bottom: calc(100% + 40px); z-index: 6;
   padding: 7px 12px;
@@ -5421,6 +5426,26 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
   display: grid; grid-template-columns: repeat(auto-fill, minmax(min(104px, 28vw), 1fr)); align-content: start; gap: 22px 12px;
 }
 .deck-pick-screen > .reward-option { width: 100%; max-width: 180px; justify-self: center; }
+/* a duo's two decks (rule 5): each partner's cards under its name, across the screen's whole grid */
+.deck-pick-screen > .choice-group { grid-column: 1 / -1; display: grid; grid-template-columns: inherit; gap: inherit; }
+.deck-pick-screen > .choice-group > .reward-option { width: 100%; max-width: 180px; justify-self: center; }
+.choice-group-head {
+  grid-column: 1 / -1; padding: 6px 10px; border-radius: 6px; background: #2c3866; color: #fff;
+  font-family: var(--pixel-font); font-size: 0.85rem; text-shadow: 1px 1px 0 #10142a;
+}
+.choice-group + .choice-group { margin-top: 10px; }
+/* who takes a Neutral move (whoTakes() in js/run.js): the two partners side by side */
+.reward-options.duo-takes { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.duo-take {
+  --c1: #9aa0b4; --c2: #4a4e60;
+  display: grid; justify-items: center; gap: 4px; width: 132px; padding: 10px 8px; border-radius: 12px;
+  background: radial-gradient(circle at 50% 30%, var(--c1), var(--c2)); color: #fff; font-family: var(--pixel-font);
+  font-size: 0.8rem; text-shadow: 1px 1px 0 #181820;
+}
+.duo-take[data-type="fire"]  { --c1: #ff8f4d; --c2: #b8321a; }
+.duo-take[data-type="grass"] { --c1: #72dc70; --c2: #257a38; }
+.duo-take[data-type="water"] { --c1: #5cbcff; --c2: #1d58b8; }
+.duo-take-face { width: 72px; height: 72px; object-fit: contain; }
 #reward-screen:has(> .deck-pick) .reward-bottom { order: 1; position: static; flex: none; margin: 0; align-self: center; }
 #reward-screen:has(> .deck-pick) .reward-log { box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px var(--shell-rim); border-color: var(--shell-rim); }
 #reward-screen:has(> .deck-pick) .reward-actions { order: 2; margin: 0; }
@@ -6675,4 +6700,9 @@ button.craft-mat.on { box-shadow: inset 0 0 0 3px #f0a820; background: #fff8e0; 
 #reward-screen .reward-log.shiny-catch {
   border-color: #f8d030;
   box-shadow: 0 0 0 2px #6a4a00, inset 0 0 0 2px #6a4a00, 0 0 18px rgba(248, 208, 48, 0.65), 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+}
+/* a duo's deck window: each partner's deck under its name (deckpreview.js) */
+.deck-group-head {
+  grid-column: 1 / -1; padding: 6px 10px; border-radius: 6px; background: #2c3866; color: #fff;
+  font-family: var(--pixel-font); font-size: 0.85rem; text-shadow: 1px 1px 0 #10142a;
 }

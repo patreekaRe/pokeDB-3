@@ -7,7 +7,9 @@
    ============================================================ */
 
 import { CARDS_BY_ID } from './data/cards.js';
-import { $, makeCard, zoomable, groupDeck, openDialog, kindOf } from './ui.js';
+import { stageName } from './data/starters.js';
+import { duoStarters, syncDecks } from './data/duo.js';
+import { $, el, makeCard, zoomable, groupDeck, openDialog, kindOf } from './ui.js';
 import { getSave, updateSave } from './storage.js';
 
 /** Fill a container with the cards of a deck, grouping copies (Ember ×3). Tap one to read it bigger. */
@@ -33,13 +35,19 @@ function drawDeck() {
   for (const [id, value] of [['deck-filter', deckFilter], ['deck-sort', deckSort]]) {
     for (const btn of $(id).children) btn.setAttribute('aria-pressed', String(btn.dataset.v === value));
   }
-  const groups = groupDeck(shown.deck, CARDS_BY_ID)
+  const cardsOf = (ids) => groupDeck(ids, CARDS_BY_ID)
     .filter(({ card }) => deckFilter === 'all' || kindOf(card) === deckFilter)
-    .sort(SORTS[deckSort] ?? SORTS.got);
-  $('deck-dialog-cards').replaceChildren(
-    ...groups.map(({ card, count }) => zoomable(makeCard(card, { stage: shown.stage, count }), card, shown.stage)),
-  );
-  $('deck-empty').hidden = groups.length > 0;
+    .sort(SORTS[deckSort] ?? SORTS.got)
+    .map(({ card, count }) => zoomable(makeCard(card, { stage: shown.stage, count }), card, shown.stage));
+  // a duo's two decks, each under its partner's name (rule 5)
+  const parts = shown.duo?.decks
+    ? duoStarters(shown.duo).flatMap((s, i) => {
+      const cards = cardsOf(shown.duo.decks[i]);
+      return cards.length ? [el('div', 'deck-group-head', `${stageName(s, shown.stage)}'s deck (${shown.duo.decks[i].length})`), ...cards] : [];
+    })
+    : cardsOf(shown.deck);
+  $('deck-dialog-cards').replaceChildren(...parts);
+  $('deck-empty').hidden = parts.length > 0;
 }
 
 for (const [id, key] of [['deck-filter', 'deckFilter'], ['deck-sort', 'deckSort']]) {
@@ -54,6 +62,7 @@ for (const [id, key] of [['deck-filter', 'deckFilter'], ['deck-sort', 'deckSort'
 /** Pop-up showing the deck you have right now in a run. */
 export function showDeckDialog(run) {
   shown = run;
+  if (run.duo) syncDecks(run);
   $('deck-dialog-count').textContent = `${run.deck.length} cards`;
   drawDeck();
   openDialog('deck-dialog');

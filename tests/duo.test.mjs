@@ -3,29 +3,62 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 globalThis.location ||= { search: '' };
-const { STAB, DUO_SWITCH_PP, DUO_DECK, validDuo, duoDeck, runTypes, outStarter, benchStarter, runPool, runItems, fitsTypes,
+const { STAB, DUO_SWITCH_PP, validDuo, newDuo, restoreDuo, syncDecks, ownerOf, duoDeck, runTypes, outStarter, benchStarter, runPool, runItems, fitsTypes,
   rewardSlots, duoPool, duoGains, duoOpen } = await import('../js/data/duo.js');
 const { CARDS_BY_ID, poolForType } = await import('../js/data/cards.js');
 const { STARTERS, STARTERS_BY_ID } = await import('../js/data/starters.js');
 const { cardChoices, evolutionChoices } = await import('../js/rewards.js');
 
-const duoRun = (ids, out = 0) => ({ starter: STARTERS_BY_ID[ids[0]], duo: { ids, out }, deck: duoDeck({ ids }), biome: 0, stage: 1, relics: [], safari: { day: 'x' } });
+const duoRun = (ids, out = 0) => { const duo = { ...newDuo(ids), out }; return { starter: STARTERS_BY_ID[ids[0]], duo, deck: duoDeck(duo), biome: 0, stage: 1, relics: [], safari: { day: 'x' } }; };
 
 test('the numbers the user picked: 1 PP a switch, STAB x1.2', () => {
   assert.equal(DUO_SWITCH_PP, 1);
   assert.equal(STAB, 1.2);
 });
 
-test('a duo is two starters of different types; its deck is 5 + 5, each type\'s basics and signature', () => {
+test('a duo is two starters of different types, each with its own solo starting deck (rule 1b)', () => {
   assert.equal(validDuo({ ids: ['charmander', 'charmander'] }), null);
   assert.equal(validDuo({ ids: ['charmander', 'cyndaquil'] }), null);   // two Fire looks
-  assert.equal(validDuo({ ids: ['charmander', 'mewtwo'] }), null);      // no Psychic half
+  assert.equal(validDuo({ ids: ['charmander', 'mewtwo'] }), null);      // the secret starter never pairs
   assert.deepEqual(validDuo({ ids: ['charmander', 'squirtle'], out: 1 }), { ids: ['charmander', 'squirtle'], out: 1 });
-  for (const [type, half] of Object.entries(DUO_DECK)) {
-    assert.equal(half.length, 5, type);
-    for (const id of half) assert.ok(CARDS_BY_ID[id] && STARTERS.find(s => s.type === type && s.free).deck.includes(id), `${type}: ${id}`);
-  }
-  assert.deepEqual(duoDeck({ ids: ['bulbasaur', 'charmander'] }), [...DUO_DECK.grass, ...DUO_DECK.fire]);
+  const duo = newDuo(['bulbasaur', 'cyndaquil']);
+  assert.deepEqual(duo.decks, [STARTERS_BY_ID.bulbasaur.deck, STARTERS_BY_ID.cyndaquil.deck]);
+  assert.notEqual(duo.decks[0], STARTERS_BY_ID.bulbasaur.deck);   // a copy, never the starter's own array
+  assert.equal(duoDeck(duo).length, 20);
+});
+
+test('the save keeps both decks; a duo saved before them is dropped (rule 6)', () => {
+  const r = duoRun(['charmander', 'squirtle']);
+  const saved = JSON.parse(JSON.stringify(r.duo));
+  assert.deepEqual(restoreDuo(saved, r.deck), r.duo);
+  assert.equal(restoreDuo({ ids: ['charmander', 'squirtle'], out: 0 }, r.deck), null);   // session 1's shape
+  assert.equal(restoreDuo(saved, r.deck.slice(1)), null);                                // decks that don't add up
+  assert.equal(restoreDuo({ ...saved, decks: [['nope'], []] }, ['nope']), null);
+});
+
+test('syncDecks: a change to run.deck lands in the right partner\'s deck', () => {
+  const r = duoRun(['charmander', 'squirtle'], 1);
+  r.deck.push('flamethrower', 'surf');                // a type's card goes to its type's deck
+  syncDecks(r);
+  assert.ok(r.duo.decks[0].includes('flamethrower') && r.duo.decks[1].includes('surf'));
+  r.deck.push('tailwind');                            // a Neutral one waits for you to say who takes it
+  syncDecks(r);
+  assert.deepEqual(r.duo.loose, ['tailwind']);
+  r.deck.push('swords-dance');
+  syncDecks(r, { to: 0 });                            // ...unless the pick said whose
+  assert.ok(r.duo.decks[0].includes('swords-dance'));
+  r.deck.push('sludge');                              // junk goes to the one out
+  syncDecks(r);
+  assert.ok(r.duo.decks[1].includes('sludge'));
+  r.deck.splice(r.deck.indexOf('ember'), 1, 'ember+');   // an upgrade stays in its deck
+  syncDecks(r);
+  assert.ok(r.duo.decks[0].includes('ember+'));
+  r.deck.splice(r.deck.indexOf('swords-dance'), 1);   // a removal leaves the deck that held it
+  syncDecks(r);
+  assert.ok(!r.duo.decks[0].includes('swords-dance'));
+  assert.equal(ownerOf(r.duo, 'water-gun'), 1);
+  assert.equal(ownerOf(r.duo, 'tailwind'), -1);
+  assert.deepEqual(duoDeck(r.duo), r.deck);
 });
 
 test('the one out and the bench', () => {

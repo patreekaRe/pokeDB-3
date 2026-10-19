@@ -50,7 +50,7 @@ export const NEXT = [
   ['mall', 'The Safari Outfitter\'s Ranger Task Board is lit by lanterns, shows your own tasks, and glows and sparkles when one waits to be claimed.'],
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
   ['modes', 'Safari wild Pokémon fight on their real types and moves, on Gen 5\'s type chart; a ▲ on a card means super effective, and Net Balls suit Water and Bug.'],
-  ['modes', 'Duo Run: once the day\'s Safari run is done, replay it with two of your own starters, switching for 1 PP; same-type attacks deal 20% more.'],
+  ['modes', 'Duo Run: once the day\'s Safari run is done, replay it with two of your own starters, each with its own deck and hand; switch for 1 PP.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
