@@ -775,6 +775,7 @@ async function goHome(from, town = null, to = null) {
   abandonRun();
   townVisit = null;
   for (const k of Object.keys(homeVisits)) delete homeVisits[k];
+  event3dMod?.forgetTowns();   // a town's paintings stayed cached on the CPU at home, ~90MB the Clearing carried (2026-10-19)
   back?.(from, town);
 }
 

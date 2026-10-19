@@ -1097,6 +1097,11 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   mall's keepUp() step its shadows or resolution down for good. The buddies cost ~1.7 MB and no measurable draws (a walking
   buddy is a starter's first form, ~1 MB of frames at most), and trips with four of them leak nothing. Left as is: a ★5
   card's foil repaints (one card, like a rare's shimmer).
+  Round nine (2026-10-19, after the Clearing's trip leak): coming home from a town visit now lets go of the town
+  (`forgetTowns()` in `goHome()`, as `walkIntoRun()` already did; its paintings stayed cached, ~90 MB the Clearing
+  carried); the scenery's per-frame checks stopped walking the whole page and forcing a style pass (`filmOver()` /
+  `unseen()` in `js/scene.js`, ~40 ms a second on the map); the Mart's hidden ware tiles stopped animating. Budget check
+  within budget (clearing, town-shrine, mart, run-map, trips).
 
 - **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
   after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game
