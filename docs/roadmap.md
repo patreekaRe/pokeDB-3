@@ -973,6 +973,15 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   Dojo Mountain (Fighting: Machop, Mankey, Makuhita, Throh, Sawk, Mienfoo, Hitmonlee), Night Alley (Dark: Poochyena,
   Purrloin, Absol, Umbreon rare), Psychic Grove (Drowzee, Spoink, Munna, Elgyem, Solosis, Ralts, Espeon rare); later a
   Power Plant (Electric) or an Ice Cave.
+- **Growing the duo through the Safari** (the user's shape, 2026-10-19): a duo run starts with Fire / Water / Grass only;
+  each Safari area holds starters of its own to catch, and a catch unlocks that type for your duos. **How many types:
+  6 new, 9 in all** (worked out on the real chart, 2026-10-19): Fire / Water / Grass hit 8 of the 18 types super
+  effectively; the best 3 more reach 15, 4 reach 16, 5 reach 17, and 6 is the fewest that gives every one of the 18 a
+  counter (only Fighting hits Normal). Suggested six, all Gen 1-5 types: **Electric, Ice, Fighting, Ground, Flying,
+  Dark** (Poison works in Electric's place; a set with Steel and Fairy also covers all 18, but Fairy is Gen 6). Psychic
+  (Mewtwo's) could be a 10th later. Each new type's deck can be ~35 cards (Monster Train's clans), as a duo's pool is two
+  types together (~70). One themed area per new type (so ~9-12 areas, 3 a day), its starters caught there. Starters and
+  enemies may be dual types under the Safari's real chart.
 - **More playable types, discussed 2026-10-19, the user said "nah" for now**: skins with their own decks, a 4th type.
   If it comes back: Fighting / Dark / Psychic is the real chart's second clean triangle (Fighting > Dark > Psychic >
   Fighting; starters Timburr or Machop, Zorua, Gothita or Abra; Psychic would stop being neutral, so Mewtwo re-checked),
