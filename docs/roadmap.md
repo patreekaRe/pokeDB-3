@@ -1029,7 +1029,7 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   If it comes back: Fighting / Dark / Psychic is the real chart's second clean triangle (Fighting > Dark > Psychic >
   Fighting; starters Timburr or Machop, Zorua, Gothita or Abra; Psychic would stop being neutral, so Mewtwo re-checked),
   Ground / Rock / Ice a weaker one; enemies can take all 18 real types cheaply, but playable decks cap near 9-10 types at
-  ~70 cards each (all 18 only with ~35-card decks, Monster Train-style). Build "Enemy variety" first.
+  ~70 cards each (all 18 only with ~35-card decks, Monster Train-style).
 
 - **Suggested 2026-10-19, not picked** (a brainstorm session; each ▶ Run in: CLOUD, both repos where a battle rule changes):
   - **Biome weather as a battle rule**: rain powers Water, sun powers Fire, and so on per biome (data plus one modifier;
