@@ -3118,6 +3118,10 @@ Clearing as a small round key in the shell colour (a quieter take on the reverte
 painted on it), with his profile, wins and losses against him (`save.kenLost`, new), belt, stars and a belt track on his
 sheet. Notes in `docs/reference/gym-leaders.md`. Checked in the browser pane, met and unmet; tests pass.
 
+**The map's floating icons, seen and explained** (2026-10-18, the user's ask): a town material's pale ✧ above its room became
+a glowing blue ✦ badge on the room's corner, and a tap on it, the rare star or a Waystone Shard says what it is. A
+material over a Center is meant (Centers are one of its rooms). Notes in `docs/reference/map-screen.md` and `towns.md`.
+
 ## Safari shinies: catching, Sparkle and the Shiny Exchange (the user's asks, 2026-10-18 / 19; the mock https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy)
 Three sessions, all on `main`. **1 (2026-10-18, patch 1.26)**: the 514 shiny GIFs, the 1 in 150 roll (off the daily
 seed), the battle's entrance, banner, twinkles and gold shakes, `save.safariShinies` and Sparkle ★1-★5 on the signature
@@ -3133,4 +3137,3 @@ in `firestore.rules`: **the user publishes the rules again**; until then a resul
 the Pokédex, Trainer Card, Ranger board and `?lbsample=safari` on a seeded save, `?base&guests&sparkle=3`, the budget
 check (base, yard, Outfitter within budget); tests pass (364). Playtest: `?safaridex` doesn't light the Pokédex;
 `?sparkle=3` lends every shiny at ★3 (Pokédex, base, cards), `?lbsample=safari` the ✨ rows.
-
