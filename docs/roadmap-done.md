@@ -3232,3 +3232,13 @@ Tablet) got Electric's and Ice's two basic moves. `tools/ice-probe.mjs` checks t
 mirrors it all. The first draft trailed (ice+grass 47, solo 47 vs Fire 69); Icy Wind's Weak 2 fixed it: ice+fire 67.0,
 ice+grass 61.7, ice+water 62.3, ice+electric 70.3 (300 each), solo Ice 74.0. Numbers in pokeDB-sim's README.
 
+**Duo types, session 6: Ice's second** (2026-10-19, branch `duo-types`, both repos). Its table went into
+`docs/duo-design.md` first: 36 more cards, defence-leaning (Ice now 20 / 32 / 14 + 8 evolution), with art and new keys
+(`blockPerFrost`, `blockPerIcicle`, `thaw`; powers `thornFrost`, `frostBlock`, `hailChipBlock`, `hailIcicle`,
+`icicleEachTurn`, `retainZero`, `hailKeep`). Never-Melt Ice, Snowball, Safety Goggles, Icy Rock, Icicle Plate, Ice
+Memory, Ice Stone; Ice Gem and Chill Drive. Swinub as a `DUO_STARTERS` look on Vanillite's deck (backs, fits, cries). The
+Ice Cave: an 8th Safari area holding all 23 Ice-typed Safari Pokémon, date-gated like the Power Plant, on the Wetland's
+painters recoloured to a frozen lake. The Card index's Ice tab. Black Ice took Frostbite 1 so it wouldn't read like
+Zorua's, Banette's and Sharpedo's signatures. `tools/ice-probe.mjs` covers the new rules. Bot: ice pairs 66.7 / 62.0 /
+56.3 / 67.0, level with session 5's Ice (`iceFirst`), left for the balance pass.
+

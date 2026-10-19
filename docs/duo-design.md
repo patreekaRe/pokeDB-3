@@ -515,6 +515,16 @@ Painted as the **Wetland recoloured** to a frozen lake under a pale sky until it
 borrows the Peak). **Date-gated** like the Power Plant (`SAFARI_FROM`, 2026-10-20 on the branch: move it to the day
 after the branch goes live); from then, 3 of the 8 a day.
 
+**Bot check** (pokeDB-sim, human bot, Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`; 300 a duo cell,
+150 solo), win %: ice+fire / +grass / +water / +electric 66.7 / 62.0 / 56.3 / 67.0, against session 5's Ice
+(`iceFirst`: these 36 cards, the relics and items out, the same game files and days) 70.7 / 66.7 / 58.3 / 64.0; solo Ice
+(main game, L0) 78.7 both. Every gap is inside a cell's noise (about ±5.5 at 300): unlike Electric's second half
+(~7 under), Ice's holds its level, still the strong partner for Grass and Water. Against session 5's own numbers (67.0 /
+61.7 / 62.3 / 70.3) only ice+water moved, and `iceFirst` moved with it, so that's the Ice Cave in the day's areas, not
+the cards. Relic ranks (strong bot, solo Ice, 150 each, prog over `none` 19.80): Ice Stone +3.0, Safety Goggles +2.0,
+Never-Melt Ice +1.2, Ice Memory +1.0, Icy Rock +0.7, Icicle Plate +0.6, Snowball +0.3. Left for the balance pass
+(session 15).
+
 ### Fighting: Follow-up, Counter, Guts
 
 The only type that hits Normal, the Safari's most common. Fears Flying and Psychic.

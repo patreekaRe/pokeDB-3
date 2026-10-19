@@ -113,16 +113,26 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    Grass and Water. Playtest: the githack link with `?duorun&duopool&coins=500` (the Duo key, Electric and Ice lent), or a
    solo fight `?arena=fight&starter=vanillite&cards=blizzard,glaciate,snow-flurry`. **Waiting on the user**: the playtest,
    and whether Hail's 3 a turn and Frostbite's +1 a hit feel right.
-Prompt for session 6, Ice's second, **next** (▶ Run in: CLOUD, effort: medium; attach both pokeDB-3 and pokeDB-sim, start
-from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 5 (Ice, its first session's table and bot
-check, and Electric's second session as the pattern) and 6, docs/reference/safari.md's duo section and cards.md. Build
-Ice's second session: write its ~36-card table into the doc first (10 common, 18 uncommon, 8 rare, defence-leaning as
-Electric's second was), then the cards with art, Never-Melt Ice (Ice's held item) and 6 relics (Icy Rock among them:
-weather lasts longer; Ice Stone the boss relic), an Ice Gem and a Drive, the Card index's Ice tab, Swinub's line as a
-look on Vanillite's deck (back GIFs, SPRITE_FIT, BODY_X, cries; DUO_LINES.ice), and the Ice Cave's data (the Ice
-Pokémon moved in from the Peak, date-gated like the Power Plant, painted as another existing area recoloured: the Power
-Plant already borrows the Peak). Then the sim mirror, the relics' ranks and a bot check of Ice's pairs against session
-5's numbers. Push only to duo-types in both repos and give me a githack link."
+6. ~~**Ice's second**~~ done 2026-10-19 on `duo-types` (both repos; game `a136207`+, `docs/duo-design.md` section 5's
+   "Ice's second session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 36 more cards
+   (defence-leaning, 74 in all) with art, Never-Melt Ice + 6 relics (Snowball, Safety Goggles, Icy Rock, Icicle Plate, Ice
+   Memory, Ice Stone), Ice Gem and Chill Drive, the Card index's Ice tab, Swinub's look, and **the Ice Cave** (an 8th
+   area: every Ice-typed Safari Pokémon, date-gated like the Power Plant, the Wetland painted frozen). Bot (300 a duo):
+   ice+fire / +grass / +water / +electric 66.7 / 62.0 / 56.3 / 67.0 vs session 5's Ice (`iceFirst`) 70.7 / 66.7 / 58.3 /
+   64.0, solo 78.7 both: level, inside the noise. Playtest: the githack link with `?duorun&duopool&icecave&coins=500`, or
+   `?area=icecave`, `?bossfight=icecave&starter=swinub`, `?arena=fight&starter=swinub&cards=shatter,ice-crown,igloo`.
+   **Waiting on the user**: the playtest (the art helper rated Cold Shoulder's picture the weakest); **`SAFARI_FROM`
+   (both areas) must move to the day after the branch goes live**.
+Prompt for session 7, Fighting's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
+start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (Fighting, the clash check,
+and Ice's two session tables and bot checks as the pattern) and 6, docs/reference/safari.md's duo section, cards.md and
+card-design.md. Build Fighting's first session: write its ~38-card table into the doc first (30 pool cards: 10 common,
+14 uncommon, 6 rare, and all 8 evolution cards), then Follow-up, Counter and Guts (the Sore status card), the Guts
+Ability, Timburr's line (DUO_STARTERS, back GIFs, SPRITE_FIT, BODY_X, cries), the cards with art (a js/card-art-fighting.js),
+describe() / cardTerms() lines, the Fighting theme colours, the sim mirror and a bot check of Fighting's pairs against
+the other five types' numbers. Dojo Mountain's data comes in Fighting's second session (the Power Plant borrows the
+Peak's painters and the Ice Cave the Wetland's, so it needs another). Push only to duo-types in both repos and give me a
+githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
