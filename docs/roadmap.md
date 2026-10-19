@@ -45,7 +45,23 @@ capsule), its window, the pulls and the reveal; how it works is `docs/reference/
 `?mall=outfitter&ribbon&coins=5000&safaridex` (every Safari Pokémon counted caught) and says what to change; one call to
 check with them: `NEW_ODDS` (1 in 3 plain capsules new) means a machine where you own one shiny gives that one again and
 again (a pull of ten gave six Wurmple headless), so they may want it as a floor instead (new at least 1 in 3, else
-any caught one at random). Next, session 3:
+any caught one at random). **Changed 2026-10-19 (the user's catch: with one Pokémon caught in an area, its machine
+held one shiny, so a pull was a sure buy): sealed capsules.** A machine holds the area's every Pokémon from the start,
+caught or not, so a given shiny's odds are the same for everyone. A capsule is a shiny you don't own yet at least 1 in 3
+(`NEW_ODDS` as a floor), else any of the machine at random. One you haven't caught comes out sealed: its shadow behind
+dark glass, "Catch it to open", kept in the save (id -> how many), still paying its Lucky Star; catching that Pokémon in
+the Safari opens it right after the GOTCHA box with the full reveal (each sealed one a new shiny or +1 Sparkle). The
+Lucky Star pick stays caught-only. Next, session 2b, then session 3:
+
+> Run in: CLOUD. Read CLAUDE.md, docs/reference/hub-base-mall.md's "The Shiny Exchange", docs/reference/safari.md's
+> "Wild shinies and Sparkle" and this roadmap entry. Session 2b, sealed capsules: in `js/data/exchange.js` make
+> `machineOf()` the area's whole page, `NEW_ODDS` a floor (else any of the machine at random), and an uncaught pull a
+> sealed capsule saved by id; show sealed ones in the window (the reveal ends on the sealed shadow, the grid and banners
+> count them) and open them after a Safari catch of that Pokémon (`collect()` in `js/run.js`, never on a peeked run).
+> Update `tests/exchange.test.mjs`, check headless at `?mall=outfitter&ribbon&coins=5000` without `&safaridex` (a
+> fresh save: pulls come out sealed) and with it, a patch-notes line (edit the Exchange's line if it's still in
+> `NEXT`), update this entry and the reference, push to main and give me the githack link.
+
 
 > Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md's Safari Pokédex part, hub-base-mall.md's residents and the
 > Ranger Task Board, and this roadmap entry. Session 3, shinies everywhere else: the Safari Pokédex shows owned shinies
