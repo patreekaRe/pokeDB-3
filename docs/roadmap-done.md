@@ -3070,6 +3070,21 @@ Kurt's Workshop's material slots are buttons now: a tap opens a box under them s
 Pokémon, Alphas and boss, its sparkling rooms, where the biome sits on the road, a friend's letter), a second tap shuts it.
 One source of truth, `matHints()` in `js/data/satchel.js`, also feeds the Satchel app (`tests/quests.test.mjs`).
 
+## Found materials pop up, and a Shard gets its own screen (2026-10-18, the user's ask; branch `claude/quest-item-popups-us8wjw`)
+"I didn't know when I got materials": a found material (a fight's drop, a sparkling room, a Berry Tree) now floats up
+over the screen with its name and flies to the Bag (`js/satchel-pop.js`, no tap needed), and a Waystone Shard over an
+Alpha opens its own reward screen first, like a found item (`offerKeyItem()`). Notes in `docs/reference/towns.md`.
+
+### Phone reloads, round seven: work running behind what you see (2026-10-18)
+A code read for what rounds one to six (GPU, canvases, audio) couldn't see. Fixed: the pixel scene's 30 Hz redraw (and the
+hybrid light's) ran on under the 3D arena, walk-in rooms and the Mart, which only hid it (`unseen()` in `js/scene.js`;
+the 3D Center headless 4 redraws in 3 s -> 0); a Secret Base jukebox / radio / record player left on played on after
+`leave()`, making a note sprite every 600 ms no frame freed; a resize under the Clearing restarted the title light's loop
+into its hidden canvas (`js/title-light.js`); the hidden title logo's letter waves paused (`css/hub.css`). Left: rare
+cards' sheens animate `background-position` (a repaint a frame, small), a forced layout a frame in town / Game Corner
+bubbles (`placeSigns()` after `corner-crowd.js`'s writes). A headless many-fights probe (DOM nodes, listeners, heap,
+compositor layers) was started; its results go in the roadmap's "Waiting on the user" entry.
+
 ## Friends' graves and the Trainer Plaza's buddies (2026-10-18, the user's ask; branch `claude/friends-tombstones`)
 "How can we add more interactive friends stuff like the tombstone thing?", then the build. Every lost run (Safari and Sky
 Pillar too, never a playtest) is packed into the save's last five and `graves/<uid>`, a small doc of its own (the trainer

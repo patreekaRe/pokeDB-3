@@ -45,11 +45,34 @@ capsule), its window, the pulls and the reveal; how it works is `docs/reference/
 `?mall=outfitter&ribbon&coins=5000&safaridex` (every Safari Pokémon counted caught) and says what to change; one call to
 check with them: `NEW_ODDS` (1 in 3 plain capsules new) means a machine where you own one shiny gives that one again and
 again (a pull of ten gave six Wurmple headless), so they may want it as a floor instead (new at least 1 in 3, else
-any caught one at random). Next, session 3:
+any caught one at random). **Changed 2026-10-19 (the user's catch: with one Pokémon caught in an area, its machine
+held one shiny, so a pull was a sure buy): sealed capsules.** A machine holds the area's every Pokémon from the start,
+caught or not, so a given shiny's odds are the same for everyone. A capsule is a shiny you don't own yet at least 1 in 3
+(`NEW_ODDS` as a floor), else any of the machine at random. One you haven't caught comes out sealed: its shadow behind
+dark glass, "Catch it to open", kept in the save (id -> how many), still paying its Lucky Star; catching that Pokémon in
+the Safari opens it right after the GOTCHA box with the full reveal (each sealed one a new shiny or +1 Sparkle). The
+Lucky Star pick stays caught-only. **The opening** (proposed 2026-10-19, the user to say): in the catch's reward box,
+after the GOTCHA and before the signature card's Take/Skip, a sealed capsule slides in ("Your sealed capsule is
+reacting!"), its dark glass clears to the caught Pokémon's shadow, a tap opens it with the kiosk's reveal (halves, rays,
+the shadow, a flash, the shiny) and the card offer below turns shiny. Two sealed of it open one after the other (new,
+then +1 Sparkle); a shiny wild caught with one sealed gives ★2. One tap and done, so it never slows the run; under
+`calmFx()` the shiny appears straight away. Next, session 2b, then session 3:
+
+> Run in: CLOUD. Read CLAUDE.md, docs/reference/hub-base-mall.md's "The Shiny Exchange", docs/reference/safari.md's
+> "Wild shinies and Sparkle" and this roadmap entry. Session 2b, sealed capsules: in `js/data/exchange.js` make
+> `machineOf()` the area's whole page, `NEW_ODDS` a floor (else any of the machine at random), and an uncaught pull a
+> sealed capsule saved by id; show sealed ones in the window (the reveal ends on the sealed shadow, the grid and banners
+> count them) and open them after a Safari catch of that Pokémon (`collect()` in `js/run.js`, never on a peeked run).
+> Update `tests/exchange.test.mjs`, check headless at `?mall=outfitter&ribbon&coins=5000` without `&safaridex` (a
+> fresh save: pulls come out sealed) and with it, a patch-notes line (edit the Exchange's line if it's still in
+> `NEXT`), update this entry and the reference, push to main and give me the githack link.
+
 
 > Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md's Safari Pokédex part, hub-base-mall.md's residents and the
 > Ranger Task Board, and this roadmap entry. Session 3, shinies everywhere else: the Safari Pokédex shows owned shinies
-> and their Sparkle (a shiny toggle on a page), Secret Base residents come out shiny, Ranger tasks for shiny catches,
+> and their Sparkle (a shiny toggle on a page) and sealed capsules (a capsule badge with the count on a Pokémon's page,
+> "2 sealed — catch to open", the same mark on the list and a "Sealed: N" total; the user's ask, 2026-10-19), Secret
+> Base residents come out shiny, Ranger tasks for shiny catches,
 > the Trainer Card's count and a ✨ on the day's leaderboard. Check headless, a patch-notes line, move this entry to
 > docs/roadmap-done.md, push to main and give me the githack link.
 
@@ -1080,8 +1103,8 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
         **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
      d) ~~**The east front**: the Safari Outfitter~~ done 2026-10-15, made a grand safari lodge the same day
         (`docs/roadmap-done.md`). **Next**: the user playtests it (`?mall=outfitter&safari&coins=3000`) and says what to
-        change. Poké Balls are still also sold in the Pokédex's Game Corner app and the Safari prep window's Buy key: say
-        if they should move to the Outfitter only. ▶ Run in: CLOUD.
+        change. Poké Balls left the Pokédex's Game Corner app 2026-10-19 (the user's ask); the Safari prep window's Buy
+        key still sells them (`ballsApp` in `js/shop.js`): say if that should go too. ▶ Run in: CLOUD.
 - **Ranger Task Board and Trainer's Journal**: built and rebalanced 2026-10-16, with the Trainer furniture set and the gold
   shell, and its cases sparkling with news when you come home (`docs/roadmap-done.md`). **Next, if wanted**: a reward per Ranger rank, more tasks, seasonal Expeditions.
   Waiting on the user's playtest (`?base` to see the set once claimed). ▶ Run in: CLOUD.
@@ -1118,6 +1141,9 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   listens to the boss, wild, elite and gym songs loop and looks at a town's ground. Next levers if it still reloads: the
   smooth paintings' canvases kept on the CPU beside their textures (~40-60 MB a town), the full-screen DOM layers (the probe
   can't see them), a 32 kHz song decode (~3 dB off at 10 kHz in Safari, so not done).
+  Round seven (2026-10-18, on `main`, archive): the pixel scene stopped redrawing under every 3D place, a Base jukebox
+  stops on leaving, the title's light loop no longer restarts under the Clearing. Open: a headless many-fights check of
+  DOM nodes, listeners, heap and compositor layers (rerun it if the session that started it ended first).
 
 - **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
   after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game
