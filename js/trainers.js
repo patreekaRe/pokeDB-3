@@ -177,6 +177,9 @@ function sprite(key) {
   return { src: spriteUrl(st, 'front', stage, shiny), name: masked ? '???' : `${shiny ? 'Shiny ' : ''}${st.line[stage].name}`, masked, cry: st.line[stage].id };
 }
 
+/** A trainer's buddy or partner key as { src, name, masked, cry } (friends' graves and the Plaza's buddies, js/graves.js). */
+export const trainerMon = (key) => sprite(key);
+
 function monImg(key, cls) {
   const m = sprite(key), img = el('img', `pixel ${cls}${m.masked ? ' unseen' : ''}`);
   img.src = m.src;
@@ -277,6 +280,7 @@ const WELCOME = [
   'Its board stands at the top of the Clearing\'s plaza. Hide me keeps you off it.',
   'Someone added you? A TRAINER LINK pops up. Add them back to link up!',
   'Tap Visit on a trainer\'s page to walk round their Secret Base, just as they left it!',
+  'Lose a run and your trainers find your grave on their map where you fell. Leave flowers on theirs, or avenge them!',
 ];
 
 function welcome(code, done) {

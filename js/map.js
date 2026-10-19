@@ -736,7 +736,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
-export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, read = null, track = 0, type = null, peek = null, ken = false, gym = null } = {}) {
+export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, read = null, track = 0, type = null, peek = null, ken = false, gym = null, graves = null, onGrave = null } = {}) {
   // peek: a look-only copy drawn into another box (the Bag's map, from a battle or a reward), leaving the map screen's own alone
   // ken: Kenmatta has been beaten once, so the Move Tutor's ❓ room shows his face
   // read: picking a ❓ room for Unown Rubbing; track: Tracker's Eye's level, marking wild fights by match-up against `type`
@@ -863,6 +863,9 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     if (!peek && reachable.has(map.boss.id)) preloadBoss(boss.spriteId);
   }
 
+  if (graves?.length) drawGraves(box, map, graves, peek ? null : onGrave);
+  if (!peek) graveMap = map;
+
   if (trainer) {
     const here = currentId && map.byId[currentId];
     const img = el('img', here ? 'map-trainer' : 'map-trainer at-start');
@@ -873,6 +876,69 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     box.append(img);
     if (!peek) trainerImg = img;
   }
+}
+
+/* ---------- friends' graves (js/graves.js) ---------- */
+
+let graveMap = null;   // the map screen's map as last drawn, for setMapGraves()
+
+const GRAVE_ART = [
+  '....DDDD....',
+  '..DDLLLLDD..',
+  '.DLLLSSSSMD.',
+  '.DLLSSSSSMD.',
+  'DLLSSDDSSSMD',
+  'DLSSSDDSSSMD',
+  'DLSDDDDDDSMD',
+  'DLSSSDDSSSMD',
+  'DLSSSDDSSSMD',
+  'DLSSSSSSSSMD',
+  'DLSSSSSSSSMD',
+  'DLSSSSSSSSMD',
+  'GDDDDDDDDDDG',
+  '.GGGGGGGGGG.',
+];
+const GRAVE_INK = { D: '#303038', L: '#e2e2ea', S: '#a8a8bc', M: '#74748a', G: '#4a8a3a', P: '#f070a8', Y: '#f8d838', W: '#ffffff', A: '#f8c030' };
+const FLOWERS = [[1, 12, 'P'], [2, 11, 'Y'], [0, 11, 'P'], [10, 12, 'Y'], [11, 11, 'P'], [9, 11, 'W']];
+
+/** A friend's tombstone in pixels: flowers at its foot once you've paid respects, a gold rim once avenged. */
+export function graveSvg({ flowers = false, avenged = false } = {}) {
+  const cells = [];
+  GRAVE_ART.forEach((row, y) => [...row].forEach((c, x) => {
+    if (c === '.') return;
+    cells.push([x, y, avenged && c === 'D' && y < 12 ? 'A' : c]);
+  }));
+  if (flowers) cells.push(...FLOWERS);
+  const rects = cells.map(([x, y, c]) => `<rect x="${x}" y="${y}" width="1" height="1" fill="${GRAVE_INK[c]}"/>`).join('');
+  return `<svg viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg>`;
+}
+
+/** Each grave by its room's bottom corner, a second at the same room on the other side; `onGrave(g)` on a tap. */
+function drawGraves(box, map, graves, onGrave) {
+  box.querySelectorAll(':scope > .map-grave').forEach(g => g.remove());
+  const at = {};
+  for (const g of graves) {
+    const node = map.byId[g.node];
+    if (!node) continue;
+    const n = at[g.node] = (at[g.node] ?? -1) + 1;
+    const side = n % 2 ? 1 : -1, wide = node.type === 'boss' ? 3.4 : 2.9;
+    const btn = el('button', `map-grave${g.flowers ? ' flowers' : ''}${g.avenged ? ' avenged' : ''}`);
+    btn.type = 'button';
+    btn.innerHTML = graveSvg(g);
+    btn.append(el('span', 'map-grave-wisp'));
+    const label = `${g.name}'s grave: their run ended here. Tap to see it.`;
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
+    if (onGrave) btn.addEventListener('click', (e) => { e.stopPropagation(); onGrave(g); });
+    else btn.disabled = true;
+    place(btn, nodeX(node) + side * (wide + Math.floor(n / 2) * 2.4), rowY(node.floor) + 1.3);
+    box.append(btn);
+  }
+}
+
+/** The map screen's graves drawn again (a fetch landed, or flowers were left), leaving the rest of the map as it is. */
+export function setMapGraves(graves, onGrave) {
+  if (graveMap) drawGraves($('map'), graveMap, graves || [], onGrave);
 }
 
 /** A room the Silph Scope can reveal: a fight you haven't been to whose Pokémon isn't shown yet (the boss always is). */

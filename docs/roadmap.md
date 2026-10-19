@@ -947,9 +947,15 @@ a friend's base as they left it, read-only (`openBase3d({ guest })`, every base 
 by `tools/trainers-check.mjs`'s save-unchanged test. Then (the user's picks): Visit house / Visit yard for a base with a
 backyard, and their trophy cases as they last saw them at home. **Next: the user playtests it** (two signed-in accounts, or
 `?base&asfriend` alone); a guestbook of stamps is still a maybe.
-Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
-seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
-in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
+~~**Friends' graves and the Plaza's buddies**~~ done 2026-10-18 on `claude/friends-tombstones` (pushed to `main` too;
+`docs/roadmap-done.md`, details in `docs/reference/cloud-save.md`): a lost run (Safari and Sky Pillar too) goes up on
+`graves/<uid>`, friends find the grave where it fell (the very room on the Safari, the door on the Pillar, the same
+floor elsewhere), a tap opens the loss recap with Pay respects / Avenge, and up to 4 friends' buddies walk the Trainer
+Plaza. **Next: the user publishes `firestore.rules`** (Waiting on the user) **and playtests it** (`?graves=3`, or two
+signed-in accounts).
+Later: name search and Follow, then the rest of the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes
+(best on the seeded Safari / Sky Pillar, rated for coins), a daily gift in a friend's Lost & Found (the user's pick to
+build first), maybe an Assist (a friend's partner for one fight, bot-checked).
 **Friend ideas saved 2026-10-17** (the user's pick of these: **the daily gift**, one item a day to a friend, built
 first when friends work resumes; the rest just saved). Real email was ruled out: it needs a server (Cloud Functions on
 Blaze plus a mail service), iCloud drops Firebase's mail, and it means using sign-in addresses. Instead, in-game:
@@ -1090,9 +1096,14 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.
 - A Safari "zone legend" (a weekly Pokémon catchable only on the last floor): the user said no, 2026-10-03.
-- Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
+- Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **Friends' graves** (2026-10-18, branch `claude/friends-tombstones`, on `main` too): paste the new `firestore.rules` into
+  the Firebase console (Firestore Database > Rules > Publish): it adds `graves/`. Until then a lost run is kept in the
+  save but friends can't see it, and nothing else changes. Then playtest: `?graves=3` on any run's map and in the
+  Clearing (made-up friends, nothing saved), or lose a run on one signed-in account and look on the other's map.
+
 - **Smoother transitions, on a phone** (2026-10-18, the user's ask; `docs/roadmap-done.md`): a new run's Clearing film,
   its first wild fight's wipe, the Shrine's and Wastes' films (biome and place) were measured headless and fixed. The
   user plays a new run on their phone and says whether the first fight's wipe and the films still stutter. Not fixed:

@@ -5,7 +5,8 @@ rules_version = '2';
 // their own entry for a day once, and nobody edits or deletes one. towerBoard/<week>_<uid>: the Sky Pillar's, the same
 // way once a week. arcadeBoard/<week>_<game>_<uid>: the home arcade's weekly bests, raised only by a higher score.
 // trainers/<uid> and codes/<CODE>: the Trainers app's public pages and friend codes (js/trainers.js); plaza/<uid> the
-// Trainer Plaza's trainers on lately, and adds/<to>_<from> the note that pops up for someone you added.
+// Trainer Plaza's trainers on lately, adds/<to>_<from> the note that pops up for someone you added, and graves/<uid> a
+// trainer's last lost runs (friends' tombstones, js/graves.js).
 service cloud.firestore {
   match /databases/{database}/documents {
     match /saves/{uid} {
@@ -150,6 +151,28 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(['name', 'buddy', 'partner', 'tier', 'badges', 'wins', 'at'])
         && validBlurb(request.resource.data) && request.resource.data.at == request.time;
       allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // graves/<uid>: a trainer's last 5 lost runs (each a JSON string, packFall() in js/data/graves.js) with their name and
+    // buddy, for friends' tombstones on the map and buddies in the Trainer Plaza. Read one at a time; only its owner writes it.
+    function fallOk(f, i) {
+      return f.size() <= i || (f[i] is string && f[i].size() <= 4000);
+    }
+    function validGraves(d) {
+      return d.keys().hasOnly(['name', 'buddy', 'tier', 'falls', 'at'])
+        && d.keys().hasAll(['name', 'buddy', 'tier', 'falls', 'at'])
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 16
+        && d.buddy is string && d.buddy.size() <= 64
+        && d.tier in ['green', 'bronze', 'silver', 'gold', 'violet']
+        && d.falls is list && d.falls.size() <= 5
+        && fallOk(d.falls, 0) && fallOk(d.falls, 1) && fallOk(d.falls, 2) && fallOk(d.falls, 3) && fallOk(d.falls, 4)
+        && d.at == request.time;
+    }
+    match /graves/{uid} {
+      allow get: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == uid && validGraves(request.resource.data);
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow list: if false;
     }
 
     // adds/<to>_<from>: left by `from` on adding `to`. Only `to` reads them (a query on to == you), and only marks one

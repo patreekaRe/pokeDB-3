@@ -46,7 +46,8 @@ import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerT
 import { openDeviceApp } from './collection.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
-import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf, reachableNodes } from './map.js';
+import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf, reachableNodes, setMapGraves } from './map.js';
+import { recordFall, mapGraves, openGrave, graveMarks, avengeGrave, sampleGraves } from './graves.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
@@ -61,13 +62,13 @@ import { biomeIntro, placeIntro } from './biome-intro.js';
 import { bootDevice } from './device-boot.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { wellEnding } from './well.js';
-import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene, conquered } from './halloffame.js';
+import { recordWin, recordLoss, draftLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene, conquered } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
 import { meowthDue } from './meowth.js';
-import { renderTower, hideTower, guardianIntro, towerFall, barReady } from './tower.js';
+import { renderTower, hideTower, guardianIntro, towerFall, barReady, setTowerGraves } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
@@ -343,6 +344,7 @@ function checkpoint() {
     tally: run.tally,
     safari: run.safari,
     tower: run.tower,
+    avenge: run.avenge,       // a friend's grave you vowed to avenge on this map (js/graves.js): { id, name, foeId, zone }
   });
 }
 
@@ -933,6 +935,7 @@ function peekRoom(id) {
 
 function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
   run.gymWon = null;   // Mewtwo falls in from its third gym (fallIn()) without walkOn()
+  run.avenge = null;   // a vow at a friend's grave lasts its map
   reseed(`biome:${zone()}`);
   if (isTower()) return startFlight(quiet);
   if (!isSafari() && !peeking) updateSave(d => {
@@ -1668,14 +1671,15 @@ const scopeUsed = () => Object.values(run.map.byId).filter(n => n.revealed).leng
 
 function drawMap() {
   if (isTower()) return renderTower({ map: run.map, current: run.current, flight: run.tower.flight, trail: run.tower.trail, best: peeking ? 0 : getSave().tower.bestEver || 0,
-    sprite: spriteUrl(run.starter, 'front', run.stage), onPick: enterNode, hold: run.tower.pick != null || !!run.tower.train });   // the climb waits for the pick
+    sprite: spriteUrl(run.starter, 'front', run.stage), onPick: enterNode, hold: run.tower.pick != null || !!run.tower.train,   // the climb waits for the pick
+    graves: gravesNow(), onGrave: tapGrave });
   const biome = land();
   const nodes = Object.values(run.map.byId);
   if (scoping && !nodes.some(scopeable)) scoping = false;
   if (rubbing && !nodes.some(readable)) rubbing = false;
   renderMap(run.map, run.current, enterNode, {
     biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, reveal: scoping ? revealRoom : null, ken: getSave().kenBeaten,
-    read: rubbing ? readRoom : null, gym: gymOnMap(), ...tracking(),
+    read: rubbing ? readRoom : null, gym: gymOnMap(), ...tracking(), graves: gravesNow(), onGrave: tapGrave,
   });
   $('key-ken').hidden = !getSave().kenBeaten;
   $('map').classList.toggle('scoping', scoping || rubbing);
@@ -1690,6 +1694,51 @@ function drawMap() {
   btn.querySelector('.scope-label').textContent = scoping ? 'Pick a room' : `${left}/${total}`;
   btn.title = scoping ? 'Tap a lit-up fight room to reveal it, or tap here to put the Scope away.'
     : `${SCOPE.name}: ${SCOPE.text} ${left} of ${total} left in this biome.`;
+}
+
+/* ---------- friends' graves (js/graves.js): where they fell, on this map ---------- */
+
+/** Where the map is, as a friend's fall says it: the Safari's area and day, the Sky Pillar's week (and the flight's first
+    floor), or a run's biome. */
+function graveSpot() {
+  if (isTower()) return { here: { mode: 'tower', land: '', day: run.tower.week, name: 'Sky Pillar' }, base: run.tower.flight * FLIGHT };
+  if (isSafari()) return { here: { mode: 'safari', land: run.safari.areas[run.biome], day: run.safari.day, name: safariArea().name }, base: 0 };
+  return { here: { mode: 'run', land: mainBiome().id, day: '', name: mainBiome().name }, base: 0 };
+}
+
+/** The graves on this map, with your flowers and vengeance on them (a playtest run's flowers are never saved). */
+function gravesNow() {
+  if (!run?.map) return [];
+  const { here, base } = graveSpot(), marks = graveMarks();
+  return mapGraves(here, run.map, base, refreshGraves).map(g => ({ ...g, flowers: marks.r.has(g.id), avenged: marks.a.has(g.id) }));
+}
+
+/** Only the graves drawn again (friends' docs just landed, or flowers left), never the rest of the map mid-walk. */
+function refreshGraves() {
+  if (!run || run.over || !run.map || document.body.dataset.screen !== 'map-screen') return;
+  if (isTower()) setTowerGraves(gravesNow());
+  else setMapGraves(gravesNow(), tapGrave);
+}
+
+/** A grave tapped: their recap, Pay respects, and Avenge while the Pokémon that beat them is still ahead on this map. */
+function tapGrave(g) {
+  const foe = g.fall.foeId, here = zone();
+  const vowed = run.avenge?.id === g.id && run.avenge.zone === here;
+  const ahead = foe && Object.values(run.map.byId).some(n => n.enemyId === foe && !n.visited && n.id !== run.current);
+  openGrave(g, {
+    playtest: peeking || sampleGraves(), onChange: refreshGraves,
+    avenge: vowed ? 'vowed' : ahead ? () => { run.avenge = { id: g.id, name: g.name, foeId: foe, zone: here }; checkpoint(); } : null,
+  });
+}
+
+/** A lost run as a friend's grave keeps it (recordFall()): its recap, and where on which map it ended. */
+function fallNow(loss) {
+  const here = run.current && run.map.byId[run.current], tower = isTower(), safari = isSafari();
+  const where = tower ? { biomeName: 'Sky Pillar', place: null, floor: run.tower.floor + 1 }
+    : safari ? { biomeName: 'Safari Zone', place: safariArea().name, floor: here ? here.floor + 1 : 0 } : whereNow();
+  const entry = draftLoss(run, { ...loss, ...where }, getSave().shiny.on.includes(run.starter.id));
+  const door = tower && here ? Math.max(0, (run.map.floors[here.floor] ?? [run.map.boss]).indexOf(here)) : 0;
+  return { ...entry, ...graveSpot().here, floor: where.floor, node: tower ? String(door) : here?.id ?? '', foeId: here?.enemyId ?? '', at: Date.now() };
 }
 
 function toggleScope() {
@@ -2559,6 +2608,11 @@ function afterFight(node, result) {
   if (!result.evolved) run.hp = result.hp;   // evolved in the gym: already set, healed and raised (gymRoom())
   run.fights += 1;
   if (isTower()) augmentsAfterFight(result);
+  if (run.avenge && run.avenge.foeId === node.enemyId && run.avenge.zone === zone()) {   // a friend's grave avenged
+    const line = avengeGrave(run.avenge, peeking || sampleGraves());
+    run.avenge = null;
+    if (line) tell(line);
+  }
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
   const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari() || isTower();   // the Sky Pillar would farm it too
   const recounted = node.type === 'boss' && run.gymWon?.counted;   // back from Continue in the gym: its Pokédex research is already counted
@@ -5316,6 +5370,7 @@ async function endTower(won) {
 function endRun(won, atLastBoss = false, loss = null) {
   run.over = true;
   if (!peeking) clearRunData();
+  if (!won && !peeking) try { recordFall(fallNow(loss)); } catch (err) { console.warn('No grave for this run', err); }   // a grave on your friends' maps (js/graves.js)
   if (!peeking) for (const id of run.items) markSeen('items', id);   // found on the last rewards, with no map checkpoint after
   if (isTower()) return endTower(won);
   const mewtwoRun = isMewtwoRun(run.starter);

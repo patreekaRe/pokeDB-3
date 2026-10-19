@@ -749,6 +749,18 @@
     <form method="dialog" class="records-close"><button class="btn primary">Continue</button></form>
   </dialog>
 
+  <dialog id="grave-dialog" data-smooth-icons class="dialog records-dialog hof-dialog loss-dialog grave-dialog dev-window">
+    <h2 tabindex="-1" autofocus id="grave-title">🪦 A friend's grave</h2>
+    <p class="records-sub" id="grave-sub"></p>
+    <div id="grave-body" class="hof-body bdx-sheet"></div>
+    <p class="records-sub grave-said" id="grave-said" aria-live="polite"></p>
+    <div class="records-close grave-keys">
+      <button type="button" class="btn" id="grave-respect">💐 Pay respects</button>
+      <button type="button" class="btn" id="grave-avenge">⚔️ Avenge</button>
+      <form method="dialog"><button class="btn primary">Close</button></form>
+    </div>
+  </dialog>
+
   <dialog id="map-dialog" class="dialog wide-dialog dev-window">
     <h2 id="map-dialog-title">Map</h2>
     <div class="map-peek-wrap dev-screen"><div class="map map-peek" id="map-peek"></div></div>

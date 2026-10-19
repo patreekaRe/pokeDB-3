@@ -1,4 +1,4 @@
-// firestore.rules' trainers/ and codes/ rules against the real Firestore emulator (needs Java). In an empty folder:
+// firestore.rules' trainers/, codes/, plaza/, adds/ and graves/ rules against the real Firestore emulator (needs Java). In an empty folder:
 //   npm i firebase-tools@13 @firebase/rules-unit-testing@3 firebase@10
 //   echo '{"emulators":{"firestore":{"port":8089,"host":"127.0.0.1"}}}' > firebase.json
 //   cp <repo>/tools/trainers-rules.mjs . && RULES=<repo>/firestore.rules npx firebase emulators:exec --only firestore --project demo-trainers "node trainers-rules.mjs"
@@ -83,6 +83,28 @@ await ok(deleteDoc(doc(B, 'adds/uidA_uidB')), 'B takes it back on removing A');
 await ok(setDoc(doc(B, 'adds/uidA_uidB'), add('uidB', 'uidA')), 'B adds A again');
 await no(deleteDoc(doc(env.authenticatedContext('uidC').firestore(), 'adds/uidA_uidB')), 'C can\'t delete it');
 await ok(deleteDoc(doc(A, 'adds/uidA_uidB')), 'A can clear it');
+
+const fallJson = JSON.stringify({ mode: 'run', land: 'forest', floor: 4, starter: 'charmander', foe: 'Pidgey', deck: ['ember'] });
+const graves = (extra = {}) => ({ name: 'ASH', buddy: 'starter:squirtle', tier: 'gold', falls: [fallJson], at: serverTimestamp(), ...extra });
+await ok(setDoc(doc(A, 'graves/uidA'), graves()), 'A writes their graves');
+await ok(setDoc(doc(A, 'graves/uidA'), graves({ falls: Array(5).fill(fallJson) })), 'five falls are fine');
+await ok(setDoc(doc(A, 'graves/uidA'), graves({ falls: [] })), 'and none');
+await ok(setDoc(doc(A, 'graves/uidA'), graves({ falls: ['x'.repeat(4000)] })), 'a fall of 4,000 is fine');
+await no(setDoc(doc(A, 'graves/uidA'), graves({ falls: Array(6).fill(fallJson) })), 'a sixth fall is refused');
+await no(setDoc(doc(A, 'graves/uidA'), graves({ falls: [fallJson, 'x'.repeat(4001)] })), 'a fall past 4,000 is refused');
+await no(setDoc(doc(A, 'graves/uidA'), graves({ falls: [fallJson, fallJson, fallJson, fallJson, { hax: 1 }] })), 'a fall that isn\'t a string is refused');
+await no(setDoc(doc(A, 'graves/uidA'), graves({ base: 'x' })), 'graves take nothing extra');
+await no(setDoc(doc(A, 'graves/uidA'), graves({ tier: 'mauve' })), 'a bad tier is refused');
+await no(setDoc(doc(A, 'graves/uidA'), graves({ name: 'X'.repeat(17) })), 'a name past 16 is refused');
+await no(setDoc(doc(A, 'graves/uidA'), graves({ at: new Date(0) })), 'a made-up time is refused');
+await no(setDoc(doc(B, 'graves/uidA'), graves()), 'B can\'t write A\'s graves');
+await no(setDoc(doc(anon, 'graves/uidA'), graves()), 'signed out can\'t write any');
+await ok(setDoc(doc(A, 'graves/uidA'), graves()), 'A writes them again');
+await ok(getDoc(doc(B, 'graves/uidA')), 'B reads A\'s graves');
+await no(getDoc(doc(anon, 'graves/uidA')), 'signed out can\'t read them');
+await no(getDocs(collection(B, 'graves')), 'graves can\'t be listed');
+await no(deleteDoc(doc(B, 'graves/uidA')), 'B can\'t delete A\'s graves');
+await ok(deleteDoc(doc(A, 'graves/uidA')), 'A can delete their own');
 await env.cleanup();
 console.log(fails ? `${fails} FAILED` : 'all rules checks passed');
 process.exit(fails ? 1 : 0);

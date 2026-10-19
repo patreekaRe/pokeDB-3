@@ -1638,6 +1638,30 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   75% { scale: 0.55 1; }
 }
 @media (prefers-reduced-motion: reduce) { .map-rare { animation: none; } }
+/* a friend's grave (js/graves.js, drawGraves() in js/map.js): a pixel tombstone by its room's foot, a wisp drifting over
+   it till you've left flowers; on the Sky Pillar (.tw-grave) by the door they went through */
+.map-grave, .tw-grave { position: absolute; z-index: 2; padding: 0; border: 0; background: none; cursor: pointer; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.4)); }
+.map-grave { transform: translate(-50%, -50%); width: calc(var(--tile) * 2.4); aspect-ratio: 12 / 14; }
+.map-grave svg, .tw-grave svg { display: block; width: 100%; height: 100%; }
+.map-grave:disabled { cursor: default; }
+.map-grave:not(:disabled):is(:hover, :focus-visible) { transform: translate(-50%, -50%) scale(1.15); }
+.tw-grave:is(:hover, :focus-visible) { scale: 1.15; transform-origin: 50% 100%; }
+.map-grave-wisp { position: absolute; left: 50%; top: -45%; width: 45%; aspect-ratio: 1; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(220, 240, 255, 0.95) 0 28%, rgba(140, 190, 255, 0.45) 55%, transparent 72%);
+  translate: -50% 0; opacity: 0.6; animation: graveWisp 3.2s ease-in-out infinite; }
+.map-grave.flowers .map-grave-wisp, .tw-grave.flowers .map-grave-wisp { display: none; }
+@keyframes graveWisp { 0%, 100% { translate: -50% 0; opacity: 0.3; } 50% { translate: -50% -45%; opacity: 0.9; } }
+@media (prefers-reduced-motion: reduce) { .map-grave-wisp { animation: none; } }
+.calm-fx .map-grave-wisp { animation: none; }
+.grave-dialog .grave-keys { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.grave-dialog .grave-keys form { margin: 0; }
+.grave-dialog .grave-keys .btn {
+  border: 0; background: var(--shell-lo); color: #fff; text-shadow: 1px 1px 0 var(--shell-deep);
+  box-shadow: inset 0 0 0 2px var(--shell-rim), 0 3px 0 var(--shell-deep);
+}
+.grave-dialog .grave-keys .btn:disabled { opacity: 0.6; }
+.grave-dialog .grave-said { min-height: 1.2em; margin: 10px 0 0; }
+.grave-dialog .grave-said:empty { display: none; }
 /* Kenmatta's face for his dojo's room once he's been beaten: a 26x26 crop of Alder's sprite (62x66), head and spiky hair */
 .ken-face { display: block; width: 1.25em; aspect-ratio: 1; background: url(../assets/trainers/alder.png) 47.22% 12.5% / 238.46% 253.85% no-repeat;
   image-rendering: pixelated; }
@@ -4322,6 +4346,7 @@ body.scene-peek #backdrop { display: none; }
 .tw-mon.flip { scale: -1 1; }
 .tw-mon.behind { filter: brightness(0.55) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.4)); }
 .tw-doors { position: absolute; inset: 0; pointer-events: none; }
+.tw-grave { pointer-events: auto; }
 .tw-door { position: absolute; pointer-events: auto; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 40% 40% 4px 4px / 22% 22% 4px 4px; }
 .tw-door:hover, .tw-door:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--gem), 0 0 18px 2px var(--gem); background: color-mix(in srgb, var(--gem) 14%, transparent); }
 /* each door's room on a little hanging sign over its arch, bobbing like the map's rooms */

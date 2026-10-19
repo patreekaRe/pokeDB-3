@@ -16,6 +16,8 @@ import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { plazaBoard } from './hub-plaza.js';
 import { plazaTop } from './trainers.js';
+import { plazaBuddies } from './graves.js';
+import { makeBuddies } from './hub-buddies.js';
 import { cloudConfigured, cloudRemembered } from './cloud.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
@@ -180,6 +182,7 @@ let glowMats = [], lamps = [], bugs = null, flyer = null, flownMat = null, flySh
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null, dojoFx = null, pillarFx = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
+let buddies = null, buddiesAt = 0;   // the trainers on your list, as their buddies in the Trainer Plaza (js/hub-buddies.js)
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let safariMark = null;   // the "!" over the Safari gate while a Ranger task waits (js/data/ranger.js)
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
@@ -3773,11 +3776,12 @@ function ndc(e) {
 function onTap(e) {
   if (dragged) { dragged = false; return; }
   if (held || cutscene || arriving || leaving || outbound || returning) return;
-  const rays = tapRays(e), ghosts = spooks?.boards() || [], under = [mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])];
+  const rays = tapRays(e), ghosts = [...(spooks?.boards() || []), ...(buddies?.boards() || [])], under = [mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])];
   let hit;
   for (const ray of rays) if ((hit = ray.intersectObjects(under, true).find(h => !h.object.userData.who || onSprite(h)))) break;
-  if (spooks?.tap(hit, walker)) return;
-  if (spooks?.hush()) return;
+  if (spooks?.tap(hit, walker)) { buddies?.hush(); return; }
+  if (buddies?.tap(hit, walker)) { spooks?.hush(); return; }
+  if ([spooks?.hush(), buddies?.hush()].some(Boolean)) return;
   if (hit?.object.userData.cauldron) { cauldron.tap(); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object.userData.place) return goTo(hit.object.userData.place, true);
@@ -4181,6 +4185,7 @@ function frame(now) {
   liveSmoke(now);
   liveDuck(now);
   spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
+  buddies?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   sealed?.tick(now, (LIGHT[time] || LIGHT.day).glow, calm);
   gardenArch?.tick(now, calm, (LIGHT[time] || LIGHT.day).glow);
@@ -4350,7 +4355,27 @@ async function openHub(titleScreen, actions, hold) {
   if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
   if (friendMail()) pcMarks();   // a friend's letter, once a UTC day at most
   homeNews();
+  friendBuddies();
   return true;
+}
+
+/** The trainers on your list out in the plaza as their buddies: read at most every ten minutes, built again only when
+    who's there changed. Signed out, nobody. */
+async function friendBuddies() {
+  if (buddiesAt && performance.now() - buddiesAt < 600000) return;
+  buddiesAt = performance.now();
+  const list = await plazaBuddies(4);
+  if (list === null) buddiesAt = 0;   // signed out: nothing was read, so ask again on the next visit
+  const key = (list || []).map(f => `${f.uid}|${f.name}|${f.tier}|${f.mon.src}|${f.talk.join('|')}`).join('/');
+  if (buddies?.key === key) return;
+  buddies?.dispose();
+  buddies = null;
+  if (!list?.length) return;
+  buddies = makeBuddies({ THREE, scene, camera, root, monBoard, drawMon, dispose, route, free, tileX, tileZ, PITCH,
+    byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
+    centre: START, reach: PLAZA_R + 0.6, spawns: [{ x: 13, y: 11 }, { x: 17, y: 13 }, { x: 13, y: 14 }, { x: 17, y: 10 }],
+    others: (c) => (c.x === walker.tile?.x && c.y === walker.tile?.y) }, list);
+  buddies.key = key;
 }
 
 /** Out from behind the shut Pokédex: the corner keys come up and your partner walks in through the Whispering Clearing's

@@ -47,6 +47,7 @@ export const NEXT = [
   ['fixes', 'The Clearing, every gateway town and every 3D fight and room run lighter on phones, a Secret Base jukebox stops when you leave, played cards fly smoothly in battle instead of stuttering, and the Ranger Task Board and Trainer\'s Journal show all four tabs on a phone, and a tap no longer sometimes plays its click twice.'],
   ['look', 'A slow 3D room shows your Pokémon hopping by a Poké Ball while it loads, and tries again rather than falling back to the flat room.'],
   ['hub', 'Tap a material at Kurt\'s Workshop to see where it drops: which biome, its fights and sparkling rooms, and friends\' letters. The Satchel app says the same.'],
+  ['dex', 'Your Trainers\' lost runs stand as graves on your map where they fell: tap one for their recap, Pay respects or Avenge them. Their buddies roam the Trainer Plaza.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -3069,3 +3069,16 @@ text box and the hand's full rebuild share, and the Ability chip repainted every
 Kurt's Workshop's material slots are buttons now: a tap opens a box under them saying where it drops (its biome's wild
 Pokémon, Alphas and boss, its sparkling rooms, where the biome sits on the road, a friend's letter), a second tap shuts it.
 One source of truth, `matHints()` in `js/data/satchel.js`, also feeds the Satchel app (`tests/quests.test.mjs`).
+
+## Friends' graves and the Trainer Plaza's buddies (2026-10-18, the user's ask; branch `claude/friends-tombstones`)
+"How can we add more interactive friends stuff like the tombstone thing?", then the build. Every lost run (Safari and Sky
+Pillar too, never a playtest) is packed into the save's last five and `graves/<uid>`, a small doc of its own (the trainer
+page carries the whole base, too big to read for every friend on a map). Friends' graves stand where they fell: the very
+room on the day's Safari, the door on the week's Sky Pillar, the same floor of the same biome elsewhere. A tap opens the
+loss recap with Pay respects (+5 PokéCoins, flowers on the stone) and Avenge (beat the Pokémon that beat them on this map,
++25). Up to four friends' buddies walk the Trainer Plaza with name tags and talk when tapped. Checked: `tests/graves.test.mjs`,
+84 rules cases in the Firestore emulator (19 new), `tools/graves-check.mjs` (a real lost run on one account, its grave,
+recap and buddy on the other; and with the old rules, nothing breaks), the memory probe (Clearing +1.5 MB with four buddies,
+a map unchanged, one GL context awake). `tools/trainers-check.mjs` stops at its leaderboard step on `main` too (it predates
+the leaderboard's new look), not fixed here.
+
