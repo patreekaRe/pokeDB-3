@@ -26,7 +26,7 @@ service cloud.firestore {
       return n is int && n >= lo && n <= hi;
     }
     function validEntry(id, d) {
-      return d.keys().hasOnly(['day', 'uid', 'name', 'starter', 'won', 'area', 'bosses', 'turns', 'time', 'caught', 'at'])
+      return d.keys().hasOnly(['day', 'uid', 'name', 'starter', 'won', 'area', 'bosses', 'turns', 'time', 'caught', 'at', 'shinies'])
         && d.keys().hasAll(['day', 'uid', 'name', 'starter', 'won', 'area', 'bosses', 'turns', 'time', 'caught', 'at'])
         && d.uid == request.auth.uid
         && isDay(d.day) && id == d.day + '_' + request.auth.uid && nearToday(d.day)
@@ -35,6 +35,7 @@ service cloud.firestore {
         && d.won is bool
         && inRange(d.area, 1, 3) && inRange(d.bosses, 0, 3) && d.won == (d.bosses == 3)
         && inRange(d.turns, 0, 3000) && inRange(d.time, 0, 604800) && inRange(d.caught, 0, 300)
+        && (!('shinies' in d) || inRange(d.shinies, 1, 300))
         && d.at == request.time;
     }
 
@@ -108,14 +109,15 @@ service cloud.firestore {
     // read it one at a time; only its owner writes it, under a code they own. `base` is their Secret Base as JSON.
     function validCard(c) {
       return c is map
-        && c.keys().hasOnly(['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar'])
+        && c.keys().hasOnly(['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar', 'shinies', 'ranger'])
         && c.tier in ['green', 'bronze', 'silver', 'gold', 'violet']
         && c.badges is list && c.badges.size() <= 100
         && inRange(c.wins, 0, 10000000) && inRange(c.dex, 0, 9999) && inRange(c.dexOf, 0, 9999)
         && inRange(c.safari, 0, 9999) && inRange(c.safariOf, 0, 9999) && inRange(c.stars, 0, 99)
         && inRange(c.time, 0, 10000000) && c.partner is string && c.partner.size() <= 64
         && (!('rank' in c) || inRange(c.rank, -1, 20)) && (!('top' in c) || inRange(c.top, -1, 20))
-        && (!('fave' in c) || (c.fave is string && c.fave.size() <= 64)) && (!('pillar' in c) || inRange(c.pillar, 0, 999));
+        && (!('fave' in c) || (c.fave is string && c.fave.size() <= 64)) && (!('pillar' in c) || inRange(c.pillar, 0, 999))
+        && (!('shinies' in c) || inRange(c.shinies, 0, 9999)) && (!('ranger' in c) || inRange(c.ranger, -1, 20));
     }
     function validTrainer(d) {
       return d.keys().hasOnly(['code', 'name', 'card', 'buddy', 'base', 'at'])

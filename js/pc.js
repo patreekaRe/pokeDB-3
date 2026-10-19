@@ -11,7 +11,8 @@
 
 import { journalReady } from './data/journal.js';
 import { rangerSlots } from './data/ranger.js';
-import { getSave, updateSave, coinsWithBonus } from './storage.js';
+import { getSave, updateSave, coinsWithBonus, safariSparkle } from './storage.js';
+import { shinyImage } from './data/shinies.js';
 import { buddy, buddyChoices } from './trainercard.js';
 import { trainerName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
@@ -59,10 +60,11 @@ export function residents(save = getSave(), lend = false) {
   return { all, shown: (save.secretBase?.mons ?? all.slice(0, residentCap(save))).filter(id => all.includes(id)) };
 }
 
-/** Who a resident is: a Safari catch (an ENEMY_DEFS id). */
-export function resident(id) {
-  const def = ENEMY_DEFS[id];
-  return { image: def.image, name: def.name, cry: def.spriteId ?? id };
+/** Who a resident is: a Safari catch (an ENEMY_DEFS id), shiny once its shiny is yours (`mine`: not a friend's base),
+    with its Sparkle. */
+export function resident(id, mine = true) {
+  const def = ENEMY_DEFS[id], sparkle = mine ? safariSparkle(id) : 0;
+  return { image: sparkle ? shinyImage(id) : def.image, name: `${sparkle ? 'Shiny ' : ''}${def.name}`, cry: def.spriteId ?? id, sparkle };
 }
 
 let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;

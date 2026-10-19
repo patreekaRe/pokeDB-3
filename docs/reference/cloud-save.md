@@ -38,7 +38,9 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   key; since 2026-10-18 also `rank` the Journal rank's index, `top` the highest Trainer Level won, `fave` the starter
   with most wins, `pillar` the best Sky Pillar floor, -1 / '' / 0 when none or on an older page). Rules published
   before those keys refuse them, so `publishTrainer()` writes the page again without them on `permission-denied`
-  (`NEW_CARD_KEYS`). Rules with them published 2026-10-18. `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
+  (`NEW_CARD_KEYS`). Rules with them published 2026-10-18. Later that day `shinies` (the Trainer Card's SHINIES,
+  `shinyTotal()`) and `ranger` (the Ranger Rank's index, -1 before the Safari opens) joined; `NEW_CARD_KEYS` now holds
+  only those two, and they stay 0 / -1 until the rules are published again. `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
   visits. Written by `publishTrainer()` on every sign-in (`onCloudSignIn`, which fires on each load while signed in)
   and as you leave your base (`leave()` in `js/base-3d.js`). Rules: signed-in `get` only (no listing), the owner writes
   it under a code `codes/` says is theirs, bounded like the boards. Someone else's page is only drawn through
@@ -54,8 +56,10 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
 - **The Trainers app** (`trainersApp()`, a `shelfApp()`; on the home screen whenever cloud save is configured): your
   code and the add box on LCDs over the banners, a banner per trainer in their card's colour (their buddy, last seen,
   badges), their page the handheld (the 2026-10-18 tidy-up, the user's pick from a mock): the nameplate's second line
-  their Journal rank and last seen (`sub` in `shelfApp()`), partner and card colour, a 3x2 grid (Wins, Dex, Stars, Top
-  Lv, Fave as a sprite so a long name never spills, Pillar; Safari left off), the newest 7 badges and a +N, buddy;
+  their Journal rank and last seen (`sub` in `shelfApp()`), partner and card colour, a grid three across (Wins, Dex, Stars, Top
+  Lv, Fave as a sprite so a long name never spills, Pillar, then Safari, Shinies, Ranger; the user's call, 2026-10-18:
+  two rows show, the third peeks in and the grid scrolls, so more can join without the page growing; a fixed
+  `--trn-row` height in `css/menus.css`; Ranger drops its trailing "Ranger", as "Senior" under the label), the newest 7 badges and a +N, buddy;
   every part has a `title`, so a tap explains it (js/tips.js), Visit (greyed until session 2) and Remove (a
   second tap confirms). One `getDoc` a trainer on each open. A trainer with no page yet shows as `???`, "Not on the
   network yet".

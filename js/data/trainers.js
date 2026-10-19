@@ -26,9 +26,9 @@ export const ADDS = 'adds';
 export const PLAZA_SHOWN = 30;
 
 export const TRAINER_KEYS = ['code', 'name', 'card', 'buddy', 'base', 'at'];
-export const CARD_KEYS = ['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar'];
-/** Added 2026-10-18; rules published before then refuse them, so a page is written again without (publishTrainer()). */
-export const NEW_CARD_KEYS = ['rank', 'top', 'fave', 'pillar'];
+export const CARD_KEYS = ['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar', 'shinies', 'ranger'];
+/** The newest keys (2026-10-18); rules published before them refuse them, so a page is written again without (publishTrainer()). */
+export const NEW_CARD_KEYS = ['shinies', 'ranger'];
 const TIERS = ['green', 'bronze', 'silver', 'gold', 'violet'];
 const KEY_MAX = 64;
 const BADGES_MAX = 100;
@@ -76,6 +76,7 @@ export function cardDoc(c = {}) {
     safari: count(c.safari, 9999), safariOf: count(c.safariOf, 9999),
     stars: count(c.stars, 99), time: count(c.time), partner: key(c.partner),
     rank: orNone(c.rank, 20), top: orNone(c.top, 20), fave: key(c.fave), pillar: count(c.pillar, 999),
+    shinies: count(c.shinies, 9999), ranger: orNone(c.ranger, 20),
   };
 }
 

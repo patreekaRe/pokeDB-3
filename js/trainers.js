@@ -15,14 +15,16 @@ import { TRAINERS, CODES, PLAZA, ADDS, PLAZA_SHOWN, rollCode, isCode, formatCode
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
 import { trainerName } from './leaderboard.js';
-import { partnerKey, buddyKey, cardTier, badgeArt, TIERS as CARD_TIERS } from './trainercard.js';
+import { partnerKey, buddyKey, cardTier, badgeArt, shinyTotal, TIERS as CARD_TIERS } from './trainercard.js';
 import { BADGES, BADGES_BY_ID } from './data/badges.js';
 import { journalRank } from './data/journal.js';
 import { JOURNAL_RANKS } from './data/journal-ranks.js';
 import { dexTally, safariOpen } from './data/pokedex.js';
 import { safariDexCount } from './safaridex.js';
+import { rankOf, RANKS as RANGER_RANKS } from './data/ranger.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { ENEMY_DEFS } from './data/enemies.js';
+import { shinyImage } from './data/shinies.js';
 import { isStarterUnlocked } from './progress.js';
 import { shelfApp, typed } from './bagdex.js';
 import { playCry, playSound } from './audio.js';
@@ -55,6 +57,7 @@ function myCard(save) {
     time: Math.floor((save.stats.playMs || 0) / 60000), partner: partnerKey(save),
     rank: journalRank(save).level - 1, top: Math.max(-1, ...Object.values(save.stats.maxLevelWinByType || {})),
     fave: faveStarter(save.stats.winsBy), pillar: save.tower?.bestEver || 0,
+    shinies: safari ? shinyTotal(save) : 0, ranger: safari ? rankOf(save).level - 1 : -1,
   };
 }
 
@@ -168,7 +171,8 @@ function sprite(key) {
   const save = getSave();
   if (kind === 'mon' && ENEMY_DEFS[id]) {
     const met = [...save.dex.seen, ...save.dex.defeated, ...(save.safariDex?.seen || []), ...(save.safariDex?.caught || [])].includes(id);
-    return { src: ENEMY_DEFS[id].image, name: met ? ENEMY_DEFS[id].name : '???', masked: !met, cry: ENEMY_DEFS[id].spriteId ?? id };
+    const shiny = a === 'shiny' && met;   // a Safari shiny partner (2026-10-19)
+    return { src: shiny ? shinyImage(id) : ENEMY_DEFS[id].image, name: met ? `${shiny ? 'Shiny ' : ''}${ENEMY_DEFS[id].name}` : '???', masked: !met, cry: ENEMY_DEFS[id].spriteId ?? id };
   }
   const st = kind === 'starter' && STARTERS_BY_ID[id];
   if (!st) return { src: spriteUrl(STARTERS_BY_ID.charmander, 'front', 0), name: 'Charmander', cry: 'charmander' };
@@ -210,11 +214,14 @@ const playTime = (min) => `${Math.floor(min / 60)}h ${min % 60}m`;
 const BADGES_SHOWN = 7;
 const EARNABLE = BADGES.filter(b => !b.locked).length;
 
-/** The card's six numbers, three by two; each says what it is when tapped (js/tips.js reads the title). */
+/** The card's numbers, three across: two rows show and the rest scroll up (the user's call, 2026-10-18, so more can join
+    without the page growing); each says what it is when tapped (js/tips.js reads the title). */
 function cardGrid(c, name) {
   const box = el('div', 'pdx-lcd trn-grid');
   const cell = (k, v, tip) => { const f = el('span', 'trn-cell'); f.title = tip; f.append(el('small', '', k), v); return f; };
   const wins = el('b', '', `${c.wins}`);
+  const rank = c.ranger >= 0 ? RANGER_RANKS[Math.min(c.ranger, RANGER_RANKS.length - 1)].name : '';
+  const ranger = el('b', '', rank ? rank.replace(/^(\S+) Ranger$/, '$1') : '-');   // under its "Ranger" label: "Senior", not "Senior Ranger"
   const fave = c.fave && STARTERS_BY_ID[c.fave] ? sprite(`starter:${c.fave}`) : null;
   box.append(
     cell('Wins', wins, `Runs ${name} has won, at any Trainer Level, in ${playTime(c.time)} of play.`),
@@ -222,7 +229,10 @@ function cardGrid(c, name) {
     cell('Stars', el('b', '', c.stars ? `⭐${c.stars}` : '-'), `A gold star for each starter ${name} has won a Level 5 run with.`),
     cell('Top Lv', el('b', '', c.top >= 0 ? `Lv ${c.top}` : '-'), c.top >= 0 ? `The highest Trainer Level ${name} has won a run on.` : `The highest Trainer Level ${name} has won a run on. None yet.`),
     cell('Fave', fave ? monImg(`starter:${c.fave}`, 'trn-fave') : el('b', '', '-'), fave ? `${name}'s favourite: ${fave.name}, the starter they have won the most runs with.` : `The starter ${name} has won the most runs with. None yet.`),
-    cell('Pillar', el('b', '', c.pillar ? `${c.pillar}F` : '-'), c.pillar ? `The highest Sky Pillar floor ${name} has reached.` : `The highest Sky Pillar floor ${name} has reached. Not climbed yet.`));
+    cell('Pillar', el('b', '', c.pillar ? `${c.pillar}F` : '-'), c.pillar ? `The highest Sky Pillar floor ${name} has reached.` : `The highest Sky Pillar floor ${name} has reached. Not climbed yet.`),
+    cell('Safari', el('b', '', c.safariOf ? `${c.safari}/${c.safariOf}` : '-'), c.safariOf ? `Pokémon ${name} has caught in the Safari Zone.` : `Pokémon ${name} has caught in the Safari Zone. Not open for them yet.`),
+    cell('Shinies', el('b', '', c.shinies ? `✨${c.shinies}` : '-'), `Safari Pokémon whose shiny ${name} owns, caught in the wild or pulled at the Shiny Exchange.`),
+    cell('Ranger', ranger, rank ? `${name} is a ${rank}, from tasks claimed on the Safari Outfitter's Ranger Task Board.` : `${name}'s Ranger Rank, once the Safari Zone opens for them.`));
   fitText(wins);
   return box;
 }

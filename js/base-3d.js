@@ -869,7 +869,7 @@ function dropGuest(g) {
 }
 
 async function addGuest(id) {
-  const def = resident(id), g = { id, mon: null, w: null };
+  const def = resident(id, !host), g = { id, mon: null, w: null, sparkle: def.sparkle };
   guests.push(g);
   const m = await makeMon({ src: def.image, name: def.name, cry: def.cry }, false);
   if (!guests.includes(g)) { dispose(m.group); scene.remove(m.group); return; }
@@ -1096,6 +1096,11 @@ function liveGuest(g, dt, now) {
   // a swimmer bobs where it floats
   if (w.seat?.swim && !w.jump && !calm) w.y = w.seat.y + Math.sin(now / 520 + g.id.length) * 0.03;
   if (w.sleeping && now > w.nextZ) { w.nextZ = now + 1400; puff('z', w, m); }
+  // a shiny twinkles now and then, more often the higher its Sparkle
+  if (g.sparkle && !calm && m.group.visible && now > (g.twinkleAt ?? 0)) {
+    if (g.twinkleAt) puff('star', w, m, { size: 0.16, life: 1300, top: rand(-0.35, -0.05) });
+    g.twinkleAt = now + rand(4200, 7000) / (0.6 + g.sparkle * 0.4);
+  }
   const happy = w.hopUntil > now;
   const bob = calm ? 0 : w.path.length ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06 : happy ? Math.abs(Math.sin((w.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   m.group.position.set(w.x, w.y, w.z);
@@ -1433,13 +1438,13 @@ function puffTexture(kind) {
   return (puffTex[kind] = tex(c));
 }
 
-function puff(kind, w, m) {
+function puff(kind, w, m, { size: big, life, top = 0 } = {}) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTexture(kind), transparent: true, depthWrite: false }));
-  const size = kind === 'z' ? 0.2 : kind === 'drop' ? 0.14 : 0.26;
+  const size = big ?? (kind === 'z' ? 0.2 : kind === 'drop' ? 0.14 : 0.26);
   s.scale.set(size, size * (kind === 'z' ? 1 : 8 / 9), 1);
   s.raycast = () => {};
   scene.add(s);
-  puffs.push({ s, t0: performance.now(), life: kind === 'heart' ? 1100 : kind === 'drop' ? 600 : 2200, x: w.x + rand(-0.2, 0.2), y: w.y + m.top, z: w.z + 0.05, sway: rand(0, 6), drift: kind === 'z' ? 0.25 : 0 });
+  puffs.push({ s, t0: performance.now(), life: life ?? (kind === 'heart' ? 1100 : kind === 'drop' ? 600 : 2200), x: w.x + rand(-0.2, 0.2), y: w.y + m.top + top, z: w.z + 0.05, sway: rand(0, 6), drift: kind === 'z' ? 0.25 : 0 });
 }
 
 function livePuffs(now) {

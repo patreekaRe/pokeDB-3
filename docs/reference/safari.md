@@ -102,6 +102,11 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   through the same `addShiny()` (repeats raise Sparkle); `docs/reference/hub-base-mall.md`'s Safari Outfitter part. A
   Pokémon not caught yet comes out sealed, and a Safari catch of it opens it right on the catch (session 2b, sealed
   capsules, there too).
+- **Everywhere else** (2026-10-19, session 3): the Safari Pokédex (below), the Secret Base's residents (shiny once
+  yours, `resident()` in `js/pc.js`, never a friend's base's; a gold star puffs off them now and then, more often the
+  higher the Sparkle, not under `calmFx()`), the Trainer Card (a SHINIES line, and a Safari shiny as partner,
+  `mon:<id>:shiny`, a ✨ toggle like a starter's; `js/trainers.js` draws the key, an older copy shows it plain), eight
+  Ranger tasks (`docs/reference/hub-base-mall.md`'s board) and a ✨ on the leaderboard (below).
 
 ## Poké Balls (the Game Corner's fourth row)
 
@@ -184,6 +189,14 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   signature card, a dashed ? until caught, a tap zooms it), the area's every Pokémon as slots (blue wilds, gold rares, a
   white dot once caught; `.sdx-*` in `css/screens.css`), the caught tally, then the area's reward box and the Rayquaza box.
   An entry is a silhouette and ??? until seen.
+- **Shinies and sealed capsules** (2026-10-19, the roadmap's "Safari shinies" session 3; the user's ask): a shiny that's
+  yours shows a ✨ ★N switch on its page's screen (bottom left; `shinySwitch()`): on, the screen's sprite and every owned
+  slot's turn shiny, the battle's five twinkles (`.shiny-aura`, not under `calmFx()`), a chime; it stays on while the
+  app is open (`shinyView`). Its lines say its Sparkle (★★★☆☆), or for a caught one not owned how to get it. A sealed
+  capsule (`save.exchange.sealed`) is a smoked capsule ×N badge on the screen (top right, `sealedCap()`, a still copy of
+  the Exchange's look) and a "🔒 2 sealed — catch to open" line (the user's words), seen or not. Slots: a gold star
+  corner for an owned shiny, a capsule corner and blue-grey rim for a sealed one. Totals: `shinyBar()` over the banners
+  (✨ Shinies N / 514 · Sealed: N) and under an area's slots, and each banner's sub line (`subArt`: ✨N · Sealed: N).
 - **Data** (`js/data/safari.js`): `SAFARI_DEX_PAGES` (one per `SAFARI_AREAS` entry: `wild`, `rare` without repeats,
   `ids`), `SAFARI_NUMBER` (`SAFARI_ROSTER` order, so phase 4's Pokémon get numbers by being listed), `safariHomes(id)`,
   `safariProgress(ids, dex)` (caught counts as seen). Pinned by `tests/safaridex.test.mjs` (every entry has a picture,
@@ -389,6 +402,11 @@ phase 1 run.
   result window; the lobbies' Ranks keys mount the same app in their own screen (`boardApp()`)
   (`#result-board`). Signed out: "Sign in to post..." with a Sign in button (opens the cloud window).
   No config / Firebase unreachable: "can't be reached right now", the game unaffected. Every Firebase call is caught.
+- **Shinies** (2026-10-19): a try that caught wild shinies posts `shinies` (`run.tally.shinies`, never a `?wildshiny`
+  one), only when there's one, so `OPTIONAL_LIMITS` (1-300) and the rules take it as optional. A row shows ✨ (✨N past
+  one) after the name, its details a Shinies line, the lobby's plaque and the Outfitter's chalkboard a gold star. Until
+  **the user publishes `firestore.rules` again** the old rules refuse the key: `post()` then posts the entry without it
+  (the ✨ is lost, the result isn't).
 - **Rules**: `firestore.rules` (the cloud save's `saves/<uid>` rule plus `safariBoard`): anyone reads; a signed-in player
   creates only their own `<day>_<uid>`, day within ±1 of the server's date, every field typed and bounded, `won` only with
   3 bosses, `at == request.time`; no updates or deletes, so each day posts once.

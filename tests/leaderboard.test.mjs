@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { runResult, buildEntry, checkEntry, rankBoards, cleanName, dayOffset, formatTime, entryId, ENTRY_KEYS, LIMITS, NAME_MAX } from '../js/data/leaderboard.js';
+import { runResult, buildEntry, checkEntry, rankBoards, cleanName, dayOffset, formatTime, entryId, ENTRY_KEYS, LIMITS, OPTIONAL_LIMITS, NAME_MAX } from '../js/data/leaderboard.js';
 
 const DAY = '2026-10-02';
 const result = (over = {}) => runResult({ day: DAY, starter: 'charmander', won: true, biome: 2, turns: 80,
@@ -30,6 +30,17 @@ test('out-of-range numbers are clamped, missing ones are 0', () => {
   assert.equal(r.turns, LIMITS.turns[1]);
   assert.equal(r.caught, 0);
   assert.equal(r.time, 0);
+});
+
+test('wild shinies caught go up only when there are some, and the rules bound them', () => {
+  assert.ok(!('shinies' in result({ shinies: 0 })));
+  const r = result({ shinies: 2 });
+  assert.equal(r.shinies, 2);
+  assert.equal(checkEntry(buildEntry(r, 'uid1', 'Ash'), DAY), null);
+  assert.equal(checkEntry({ ...buildEntry(result(), 'uid1', 'Ash'), shinies: 0 }, DAY), 'bad shinies');
+  assert.equal(checkEntry({ ...buildEntry(result(), 'uid1', 'Ash'), shinies: 1.5 }, DAY), 'bad shinies');
+  const rules = readFileSync(new URL('../firestore.rules', import.meta.url), 'utf8');
+  for (const [key, [lo, hi]] of Object.entries(OPTIONAL_LIMITS)) assert.ok(rules.includes(`(!('${key}' in d) || inRange(d.${key}, ${lo}, ${hi}))`), key);
 });
 
 test('the rules\' checks refuse bad entries', () => {

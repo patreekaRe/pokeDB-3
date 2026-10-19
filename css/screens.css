@@ -1611,9 +1611,19 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 /* a revealed room's Pokémon stands above it in full colour, like the boss above its room, with its type beside it */
 /* a Safari rare spawn's room: a gold star over it (js/map.js), with a soft glow that swells as it bobs and twinkles; slow
    and eased so it catches the eye without flashing. The prep window's rare-spawn rule shows the same star (.inline) */
-.map-rare { position: absolute; top: -24px; left: 0; right: 0; z-index: 2; text-align: center; color: #f8d030; font-size: 22px; line-height: 1; pointer-events: none;
+.map-rare { color: #f8d030; font-size: 22px; line-height: 1; pointer-events: none;
   text-shadow: 1px 1px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038;
   filter: drop-shadow(0 0 3px rgba(255, 224, 96, 0.7)); animation: rareTwinkle 2.2s ease-in-out infinite; }
+/* the map's floating icons are buttons of their own beside their room (js/map.js's floater()), so a tap on one says what
+   it is in a bubble (.map-tip; the user's ask, 2026-10-18); a wider invisible ring makes them easy to hit on a phone */
+.map-float { position: absolute; z-index: 3; padding: 0; border: 0; background: none; font-family: inherit;
+  transform: translate(-50%, -50%); margin-top: -12px; pointer-events: auto; cursor: pointer; }
+.map-float::after { content: ''; position: absolute; inset: -8px; }
+.map-tip { position: absolute; z-index: 6; width: max-content; max-width: min(230px, 72%); padding: 6px 9px;
+  transform: translate(calc(-50% + var(--dx, 0px)), calc(-100% - 26px)); background: #fffbe8; color: #302820;
+  border: 2px solid #302820; border-radius: 6px; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35); font-size: 0.75rem;
+  line-height: 1.4; text-align: left; pointer-events: none; }
+.map-tip.below { transform: translate(calc(-50% + var(--dx, 0px)), 18px); }
 /* z-index: auto, since a grid item (the Safari prep's rule icon) honours z-index even unpositioned and drew over the sticky Poké Ball bar */
 .map-rare.inline { position: static; z-index: auto; display: inline-block; font-size: 1.25rem; }
 .dialog .map-rare.inline { text-shadow: 1px 1px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038; }
@@ -1621,14 +1631,19 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   0%, 100% { translate: 0 0; scale: 1; color: #f8d030; filter: drop-shadow(0 0 2px rgba(255, 224, 96, 0.55)); }
   50% { translate: 0 -3px; scale: 1.15; color: #fff4b0; filter: drop-shadow(0 0 6px rgba(255, 236, 140, 0.95)); }
 }
-/* a town's material on the map: a pale glint, not the Safari's gold star */
-.map-sparkle { color: #e8fbff; animation-name: sparkleGlint; }
+/* a town's material on the map: a glowing badge on its room's top-right corner (floater() in js/map.js).
+   It floated 24px above the room until 2026-10-18, pale on the grass: the user couldn't
+   see it, and it read as hanging between rooms */
+.map-sparkle { width: 24px; height: 24px; margin-top: 0;
+  display: grid; place-items: center; border-radius: 50%; border: 2px solid #c8f6ff; box-sizing: border-box;
+  background: radial-gradient(circle, #2a6aa8 0 45%, #0c2440 100%); color: #fff; font-size: 15px;
+  text-shadow: 0 0 3px #8ae8ff; animation-name: sparkleGlint; }
 @keyframes sparkleGlint {
-  0%, 100% { translate: 0 0; scale: 0.9; rotate: 0deg; filter: drop-shadow(0 0 2px rgba(160, 230, 255, 0.5)); }
-  50% { translate: 0 -3px; scale: 1.15; rotate: 20deg; filter: drop-shadow(0 0 6px rgba(190, 240, 255, 0.95)); }
+  0%, 100% { translate: 0 0; scale: 1; filter: drop-shadow(0 0 2px rgba(140, 230, 255, 0.7)) drop-shadow(0 0 1px #0c2440); }
+  50% { translate: 0 -2px; scale: 1.18; filter: drop-shadow(0 0 7px rgba(170, 240, 255, 1)) drop-shadow(0 0 1px #0c2440); }
 }
-/* a town's Waystone Shard over its Alpha: a crystal in the town's colour (--gem), turning as it bobs */
-.map-shard { top: -30px; animation-name: shardBob; animation-duration: 2.6s; filter: drop-shadow(0 0 4px var(--gem)) drop-shadow(0 0 1px #fff); }
+/* a town's Waystone Shard on its Alpha's top-right corner, like a material's badge (2026-10-18: it floated above, between rooms): a crystal in the town's colour (--gem), turning as it bobs */
+.map-shard { margin-top: 0; animation-name: shardBob; animation-duration: 2.6s; filter: drop-shadow(0 0 4px var(--gem)) drop-shadow(0 0 1px #fff); }
 .map-shard-gem { display: inline-block; width: 14px; height: 22px; clip-path: polygon(50% 0, 100% 38%, 50% 100%, 0 38%);
   background: linear-gradient(115deg, #fff 0 22%, var(--gem) 23% 58%, color-mix(in srgb, var(--gem) 55%, #102030) 59%); }
 @keyframes shardBob {
@@ -3843,6 +3858,36 @@ body.has-scene.hybrid-scene #scene-light { display: block; }
 .sdx-device .bdx-slot.rare { background: linear-gradient(180deg, #ffe08a, #d8a020); }
 .sdx-device .bdx-slot.on { background: #ffe36b; }
 .sdx-device .bdx-slot.caught::after { content: ""; position: absolute; top: 2px; right: 2px; z-index: 1; width: 7px; height: 7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px #3a0a0e; }
+.sdx-device .bdx-slot.shiny::before {   /* a shiny that's yours: a gold four-point star in the slot's corner */
+  content: ""; position: absolute; left: 1px; bottom: 1px; z-index: 1; width: 11px; height: 11px; background: #ffd34a;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); filter: drop-shadow(0 0 1px #6a4a00);
+}
+.sdx-device .bdx-slot.sealed { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), 0 0 0 2px #5a6a8a; }
+.sdx-slot-art { display: block; width: 100%; height: 100%; }
+.sdx-slot-cap { position: absolute; left: -3px; top: -3px; z-index: 1; width: 16px; height: 16px; }
+.sdx-slot-cap svg, .sdx-cap svg { display: block; width: 100%; height: 100%; }
+/* the shinies and sealed capsules: over the banners, and under an area's slots */
+.sdx-shinybar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; font: 0.75rem/1.3 var(--pixel-font); font-synthesis-weight: none; }
+.sdx-shinybar.whole { margin-bottom: 8px; }
+.sdx-shinycount { color: #7a5600; }
+.sdx-sealedcount { display: inline-flex; align-items: center; gap: 5px; color: #2a3858; }
+.sdx-cap { display: inline-block; width: 20px; height: 20px; flex: none; }
+.sdx-nobar { display: none; }
+/* its page: the ✨ switch, the sealed capsule badge and the lines */
+.sdx-shinyflip {
+  position: absolute; left: 8px; bottom: 8px; z-index: 3; padding: 5px 8px; border: 2px solid #a07000; border-radius: 999px; cursor: pointer;
+  background: rgba(0, 0, 0, 0.5); color: #ffe590; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none;
+}
+.sdx-shinyflip.on { background: linear-gradient(180deg, #fff3b8, #f0b830); color: #4a3000; box-shadow: 0 0 10px rgba(248, 208, 48, 0.7); }
+.sdx-screen.sdx-shiny .pdx-mon { filter: drop-shadow(0 0 6px rgba(255, 220, 90, 0.75)); }
+.sdx-screen .shiny-aura { z-index: 2; }
+.sdx-sealbadge {
+  position: absolute; right: 8px; top: 8px; z-index: 3; display: flex; align-items: center; gap: 3px; padding: 3px 7px 3px 4px; border-radius: 999px;
+  background: rgba(10, 14, 26, 0.72); box-shadow: 0 0 0 2px #5a6a8a; color: #cfe0ff; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none;
+}
+.sdx-sealbadge .sdx-cap { width: 22px; height: 22px; }
+.pdx-text.sdx-sealedline { background: #1a2238; color: #cfe0ff; font: 0.75rem/1.4 var(--pixel-font); font-synthesis-weight: none; }
+.pdx-text.sdx-sparkleline { background: linear-gradient(90deg, #fff3b8, #f2dc8a); color: #6a4a00; font: 0.75rem/1.4 var(--pixel-font); font-synthesis-weight: none; }
 .sdx-sig { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .sdx-sig h4 { align-self: stretch; margin: 0; font: 0.75rem/1.3 var(--pixel-font); font-synthesis-weight: none; }
 .sdx-sig .card { width: 130px; flex: none; }
@@ -4143,6 +4188,7 @@ body.scene-peek #backdrop { display: none; }
 .lb-aug-row .aug-icon, .lb-aug-row .aug-emoji { flex: none; width: 22px; height: 22px; font-size: 16px; line-height: 22px; }
 .lb-aug-more { color: var(--lb-dim); }
 .lb-crown { margin-right: 4px; }
+.lb-shiny { margin-left: 5px; color: #ffd84a; text-shadow: 0 0 6px rgba(255, 216, 74, 0.6); }
 .lb-you-tag { margin-right: 6px; padding: 2px 4px; border-radius: 4px; background: #5ad08a; color: #0c2416; }
 .lb-row.gold { border-color: rgba(255, 210, 90, 0.6); background: linear-gradient(90deg, rgba(255, 210, 90, 0.28), rgba(255, 210, 90, 0.04)); box-shadow: 0 0 12px rgba(255, 210, 90, 0.25); }
 .lb-row.silver { border-color: rgba(200, 210, 235, 0.4); background: linear-gradient(90deg, rgba(200, 210, 235, 0.2), rgba(200, 210, 235, 0.03)); }

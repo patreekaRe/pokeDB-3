@@ -547,6 +547,12 @@ function boardArt(c, rows) {
     g.font = '900 18px system-ui, sans-serif'; g.fillStyle = '#203628'; g.textAlign = 'center'; g.fillText(String(i + 1), 60, y + 1);
     g.font = '700 25px system-ui, sans-serif'; g.textAlign = 'left'; g.fillStyle = r.mine ? '#ffe890' : '#f4f0e0';
     g.fillText(r.name, 86, y + 1, W - 260);
+    if (r.shinies) {   // a wild shiny caught on that try: a gold four-point star after the name
+      const x = 86 + Math.min(g.measureText(r.name).width, W - 260) + 16;
+      g.fillStyle = '#ffd84a'; g.beginPath();
+      [[0, -11], [3, -3], [11, 0], [3, 3], [0, 11], [-3, 3], [-11, 0], [-3, -3]].forEach(([dx, dy], k) => g[k ? 'lineTo' : 'moveTo'](x + dx, y + dy));
+      g.fill();
+    }
     g.textAlign = 'right'; g.fillStyle = '#c8ffb8'; g.fillText(`${r.caught} caught`, W - 52, y + 1);
   });
 }

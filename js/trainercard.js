@@ -13,7 +13,8 @@ import { GYM_LEADERS, GYM_INK } from './data/gym.js';
 import { BADGES, BADGE_GROUPS } from './data/badges.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, safariOpen, dexTally } from './data/pokedex.js';
 import { ENEMY_DEFS } from './data/enemies.js';
-import { SAFARI_DEX_PAGES } from './data/safari.js';
+import { SAFARI_DEX_PAGES, SAFARI_ROSTER } from './data/safari.js';
+import { shinyImage, sparkleOf } from './data/shinies.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { RELICS } from './data/relics.js';
@@ -335,11 +336,16 @@ function autoPartner(save) {
   return best ? { starter: best, stage: best.line.length - 1 } : { starter: STARTERS_BY_ID.charmander, stage: 0 };
 }
 
+/** Safari shinies owned (the Trainer Card's SHINIES). */
+export const shinyTotal = (save) => SAFARI_ROSTER.filter(id => sparkleOf(save.safariShinies, id)).length;
+
 /** Every Pokémon the card can show, by group: your starters at each stage, the Pokédex's defeated, the Safari's caught.
-    Keys are what `save.partner` holds: 'starter:<id>:<stage>[:shiny]' or 'mon:<enemy id>'. A starter whose shiny you own
-    comes both ways, each pointing at the other as its `twin` (the card's ✨ toggle); only starters have shiny sprites. */
+    Keys are what `save.partner` holds: 'starter:<id>:<stage>[:shiny]' or 'mon:<enemy id>[:shiny]'. A starter or Safari
+    Pokémon whose shiny you own comes both ways, each pointing at the other as its `twin` (the card's ✨ toggle). */
 export function partnerChoices(save = getSave()) {
-  const mon = (id) => ENEMY_DEFS[id] && { key: `mon:${id}`, src: ENEMY_DEFS[id].image, name: ENEMY_DEFS[id].name };
+  const mon = (id) => ENEMY_DEFS[id] && { key: `mon:${id}`, src: ENEMY_DEFS[id].image, name: ENEMY_DEFS[id].name, twin: safariShiny(id) ? `mon:${id}:shiny` : null };
+  const shinyMon = (id) => ENEMY_DEFS[id] && { key: `mon:${id}:shiny`, src: shinyImage(id), name: `Shiny ${ENEMY_DEFS[id].name}`, shiny: true, twin: `mon:${id}` };
+  const safariShiny = (id) => sparkleOf(save.safariShinies, id) > 0;
   const owned = new Set(save.shiny?.owned || []);
   const form = (st, stage, shiny) => ({
     key: `starter:${st.id}:${stage}${shiny ? ':shiny' : ''}`, src: spriteUrl(st, 'front', stage, shiny),
@@ -353,9 +359,10 @@ export function partnerChoices(save = getSave()) {
   const dex = [...DEX_PAGES, ...BONUS_PAGES, DEPTHS_PAGE].flatMap(p => p.ids).filter(id => defeated.has(id)).map(mon).filter(Boolean);
   const caught = new Set(save.safariDex?.caught || []);
   const safari = SAFARI_DEX_PAGES.flatMap(p => p.ids).filter(id => caught.has(id)).map(mon).filter(Boolean);
+  const safariShinies = [...new Set(SAFARI_DEX_PAGES.flatMap(p => p.ids))].filter(safariShiny).map(shinyMon).filter(Boolean);
   return [
     { name: 'Starters', mons: starters },
-    { name: 'Shiny', mons: shinies },
+    { name: 'Shiny', mons: [...shinies, ...safariShinies] },
     { name: 'Pokédex', mons: dex },
     { name: 'Safari', mons: [...new Map(safari.map(m => [m.key, m])).values()] },
   ].filter(g => g.mons.length);
@@ -546,6 +553,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     ['WINS', String(s.runsWon), 'Runs you have won, at any Trainer Level.'],
     ['POKéDEX', `${dex.n}/${dex.total}`, dex.all ? 'Pokémon beaten on every Pokédex page you have found.' : 'Pokémon beaten in the three biomes. Beat them all to open the Safari Zone.'],
     ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---', safari ? 'Pokémon caught in the Safari Zone.' : 'Pokémon caught in the Safari Zone, once it opens.'],
+    ['SHINIES', safari ? `${shinyTotal(save)}/${SAFARI_ROSTER.length}` : '---', 'Safari Pokémon whose shiny is yours, caught in the wild or pulled at the Shiny Exchange.'],
     ['JOURNAL', journalRank(save).rank.name.toUpperCase(), 'Your rank in the Trainer\'s Journal, from tasks claimed at the Clearing\'s PC.'],
     ['RANGER', safari ? rankOf(save).rank.name.toUpperCase() : '---', 'Your Ranger Rank, from tasks claimed on the Safari Outfitter\'s Ranger Task Board.'],
     ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A gold star for each starter you have won a Level 5 run with.'],

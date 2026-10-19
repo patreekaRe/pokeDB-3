@@ -9,7 +9,7 @@
    how many caught, per area, per type, the rare spawns), Ball Mastery
    (catches with each ball) and Ranger Feats (catches in all, in a run,
    unhurt, at night, on turn 1, the Safari crossed, its bosses, days in a
-   row). A claim pays PokéCoins, a ball pack, a Safari furniture piece
+   row, shinies caught and owned). A claim pays PokéCoins, a ball pack, a Safari furniture piece
    (js/data/furniture.js's `ranger` source) or room for one more Safari
    catch to live in the Secret Base (rangerSlots()). Nothing here makes
    a first try score higher, so the leaderboard stays fair. Each claim is
@@ -114,6 +114,21 @@ function build() {
   for (const [n, r] of [[1, coins(150)], [10, coins(400)], [30, { balls: ['ultra', 5] }]]) feat(`bosses-${n}`, n === 1 ? 'Area boss' : `Area bosses ×${n}`, `Beat ${n === 1 ? 'an area\'s boss' : `${n} area bosses`} in the Safari Zone.`, n, 'bosses', r, 'timer');
   for (const [n, r] of [[3, coins(200)], [7, coins(500)], [14, { slots: 1 }], [30, coins(2000)]]) feat(`streak-${n}`, `${n} days running`, `Play the Safari Zone ${n} days in a row (UTC days).`, n, (s) => log(s).bestStreak || 0, r, 'net');
   for (const [n, r] of [[10, coins(300)], [30, coins(800)], [100, coins(2500)]]) feat(`days-${n}`, `${n} Safari days`, `Play the Safari Zone on ${n} different days.`, n, (s) => s.safari?.days ?? (s.safari?.day ? 1 : 0), r, 'premier');
+
+  // Shiny hunting (2026-10-19): wild shinies caught (logged from that day), and the shinies owned, the Shiny Exchange's too
+  const owned = (s) => Object.values(s.safariShinies || {}).filter(n => n > 0).length;
+  const brightest = (s) => Object.entries(s.safariShinies || {}).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const shinyPic = (s) => { const id = brightest(s); return id ? { mon: id, shiny: true } : { emoji: '✨' }; };
+  const shiny = (id, title, text, goal, count, reward) => add({ id: `feat-${id}`, tab: 'feats', title, text, goal, count, pic: shinyPic, reward });
+  for (const [n, r] of [[1, coins(600)], [3, { balls: ['ultra', 5] }], [10, { slots: 1 }]]) {
+    shiny(`shiny-${n}`, n === 1 ? 'Something sparkles' : `Shiny hunter ×${n}`, `Catch ${n === 1 ? 'a shiny Pokémon' : `${n} shiny Pokémon`} in the wild in the Safari Zone.`, n, (s) => log(s).shiny || 0, r);
+  }
+  shiny('shiny-rare-1', 'Gold on gold', 'Catch a shiny rare spawn in the Safari Zone.', 1, (s) => log(s).shinyRare || 0, coins(2000));
+  for (const [n, r] of [[10, coins(500)], [50, coins(1500)], [150, coins(4000)]]) {
+    shiny(`shinies-${n}`, `Shiny collection ${n}`, `Own ${n} different Safari shinies, caught or from the Shiny Exchange.`, n, owned, r);
+  }
+  shiny('sparkle-5', 'As bright as it gets', 'Raise a shiny to Sparkle ★5 (each repeat of it adds a star).', 5,
+    (s) => Math.max(0, ...Object.values(s.safariShinies || {})), coins(1000));
   return T;
 }
 
@@ -233,14 +248,16 @@ export function rewardText(r) {
 }
 
 /** One caught Pokémon logged for the board: the ball, whether it was night, on the fight's first turn and without a
-    scratch, and how many this run has caught so far. Returns the new log. */
-export function logCatch(prev = {}, { ball, night, turn, flawless, inRun }) {
+    scratch, shiny (and a rare spawn), and how many this run has caught so far. Returns the new log. */
+export function logCatch(prev = {}, { ball, night, turn, flawless, inRun, shiny, rare }) {
   const out = { ...prev, balls: { ...(prev.balls || {}) } };
   out.catches = (out.catches || 0) + 1;
   if (ball) out.balls[ball] = (out.balls[ball] || 0) + 1;
   if (night) out.night = (out.night || 0) + 1;
   if (turn === 1) out.turn1 = (out.turn1 || 0) + 1;
   if (flawless) out.flawless = (out.flawless || 0) + 1;
+  if (shiny) out.shiny = (out.shiny || 0) + 1;
+  if (shiny && rare) out.shinyRare = (out.shinyRare || 0) + 1;
   out.best = Math.max(out.best || 0, inRun || 0);
   return out;
 }

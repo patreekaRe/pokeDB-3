@@ -31,6 +31,7 @@ import { EVENTS_BY_ID } from './data/events.js';
 import { buildingSvg } from './buildings.js';
 import { random } from './rng.js';
 import { RING } from './data/towns.js';
+import { MATERIALS_BY_ID } from './data/satchel.js';
 import { getSave } from './storage.js';
 
 // Map generation is also imported by the headless balance bot's Web Worker. Load DOM helpers only in a page so the
@@ -797,22 +798,25 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     }
     // a Safari rare spawn (markRares() in js/data/safari.js) shows as a sparkle over its room, like the games' shaking grass
     if (node.rare && !node.visited) {
-      label = `${label}: a rare Pokémon was sighted! It runs off after a few turns.`;
+      const tip = 'A rare Pokémon was sighted here! It runs off after a few turns.';
+      label = `${label}: ${tip}`;
       btn.classList.add('rare');
-      btn.append(el('span', 'map-rare', '✦'));
+      floater(box, node, 'map-rare', '✦', tip);
     }
-    // a town's material (js/data/satchel.js's markSparkles()) glints over its room till you walk in
+    // a town's material (js/data/satchel.js's markSparkles()) glints by its room till you walk in
     if (node.sparkle && !node.visited) {
-      label = `${label}: something sparkles here!`;
-      btn.append(el('span', 'map-rare map-sparkle', '✧'));
+      const mat = MATERIALS_BY_ID[node.sparkle.id], n = node.sparkle.n;
+      const tip = `${mat.icon} ${mat.name}${n > 1 ? ` ×${n}` : ''} sparkles in this room. Walk in to put it in your Satchel.`;
+      label = `${label}: ${tip}`;
+      floater(box, node, 'map-rare map-sparkle', '✦', tip);
     }
     // a town's Waystone Shard (js/data/satchel.js's markShard()) floats over its Alpha, in the town's colour, till it's won
     if (node.shard && !node.visited) {
-      label = `${label}: a Waystone Shard floats over this Alpha! Beat it to take the shard home.`;
-      const gem = el('span', 'map-rare map-shard');
+      const tip = 'A Waystone Shard glows on this Alpha! Beat it to take the shard home.';
+      label = `${label}: ${tip}`;
+      const gem = floater(box, node, 'map-rare map-shard', '', tip);
       gem.style.setProperty('--gem', RING.find(t => `shard-${t.id}` === node.shard)?.glow ?? '#8ae8ff');
       gem.append(el('i', 'map-shard-gem'));
-      btn.append(gem);
     }
     btn.title = label;
     btn.setAttribute('aria-label', label);
@@ -911,6 +915,39 @@ export function graveSvg({ flowers = false, avenged = false } = {}) {
   if (flowers) cells.push(...FLOWERS);
   const rects = cells.map(([x, y, c]) => `<rect x="${x}" y="${y}" width="1" height="1" fill="${GRAVE_INK[c]}"/>`).join('');
   return `<svg viewBox="0 0 12 14" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg>`;
+}
+
+/** A floating icon by its room (a Safari rare spawn's star, a town's material, a Waystone Shard), its own button so a tap
+    says what it is (the user's ask, 2026-10-18). A material's badge and a shard sit on the room's top-right corner, the rare star above it. */
+function floater(box, node, cls, glyph, tip) {
+  const corner = /map-sparkle|map-shard/.test(cls), off = BUILDINGS.includes(node.type) ? 2 : 1.5;
+  const btn = el('button', `map-float ${cls}`, glyph);
+  btn.type = 'button';
+  btn.title = tip;
+  btn.setAttribute('aria-label', tip);
+  btn.addEventListener('click', (e) => { e.stopPropagation(); mapTip(box, btn, tip); });
+  place(btn, nodeX(node) + (corner ? off : 0), rowY(node.floor) - (corner ? off : 2.5));
+  box.append(btn);
+  return btn;
+}
+
+/** A bubble over a floating icon saying what it is; the next tap anywhere, or a few seconds, takes it away. */
+function mapTip(box, at, text) {
+  box.querySelector(':scope > .map-tip')?.remove();
+  const tip = el('div', 'map-tip', text);
+  tip.setAttribute('role', 'status');
+  tip.style.left = at.style.left;
+  tip.style.top = at.style.top;
+  box.append(tip);
+  let view = box.parentElement;   // the map scrolls inside its screen: a bubble above the visible top flips below its icon
+  while (view && !/auto|scroll/.test(getComputedStyle(view).overflowY)) view = view.parentElement;
+  const b = box.getBoundingClientRect(), r = tip.getBoundingClientRect();
+  if (r.top < Math.max(b.top, view ? view.getBoundingClientRect().top : 0)) tip.classList.add('below');
+  const shift = Math.max(0, b.left + 4 - r.left) - Math.max(0, r.right - (b.right - 4));
+  tip.style.setProperty('--dx', `${shift}px`);
+  const gone = () => { tip.remove(); clearTimeout(timer); document.removeEventListener('pointerdown', gone, true); };
+  const timer = setTimeout(gone, 4000);
+  setTimeout(() => document.addEventListener('pointerdown', gone, true));
 }
 
 /** Each grave by its room's bottom corner, a second at the same room on the other side; `onGrave(g)` on a tap. */

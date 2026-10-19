@@ -22,7 +22,9 @@ The first section began as the note on playtesting the live site and grew into t
   (the user's call): `buddy()` / `buddyChoices()` in `js/trainercard.js`, the save's `buddy`, only first forms of owned
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
   all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
-  Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`).
+  Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`). A resident whose
+  Safari shiny is yours comes out shiny, named "Shiny X" in the pickers (`resident(id, mine)`; 2026-10-19), and twinkles
+  in the base now and then (`liveGuest()`); a friend's base's stay plain.
 - **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins; balanced the same day, the
   user's call "all worked out and balanced"): 3 a UTC day and 3 a week (its Monday, the Sky Pillar's), one per `tier`
   (easy / medium / hard, paying `TIER_COINS` 30 / 45 / 65 a day, 200 / 250 / 300 a week; all three claimed pays `BONUS`
@@ -237,7 +239,7 @@ The first section began as the note on playtesting the live site and grew into t
   every 9 s and the faint "Updates" under it brightening and swelling on the same beat (`updatesPulse`, off under calm
   effects and reduced motion; `.title-screen.hub-mode .title-refresh` in `css/hub.css`); the Signs title keeps
   the white arrow under the speaker. The 2026-10-17 key that also brought you back where you stood was reverted for its
-  bugs; this one is only the look. Sprites
+  bugs; this one is only the look. The speaker (`#title-sound-btn`) became the same 28px key just left of it (2026-10-18, the user's ask: the big speaker top left was too much; its pop-out opens under it, right-aligned). Sprites
   `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
   A new feature worth a hint gets a `HINTS` line. **Talked to in the Gym Leaders' slide-in** (2026-10-15, the user's pick
   of two): `showCard()` hands the place to `profTalk()`, which calls `gymTalk()` (`js/gym.js`) with a leader-shaped
@@ -457,6 +459,10 @@ count every catch ever made. Claimed ids are `save.ranger.claimed`.
   `checkBadges()` as a claim is paid and named in the claim's toast.
 - **The Clearing's Safari gate** wears a "!" (`safariMark` in `js/hub-3d.js`, rebuilt with the places) while
   `readyTasks()` has any, and its line says so.
+- **Shiny tasks** (2026-10-19, Ranger Feats): wild shinies caught (1, 3, 10; `log.shiny` from `rangerInfo()`'s
+  `shiny`, counted from that day, never a `?wildshiny` one), a shiny rare spawn (`log.shinyRare`), shinies owned (10,
+  50, 150; the Exchange's count) and one at ★5. Their photo is your brightest shiny (`{ mon, shiny }`, `.rb-photo.shiny`),
+  a ✨ till you own one.
 - A new task is a line in `build()`; a new reward kind needs a `rewardText()` line and a branch in `claim()`.
 
 - **The Clearing's stutters** (2026-10-16, the user's report: "choppy sometimes in the beginning and just randomly"), found by
