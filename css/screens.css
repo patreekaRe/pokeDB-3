@@ -429,6 +429,40 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .nameplate-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0; }
 .nameplate-title strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nameplate-title .chip { padding: 0; background: none; font-size: 1rem; line-height: 1; cursor: help; }   /* just the type's pixel icon, no pill */
+/* a duo's benched partner on your nameplate (renderBench() in js/battle.js): a portrait in its type's colour, its
+   ▲ / ▼ for the coming hit; a tap arms the switch's Go pill over the plate */
+.bench-chip {
+  --c1: #9aa0b4; --c2: #4a4e60;
+  position: relative; flex: none; margin-left: auto;
+  width: 30px; height: 30px; padding: 0;
+  border: 2px solid #303038; border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, var(--c1), var(--c2));
+  cursor: pointer; overflow: visible;
+}
+.bench-chip[hidden] { display: none; }
+.bench-chip[data-type="fire"]  { --c1: #ff8f4d; --c2: #b8321a; }
+.bench-chip[data-type="grass"] { --c1: #72dc70; --c2: #257a38; }
+.bench-chip[data-type="water"] { --c1: #5cbcff; --c2: #1d58b8; }
+.bench-chip.armed { box-shadow: 0 0 0 2px #ffd84a, 0 0 8px 2px rgba(255, 216, 74, 0.7); }
+.bench-face { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+.bench-mark {
+  position: absolute; right: -6px; bottom: -5px;
+  font-size: 0.75rem; line-height: 1; padding: 1px 2px; border-radius: 4px;
+  background: #303038; color: #fff;
+}
+.bench-mark.up { color: #ff7a6b; }
+.bench-mark.down { color: #9fd8ff; }
+.switch-go {
+  position: absolute; right: 0; bottom: calc(100% + 40px); z-index: 6;
+  padding: 7px 12px;
+  border: 3px solid #303038; border-radius: var(--round-sm);
+  background: #ffd84a; color: #303038;
+  font-family: var(--pixel-font); font-size: 0.8rem; white-space: nowrap;
+  box-shadow: 0 3px 0 #a07a10, 0 0 10px rgba(255, 216, 74, 0.6);
+  cursor: pointer;
+}
+.switch-go[hidden] { display: none; }
+.switch-go:disabled { filter: grayscale(1) brightness(0.8); cursor: default; }
 /* Gen 5's ability pop-up (abilityBanner() in js/battle.js): a window that slides in from the left edge on your side */
 .ability-banner {
   position: absolute; left: 0; top: 46%; z-index: 6;
@@ -881,6 +915,13 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .player-zone.awaiting #player-sprite,
 .player-zone.awaiting ~ #player-plate { visibility: hidden; }
 #player-sprite.released { animation: released 0.6s ease-out; }
+/* a duo's recall (switchOut() in js/battle.js): the games' red light, shrinking back into the ball */
+#player-sprite.recalled { animation: recalled 0.38s ease-in forwards; }
+@keyframes recalled {
+  from { transform: scale(1); filter: brightness(1) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+  35%  { transform: scale(1.04); filter: brightness(1.4) sepia(1) saturate(8) hue-rotate(-30deg) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+  to   { transform: scale(0.1); opacity: 0.2; filter: brightness(2) sepia(1) saturate(8) hue-rotate(-30deg) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+}
 /* a shiny's sparkles as it comes out of the ball (shinySparkle() in js/battle.js) */
 .shiny-burst { position: absolute; left: 50%; bottom: 40%; width: 0; height: 0; pointer-events: none; z-index: 3; }
 .shiny-star {
@@ -4115,7 +4156,37 @@ body.scene-peek #backdrop { display: none; }
 .sp-sky { position: absolute; left: 0; top: 0; pointer-events: none; }
 .sp-gate-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 80%); width: 84px; height: 84px; object-fit: contain; object-position: 50% 100%;
   translate: -50% calc(4px - 100%); pointer-events: none; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3)); animation: pdxIdle 1.4s ease-in-out infinite; }
-.tdev-keys.sp-keys { grid-template-columns: repeat(4, 1fr); max-width: 340px; }
+.tdev-keys.sp-keys { grid-template-columns: repeat(5, 1fr); max-width: 400px; }
+#sp-duo.locked .mdex-ico { opacity: 0.5; }
+/* the Duo key's app (js/duoprep.js): today's road, the duo pool's portraits, how the pair fares */
+.duo-app { padding: 10px 12px 18px; display: flex; flex-direction: column; gap: 8px; font-family: var(--pixel-font); color: #1f3a14; }
+.duo-head { margin: 4px 0 0; font-size: 0.85rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.duo-note, .duo-lock { margin: 0; font-size: 0.75rem; line-height: 1.35; }
+.duo-lock { padding: 8px 10px; border: 2px dashed #3d5a2a; border-radius: 6px; background: rgba(255, 255, 255, 0.35); }
+.duo-road { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.duo-area { padding: 6px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.3); display: flex; flex-direction: column; gap: 4px; }
+.duo-area-head { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+.duo-types { display: flex; flex-wrap: wrap; gap: 4px; }
+.duo-type { font-size: 0.75rem; padding: 1px 6px; border-radius: 999px; background: #e8f0d8; border: 1px solid #3d5a2a; }
+.duo-mons { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.duo-mon { width: 36px; height: 36px; object-fit: contain; }
+.duo-mon.unseen { filter: brightness(0) opacity(0.55); }
+.duo-fares { margin: 0; font-size: 0.75rem; }
+.duo-pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.duo-pick { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; border-radius: 8px; background: rgba(255, 255, 255, 0.3); border: 2px solid transparent; }
+.duo-pick.on { border-color: #e2a92c; background: rgba(255, 236, 160, 0.55); }
+.duo-pick.locked { opacity: 0.55; }
+.duo-pick.locked .duo-face img { filter: brightness(0) opacity(0.5); }
+.duo-face { position: relative; width: 64px; height: 64px; padding: 0; border: 2px solid #303038; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fff, #c8d8b0); cursor: pointer; }
+.duo-pick.type-fire .duo-face  { background: radial-gradient(circle at 50% 35%, #ffd2b0, #ff8f4d); }
+.duo-pick.type-grass .duo-face { background: radial-gradient(circle at 50% 35%, #d4f5c8, #72dc70); }
+.duo-pick.type-water .duo-face { background: radial-gradient(circle at 50% 35%, #cfeaff, #5cbcff); }
+.duo-face img { width: 100%; height: 100%; object-fit: contain; }
+.duo-face-type { position: absolute; left: -4px; top: -4px; font-size: 0.8rem; }
+.duo-face-no { position: absolute; right: -8px; bottom: -6px; padding: 1px 4px; border-radius: 4px; background: #e2a92c; color: #303038; font-style: normal; font-size: 0.75rem; }
+.duo-name, .duo-hint { font-size: 0.75rem; text-align: center; }
+.duo-look { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; }
+.duo-arrow { padding: 2px 6px; border: 1px solid #3d5a2a; border-radius: 4px; background: #e8f0d8; font-size: 0.75rem; cursor: pointer; }
 .sp-keys .mdex-btn { position: relative; }
 .sp-tasks-n {   /* Ranger tasks ready to claim (js/safariprep.js's taskCount()) */
   position: absolute; top: -6px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 99px;

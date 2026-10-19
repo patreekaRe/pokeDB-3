@@ -22,6 +22,7 @@ import { boardApp, safariTop } from './leaderboard.js';
 import { cloudConfigured } from './cloud.js';
 import { startGate, stopGate } from './safari-lobby.js';
 import { ballsApp } from './shop.js';
+import { duoApp, duoLabel, duoUnlocked } from './duoprep.js';
 import { playSound } from './audio.js';
 import { bootDevice } from './device-boot.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -35,7 +36,8 @@ const RULES = [
   ['⚾', `Every run starts with ${SAFARI_BALLS} Safari Balls, plus any ball packs you bought. Today's first try is free; a Day Pass (${DAY_PASS} coins) gives replays until the day ends.`],
   ['🔴', `Throw a ball at any wild Pokémon: ${THROW_PP} PP, and it ends your turn. At full HP it's a long shot; the lower its HP, the better.`],
   ['🎯', 'Debuffs on it raise the odds.'],
-  ['🆚', 'Wild Pokémon have their real types and moves, on the real 18-type chart (no immunities). A ▲ on a card means super effective.'],
+  ['🆚', 'Wild Pokémon have their real types and moves, on the real Gen 5 chart (no immunities). A ▲ on a card means super effective.'],
+  ['🤝', 'Duo Run: once today\'s Daily run is done, replay it with two of your own starters, switching for 1 PP. Same-type attacks deal 20% more.'],
   ['🍙', 'Bait: better odds, but it hits harder. A card reward after fights, Safari runs only.', 'bait'],
   ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, but it may run off. A card reward after fights, Safari runs only.`, 'rock'],
   ['✦', `A room marked with this star on the map holds a rare Pokémon. It runs off after ${RARE.turns} turns.`],
@@ -53,6 +55,9 @@ export function initSafariPrep(handlers) {
   });
   $('sp-close').addEventListener('click', back);
   for (const id of Object.keys(APPS)) $(id).addEventListener('click', () => (app?.key === id ? back() : openApp(id)));
+  // the Duo app's picks change its A (Pick 2 / Start Duo)
+  $('sp-glass').addEventListener('duo-change', () => { if (app?.key === 'sp-duo') dressKeys(); });
+  duoApp.setStart((ids) => { closeDialog('safari-prep-dialog'); actions.onDuo(ids); });
   // the Ranger Task Board (js/ranger.js) opens over the lobby, a count on its key while tasks wait to be claimed
   $('sp-tasks').addEventListener('click', () => { if (app) closeApp(true); import('./ranger.js').then(m => m.openRangerBoard(taskCount)); });
   const dialog = $('safari-prep-dialog');
@@ -82,6 +87,7 @@ const APPS = {
   'sp-dex': { name: 'Safari Dex', cls: 'cdev-dex', app: safariDexApp },
   'sp-board': { name: 'Ranks', cls: 'cdev-dex sp-board-app', app: boardApp('safari') },
   'sp-corner': { name: 'Poké Balls', cls: 'cdev-win cdev-corner', app: ballsApp, a: 'Buy' },
+  'sp-duo': { name: 'Duo Run', cls: 'cdev-dex sp-duo-app', app: duoApp, a: duoLabel },
 };
 const SLIDE = { duration: 260, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -144,8 +150,9 @@ function dressKeys() {
   $('sp-date').hidden = !!app;
   $('sp-base').inert = !!app;
   if (app) {
-    $('sp-start-label').textContent = app.def.a ?? '';
-    $('sp-start').disabled = !app.def.a;
+    const a = typeof app.def.a === 'function' ? app.def.a() : app.def.a;
+    $('sp-start-label').textContent = a ?? '';
+    $('sp-start').disabled = !a;
   } else {
     $('sp-start').disabled = false;
     render();   // a buy may have moved the balls
@@ -266,6 +273,8 @@ function render() {
     return slot;
   }));
   requestAnimationFrame(() => ballEdges($('sp-balls')));
+  $('sp-duo').classList.toggle('locked', !duoUnlocked());
+  $('sp-duo').title = duoUnlocked() ? 'Duo Run: bring two of your own starters' : "Duo Run: finish today's Daily run to unlock";
 }
 
 function ballEdges(strip) {

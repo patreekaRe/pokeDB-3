@@ -1,7 +1,7 @@
 /* ============================================================
    real-types.js  -  the Safari Zone's real types (the roadmap's "Six new types for the Safari's duo pool", session 2).
 
-   In a Safari run every wild Pokémon wears its real (dual) types and every move its real type, on the real 18-type
+   In a Safari run every wild Pokémon wears its real (dual) types and every move its real type, on the real Gen 5 (17-type)
    chart (real-types-table.js, written by tools/real-types.py), with three changes: no immunities (an x0 is a
    resistance), the product capped at x2 and floored at x0.5 (so a hit is still super effective, neutral or not very
    effective, at the game's SUPER_EFFECTIVE / NOT_VERY_EFFECTIVE), and Neutral cards outside it (x1 both ways). Elites

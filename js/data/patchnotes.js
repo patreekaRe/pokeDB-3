@@ -49,7 +49,8 @@ export const NEXT = [
   ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again, a room that won\'t load just after an update offers a reload, and towns, gyms and ? rooms use less memory.'],
   ['mall', 'The Safari Outfitter\'s Ranger Task Board is lit by lanterns, shows your own tasks, and glows and sparkles when one waits to be claimed.'],
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
-  ['modes', 'Safari wild Pokémon fight on their real types and moves, on the full type chart; a ▲ on a card means super effective, and Net Balls suit Water and Bug.'],
+  ['modes', 'Safari wild Pokémon fight on their real types and moves, on Gen 5\'s type chart; a ▲ on a card means super effective, and Net Balls suit Water and Bug.'],
+  ['modes', 'Duo Run: once the day\'s Safari run is done, replay it with two of your own starters, switching for 1 PP; same-type attacks deal 20% more.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

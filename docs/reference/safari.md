@@ -287,6 +287,48 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 - **The bot**: the sim mirrors it (`b.real`; variant `triangle` restores the old Safari; `cfg.safariType` deals only days
   whose starter is that type). Numbers in pokeDB-sim's README.
 
+## The duo and the Duo Run (2026-10-19, the roadmap's "Six new types", session 1)
+
+`docs/duo-design.md` sections 1-3 are the rules (the user's 22 answers); this is where they live.
+- **The pure part**: `js/data/duo.js` (the sim imports it): `DUO_SWITCH_PP` 1, `STAB` 1.2, `DUO_DECK` (each type's 5:
+  2 basic attacks, 2 basic blocks, its Bash-like signature), `validDuo()`, `duoDeck()`, `runTypes()` / `outStarter()` /
+  `benchStarter()`, the pools (`runPool()` both types' cards with Neutral once, `runTypePool()`, `runItems()`,
+  `fitsTypes()` for `only` relics and items), `rewardSlots()`, `duoPool()`, `duoGains()` and `duoOpen()`. Pinned by
+  `tests/duo.test.mjs`; `tests/cards.test.mjs` checks no two cards a duo can meet share a type, cost and text.
+- **The run** (`js/run.js`): `run.duo = { ids: [lead, partner], out }` beside `run.starter` (the lead), saved with the
+  run (additive, no `RUN_SAVE_VERSION` bump; restored through `validDuo()`, Safari runs only). `beginSafari(daily, pair)`
+  starts one: the 5 + 5 deck, `first: false` (never posted, coins as a replay, perks on), and it never spends the day's
+  free try. The map's run card shows the one out and both names; the Bag's relics list both Abilities ("while out");
+  a boss evolves both (the one out on screen, a line for the partner). Card rewards (`cardChoices()` in
+  `js/rewards.js`): one of each type, the third either, each slot from its type's pool with Neutral at its usual
+  share; the Mart, Move Tutor, the ? events and Metronome draw from both pools; evolution offers one card of each type;
+  `only` relics and items of either type; the tough match-up prize only when the wild beats both. The places that
+  still read one type (Bill's PC, the Unown Tablet, the Litwick Bonfire) read the one out.
+- **The battle** (`js/battle.js`): `battle.starter` is the one out (`outStarter()`), `battle.duo = { run, types, came,
+  armed, switches }`. The chip on your nameplate (`#player-bench`, `renderBench()`) is the partner's portrait in its
+  type's colour with ▲ / ▼ for the coming hit on it; a tap arms `#switch-go` ("⇄ Go, Squirtle! 1 PP"), a second tap
+  switches (`switchOut()`), a tap elsewhere puts it away. Only on your turn, any number of times, never ending it. The
+  switch swaps the sprite (a red-light `recalled`, then the ball's `released`, under `battleFx()`, a cut without), the
+  name, type chip, theme and Ability (`abilityFor()`); a fight-start Ability (Torrent's Tide) fires the first time each
+  partner comes out (`came`). Everything else stays. STAB (`stabOf()`) multiplies the attack damage of the out type's
+  cards, against elites and bosses too; the card hint (`markEdge()`) counts it, its title naming the parts. Held-item
+  relics (Charcoal...) boost their type whoever's out. Who's out is written into `run.duo.out` as you switch, so the
+  next fight starts with whoever was out at the knockout (Overgrow goes by that too).
+- **The Duo key** (`js/duoprep.js`, `duoApp` in the lobby's `APPS`): today's road (each area's main types,
+  `areaTypes()`, 4 of its Pokémon, silhouettes until seen, its rare spawns' ✦), the duo pool's portraits (a tap picks,
+  the first is the lead, a tap on a pick drops it, a third pick takes the second's place; ◀ ▶ steps the look through
+  your owned starters of the type), how the pair fares in each area (`fares()`), A = Pick 2 / Start Duo / Locked.
+  Start Duo goes through `safariTicket()` (the Day Pass) and `onDuo` in `js/main.js`. Locked until the day's free try
+  ends, won or lost (`save.safari.done`, set in `endRun()`; abandoning never gets there); `?duorun` lends it.
+- **The duo pool**: `save.duoPool` holds the types caught beyond Fire / Grass / Water (type -> starter ids as looks);
+  the base three are every owned starter of the type. `duoNews()` in `js/run.js` (from `creditSafari()`) adds a type
+  when a stage of one of its `DUO_LINES` starter lines is in `save.safariDex.caught`, old catches included, with the
+  reward box's "Shinx joined your duo pool! Electric unlocked." `DUO_LINES` is empty until the type sessions.
+- **Not built yet**: the free switches (Volt Switch, Baton Pass, Shed Shell) come with Electric's session; Duo Runs
+  have no leaderboard tab.
+- **Playtest**: `?duorun` (the Duo key open), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch,
+  the reward, the save). The sim: `cfg.duo` (pokeDB-sim's README).
+
 ## The areas' scenes (phase 5b, 2026-10-02)
 
 - **One look, six places**: `SAFARI_ART` in `js/scene.js` becomes six `BIOME_ART` entries (ids = the area ids,

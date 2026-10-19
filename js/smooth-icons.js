@@ -22,6 +22,11 @@ const ART = {
     <path d="M24.6 18.5c0 4.6-3 8-7.4 8.8" fill="none" stroke="#d8cca4" stroke-width="2" stroke-linecap="round"/>`,
 
   // Collection: the red Pokédex, its blue lens and lights
+  duo: `<circle cx="12" cy="15" r="8.5" fill="#fff" stroke="${INK}" stroke-width="2"/>
+    <path d="M3.5 15a8.5 8.5 0 0 1 17 0z" fill="#e23a2c" stroke="${INK}" stroke-width="2"/>
+    <circle cx="21" cy="18" r="8.5" fill="#fff" stroke="${INK}" stroke-width="2"/>
+    <path d="M12.5 18a8.5 8.5 0 0 1 17 0z" fill="#3a7be2" stroke="${INK}" stroke-width="2"/>
+    <circle cx="21" cy="18" r="2.6" fill="#fff" stroke="${INK}" stroke-width="1.6"/>`,
   dex: `<rect x="5" y="3" width="22" height="26" rx="3.5" fill="#e23a2c" stroke="${INK}" stroke-width="2"/>
     <rect x="5" y="3" width="5" height="26" rx="2" fill="#a51e18"/>
     <path d="M10 3v26" stroke="${INK}" stroke-width="1.6"/>

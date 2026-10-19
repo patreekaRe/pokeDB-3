@@ -21,15 +21,16 @@
 
 import { gymTalk } from './gym.js';
 import { talkOf } from './data/gym.js';
-import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
-import { spriteUrl, stageName } from './data/starters.js';
-import { ITEMS_BY_ID, ITEM_SLOTS, itemsForType } from './data/items.js';
+import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
+import { spriteUrl, stageName, STARTERS_BY_ID } from './data/starters.js';
+import { ITEMS_BY_ID, ITEM_SLOTS } from './data/items.js';
 import { heldFires, heldHeal, clearsCard } from './data/held.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { isShiny, getSave, updateSave, markSeen, safariSparkle } from './storage.js';
 import { shinyImage } from './data/shinies.js';
 import { vibrate, battleFx, calmFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
+import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems } from './data/duo.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
@@ -67,6 +68,12 @@ export function initBattle() {
   $('end-turn-btn').addEventListener('click', askEndTurn);
   $('throw-btn').addEventListener('click', toggleBallPicker);
   $('mulligan-btn').addEventListener('click', mulligan);
+  $('player-bench').addEventListener('click', tapBench);
+  $('switch-go').addEventListener('click', switchOut);
+  // a duo's armed switch is put away by a tap anywhere else, like the ball picker
+  document.addEventListener('pointerdown', (e) => {
+    if (battle?.duo?.armed && !e.target.closest('#player-bench, #switch-go')) { battle.duo.armed = false; renderBench(); }
+  });
   // the ball picker floats over the battle like a menu: a tap anywhere else closes it
   document.addEventListener('pointerdown', (e) => {
     if (!$('ball-picker').hidden && !e.target.closest('#ball-picker, #throw-btn')) closeBallPicker();
@@ -139,6 +146,15 @@ export const isBattleRunning = () => battle !== null && !battle.over;
 const hasRelic = (id) => battle.relics.includes(id);
 /** The starter's Ability (Blaze / Overgrow / Torrent / Pressure), from its type: ABILITIES in data/relics.js. */
 const hasAbility = (id) => battle.ability?.id === id;
+/** The types this fight's deck plays: a duo's two, else the starter's. */
+const battleTypes = () => battle.duo?.types ?? [battle.starter.type];
+/** The Ability of a type, raised by the boss relics that raise it (StS's Black Blood: Water Stone's Torrent 4, Leaf
+    Stone's Overgrow 10) and a climb's augments. A duo's is the one out's (switchOut()). */
+function abilityFor(type, relics, aug) {
+  const base = ABILITIES[type] ?? null;
+  const stone = base?.id === 'torrent' && relics.includes('water-stone') ? 2 : base?.id === 'overgrow' && relics.includes('leaf-stone') ? 7 : 0;
+  return base && (aug.abilityAdd || aug.abilityMult || stone) ? { ...base, amount: (base.amount + stone + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
+}
 /** Battle speed (Settings, js/settings.js): 2x halves the waits of the enemy's turn and your hits; CSS halves their
     animations under `.fast-battle`. Read live, so flipping it mid-fight counts from the next wait. */
 const speed = () => ((getSave().battleSpeed ?? 1) > 1 ? 2 : 1);
@@ -161,10 +177,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
   const def = encounter.def;
   // the Sky Pillar's augments (js/data/augments.js), summed: they act like relics for the rest of the climb
   const aug = run.tower ? augEffects(run.tower.augments, run.tower.spent) : {};
-  const base = ABILITIES[run.starter.type] ?? null;
-  // the boss relics that raise an Ability (StS's Black Blood): Water Stone's Torrent 4, Leaf Stone's Overgrow 10
-  const stone = base?.id === 'torrent' && run.relics.includes('water-stone') ? 2 : base?.id === 'overgrow' && run.relics.includes('leaf-stone') ? 7 : 0;
-  const ability = base && (aug.abilityAdd || aug.abilityMult || stone) ? { ...base, amount: (base.amount + stone + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
+  const out = outStarter(run);   // a duo's one out: whoever was out when the last fight ended
+  const ability = abilityFor(out.type, run.relics, aug);
   const gamble = aug.gambler ? aug.gambler[random() < 0.5 ? 0 : 1] : 1;
   const junk = run.relics.includes('griseous-orb') ? [CARDS_BY_ID.sludge, CARDS_BY_ID.sludge] : [];   // StS's Mark of Pain
   // a dojo trial (js/data/dojo.js) draws its set deck in order, `deck[0]` first
@@ -173,7 +187,10 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
   choosing = null;
 
   battle = {
-    starter: run.starter,
+    starter: out,
+    // a Duo Run's pair (js/data/duo.js): `run` is the run's own { ids, out }, switched in place so the next fight starts
+    // with whoever's out; `came` the partners already out this fight (a fight-start Ability fires once each)
+    duo: run.duo ? { run: run.duo, types: runTypes(run), came: [run.duo.out], armed: false, switches: 0 } : null,
     stage: run.stage,
     biome: run.biome,
     def,
@@ -276,7 +293,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     over: false,
   };
 
-  setTheme(run.starter.type);
+  setTheme(out.type);
   showScreen('battle-screen');
   const land = run.safari?.areas[run.biome] ?? biomeAt(run.route, run.biome)?.id;
   document.body.dataset.biome = land || '';   // the piles' colour
@@ -349,7 +366,7 @@ async function playIntro() {
   const cry = (id) => id ? Promise.race([playCry(id), sleep(CRY_WAIT_MAX)]) : null;
   const motion = battleFx();
   const playerSpriteId = b.starter.line[b.stage].id;
-  preloadCries(b.def.spriteId ?? '', playerSpriteId, b.def.phase2?.spriteId ?? '');
+  preloadCries(b.def.spriteId ?? '', playerSpriteId, b.def.phase2?.spriteId ?? '', ...(b.duo ? [STARTERS_BY_ID[b.duo.run.ids[1 - b.duo.run.out]].line[b.stage].id] : []));
   if (b.def.phase2) {
     new Image().src = b.def.phase2.image;
     preloadMusic(b.def.phase2.music);
@@ -866,12 +883,12 @@ function damageFor(card, e) {
 
   // relics
   if (hasRelic('muscle-band')) amount += 2;
-  if (card.type === b.starter.type && hasRelic(TYPE_RELIC[card.type])) amount += 2;
+  if (battleTypes().includes(card.type) && hasRelic(TYPE_RELIC[card.type])) amount += 2;   // a duo's held items boost their type whoever's out
   if (hasRelic('black-sludge')) amount += 3;
   if (b.firstAttack) amount += (hasRelic('dragon-fang') ? 10 : 0) + (b.aug.firstAttack || 0);   // Dragon Fang, First Strike
   amount += b.aug.attackBonus || 0;
 
-  const multiplier = cardMultiplier(card);
+  const multiplier = cardMultiplier(card) * stabOf(card);
   const boost = augDamage() * (hasRelic('fire-memory') && b.enemy.burn > 0 ? 1.25 : 1)   // Fire Memory (StS's Paper Phrog, for Burn)
     * (hasRelic('razor-fang') && (b.fightAttacks + 1) % 10 === 0 ? 2 : 1);              // Razor Fang (StS's Pen Nib)
 
@@ -1256,7 +1273,7 @@ function addCopies(card, n) {
     (`orig`), which is what goes to a pile afterwards (settled). */
 function addRandomCards(n) {
   const b = battle;
-  const pool = typePool(b.starter.type).filter(c => !c.evoOnly);
+  const pool = runTypePool(battleTypes()).filter(c => !c.evoOnly);
   for (let i = 0; i < n && pool.length; i++) {
     const card = pickOne(pool);
     const free = { ...card, discount: typeof card.cost === 'number' ? card.cost : 0, orig: card };
@@ -1294,7 +1311,7 @@ function mulligan() {
 async function discoverCard(n, kind = null) {
   const b = battle;
   const fits = (c) => !kind || (kind === 'power' ? c.power : !c.power && !isAttack(c));   // TR: powers, HM: the rest
-  const pool = [...typePool(b.starter.type).filter(c => !c.evoOnly && fits(c))];
+  const pool = [...runTypePool(battleTypes()).filter(c => !c.evoOnly && fits(c))];
   const options = [];
   while (options.length < n && pool.length) options.push(pool.splice(randIndex(pool.length), 1)[0]);
   if (!options.length) return;
@@ -1368,7 +1385,7 @@ function exhaustCard(card) {
 /** Dawn Stone (StS's Dead Branch): a random card of your type into your hand (the discard pile once it's full). */
 function addTypeCard() {
   const b = battle;
-  const pool = typePool(b.starter.type).filter(c => !c.evoOnly);
+  const pool = runTypePool(battleTypes()).filter(c => !c.evoOnly);
   const card = pickOne(pool);
   if (b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card, fresh: true });
   else b.discard.push(card);
@@ -1559,7 +1576,7 @@ function cleanse() {
 /** Wishing Piece: random items into every empty Bag slot (b.items is the run's own Bag). */
 function fillBag() {
   const b = battle;
-  const pool = itemsForType(b.starter.type).filter(i => !i.effects.fill);
+  const pool = runItems(battleTypes()).filter(i => !i.effects.fill);
   while (b.items.length < b.slots) b.items.push(pickOne(pool).id);
   pop('player-zone', '🌠 Bag filled!', 'note good');
 }
@@ -2160,12 +2177,16 @@ const typeless = () => battle.kind === 'elite' || battle.kind === 'boss';
 
 /** A move with its own `type` (Body Slam is Normal) uses that, else the enemy's type. In the Safari, the move's real
     type on the real chart (js/data/real-types.js). */
-function enemyTypeMultiplier(move) {
+function enemyTypeMultiplier(move, defender = battle.starter.type) {
   const b = battle;
   if (typeless()) return 1;
-  if (b.safari) return realMultiplier(moveType(move, b.def), [b.starter.type]);
-  return typeMultiplier(move.type ?? b.def.type, b.starter.type);
+  if (b.safari) return realMultiplier(moveType(move, b.def), [defender]);
+  return typeMultiplier(move.type ?? b.def.type, defender);
 }
+
+/** A duo's same-type attack bonus: a card of the type that's out deals STAB more. Your own bonus, so it holds against
+    elites and bosses too. */
+const stabOf = (card) => (battle.duo && card.type === battle.starter.type ? STAB : 1);
 
 /** Your card on this enemy: the triangle, or in the Safari the real chart on its real types (Neutral cards x1). */
 function cardMultiplier(card) {
@@ -2397,6 +2418,14 @@ function checkTaunts() {
 /** Things that don't change during a battle (sprites, names). */
 function setupBattleScreen() {
   hideHandHint();
+  dressPlayer();
+  resetIntro();
+  setupEnemy();
+  log('');
+}
+
+/** Your Pokémon's sprite, name, type and Ability: at the start of a fight, and again when a duo switches. */
+function dressPlayer() {
   const b = battle;
   $('player-name').textContent = stageName(b.starter, b.stage);
   const type = b.starter.type;
@@ -2415,9 +2444,7 @@ function setupBattleScreen() {
   // legendaries keep one sprite, so they grow by stage like the map sprites; the others' files already grow
   const oneSprite = b.starter.line.every(form => form.id.replace(/-shiny$/, '') === b.starter.line[0].id);
   sizeSprite($('player-sprite'), 0.5, 1.1, 0.75, 1.25, oneSprite ? [0.78, 0.9, 1][b.stage] : 1);
-  resetIntro();
-  setupEnemy();
-  log('');
+  renderBench();
 }
 
 /** The enemy's sprite, plate and type: at the start of a fight, and again when a boss rises in its second form. */
@@ -2472,6 +2499,104 @@ function renderAll() {
   renderItems();
   renderHand();
   renderPicking();
+  renderBench();
+}
+
+/* ---------- a Duo Run's switch (docs/duo-design.md section 1) ---------- */
+
+/** Why the benched partner can't come out now, or '' if it can: your turn only, for DUO_SWITCH_PP. */
+function whyNotSwitch() {
+  const b = battle;
+  if (!b?.duo || b.busy || b.over || b.enemyActing || choosing || pilePick) return 'Not now.';
+  if (b.energy < DUO_SWITCH_PP) return `Switching costs ${DUO_SWITCH_PP} PP.`;
+  return '';
+}
+
+/** The partner's chip on your nameplate: a first tap arms the switch (its "Go" pill), a second puts it away. */
+function tapBench() {
+  const b = battle;
+  if (!b?.duo) return;
+  if (b.duo.armed) { b.duo.armed = false; renderBench(); return; }
+  const problem = whyNotSwitch();
+  if (problem) { log(problem === 'Not now.' ? 'You can switch on your turn.' : problem); playSound('no-pp'); return; }
+  playSound('confirm');
+  b.duo.armed = true;
+  renderBench();
+}
+
+/** "Come back! Go!": the one out is recalled in a red light, the partner comes out of its ball. It costs PP, never
+    ends the turn, and changes only who's out: the defending type, STAB and the Ability. Block, powers, Tide and the
+    enemy's debuffs all stay. */
+async function switchOut() {
+  const b = battle;
+  if (!b?.duo?.armed) return;
+  b.duo.armed = false;
+  const problem = whyNotSwitch();
+  if (problem) { log(problem); playSound('no-pp'); renderBench(); return; }
+  const d = b.duo, from = b.starter, motion = battleFx();
+  b.energy -= DUO_SWITCH_PP;
+  b.busy = true;
+  selectedUid = null;
+  d.run.out = 1 - d.run.out;
+  d.switches += 1;
+  const to = STARTERS_BY_ID[d.run.ids[d.run.out]];
+  log(`${stageName(from, b.stage)}, come back! Go, ${stageName(to, b.stage)}!`);
+  renderAll();
+  const sprite = $('player-sprite');
+  if (motion) {
+    playSound('ball-throw');
+    sprite.classList.remove('released');
+    sprite.classList.add('recalled');
+    await pause(380);
+  }
+  if (battle !== b) return;
+  sprite.classList.remove('recalled');
+  b.starter = to;
+  b.ability = abilityFor(to.type, b.relics, b.aug);
+  b.blazeLit = false;
+  setTheme(to.type);
+  dressPlayer();
+  if (motion) {
+    playSound('ball-open');
+    void sprite.offsetWidth;
+    sprite.classList.add('released');
+    if (isShiny(to.id)) shinySparkle($('player-zone'));
+  }
+  await Promise.all([Promise.race([playCry(to.line[b.stage].id), sleep(CRY_WAIT_MAX)]), pause(motion ? 600 : 0)]);
+  if (battle !== b) return;
+  sprite.classList.remove('released');
+  if (!d.came.includes(d.run.out)) {   // a fight-start Ability fires the first time each partner comes out, so switching can't farm it
+    d.came.push(d.run.out);
+    if (hasAbility('torrent')) { gainTide(b.ability.amount); abilityBanner(); }
+    if (hasAbility('pressure')) { b.focus += b.ability.amount; abilityBanner(); }
+  }
+  b.busy = false;
+  renderAll();
+}
+
+/** The partner's chip: its portrait in its type's colour, with ▲ when the coming hit is super effective on it and ▼
+    when it's resisted (the intent's own marks are for the one out), and the armed switch's Go pill. */
+function renderBench() {
+  const b = battle, chip = $('player-bench'), go = $('switch-go');
+  chip.hidden = !b?.duo;
+  go.hidden = !b?.duo?.armed;
+  if (!b?.duo) return;
+  const mate = STARTERS_BY_ID[b.duo.run.ids[1 - b.duo.run.out]], name = stageName(mate, b.stage);
+  const move = !b.over && currentMove();
+  const hits = move && (move.kind === 'attack' || move.kind === 'drain');
+  const edge = hits ? enemyTypeMultiplier(move, mate.type) : 1;
+  const mark = edge > 1 ? '▲' : edge < 1 ? '▼' : '';
+  const face = el('img', 'bench-face pixel');
+  face.src = spriteUrl(mate, 'front', b.stage);
+  face.alt = '';
+  chip.dataset.type = mate.type;
+  chip.classList.toggle('armed', b.duo.armed);
+  chip.replaceChildren(face, ...(mark ? [el('b', `bench-mark ${edge > 1 ? 'up' : 'down'}`, mark)] : []));
+  const coming = hits ? ` ${move.name} would be ${edge > 1 ? 'super effective' : edge < 1 ? 'not very effective' : 'neutral'} on it.` : '';
+  chip.title = `${name} (${TYPES[mate.type].label}) is on the bench. Tap to switch for ${DUO_SWITCH_PP} PP.${coming}`;
+  chip.setAttribute('aria-label', chip.title);
+  go.textContent = `⇄ Go, ${name}! ${DUO_SWITCH_PP} PP`;
+  go.disabled = !!whyNotSwitch();
 }
 
 const PICK_TEXT = {
@@ -2682,14 +2807,16 @@ function badgeFor([icon, value, title, kind = '']) {
     ▼ and a grey one when it's resisted (the real chart has too many match-ups to keep in your head). */
 function markEdge(node, card) {
   const b = battle;
-  if (!b.safari || typeless() || !(card.effects.damage || card.effects.blockDamage)) return;
-  const edge = cardMultiplier(card);
+  if (!b.safari || !(card.effects.damage || card.effects.blockDamage)) return;
+  const chart = typeless() ? 1 : cardMultiplier(card), stab = stabOf(card), edge = chart * stab;   // a duo's counts STAB
   if (edge === 1) return;
   const up = edge > 1, tag = node.querySelector('.card-type');
   node.classList.add(up ? 'edge-up' : 'edge-down');
   tag.append(el('span', 'card-edge', up ? ' ▲' : ' ▼'));
-  tag.title = up ? `Super effective on ${b.def.name}: +${Math.round((SUPER_EFFECTIVE - 1) * 100)}% damage`
-    : `Not very effective on ${b.def.name}: -${Math.round((1 - NOT_VERY_EFFECTIVE) * 100)}% damage`;
+  const parts = [chart > 1 && `super effective on ${b.def.name}`, chart < 1 && `not very effective on ${b.def.name}`,
+    stab > 1 && `STAB (${stageName(b.starter, b.stage)} is out)`].filter(Boolean).join(', ');
+  const pct = Math.round((edge - 1) * 100);
+  tag.title = `${parts[0].toUpperCase()}${parts.slice(1)}: ${pct > 0 ? '+' : ''}${pct}% damage`;
 }
 
 /* A card still in hand that would look the same keeps its node (its art, its fitted text): rebuilding the whole hand

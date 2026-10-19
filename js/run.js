@@ -28,10 +28,11 @@ import { battleFx, calmFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
-import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
+import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
 import { realBeats } from './data/real-types.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
+import { runTypes, outStarter, runPool, runItems, fitsTypes, validDuo, duoDeck, duoGains, duoStarters } from './data/duo.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
 import { openSealed } from './data/exchange.js';
@@ -177,7 +178,7 @@ const martPrice = (price) => Math.round(price * (1 - MART_DISCOUNT[perk('martCar
 
 /** Pick one random relic for the Starting Relic Charm passive (a common or uncommon one: rare and boss relics are meant to be found; Cleanse Tag only works when picked up). */
 function randomStartingRelic() {
-  const pool = RELICS.filter(r => r.rarity !== 'rare' && !r.boss && !r.unique && r.id !== 'cleanse-tag' && (!r.only || r.only === run.starter.type));
+  const pool = RELICS.filter(r => r.rarity !== 'rare' && !r.boss && !r.unique && r.id !== 'cleanse-tag' && fitsTypes(r.only, runTypes(run)));
   return pickOne(pool);
 }
 
@@ -190,7 +191,7 @@ export function initRun({ onMenu, onNewRun }) {
   initScope();
 
   $('result-menu').addEventListener('click',  () => { closeDialog('result-dialog'); onMenu(); });
-  $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); if (run.safari) safariTicket().then(ok => (ok ? beginSafari() : onMenu())); else if (run.tower) beginTower(run.tower.practice ? run.starter : null); else onNewRun(run.starter); });
+  $('result-again').addEventListener('click', () => { closeDialog('result-dialog'); if (run.safari) { const duo = run.duo; safariTicket().then(ok => (ok ? beginSafari(undefined, duo && duo.ids) : onMenu())); } else if (run.tower) beginTower(run.tower.practice ? run.starter : null); else onNewRun(run.starter); });
   $('result-board').addEventListener('click', () => openLeaderboard(0, run?.tower ? 'tower' : 'safari'));
 
   // This pop-up moves the game along, so Escape must not just close it.
@@ -321,6 +322,7 @@ function checkpoint() {
     gymWon: run.gymWon,       // saved in the gym after its leader's beaten, so Continue comes back to it (afterFight())
     town: run.town,           // saved in a gateway town, so Continue comes back to it (walkOn())
     deck: run.deck,
+    duo: run.duo,             // a Duo Run's pair and who's out (additive: an older save has none)
     relics: run.relics,
     items: run.items,
     held: run.held,           // the held berry packed for the run (js/data/held.js); a save from before has none
@@ -458,7 +460,8 @@ function restoreRun(saved) {
     ...saved,
     starter,
     route: saved.route ?? BIOMES.slice(0, saved.biome + 1).map(b => b.id),   // saved before the crossroads: the default road
-    tower: saved.tower && { ...freshAugments(null), ...saved.tower },   // a climb saved before augments has none, and owes none
+    tower: saved.tower && { ...freshAugments(null), ...saved.tower },
+    duo: saved.safari ? validDuo(saved.duo) : null,   // a climb saved before augments has none, and owes none
     mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome, weaknessShards(getSave())),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     gift: ITEMS_BY_ID[saved.gift] ? saved.gift : null,
@@ -512,7 +515,7 @@ export function continueRun(saved) {
 /** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). `pack`: what's packed from Kurt's
     Workshop, { berries: held berry recipe ids (the Berry Pouch), item: a run kit recipe id }, taken out of the save now,
     never on a playtest, a Safari run or a climb. */
-export function beginRun(starter, level = 0, peek = null, safari = null, tower = null, pack = null) {
+export function beginRun(starter, level = 0, peek = null, safari = null, tower = null, pack = null, duo = null) {
   dropNotes();
   const perks = !safari?.first && !tower;   // the Safari's first try of the day and every climb go without perks (fairTry())
   const startHp = BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0);   // shop passive: Max HP Boost
@@ -528,7 +531,8 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     biome: 0,
     route: [BIOMES[0].id],   // the biome taken at each slot (the crossroads, js/crossroads.js), saved with the run
     roads: null,           // the pool biome each fork offers beside its default, rolled below (rollRoads())
-    deck: [...starter.deck],
+    deck: duo ? duoDeck(duo) : [...starter.deck],
+    duo,                   // a Duo Run's two starters, { ids: [lead, partner], out } (js/data/duo.js); `starter` is the lead
     relics: [],
     items: [],             // one-use items in the Bag (ids), at most ITEM_SLOTS
     held: null,            // the held berry packed for the run: { id, used } (js/data/held.js, packKit())
@@ -599,12 +603,15 @@ const an = (name) => `${/^[AEIOUX]/.test(name) ? 'an' : 'a'} ${name}`;
 
 /** Today's Safari Zone run: the date's starter and areas at Level 0's rules. Only the day's first try counts for the
     leaderboard; after it the same seed replays as often as you like. */
-export function beginSafari(daily = safariDaily()) {
+export function beginSafari(daily = safariDaily(), pair = null) {
   const tries = getSave().safari.day === daily.day ? getSave().safari.tries : 0;
   const days = safariDays(getSave()) + (tries ? 0 : 1);   // the Safari Regular Badge's
-  updateSave(d => { d.safari = { day: daily.day, tries: tries + 1, days, pass: d.safari.pass, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
+  // a Duo Run (js/duoprep.js): a replay with two starters of your own, whoever you picked first out first; it never
+  // spends the day's free try (only ?duorun can start one before it)
+  const duo = pair && validDuo({ ids: pair, out: 0 });
+  updateSave(d => { d.safari = { day: daily.day, tries: tries + (duo ? 0 : 1), days: duo ? safariDays(d) : days, pass: d.safari.pass, done: d.safari.done, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
   rangerDay(daily.day);
-  beginRun(daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 });
+  beginRun(duo ? STARTERS_BY_ID[duo.ids[0]] : daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 && !duo }, null, null, duo);
   mission('safari');
 }
 
@@ -1079,7 +1086,7 @@ function showExp(floor, floors) {
 
 // Blaze only works below half HP, so the map says whether it's on: dim above half, lit (and your Pokémon aflame) below.
 function showAbility() {
-  const ability = ABILITIES[run.starter.type];
+  const ability = ABILITIES[outStarter(run).type];
   const el = $('run-ability');
   el.hidden = !ability;
   delete $('run-sprite').dataset.blaze;
@@ -1090,7 +1097,7 @@ function showAbility() {
     if (state === 'on') $('run-sprite').dataset.blaze = '';
   }
   el.dataset.state = state;
-  el.dataset.type = run.starter.type;
+  el.dataset.type = outStarter(run).type;
   el.replaceChildren(Object.assign(document.createElement('i'), { className: 'ability-shine' }), ability.name);
   el.title = `Ability: ${ability.name}. ${ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ` Active now: +${ability.amount} damage!` : ''}`;
 }
@@ -1099,15 +1106,15 @@ function showMap() {
   const biome = land();
   scoping = rubbing = false;
   showBadgeNews();
-  setTheme(run.starter.type);
+  setTheme(outStarter(run).type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
   warmPlaces();
 
-  $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
-  $('run-sprite').alt = stageName(run.starter, run.stage);
+  $('run-sprite').src = spriteUrl(outStarter(run), 'front', run.stage);
+  $('run-sprite').alt = stageName(outStarter(run), run.stage);
   $('run-sprite').dataset.stage = String(run.stage);
   showMon();
-  $('run-title').textContent = stageName(run.starter, run.stage);
+  $('run-title').textContent = run.duo ? duoStarters(run.duo).map(s => stageName(s, run.stage)).join(' & ') : stageName(run.starter, run.stage);
   // The sign drops in like the games' location sign, but only when you arrive in a new biome.
   const sign = $('biome-name');
   if (sign.textContent !== biomeName()) {
@@ -1508,9 +1515,10 @@ function renderRelicList() {
     li.append(itemSprite(relic, 'howto-node'), text);
     return li;
   };
-  const ability = ABILITIES[run.starter.type];   // the starter's own, always first (StS's starter relic)
+  // the starter's own, always first (StS's starter relic); a duo's two, each working only while its Pokémon is out
+  const abilities = (run.duo ? duoStarters(run.duo) : [run.starter]).map(s => ABILITIES[s.type] && [ABILITIES[s.type], run.duo ? `Ability: ${ABILITIES[s.type].name} (${s.line[run.stage].name}, while out)` : `Ability: ${ABILITIES[s.type].name}`]).filter(Boolean);
   const rows = run.relics.map(id => row(RELICS_BY_ID[id]));
-  $('relics-list').replaceChildren(...(ability ? [row(ability, `Ability: ${ability.name}`)] : []),
+  $('relics-list').replaceChildren(...abilities.map(([ability, label]) => row(ability, label)),
     ...(rows.length ? rows : [el('p', 'drop-empty', 'No relics yet. Beat an elite or open a treasure to find one.')]));
 }
 
@@ -1641,7 +1649,7 @@ function useItemOnMap(index) {
   run.tally.itemsUsed.push(item.id);
   markSeen('items', item.id);   // items are met in the Index once used, not when offered (the user's call)
   if (item.effects.fill) {   // Wishing Piece
-    const pool = itemsForType(run.starter.type).filter(i => !i.effects.fill);
+    const pool = runItems(runTypes(run)).filter(i => !i.effects.fill);
     while (run.items.length < itemSlots()) run.items.push(pickOne(pool).id);
     playSound('item-get', 'item');
     tell(`Used ${item.name}: your Bag is full of items!`);
@@ -2634,7 +2642,7 @@ function afterFight(node, result) {
 
   // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28); in the Safari, by its real types
   const wild = ENEMY_DEFS[node.enemyId];
-  const tough = node.type === 'fight' && !!wild && (run.safari ? realBeats(wild, run.starter.type) : TYPES[wild.type]?.beats === run.starter.type);
+  const tough = node.type === 'fight' && !!wild && (run.safari ? runTypes(run).every(t => realBeats(wild, t)) : TYPES[wild.type]?.beats === run.starter.type);   // a duo's: it beats both
   const payAs = tough ? 'elite' : node.type === 'ken' ? 'boss' : node.type;
   if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
   const [low, high] = PRIZE_MONEY[payAs];
@@ -2895,7 +2903,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
   let cards = cardChoices(run, source, REWARD_CARDS[perk('scoutReport') ? 1 : 0] + (a.rewardCards || 0) + (run.relics.includes('lucky-egg') ? 1 : 0), { reward: true });   // Scout Report: 4; Second Helping; Lucky Egg
   if (a.cardShark) {   // Card Shark: an upgraded rare as well
     const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
-    const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES && !cards.some(x => baseId(x.id) === c.id));
+    const rares = runPool(run).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES && !cards.some(x => baseId(x.id) === c.id));
     if (rares.length) cards.push(CARDS_BY_ID[upgradeId(pickOne(rares).id)]);
   }
   if (a.newUpgraded) cards = cards.map(c => (canUpgrade(c) ? CARDS_BY_ID[upgradeId(c.id)] : c));   // Card Smith's set bonus
@@ -2943,6 +2951,20 @@ function creditSafari() {
   if (news.complete) {
     updateSave(d => { d.safariDex.complete = true; });
     lines.push('The Safari Pokédex is complete! Every Safari Pokémon is caught.');
+  }
+  lines.push(...duoNews());
+  return lines;
+}
+
+/** A starter line's stage caught in the Safari adds its type to the duo pool, with that look (js/data/duo.js's
+    DUO_LINES). Catches already in the save count, so this also runs on opening the Duo app. */
+export function duoNews() {
+  const gains = duoGains(getSave().safariDex.caught, getSave().duoPool);
+  const lines = [];
+  for (const [type, looks] of Object.entries(gains)) {
+    const fresh = !getSave().duoPool?.[type]?.length;
+    updateSave(d => { d.duoPool = { ...d.duoPool, [type]: [...(d.duoPool?.[type] || []), ...looks] }; });
+    for (const look of looks) lines.push(`${STARTERS_BY_ID[look].line[0].name} joined your duo pool!${fresh ? ` ${type[0].toUpperCase()}${type.slice(1)} unlocked.` : ''}`);
   }
   return lines;
 }
@@ -3780,7 +3802,7 @@ function rollEvent(node, event) {
   }
   if (event.upgrade) {
     // every card of each rarity in a shuffled order: the trade takes the first one you don't already hold MAX_COPIES of
-    const pool = poolForType(run.starter.type);
+    const pool = runPool(run);
     node.event.offers = Object.fromEntries(Object.values(event.upgrade).map(rarity =>
       [rarity, shuffled(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
   }
@@ -3789,7 +3811,7 @@ function rollEvent(node, event) {
     node.event.relics = relicChoices(run).map(r => r.id);
   }
   if (event.offering) {
-    const typeRelics = shuffled(RELICS.filter(r => r.only === run.starter.type && !r.boss));
+    const typeRelics = shuffled(RELICS.filter(r => r.only && runTypes(run).includes(r.only) && !r.boss));
     node.event.relics = [...typeRelics, ...relicChoices(run).filter(r => !r.only)].map(r => r.id);
   }
   if (event.wake) {   // the Snorlax: the pile's order, and one roll a search for whether it wakes
@@ -3799,21 +3821,21 @@ function rollEvent(node, event) {
   }
   if (event.digHp) { node.event.rolls = Array.from({ length: 12 }, () => random()); node.event.dug = 0; }
   if (event.morph) {
-    const pool = poolForType(run.starter.type);
+    const pool = runPool(run);
     node.event.offers = Object.fromEntries(event.morph.map(rarity => [rarity, shuffled(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
   }
   if (event.slices) node.event.spin = random();
-  if (event.askHp) { node.event.asked = 0; node.event.moves = shuffled(poolForType(run.starter.type).filter(c => c.type === 'normal')).map(c => c.id); }
+  if (event.askHp) { node.event.asked = 0; node.event.moves = shuffled(runPool(run).filter(c => c.type === 'normal')).map(c => c.id); }
   if (event.up) {   // Kecleon: which two of your relics it asks for, and what it trades for each, in a rolled order
     node.event.rolls = [random(), random()];
-    node.event.relics = shuffled(RELICS.filter(r => !r.boss && !r.unique && (!r.only || r.only === run.starter.type) && Object.values(event.up).includes(r.rarity))).map(r => r.id);
+    node.event.relics = shuffled(RELICS.filter(r => !r.boss && !r.unique && fitsTypes(r.only, runTypes(run)) && Object.values(event.up).includes(r.rarity))).map(r => r.id);
   }
-  if (event.books) node.event.books = libraryShelf(event, shuffled(poolForType(run.starter.type))).map(c => c.id);
+  if (event.books) node.event.books = libraryShelf(event, shuffled(runPool(run))).map(c => c.id);
   if (event.lose) node.event.lose = random();
   if (event.items) { node.event.haul = itemChoices(run, event.items).map(i => i.id); node.event.got = 0; }
   if (event.favourite) node.event.roll = random();
   if (event.pairs) {   // Voltorb Flip: a move of each rarity twice and two Voltorb, face down in a rolled order
-    const pool = poolForType(run.starter.type).filter(c => pickable(c) && copiesOf(c.id) < MAX_COPIES);
+    const pool = runPool(run).filter(c => pickable(c) && copiesOf(c.id) < MAX_COPIES);
     const picks = event.pairs.map(rarity => shuffled(pool.filter(c => (c.rarity || 'common') === rarity))[0]?.id).filter(Boolean);
     node.event.board = shuffled([...picks, ...picks, 'voltorb', 'voltorb']);
     node.event.flips = [];
@@ -4383,7 +4405,7 @@ const EVENT_CHOICES = {
 
   // StS's Note for Yourself: take out the move you stored last time, then store one for a later run (a Box per type)
   'bills-pc'(event, state, back, react, done) {
-    const type = run.starter.type, kept = getSave().pcBox?.[type], id = CARDS_BY_ID[kept] ? kept : event.box, card = CARDS_BY_ID[id];
+    const type = outStarter(run).type, kept = getSave().pcBox?.[type], id = CARDS_BY_ID[kept] ? kept : event.box, card = CARDS_BY_ID[id];
     if (state.took) return { sub: [event.text, 'Now store one of your moves in the Box for a later run.'], options: [
       spotOption('Store a move', 'Choose a move to leave in the Box.', () => pcStore(done)),
     ] };
@@ -4680,7 +4702,7 @@ const EVENT_CHOICES = {
 
   // StS's Ancient Writing: study the glyphs (every copy of your two basic moves PP Ups), or let the Unown erase a move
   'unown-tablet'(event, state, back, react, done) {
-    const type = run.starter.type, ups = tabletUps(type, run.deck), thin = run.deck.length <= MIN_DECK;
+    const type = outStarter(run).type, ups = tabletUps(type, run.deck), thin = run.deck.length <= MIN_DECK;
     const names = (BASICS[type] || []).map(id => CARDS_BY_ID[id]?.name).filter(Boolean).join(' and ');
     return { figures: { mon: { src: 'assets/pokemon/unown-front.gif' } }, sub: [event.text, `Study the glyphs to PP Up every ${names} you hold, or let the Unown erase one of your moves.`], options: [
       spotOption('Study', ups.length ? `PP Up every ${names} in your deck (${ups.length} card${ups.length > 1 ? 's' : ''}).` : `You hold no ${names} left to PP Up.`, async () => {
@@ -4755,7 +4777,7 @@ const EVENT_CHOICES = {
   // StS's We Meet Again: your rival trades a relic for ₽, an item of your Bag or a move of your deck (which are rolled)
   'rivals-return'(event, state, back, react, done) {
     const price = perBiome(event.ask), item = ITEMS_BY_ID[rivalWants(run.items, state.pick[0])], thin = run.deck.length <= MIN_DECK;
-    const moves = run.deck.filter(id => pickable(CARDS_BY_ID[id]) && !(BASICS[run.starter.type] || []).includes(baseId(id)));
+    const moves = run.deck.filter(id => pickable(CARDS_BY_ID[id]) && !runTypes(run).some(t => (BASICS[t] || []).includes(baseId(id))));
     const move = CARDS_BY_ID[rivalWants(moves, state.pick[1])];
     const trade = (what, pay) => async () => {
       figureDoes('npc', 'nod');
@@ -4815,7 +4837,7 @@ const BONFIRE_SAYS = {
 
 /** The Litwick Bonfire: burn a move of your choice, each one marked with what it gives back. */
 function bonfirePick(event, back, done) {
-  const type = run.starter.type;
+  const type = outStarter(run).type;
   showChoice({
     title: 'Litwick Bonfire',
     sub: 'Choose a move to offer to the flames. It\'s gone for the rest of the run.',
@@ -5012,7 +5034,7 @@ function dittoPick(kind, entries, back, done) {
 /** Bill's PC: leave one of your moves in this type's Box for a later run (not saved from a playtest peek). No skipping:
     you took one out. */
 function pcStore(done) {
-  const type = run.starter.type;
+  const type = outStarter(run).type;
   showChoice({
     title: "Bill's PC",
     sub: 'Choose a move to store in your Box. A later run of this type will find it here.',
@@ -5073,7 +5095,7 @@ function revealCard(title, card, lines, done) {
 /** The Move Tutor's lesson: 3 rare moves (or the best on offer if you own every rare), paid for only when one is learned. */
 function tutorCards(back, pay, done = showMap) {
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
-  const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES);
+  const rares = runPool(run).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES);
   const cards = rares.length ? shuffled(rares).slice(0, 3) : cardChoices(run, 'boss');
   showChoice({
     title: 'Chad Master Kenmatta',
@@ -5273,8 +5295,9 @@ async function evolve(next) {
   const r = run;
   await sleep(1300);   // let the victory fanfare play a moment first, like the games
   if (run !== r) return;   // left for the menu meanwhile
-  const fadeOut = await evolutionScene(r.starter, from,
-    [`Max HP +${HP_PER_STAGE} and ${healed}. All your moves are now ${STAGE_POWER * 100 * r.stage}% stronger.`]);
+  const mate = r.duo && STARTERS_BY_ID[r.duo.ids[1 - r.duo.out]];   // a duo evolves together: the one out on screen
+  const fadeOut = await evolutionScene(outStarter(r), from,
+    [...(mate ? [`${stageName(mate, from)} evolved too, into ${stageName(mate, r.stage)}!`] : []), `Max HP +${HP_PER_STAGE} and ${healed}. All your moves are now ${STAGE_POWER * 100 * r.stage}% stronger.`]);
   if (run !== r) return fadeOut();   // left for the menu meanwhile
   playMusic(bossWin());   // only a boss evolves you
   next();
@@ -5532,6 +5555,10 @@ function endRun(won, atLastBoss = false, loss = null) {
   const tasks = safari && !peeking ? rangerReady() : 0;
   if (tasks) lines.push(`📋 ${tasks} Ranger task${tasks === 1 ? ' is' : 's are'} ready to claim on the board at the Safari Outfitter.`);
   if (safari) lines.push(run.safari.first ? '🦺 Your first try of the day, the one that counts: played without perks, like everyone\'s.' : '🦺 A replay: only the first try of the day counts (perks are back on).');
+  if (safari && run.safari.first && !peeking) {   // finished, won or lost: today's Duo Run opens (js/duoprep.js); abandoning never gets here
+    updateSave(d => { d.safari.done = run.safari.day; });
+    lines.push('🤝 Duo Run unlocked for today: bring two of your own starters, in the Safari lobby (a Day Pass replay).');
+  }
   if (safari && run.safari.first && !peeking) {   // the leaderboard's: posted once, never in the way of the end screens
     const line = postSafariResult(runResult({ day: run.safari.day, starter: run.starter.id, won, biome: run.biome,
       turns: run.tally.turns, startedAt: run.tally.startedAt, caught: run.tally.caught || 0, shinies: run.tally.shinies || 0 }));

@@ -5,7 +5,8 @@
 
 import { poolForType, evolutionCardsFor, MAX_COPIES, baseId, upgradeId, CARDS_BY_ID, SAFARI_ONLY_CARDS } from './data/cards.js';
 import { RELICS } from './data/relics.js';
-import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
+import { ITEM_WEIGHTS } from './data/items.js';
+import { runTypes, runItems, fitsTypes, rewardSlots } from './data/duo.js';
 import { playSound } from './audio.js';
 import { random, shuffled, pickOne } from './rng.js';
 import { textPace, textHold } from './prefs.js';
@@ -38,14 +39,24 @@ export function cardChoices(run, source, count = 3, { reward = false } = {}) {
   if (reward) weights.rare += run.rarePity || 0;
 
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
+  const types = runTypes(run);
   // Bait and Rock are only ever offered in the Safari Zone
-  let pool = [...poolForType(run.starter.type), ...(run.safari ? SAFARI_ONLY_CARDS : [])].filter(c => copies(c.id) < MAX_COPIES);
+  const extra = run.safari ? SAFARI_ONLY_CARDS : [];
+  const fits = (c) => copies(c.id) < MAX_COPIES;
+  let pool = [...new Set(types.flatMap(poolForType)), ...extra].filter(fits);
   const chosen = [];
+  // a duo's fight reward deals a slot per type, the third either: each slot from that type's pool, Neutral at its usual share
+  const slots = run.duo && reward ? rewardSlots(types, count, random()) : null;
 
+  const weightOf = (c) => Math.max(1, weights[c.rarity || 'common']);
+  const draw = (from) => {
+    let roll = random() * from.reduce((sum, c) => sum + weightOf(c), 0);
+    return from.find(c => (roll -= weightOf(c)) < 0) || from[0];
+  };
   while (chosen.length < count && pool.length) {
-    const weightOf = (c) => Math.max(1, weights[c.rarity || 'common']);
-    let roll = random() * pool.reduce((sum, c) => sum + weightOf(c), 0);
-    const card = pool.find(c => (roll -= weightOf(c)) < 0) || pool[0];
+    const slot = slots?.[chosen.length];
+    const from = slot ? [...poolForType(slot), ...extra].filter(c => fits(c) && !chosen.includes(c)) : pool;
+    const card = draw(from.length ? from : pool);
     chosen.push(card);
     pool = pool.filter(c => c !== card);
   }
@@ -65,11 +76,9 @@ export function cardChoices(run, source, count = 3, { reward = false } = {}) {
  * see evolutionCardsFor in cards.js.
  */
 export function evolutionChoices(run) {
-  const pool = evolutionCardsFor(run.starter.type, run.stage).filter(c => {
-    const copies = run.deck.filter(x => baseId(x) === c.id).length;
-    return copies < (c.maxCopies || MAX_COPIES);
-  });
-  return shuffled(pool).slice(0, 2);
+  const fits = (c) => run.deck.filter(x => baseId(x) === c.id).length < (c.maxCopies || MAX_COPIES);
+  if (run.duo) return runTypes(run).map(t => shuffled(evolutionCardsFor(t, run.stage).filter(fits))[0]).filter(Boolean);   // one of each type
+  return shuffled(evolutionCardsFor(run.starter.type, run.stage).filter(fits)).slice(0, 2);
 }
 
 /** StS's relic tiers: each relic offered rolls common / uncommon / rare by these weights (StS's 50 / 33 / 17),
@@ -87,7 +96,7 @@ const TIERS = ['common', 'uncommon', 'rare'];
  * A boss offers its own boss relics, or the normal pool once you hold them all.
  */
 export function relicChoices(run, { boss = false, source = 'normal' } = {}) {
-  const fits = RELICS.filter(r => !r.unique && !run.relics.includes(r.id) && (!r.only || r.only === run.starter.type));
+  const fits = RELICS.filter(r => !r.unique && !run.relics.includes(r.id) && fitsTypes(r.only, runTypes(run)));
   const bossPool = boss ? fits.filter(r => r.boss) : [];
   if (bossPool.length) return shuffled(bossPool).slice(0, 3);
   let pool = fits.filter(r => !r.boss);
@@ -507,7 +516,7 @@ export function textOption(icon, title, text, onPick) {
 
 /** Pick `count` different items (commons more often) that suit your starter. */
 export function itemChoices(run, count = 1) {
-  let pool = itemsForType(run.starter.type);
+  let pool = runItems(runTypes(run));
   const chosen = [];
   while (chosen.length < count && pool.length) {
     let roll = random() * pool.reduce((sum, i) => sum + ITEM_WEIGHTS[i.rarity], 0);

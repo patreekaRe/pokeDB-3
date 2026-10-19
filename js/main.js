@@ -287,6 +287,12 @@ function init() {
       leaveTitle();
       beginSafari();
     },
+    onDuo: async (ids) => {   // the Duo key's Start Duo (js/duoprep.js): a replay, so the Day Pass's
+      if (!(await safariTicket())) return openSafariPrep();
+      if (hasSavedRun() && !(await confirmDialog('Start a Duo Run? Your saved run will be lost.', 'Start'))) return openSafariPrep();
+      leaveTitle();
+      beginSafari(undefined, ids);
+    },
   });
 
   initTowerPrep({
