@@ -43,17 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['mall', 'The Shiny Exchange kiosk in the Safari Outfitter: pull capsules of every Safari Pokémon\'s shiny, with gold capsules and Lucky Stars; one you haven\'t caught stays sealed till you catch it.'],
-  ['fixes', 'The Clearing, every gateway town and every 3D fight and room run lighter on phones, a Secret Base jukebox stops when you leave, played cards fly smoothly in battle instead of stuttering, and the Ranger Task Board and Trainer\'s Journal show all four tabs on a phone, a tap no longer sometimes plays its click twice, and the Safari Outfitter rests its 3D behind the Shiny Exchange, and a reload no longer plays a stray cry.'],
-  ['look', 'A slow 3D room shows your Pokémon hopping by a Poké Ball while it loads, and tries again rather than falling back to the flat room.'],
-  ['runs', 'Materials you find on a run pop up on screen, a Waystone Shard gets its own reward screen, and a map room\'s material shows as a bright badge: tap it, a rare star or a shard to see what it is.'],
-  ['dex', 'The Pokédex\'s Game Corner app sells starters, perks and shinies only: Poké Balls are at the Safari Outfitter, or the Safari Zone window\'s Buy key.'],
-  ['hub', 'Tap a material at Kurt\'s Workshop to see where it drops: which biome, its fights and sparkling rooms, and friends\' letters. The Satchel app says the same.'],
-  ['dex', 'Your Trainers\' lost runs stand as graves on your map where they fell: tap one for their recap, Pay respects or Avenge them. Their buddies roam the Trainer Plaza.'],
-  ['hub', 'The Refresh button in the Clearing is a small round key up in the top right corner now, in your Pokédex\'s colour.'],
-  ['dex', 'Chad Master Kenmatta has his own page in the Gym Leaders app: his profile, your wins and losses against him, your belt and trials.'],
-  ['modes', 'Safari shinies show up everywhere: the Safari Pokédex (sealed capsules too), Secret Base residents, your partner, the Trainer Card, Ranger tasks and a ✨ on the leaderboard.'],
-  ['dex', 'A friend\'s Trainer Card in the Trainers app scrolls to much more, shows off their best shiny, rarest catch and newest Hall of Fame deck, and the badge they pinned.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -65,6 +54,25 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.27',
+    name: 'Shiny Exchange',
+    date: '2026-10-18',
+    notes: [
+    ['mall', 'The Shiny Exchange kiosk in the Safari Outfitter: pull capsules of every Safari Pokémon\'s shiny, with gold capsules and Lucky Stars; one you haven\'t caught stays sealed till you catch it.'],
+    ['fixes', 'The Clearing, every gateway town and every 3D fight and room run lighter on phones, a Secret Base jukebox stops when you leave, played cards fly smoothly in battle instead of stuttering, and the Ranger Task Board and Trainer\'s Journal show all four tabs on a phone, a tap no longer sometimes plays its click twice, and the Safari Outfitter rests its 3D behind the Shiny Exchange, and a reload no longer plays a stray cry.'],
+    ['look', 'A slow 3D room shows your Pokémon hopping by a Poké Ball while it loads, and tries again rather than falling back to the flat room.'],
+    ['runs', 'Materials you find on a run pop up on screen, a Waystone Shard gets its own reward screen, and a map room\'s material shows as a bright badge: tap it, a rare star or a shard to see what it is.'],
+    ['dex', 'The Pokédex\'s Game Corner app sells starters, perks and shinies only: Poké Balls are at the Safari Outfitter, or the Safari Zone window\'s Buy key.'],
+    ['hub', 'Tap a material at Kurt\'s Workshop to see where it drops: which biome, its fights and sparkling rooms, and friends\' letters. The Satchel app says the same.'],
+    ['dex', 'Your Trainers\' lost runs stand as graves on your map where they fell: tap one for their recap, Pay respects or Avenge them. Their buddies roam the Trainer Plaza.'],
+    ['hub', 'The Refresh button in the Clearing is a small round key up in the top right corner now, in your Pokédex\'s colour.'],
+    ['dex', 'Chad Master Kenmatta has his own page in the Gym Leaders app: his profile, your wins and losses against him, your belt and trials.'],
+    ['modes', 'Safari shinies show up everywhere: the Safari Pokédex (sealed capsules too), Secret Base residents, your partner, the Trainer Card, Ranger tasks and a ✨ on the leaderboard.'],
+    ['dex', 'A friend\'s Trainer Card in the Trainers app scrolls to much more, shows off their best shiny, rarest catch and newest Hall of Fame deck, and the badge they pinned.'],
+    ['battle', 'A tap skips the evolution scene\'s flashing straight to your new form, with "Tap to skip" in the corner.'],
+    ],
+  },
   {
     version: '1.26',
     name: 'Shine Bright',
@@ -555,7 +563,7 @@ export const IN_THE_GAME = [
   ['🏆', '189 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas, each with a rare shiny, and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
-  ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls and Day Passes.'],
+  ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls, Day Passes and the Shiny Exchange.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 28 games to take home and play, from slot machines to five pinball tables, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],

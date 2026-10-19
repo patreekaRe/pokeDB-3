@@ -2,7 +2,8 @@
  * The evolution scene, after Gold/Silver's: once a boss faints the screen washes to white, the Pokémon fades in alone
  * and cries, "What? X is evolving!" waits for a tap, then the evolution song plays while it flashes white and its dark
  * silhouette switches between the old and new forms, faster and faster, until a flash colours the new form in with its
- * cry (it plays out in full: no tap skips it, the user's call, 2026-10-13). The chime and "Congratulations!" follow, and the next tap fades the white out onto whatever was set up under it.
+ * cry (a tap skips the flashing to that flash, "Tap to skip" in the corner: the user's call, 2026-10-18, undoing
+ * 2026-10-13's play-it-in-full). The chime and "Congratulations!" follow, and the next tap fades the white out onto whatever was set up under it.
  * Cosmetic only: run.js has already changed the stage, HP and deck. Under reduced motion the cries, song and chime stay,
  * but nothing flashes or wipes.
  */
@@ -63,8 +64,10 @@ export async function evolutionScene(starter, from, after = []) {
   await say([`What? ${fromName} is evolving!`]);
 
   playMusic('evolution', { restart: true, cut: true });
-  if (still()) await sleep(STILL_SONG_MS);
-  else await morph(mon, oldImg, newImg);
+  const skip = skipper(scene);
+  await Promise.race([still() ? sleep(STILL_SONG_MS) : morph(mon, oldImg, newImg, skip.gone), skip.tapped]);
+  skip.done();
+  if (skip.gone() && !still()) await whiteFlash();
 
   playMusic(null, { cut: true });
   oldImg.style.visibility = 'hidden';
@@ -110,16 +113,40 @@ export function sceneSay(sceneId, logId, lines) {
   });
 }
 
-/** It flashes white three times and goes dark, then the silhouette switches forms faster and faster, flashing at the end. */
-async function morph(mon, oldImg, newImg) {
+/** While the scene shows "Tap to skip", a tap or Enter resolves `tapped`; `gone()` then tells the morph to stop. */
+function skipper(scene) {
+  let gone = false, resolve;
+  const tapped = new Promise(r => { resolve = r; });
+  const onTap = () => { gone = true; resolve(); };
+  const onKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTap(); } };
+  scene.classList.add('skippable');
+  scene.addEventListener('click', onTap);
+  document.addEventListener('keydown', onKey);
+  return {
+    tapped,
+    gone: () => gone,
+    done() {
+      scene.classList.remove('skippable');
+      scene.removeEventListener('click', onTap);
+      document.removeEventListener('keydown', onKey);
+    },
+  };
+}
+
+/** It flashes white three times and goes dark, then the silhouette switches forms faster and faster, flashing at the end.
+    Stops where it is once `gone()` (skipped), leaving the scene to show the new form. */
+async function morph(mon, oldImg, newImg, gone) {
   for (let i = 0; i < 3; i++) {
     mon.classList.add('white');
     await sleep(170);
+    if (gone()) return;
     mon.classList.remove('white');
     await sleep(210);
+    if (gone()) return;
   }
   mon.classList.add('dark');
   await sleep(800);
+  if (gone()) return;
   let showNew = false, flips = 0;
   const flip = () => {
     showNew = !showNew;
@@ -129,12 +156,14 @@ async function morph(mon, oldImg, newImg) {
   for (let gap = 560; gap > 50; gap *= 0.85) {
     flip();
     await sleep(gap);
+    if (gone()) return;
   }
   // the fastest stretch: white flashes between the switches, ending on the new form
   while (flips < 14 || !showNew) {
     flip();
     mon.classList.toggle('white', ++flips % 3 === 0);
     await sleep(50);
+    if (gone()) return;
   }
   mon.classList.remove('white');
   await whiteFlash();

@@ -2043,7 +2043,10 @@ body.battle-intro { pointer-events: none; }
   translate: -50% 0;
 }
 @media (max-width: 720px) { .evo-bottom { width: min(calc(100% - 32px), 300px); } }
-.evo-scene.waiting { cursor: pointer; }
+.evo-scene.waiting, .evo-scene.skippable { cursor: pointer; }
+.evo-skip { position: absolute; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom));
+  font-size: 12px; color: rgba(0, 0, 0, 0.45); pointer-events: none; visibility: hidden; }
+.evo-scene.skippable .evo-skip { visibility: visible; }
 /* The Hall of Fame (js/halloffame.js), after a Level 5 win: a white flash, then a starry night; your Pokémon slides onto
    a pedestal under a spotlight, its plate pops up, and its final deck rises along the bottom above the text box. */
 .hof-scene { position: fixed; inset: 0; z-index: 950; overflow: hidden; background: radial-gradient(ellipse at 50% 38%, #34489a, #18205a 55%, #0a0e2c); }
