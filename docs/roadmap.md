@@ -51,7 +51,12 @@ caught or not, so a given shiny's odds are the same for everyone. A capsule is a
 (`NEW_ODDS` as a floor), else any of the machine at random. One you haven't caught comes out sealed: its shadow behind
 dark glass, "Catch it to open", kept in the save (id -> how many), still paying its Lucky Star; catching that Pokémon in
 the Safari opens it right after the GOTCHA box with the full reveal (each sealed one a new shiny or +1 Sparkle). The
-Lucky Star pick stays caught-only. Next, session 2b, then session 3:
+Lucky Star pick stays caught-only. **The opening** (proposed 2026-10-19, the user to say): in the catch's reward box,
+after the GOTCHA and before the signature card's Take/Skip, a sealed capsule slides in ("Your sealed capsule is
+reacting!"), its dark glass clears to the caught Pokémon's shadow, a tap opens it with the kiosk's reveal (halves, rays,
+the shadow, a flash, the shiny) and the card offer below turns shiny. Two sealed of it open one after the other (new,
+then +1 Sparkle); a shiny wild caught with one sealed gives ★2. One tap and done, so it never slows the run; under
+`calmFx()` the shiny appears straight away. Next, session 2b, then session 3:
 
 > Run in: CLOUD. Read CLAUDE.md, docs/reference/hub-base-mall.md's "The Shiny Exchange", docs/reference/safari.md's
 > "Wild shinies and Sparkle" and this roadmap entry. Session 2b, sealed capsules: in `js/data/exchange.js` make
