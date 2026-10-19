@@ -123,7 +123,7 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?area=icecave`, `?bossfight=icecave&starter=swinub`, `?arena=fight&starter=swinub&cards=shatter,ice-crown,igloo`.
    **Waiting on the user**: the playtest (the art helper rated Cold Shoulder's picture the weakest); **`SAFARI_FROM`
    (both areas) must move to the day after the branch goes live**.
-7. ~~**Fighting's first**~~ done 2026-10-19 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Fighting's
+7. ~~**Fighting's first**~~ done 2026-10-19 on `duo-types` (both repos; game `b4f1bae`+, `docs/duo-design.md` section 5's "Fighting's
    first session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 30 pool cards + 8 evolution cards and
    the Sore status card with art (`js/card-art-fighting.js`), Follow-up (a bonus after an attack / a skill; the card glows
    when it would pay), Counter and the last enemy turn's hits (Revenge, Counter, Bide), Guts (Sore, Reversal, Steadfast,
