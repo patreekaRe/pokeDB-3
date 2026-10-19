@@ -3163,3 +3163,9 @@ bobs. The jeep opens it too. +6 draws in the Outfitter (246 -> 252 headless). De
 hard refresh). Stale cached files after many pushes in a day. `load3d()` in `js/run.js` now asks once a page load after its
 second failure, and Reload fetches the game's scripts past the cache first (`freshReload()`). Checked in the browser pane
 with a forced failure (No walks out, Reload reloads); tests pass (367). Detail in `docs/reference/walk-in-rooms.md`.
+
+**Duo types, session 0: the design doc** (2026-10-19, branch `duo-types`). `docs/duo-design.md`: the duo's rules, the Duo
+Run, the duo pool, the Safari's real chart, and per new type three archetypes, an Ability, 3-stage starters and an area.
+The roadmap's starting ideas had four clashes (Paralysis is a status card, Combo is Fire's keyword, Tailwind a neutral
+card, Hail and Sandstorm one idea), fixed there. The user answered its 22 choices as click-through cards (its section 8),
+asked what a bar each of HP would cost before keeping one bar, and asked for 3-stage starters only.

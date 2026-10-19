@@ -1,10 +1,10 @@
 # Safari duos and six new types: the design (roadmap session 0)
 
-**Status: a draft for the user's approval (2026-10-19).** Nothing is built. Branch `duo-types` (both repos; pokeDB-sim
+**Status: approved 2026-10-19.** The user answered all 22 open choices by clicking through them (section 8 records
+each answer). Nothing is built yet. Branch `duo-types` (both repos; pokeDB-sim
 gets its `duo-types` in session 1). The roadmap's "Six new types for the Safari's duo pool" is the build list and its
 Ideas entry "Safari duos, real types and new areas" the reasons; this doc is the rules those sessions build to. Every
-**(open N)** is a choice for the user, listed at the end with a recommendation; the text below assumes the
-recommendation until the user says otherwise.
+**(open N)** points to the user's answer in section 8; the text below follows those answers.
 
 In short: in the Safari you can bring **two starters of different types**, one out at a time. One HP bar, one deck
 (half each type). Switching costs 1 PP; the one out takes the enemy's hits as its type, gets STAB on its own type's
@@ -50,12 +50,18 @@ slides its app over the LCD like Pokédex / Ranks / Buy:
    many hit you.
 4. A = **Start Duo** (the Day Pass's rules, below). B steps back.
 
-**Tries** **(open 10)**: a Duo Run is a kind of replay: open once the day's free try is used, needing the day's Day Pass
-(100), perks on, coins as Replay, never posted. So it can't be a second free run a day or a way round the pass.
+**Tries** **(open 10)**: a Duo Run is a kind of replay. It unlocks for the day once that day's free Daily run is
+**finished**, won or lost (abandoning it doesn't count; the user's call), and needs the day's Day Pass (100), perks on,
+coins as Replay, never posted. So it can't be a second free run a day or a way round the pass. Until then the Duo key
+says "Finish today's Daily run to unlock".
 
 ## 3. The duo pool, and catching new types (sessions 1 and 3-14)
 
 - The pool starts as Fire / Grass / Water (the free starters, and every owned skin as a look).
+- **Every new starter is a 3-stage line** (the user's call, 2026-10-19: "I only want 3 stage starters"), checked against
+  the rules for adding Pokémon: no stage may be a main-game enemy (so not Drilbur, Magnemite or Zubat: Excadrill,
+  Magnezone and Crobat are), a starter skin, or a line the user turned down (Spheal). Each plays as its deck's type, so
+  a second real type is only its look.
 - Each new type's **starter lines** live in that type's own new Safari area (section 5), moved there from the areas
   they're in today. **Catching any stage of a starter line** in any Safari run (Daily, Replay or Duo) adds that type to the
   pool, and that species as a look for it: catching Mareep adds Electric with Mareep's look; Shinx later adds Shinx's. The
@@ -127,11 +133,11 @@ Three of the roadmap's starting ideas clashed and are renamed or moved (table af
 
 Fast and disruptive. Hits Water and Flying; only Ground hurts it.
 - **Ability: Static.** While it's out, each time the enemy attacks you it gains 2 Static.
-- **Starters**: **Shinx** (Shinx, Luxio, Luxray: the deck), Mareep (Mareep, Flaaffy, Ampharos), Blitzle (Blitzle,
-  Zebstrika; a 2-stage line, see open 20). Pikachu's line could join later (it's a Safari Meadow Pokémon today).
+- **Starters**: **Shinx** (Shinx, Luxio, Luxray: the deck), Mareep (Mareep, Flaaffy, Ampharos), Pichu (Pichu,
+  Pikachu, Raichu), Elekid (Elekid, Electabuzz, Electivire), Tynamo (Tynamo, Eelektrik, Eelektross). All pure Electric.
 - **Area: the Power Plant** (Gen 1's): Gate, Turbine Hall, Generator Room, the Reactor (the boss). Its goal ahead: the
-  cooling tower's light. Holds the Shinx / Mareep / Blitzle / Pikachu / Elekid lines, Voltorb, Magnemite, Electrike,
-  Plusle, Minun, Emolga, Joltik, Tynamo; rares Electabuzz, Rotom.
+  cooling tower's light. Holds the five starter lines (from the Meadow, Wetland and Marsh today), Voltorb, Electrike,
+  Blitzle, Plusle, Minun, Emolga, Joltik; rares such as Rotom. (Magnemite stays out: Magnezone is a main-game enemy.)
 
 | Archetype | The rule | StS roots | Example cards |
 |---|---|---|---|
@@ -146,8 +152,8 @@ Wave.
 
 Glassy and punishing. Hits Grass, Ground, Flying, Dragon; fears Fire, Fighting, Rock, Steel.
 - **Ability: Snow Warning.** The first time it comes out each fight, Hail for 2 turns.
-- **Starters**: **Vanillite** (Vanillite, Vanillish, Vanilluxe: the deck), Snorunt (Snorunt, Glalie; 2 stages),
-  maybe Swinub (Swinub, Piloswine, Mamoswine; Ice / Ground, fine as an Ice deck).
+- **Starters**: **Vanillite** (Vanillite, Vanillish, Vanilluxe: the deck), Swinub (Swinub, Piloswine, Mamoswine;
+  Ice / Ground, an Ice deck). The only two 3-stage Ice lines in Gen 1-5 (Spheal's is turned down).
 - **Area: the Ice Cave** (Seafoam / Icefall): Frozen Falls, Ice Cave, Crystal Hall, the Frozen Lake (the boss). Takes
   the Ice Pokémon, most of them the Peak's today (Vanillite, Snorunt, Swinub, Cubchoo, Sneasel lines; Delibird, Smoochum,
   Cryogonal...); rares such as Jynx and Lapras.
@@ -190,12 +196,11 @@ Punch.
 
 Heavy and patient. Hits Fire, Electric, Poison, Rock, Steel; fears Water, Grass, Ice.
 - **Ability: Sturdy.** While it's out, once a fight, a hit that would knock you out leaves you at 1 HP.
-- **Starters** (open 20): **Sandshrew** (Sandshrew, Sandslash; 2 stages: the deck) or **Sandile** (Sandile, Krokorok,
-  Krookodile; 3 stages, Ground / Dark, fine as a Ground deck), Phanpy (Phanpy, Donphan; 2 stages), maybe Trapinch
-  (Trapinch, Vibrava, Flygon). **Not Drilbur**: Excadrill is a main-game enemy, and no starter line may be one.
+- **Starters**: **Trapinch** (Trapinch, Vibrava, Flygon; Ground, then Ground / Dragon: the deck), Rhyhorn (Rhyhorn,
+  Rhydon, Rhyperior; Ground / Rock). Sandile's line went to Dark.
 - **Area: the Quarry** (the Desert keeps its Fire and cacti): the Dig Site, Mudflats, the Sinkhole, the Fault Line (the
-  boss). Takes the Ground Pokémon, most of them the Desert's today (Sandshrew, Phanpy, Sandile, Trapinch, Diglett, Cubone, Hippopotas, Gligar,
-  Baltoy...); rares the session picks.
+  boss). Takes the Ground Pokémon, most of them the Desert's today (the Trapinch and Rhyhorn lines, Sandshrew, Phanpy, Diglett, Cubone,
+  Hippopotas, Gligar, Baltoy...); rares the session picks. (Drilbur stays out: Excadrill is a main-game enemy.)
 
 | Archetype | The rule | StS roots | Example cards |
 |---|---|---|---|
@@ -209,8 +214,8 @@ Starting deck: Mud Shot x4 (deal 7), Sand Veil x4 (block 7), **Bulldoze** (2: de
 
 Light and quick: cheap cards, an empty hand, dodging. Hits Grass, Fighting, Bug; fears Electric, Ice, Rock.
 - **Ability: Keen Eye.** When it comes out (the fight's start too, once a turn), draw 1.
-- **Starters**: **Starly** (Starly, Staravia, Staraptor: the deck), Pidgey (Pidgey, Pidgeotto, Pidgeot), maybe Pidove
-  (Pidove, Tranquill, Unfezant). All Normal / Flying, fine as a Flying deck.
+- **Starters**: **Starly** (Starly, Staravia, Staraptor: the deck), Pidgey (Pidgey, Pidgeotto, Pidgeot), Pidove
+  (Pidove, Tranquill, Unfezant). All Normal / Flying, Flying decks.
 - **Area: the Windy Cliffs**: the Cliff Path, Nesting Ledges, the Rope Bridge, the Eyrie (the boss). Takes the
   birds from the Meadow, Forest, Wetland and Peak (Pidgey, Starly, Pidove, Spearow, Taillow, Hoothoot, Wingull, Swablu, Rufflet, Ducklett...);
   rares such as Skarmory and Aerodactyl.
@@ -227,17 +232,17 @@ Starting deck: Gust x4 (deal 7), Feather Guard x4 (block 7), **Wing Attack** (2:
 
 Sly. Hits Psychic and Ghost; fears Fighting and Bug.
 - **Ability: Intimidate.** When it comes out (the fight's start too, once a turn), Weak 1 on the enemy.
-- **Starters** (all 2-stage; open 20): **Zorua** (Zorua, Zoroark: the deck), Poochyena (Poochyena, Mightyena), Purrloin
-  (Purrloin, Liepard). A 3-stage option is Deino (Deino, Zweilous, Hydreigon; Dark / Dragon).
+- **Starters**: **Deino** (Deino, Zweilous, Hydreigon; Dark / Dragon: the deck), Sandile (Sandile, Krokorok,
+  Krookodile; Ground / Dark, a Dark deck here). Zorua, Poochyena and Purrloin are 2-stage, so they stay area Pokémon.
 - **Area: Night Alley** (the roadmap's): the Back Streets, the Night Market, the Rooftops, the Moonlit Square (the boss).
-  Takes the Dark Pokémon, most of them the Forest's today (Poochyena, Purrloin, Zorua, Murkrow, Pawniard, Deino
-  lines...); rares Absol, Umbreon. (Sableye is a main-game enemy, so it stays out.)
+  Takes the Dark Pokémon, most of them the Forest's today (the Deino and Sandile lines, Poochyena, Purrloin,
+  Zorua, Murkrow, Pawniard...); rares Absol, Umbreon. (Sableye is a main-game enemy, so it stays out.)
 
 | Archetype | The rule | StS roots | Example cards |
 |---|---|---|---|
 | **Steal** | "Steal N": take up to N of the enemy's strength (it loses it, you gain it), or its block. Payoffs when it has buffs, and a little ₽ on knockouts. | Disarm, Sap (in reverse), Hand of Greed | Thief (1: deal 7, Steal 1), Knock Off (1: deal 8, +8 and remove its block if it has any), Snatch (U power: whenever the enemy gains strength, you gain 1), Covet (U, 1: deal 9; a knockout gives +15 ₽) |
 | **Punish** | "Punish:" a bonus if the enemy **intends to attack** this turn (forward-looking), and Taunt to make it. | Spot Weakness, Go for the Eyes, Wallop | Payback (1: deal 7; Punish: +7), Assurance (1: block 7; Punish: Vulnerable 2), Taunt (U, 0: its next move becomes an attack. Exhaust), Punishment (U, 2: deal 10, +3 per strength it has) |
-| **Illusion** | Zorua's trick, a duo one: an **Illusion** card counts as your partner's type too (STAB whoever's out), and Disguise cards let you defend as your partner's type without switching. | Watcher's stance tricks; Mimic / Dual Wield | Disguise (1: block 8; until your next turn you defend as your partner's type), Night Daze (2: deal 14. Illusion), Copycat (U, 1: copy the last card of your partner's type you played this turn), Mirage (R power: your Dark cards count as both types) |
+| **Illusion** | Named for Zorua's Ability, a duo trick: an **Illusion** card counts as your partner's type too (STAB whoever's out), and Disguise cards let you defend as your partner's type without switching. | Watcher's stance tricks; Mimic / Dual Wield | Disguise (1: block 8; until your next turn you defend as your partner's type), Night Daze (2: deal 14. Illusion), Copycat (U, 1: copy the last card of your partner's type you played this turn), Mirage (R power: your Dark cards count as both types) |
 
 Starting deck: Bite x4 (deal 7), Obstruct x4 (block 7), **Thief** as the Bash (2: deal 10, Steal 2), Payback.
 
@@ -288,41 +293,34 @@ ranks.
 - After 15, or beside it: **the new areas' art** (each area's scene, intro film, boss prelude and arena, map palette,
   like Safari phases 5b-5d), one or two areas a session, if open 22 goes that way.
 
-## 8. Open choices (the recommendation first)
+## 8. The user's answers (2026-10-19)
 
-1. **HP**: one shared bar (recommended) / a bar each, the duo lost when both faint.
-2. **Switch cost**: 1 PP every time, with a few free-switch cards and a relic (recommended; a free switch every turn
-   would dodge every super-effective hit for nothing) / the first switch each turn free.
-3. **STAB**: x1.2 on attack damage (recommended: below super effective's x1.3, so the chart still matters more) / x1.25
-   / no bonus, the off-type card x0.85 instead.
-4. **Your defending type**: the deck's type (recommended: skins stay looks, and the Daily run's dealt starter can't
-   be luckier one day for its second type) / the species' real types (Charizard Fire / Flying, Swampert Water / Ground).
-5. **Abilities**: only the one out's; fight-start ones the first time each comes out (recommended) / both always.
-6. **The starting deck**: 5 + 5, each type's 2 attacks, 2 blocks and Bash-like signature (recommended) / 6 + 6 with both
-   signatures (12 cards).
-7. **Card rewards**: one of each type and the third 50/50 (recommended) / every slot 50/50.
-8. **Who's out first in a fight**: whoever was out at the last fight's end (recommended) / always your first pick.
-9. **The name**: Duo Run (recommended) / Duo pass, as the roadmap had it (close to Day Pass).
-10. **Duo tries**: a replay that needs the day's Day Pass (recommended) / unlimited and free / one free a day.
-11. **Picking**: a type from your pool, its look any owned starter of that type (recommended) / owned starters only.
-12. **Old catches**: a Shinx caught before this lands counts (recommended) / only catches made after, in the new area.
-13. **The chart**: Gen 5, no immunities, capped to x1.3 / x0.75 (recommended) / a 4x weakness as x1.5.
-14. **Psychic chips on Safari wilds**: shown (recommended: the mask hides Mewtwo's type, not that Psychic exists) /
-    ??? until Mewtwo is unlocked.
-15. **Freeze**: Electric's Static is the stun and Ice gets Frostbite (recommended) / Ice's Freeze is the stun and
-    Electric gets an orb-like Charge instead.
-16. **Weather**: one engine, Hail for Ice and Sandstorm for Ground (recommended) / Hail only, and Ground's third
-    archetype is Rollout (Defense Curl, growing each turn in a row).
-17. **Fighting's Combo** renamed Follow-up (recommended) / keep "Combo" and rename Fire's (Sizzly Slide's) instead.
-18. **The neutral Tailwind card** renamed (e.g. "Quick Step", id `tailwind` kept) so Flying owns Tailwind
-    (recommended) / Flying's keyword is "Gale" instead.
-19. **Dark's third archetype**: Illusion (recommended: Zorua's trick, made for a duo) / Crit (every third attack a turn
-    deals x1.5).
-20. **Starters**: Shinx / Mareep / Blitzle, Vanillite / Snorunt, Timburr / Machop, Sandshrew or Sandile / Phanpy,
-    Starly / Pidgey, Zorua / Poochyena / Purrloin, the first of each the deck's (recommended; Drilbur out). A **2-stage
-    line** stays its first form until the second evolution (Zorua until the last area, then Zoroark) (recommended) / evolves
-    at the first.
-21. **Type relics**: 6 per new type plus its held item (recommended) / 13 like Fire / Grass / Water.
-22. **The new areas' art**: data on a recoloured existing area in the type sessions, the full art (scene, film,
-    prelude, arena) in visual sessions after (recommended: a type session already holds 35 cards) / everything in the
-    type's two sessions.
+The 22 open choices, clicked through as answer cards. Where the user wrote their own answer, it's quoted.
+
+1. **HP**: one shared bar. (Asked what a bar each would cost: ~500 HP touchpoints across the game and sim, a fainting
+   rule, about one more high-effort session; then chose the shared bar.)
+2. **Switch cost**: 1 PP every time, with a few free-switch cards and a relic.
+3. **STAB**: x1.2 on attack damage.
+4. **Defending type**: the deck's type.
+5. **Abilities**: only the one out's; fight-start ones the first time each partner comes out.
+6. **Starting deck**: 5 + 5 (each type's 2 attacks, 2 blocks and Bash-like signature).
+7. **Card rewards**: one of each type, the third 50/50.
+8. **Who's out first**: whoever was out when the last fight ended.
+9. **Name**: Duo Run.
+10. **Tries**: "a replay with the day pass, duo runs only unlock for the day when you complete your daily free safari
+    run": finished counts, won or lost (asked).
+11. **Picking**: a type from your pool, its look any owned starter of that type.
+12. **Old catches**: count.
+13. **The chart**: Gen 5, no immunities, capped to x1.3 / x0.75.
+14. **Psychic chips on Safari wilds**: shown.
+15. **The stun**: Electric's Static; Ice gets Frostbite.
+16. **Weather**: one engine, Hail for Ice and Sandstorm for Ground.
+17. **Combo**: Fighting's is Follow-up; Fire keeps Combo.
+18. **Tailwind**: the neutral card is renamed (id `tailwind` kept); Flying owns Tailwind.
+19. **Dark's third**: Illusion.
+20. **Starters**: "I only want 3 stage starters if possible" (2-stage lines were disliked). From every 3-stage Gen 1-5
+    line that fits: Electric **Shinx** + Mareep, Pichu, Elekid, Tynamo; Ice **Vanillite** + Swinub; Fighting **Timburr**
+    + Machop; Ground **Trapinch** + Rhyhorn; Flying **Starly** + Pidgey, Pidove; Dark **Deino** + Sandile (bold: the
+    deck's). No 2-stage rule is needed.
+21. **Type relics**: 6 per new type plus its held item.
+22. **The new areas' art**: data first on a recoloured existing area; the full art in visual sessions afterwards.

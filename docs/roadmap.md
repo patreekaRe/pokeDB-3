@@ -37,7 +37,7 @@ rowboats and jungle). `tools/draw-probe.mjs` measures a place and walks into eve
 
 **Six new types for the Safari's duo pool: Electric, Ice, Fighting, Ground, Flying, Dark** (the user's go, 2026-10-19:
 "let's add the 6"). The plan and its reasons are in Ideas' "Safari duos, real types and new areas" (the duo, the Duo pass,
-real types in the Safari, why six). Safari only at first: a duo run starts with Fire / Water / Grass, and catching a new
+real types in the Safari, why six); the approved rules are `docs/duo-design.md`. Safari only at first: a duo run starts with Fire / Water / Grass, and catching a new
 type's starter in its area adds it to your duo pool.
 **Branch rule** (the user's call, 2026-10-19, like `towns` and `secret-base`): all of it lives on branch **`duo-types`**
 (and pokeDB-sim's `duo-types`), never pushed to `main` until the user says it goes live. A session starts from
@@ -49,28 +49,28 @@ type's second beside the next type's first), never two halves of the same type. 
 the later of the pair re-runs `tests/cards.test.mjs` after merging and fixes any same cost + same text twin across
 types, and any clash of two new keywords for the same idea.
 Sessions, in order, each ▶ Run in: CLOUD (both repos):
-0. **Design doc first** (effort: high) (`docs/duo-design.md`, the user approves it before any code). **Drafted 2026-10-19 on
-   `duo-types`, waiting on the user's answers to its 22 open choices (its section 8)**; once answered, the doc is updated
-   to the answers and session 1 starts. What the draft covers: the duo's rules (switch cost, STAB,
-   the deck split, rewards), the Duo pass screen, the Safari's real chart (no immunities, x2 cap, Neutral outside it),
-   and per new type 3 archetypes for a ~70-card deck (the user's call, 2026-10-19: 70, not 35, like Fire / Grass /
-   Water), its Ability, its starter lines and its area. Starting ideas (a third
-   archetype each still to find), to check against `docs/card-design.md` so none repeats Burn / Reckless / Kindling, Growth / Drain / Spores, Tsunami /
-   Shell / Flow or Force / Barrier / Mind Games: Electric Paralysis / Charge, Ice Freeze / Hail, Fighting Combo /
-   Counter, Ground Sandstorm / Dig, Flying Evasion / Tailwind (cheap cards, draw), Dark Steal / Punish (the enemy's
-   intent). Starters (Gen 5 sprites; dual types fine under the real chart; the Pokémon caught in the Safari may be the
-   very ones that join the pool, checked against the rules for adding Pokémon): Electric Shinx / Mareep / Blitzle, Ice
-   Vanillite / Snorunt, Fighting Timburr / Machop, Ground Sandshrew / Drilbur / Phanpy, Flying Starly / Pidgey, Dark
-   Zorua / Poochyena / Purrloin.
-1. **The duo and the Duo pass** (effort: high) on today's three types, sim mirror, bot check.
+0. ~~**Design doc**~~ **done 2026-10-19** (`docs/duo-design.md`, approved: the user clicked through its 22 choices,
+   its section 8). The rules every session below builds to: one shared HP bar, switch for 1 PP, STAB x1.2, the one out's
+   type and Ability, a 5 + 5 deck, the **Duo Run** (a replay with the Day Pass, unlocked once the day's Daily run is
+   finished), the Gen 5 chart capped at x1.3 / x0.75, and per type its archetypes, Ability, area and **3-stage starters
+   only** (the user's call): Electric **Shinx** / Mareep / Pichu / Elekid / Tynamo, Ice **Vanillite** / Swinub, Fighting
+   **Timburr** / Machop, Ground **Trapinch** / Rhyhorn, Flying **Starly** / Pidgey / Pidove, Dark **Deino** / Sandile.
+1. **The duo, the Duo Run and the duo pool** (effort: high) on today's three types (`docs/duo-design.md` sections 1-3),
+   sim mirror, bot check of the 3 pairs against the same bot's solo runs.
 2. **Real types in the Safari** (effort: high): the chart, every Safari Pokémon and move retyped, the super-effective hint on cards.
 3-14. **One new type in two sessions** (effort: high for a type's first session, which brings its new mechanics;
    medium for its second, which follows them) (~35 cards each, 70 a type; card rewards split 50/50 between a duo's types): its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
-   `SPRITE_FIT`, cries), its themed area and the catch that adds it to the pool; sim mirror and a bot check of its pairs.
+   `SPRITE_FIT`, cries), its area's data on a recoloured existing area (the doc's section 7) and the catch that adds it
+   to the pool; sim mirror and a bot check of its pairs. Order: Electric, Ice, Fighting, Ground (after Ice's first:
+   Sandstorm uses Ice's Weather engine), Flying, Dark.
 15. **The balance pass** (effort: high) over all 36 pairs, then patch notes and a githack link.
-Prompt for session 0 (start from branch `duo-types`): "Read CLAUDE.md, docs/roadmap.md's 'Six new types for the Safari's duo pool' and 'Safari duos,
-real types and new areas' entries, docs/reference/safari.md, docs/reference/cards.md and docs/card-design.md. Write
-docs/duo-design.md as that entry's session 0 lists, show me the open choices, and change nothing else until I approve. Push only to duo-types."
+- **The new areas' art** (the user's pick: data first, art after): each new area's scene, intro film, boss prelude and
+  arena, one or two areas a session, after the type sessions or beside the balance pass.
+Prompt for session 1 (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start from branch `duo-types`):
+"Read CLAUDE.md, docs/duo-design.md (approved) and docs/reference/safari.md, cards.md and device-and-screens.md. Build
+session 1, the duo, the Duo Run and the duo pool on Fire / Grass / Water (the doc's sections 1-3), with pokeDB-sim's
+mirror on its own new duo-types branch, and a bot check of the 3 pairs against solo. Push only to duo-types in both repos
+and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
