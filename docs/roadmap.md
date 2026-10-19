@@ -43,7 +43,8 @@ type's starter in its area adds it to your duo pool.
 (and pokeDB-sim's `duo-types`), never pushed to `main` until the user says it goes live. A session starts from
 `duo-types`; a session working alongside another (below) works on its own `duo-types-<part>` branch and merges into
 `duo-types` when done, the later one to finish resolving the merge. Playtest links are githack links on its commit.
-**Two at a time** (the user's ask): 0, 1, 2 and 15 run alone, in order (each changes rules the next builds on).
+**Two at a time** (the user's ask): 2 (real types) can run beside 0 (its rules are settled above and it works with
+today's single starter), on `duo-types-realtypes`; 1 runs after 0, and 15 alone at the end.
 From 3 on, two sessions can run together when they are different types (Electric's first beside Ice's first, or a
 type's second beside the next type's first), never two halves of the same type. Since a duo puts two types in one run,
 the later of the pair re-runs `tests/cards.test.mjs` after merging and fixes any same cost + same text twin across
@@ -66,6 +67,13 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    medium for its second, which follows them) (~35 cards each, 70 a type; card rewards split 50/50 between a duo's types): its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
    `SPRITE_FIT`, cries), its themed area and the catch that adds it to the pool; sim mirror and a bot check of its pairs.
 15. **The balance pass** (effort: high) over all 36 pairs, then patch notes and a githack link.
+Prompt for session 2 (start from branch `duo-types`, effort high): "Read CLAUDE.md, docs/roadmap.md's 'Six new types
+for the Safari's duo pool' and 'Safari duos, real types and new areas' entries, docs/reference/safari.md,
+docs/reference/cards.md and pokeDB-sim's README. Build that entry's session 2, real types in the Safari only: the real
+18-type chart with no immunities, a x2 cap, Neutral cards outside it, elites and bosses typeless, every Safari Pokémon
+and its moves on their real types, a super-effective hint on cards, the sim mirror and a bot check. The main game keeps
+its triangle. Work on a new branch duo-types-realtypes in both repos, merge it into duo-types when done, and give me a
+githack link."
 Prompt for session 0 (start from branch `duo-types`): "Read CLAUDE.md, docs/roadmap.md's 'Six new types for the Safari's duo pool' and 'Safari duos,
 real types and new areas' entries, docs/reference/safari.md, docs/reference/cards.md and docs/card-design.md. Write
 docs/duo-design.md as that entry's session 0 lists, show me the open choices, and change nothing else until I approve. Push only to duo-types."
