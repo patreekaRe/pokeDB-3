@@ -337,7 +337,7 @@ tile (and the leader) is reachable from the door. `?town=<biome>&home=<leader>&g
 town's questline is up to its `shard` step and the shard isn't in the Satchel, `startBiome()` in `js/run.js` has
 `shardHere()` name the key item and `markShard()` (`js/data/satchel.js`) put `shard: <key>` on one of the biome map's
 Alphas (rolled through `js/rng.js`, saved with the map). The map draws a crystal in the town's `RING` colour bobbing and
-turning over it (`.map-shard` in `css/screens.css`, `js/map.js`). Winning that fight says so first in the reward box and
+turning on its top-right corner, like a material's badge (2026-10-18: above it, it read as between rooms) (`.map-shard` in `css/screens.css`, `js/map.js`). Winning that fight says so first in the reward box and
 gives the shard as the rewards end (`glean()` with `{ key }`, keyed `…:shard` in `run.gleaned`, so a refresh can't give it
 twice); a lost run's Alpha is marked again next pass. Same rules as materials: towns on, never a Safari, the Sky Pillar
 or a playtest (`?shard` marks one on a `?biome=` or `?town=` playtest, nothing saved). **The mending**: handing the shard in

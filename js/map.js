@@ -812,7 +812,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     }
     // a town's Waystone Shard (js/data/satchel.js's markShard()) floats over its Alpha, in the town's colour, till it's won
     if (node.shard && !node.visited) {
-      const tip = 'A Waystone Shard floats over this Alpha! Beat it to take the shard home.';
+      const tip = 'A Waystone Shard glows on this Alpha! Beat it to take the shard home.';
       label = `${label}: ${tip}`;
       const gem = floater(box, node, 'map-rare map-shard', '', tip);
       gem.style.setProperty('--gem', RING.find(t => `shard-${t.id}` === node.shard)?.glow ?? '#8ae8ff');
@@ -918,9 +918,9 @@ export function graveSvg({ flowers = false, avenged = false } = {}) {
 }
 
 /** A floating icon by its room (a Safari rare spawn's star, a town's material, a Waystone Shard), its own button so a tap
-    says what it is (the user's ask, 2026-10-18). A material's badge sits on the room's top-right corner, the others above it. */
+    says what it is (the user's ask, 2026-10-18). A material's badge and a shard sit on the room's top-right corner, the rare star above it. */
 function floater(box, node, cls, glyph, tip) {
-  const corner = cls.includes('map-sparkle'), off = BUILDINGS.includes(node.type) ? 2 : 1.5;
+  const corner = /map-sparkle|map-shard/.test(cls), off = BUILDINGS.includes(node.type) ? 2 : 1.5;
   const btn = el('button', `map-float ${cls}`, glyph);
   btn.type = 'button';
   btn.title = tip;
