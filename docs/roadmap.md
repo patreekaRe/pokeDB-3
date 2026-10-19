@@ -956,6 +956,29 @@ uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS 
    Engine work in `js/battle.js` and the sim, then enemies retuned.
 Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` / `cardTerms()` lines and the sim mirror.
 
+**Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
+- **The duo** (built first, Safari only): bring two starters of different types, one out at a time. Switch for 1 PP
+  (maybe free once a turn); the one out sets your type for the enemy's hits (the intent shows the move's type, so you
+  switch to resist), a card matching it hits harder (STAB), only its Ability works. The deck is half each type; card
+  rewards offer both. Works on today's Fire / Grass / Water (3 pairs), no new cards. Mirrored in `sim/engine.js`, bot-checked.
+- **The Duo pass** (a third Safari option beside Daily run and Replay): you pick your two, after seeing the day's 3
+  areas in order with their main types, a few Pokémon and the rare spawns, so you plan for them. **Never on the
+  leaderboard** (the Daily run, fixed starter, stays the ranked mode). Open: tries a day (unlimited, or one "pass" plus
+  replays), owned starters only or any, coins no better than Replay (catches and signature cards count as usual), maybe
+  its own board tab later. About 3-4 sessions with the duo.
+- **Real types in the Safari only** (`run.safari`): every Pokémon its real (dual) types and real move types, the real
+  18-type chart with no immunities (they become resistances), a x2 cap, Neutral cards outside it, elites and bosses
+  still typeless; the main game keeps its triangle until this has proven itself.
+- **New themed areas** (3 of N a day, so days repeat less), from Safari-only single-type Pokémon (checked 2026-10-19):
+  Dojo Mountain (Fighting: Machop, Mankey, Makuhita, Throh, Sawk, Mienfoo, Hitmonlee), Night Alley (Dark: Poochyena,
+  Purrloin, Absol, Umbreon rare), Psychic Grove (Drowzee, Spoink, Munna, Elgyem, Solosis, Ralts, Espeon rare); later a
+  Power Plant (Electric) or an Ice Cave.
+- **More playable types, discussed 2026-10-19, the user said "nah" for now**: skins with their own decks, a 4th type.
+  If it comes back: Fighting / Dark / Psychic is the real chart's second clean triangle (Fighting > Dark > Psychic >
+  Fighting; starters Timburr or Machop, Zorua, Gothita or Abra; Psychic would stop being neutral, so Mewtwo re-checked),
+  Ground / Rock / Ice a weaker one; enemies can take all 18 real types cheaply, but playable decks cap near 9-10 types at
+  ~70 cards each (all 18 only with ~35-card decks, Monster Train-style). Build "Enemy variety" first.
+
 - **Suggested 2026-10-19, not picked** (a brainstorm session; each ▶ Run in: CLOUD, both repos where a battle rule changes):
   - **Biome weather as a battle rule**: rain powers Water, sun powers Fire, and so on per biome (data plus one modifier;
     mirrored in `sim/engine.js`, bot-checked per type).

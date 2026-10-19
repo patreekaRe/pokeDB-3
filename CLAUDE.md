@@ -44,7 +44,8 @@ off 2026-10-03), with its decisions, bot numbers and old prompts; "the roadmap's
 means that file. When a task lands, move its entry from the roadmap to the archive in a line or two, so the roadmap never
 again lists finished work as open. **Update the roadmap every time a step finishes, before you reply** (the user's ask, 2026-10-12: they `/clear` often, so
 the roadmap is how the next session knows where things stand): what was done, what's next, the branch and last commit if
-it sits on one, and commit and push it with the work.
+it sits on one, and commit and push it with the work. **Every idea discussed with the user goes on the roadmap too** (their ask, 2026-10-19: "always add to roadmap
+when we discuss things like this"), under Ideas with their calls and any "no", without waiting to be asked.
 
 ## Running it locally
 
