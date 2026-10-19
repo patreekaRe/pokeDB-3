@@ -24,7 +24,7 @@ import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
 import { textPace } from './prefs.js';
 import { post } from './mail.js';
 import { playCry, playSound } from './audio.js';
-import { sceneShot } from './scene.js';
+import { sceneShot, placeShot, isPlace } from './scene.js';
 import { timeOfDay } from './daytime.js';
 import { tipAt } from './tips.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -319,13 +319,13 @@ function moveNumbers(m, extra) {
 const shots = new Map();
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** A still of `biome`'s scene as { url, pad }: `w` x `h` scene pixels, the horizon at `at`, at `where` on its journey. */
+/** A still of `biome`'s scene (or an indoor place's, as Kenmatta's arena) as { url, pad }: `w` x `h` scene pixels, the horizon at `at`, at `where` on its journey. */
 export function still(biome, w, h, at, kind = 'wild', stage = 0) {
   const key = `${biome}/${w}x${h}/${at}/${kind}/${stage}/${timeOfDay()}`;
   if (!shots.has(key)) {
     let shot = null;
     try {
-      const c = sceneShot(biome, { w, h, at, kind, where: { progress: stage / 3, stage, step: null } });
+      const c = isPlace(biome) ? placeShot(biome, { w, h }) : sceneShot(biome, { w, h, at, kind, where: { progress: stage / 3, stage, step: null } });
       shot = { url: c.toDataURL(), pad: c.pad };
     } catch (err) {
       console.warn('Pokédex scenery', biome, err);   // a painter that can't paint off-screen: the flat colours stay

@@ -1584,6 +1584,8 @@ export function sceneShot(biomeId, { w, h, at = 0.6, kind = 'wild', where = 0, t
   return shoot({ ...biomeLook(art, time, kind), ...journeyOf(where), weather: null }, w, h, at);
 }
 
+export const isPlace = (id) => Object.hasOwn(PLACE_ART, id);
+
 /** A still of an indoor place (PLACE_ART: 'center', 'treasure' with a `biome`'s grotto, 'kombat'...), like sceneShot(). */
 export function placeShot(place, { w, h, at = null, biome = null }) {
   const [, look] = placeLook(place, biome, null);

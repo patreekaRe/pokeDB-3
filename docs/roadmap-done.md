@@ -3113,3 +3113,7 @@ Clearing as a small round key in the shell colour (a quieter take on the reverte
 `refreshGame()`), the faint "Updates" under it; Oak and Sonia's reminder points at it. Follow-up the same day: the key
 28px (was 32), and "Updates" pulses as the arrow turns, every 9 s. Its line is in NEXT (main had cut 1.26
 "Shine Bright" first). Checked headless on a phone and a wide screen: the key top right, takes the tap, no page errors; tests pass.
+
+**Kenmatta's page in the Gym Leaders app** (2026-10-18, the user's ask): a last banner, Kenmatta's Dojo (his kombat arena
+painted on it), with his profile, wins and losses against him (`save.kenLost`, new), belt, stars and a belt track on his
+sheet. Notes in `docs/reference/gym-leaders.md`. Checked in the browser pane, met and unmet; tests pass.

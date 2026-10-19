@@ -133,6 +133,12 @@ The Pokédex device's Gym Leaders app (`js/gymdex.js`): met (`save.seen.gym`, se
 Saves from before the app get every Leader they had met, beaten or lost to marked met and new once on load
 (`gymAppNews()` in `js/storage.js`, flagged by `save.gymAppNews`), so the "!" reaches them too.
 
+- **Kenmatta's page** (2026-10-18, the user's ask: "can Ken get his own section"): a last banner, Kenmatta's Dojo
+  (`dojoGroup()` / `kenSpec` in `js/gymdex.js`, his kombat arena painted on it: `still()` in `js/pokedex.js` takes a
+  `PLACE_ART` id through `isPlace()`). Met is `seen.gym` 'ken' (set as a run's fight against him begins), a win, or
+  `save.dojo.met`; beaten is `kenWinsOf() >= 1`; researched (the gold slot) the Black Belt. His record: wins, losses
+  (`save.kenLost`, counted in `afterFight()`), belt, stars, the next belt's needs; his sheet a belt track instead of the
+  rematch rewards, the Dojo or Black Belt badge. The app's opener counts leaders only, but opens once he's met too.
 - **The crest's badge is in full colour before it's won** (2026-10-14, the user's ask: "I want the players to see what
   they're getting"). It used to be a dark seal till earned; now only the extra shine (metalness, glow) waits on the win
   (`crestArt()` / `gymCrest()` in `js/event-3d.js`).

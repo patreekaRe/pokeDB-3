@@ -78,6 +78,7 @@ const freshSave = () => ({
   travelSeen: {},             // the journey films played once, by trip ('shrine>wastes': true), so their lines have been read (js/travel.js)
   kenBeaten: false,           // Kenmatta beaten KEN_WINS times (js/run.js): every map shows his dojo's ❓ room with his face
   kenWins: 0,                 // Kenmatta's defeats, one a run at most
+  kenLost: 0,                 // times Kenmatta beat you (his page in the Gym Leaders app)
   gymAppNews: true,           // the Gym Leaders app's "!" was handed out (gymAppNews()); old saves get it once
   gymLost: {},                // times each Gym Leader beat you, by id (the Gym Leaders app, js/gymdex.js); their wins over them are `gym`, and `seen.gym` the ones met
   badges: [],                 // BADGES ids earned (js/data/badges.js), oldest first: the Trainer Card's Badge Case
