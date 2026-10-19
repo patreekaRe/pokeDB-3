@@ -70,7 +70,9 @@ then +1 Sparkle); a shiny wild caught with one sealed gives ★2. One tap and do
 
 > Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md's Safari Pokédex part, hub-base-mall.md's residents and the
 > Ranger Task Board, and this roadmap entry. Session 3, shinies everywhere else: the Safari Pokédex shows owned shinies
-> and their Sparkle (a shiny toggle on a page), Secret Base residents come out shiny, Ranger tasks for shiny catches,
+> and their Sparkle (a shiny toggle on a page) and sealed capsules (a capsule badge with the count on a Pokémon's page,
+> "2 sealed — catch to open", the same mark on the list and a "Sealed: N" total; the user's ask, 2026-10-19), Secret
+> Base residents come out shiny, Ranger tasks for shiny catches,
 > the Trainer Card's count and a ✨ on the day's leaderboard. Check headless, a patch-notes line, move this entry to
 > docs/roadmap-done.md, push to main and give me the githack link.
 
