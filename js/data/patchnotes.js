@@ -44,7 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['mall', 'The Shiny Exchange kiosk in the Safari Outfitter: pull capsules of every Safari Pokémon\'s shiny, with gold capsules and Lucky Stars; one you haven\'t caught stays sealed till you catch it.'],
-  ['fixes', 'The Clearing, every gateway town and every 3D fight and room run lighter on phones, a Secret Base jukebox stops when you leave, played cards fly smoothly in battle instead of stuttering, and the Ranger Task Board and Trainer\'s Journal show all four tabs on a phone, and a tap no longer sometimes plays its click twice.'],
+  ['fixes', 'The Clearing, every gateway town and every 3D fight and room run lighter on phones, a Secret Base jukebox stops when you leave, played cards fly smoothly in battle instead of stuttering, and the Ranger Task Board and Trainer\'s Journal show all four tabs on a phone, a tap no longer sometimes plays its click twice, and the Safari Outfitter rests its 3D behind the Shiny Exchange.'],
   ['look', 'A slow 3D room shows your Pokémon hopping by a Poké Ball while it loads, and tries again rather than falling back to the flat room.'],
   ['runs', 'Materials you find on a run pop up on screen and fly into your things, and a Waystone Shard gets its own reward screen.'],
   ['dex', 'The Pokédex\'s Game Corner app sells starters, perks and shinies only: Poké Balls are at the Safari Outfitter, or the Safari Zone window\'s Buy key.'],

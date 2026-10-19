@@ -1417,7 +1417,8 @@ function resize() {
 
 function frame(now) {
   if (!root?.isConnected) return;
-  if (cabinetUp()) { last = now; return requestAnimationFrame(frame); }
+  // the Shiny Exchange covers the screen: the Outfitter under it drew at full rate, for nobody (2026-10-19)
+  if (cabinetUp() || document.querySelector('dialog.shiny-ex[open]')) { last = now; return requestAnimationFrame(frame); }
   if (tooSoon(now, last)) { requestAnimationFrame(frame); return; }
   const dt = Math.min(100, now - (last || now));
   last = now;

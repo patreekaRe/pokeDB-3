@@ -1130,6 +1130,11 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   stops on leaving, the title's light loop no longer restarts under the Clearing; the Clearing's ~5 MB a mall / base trip
   leak stopped; the covered select screen hidden. Fights don't leak. `tools/budget-check.mjs` now guards all of it
   (CLAUDE.md's testing step 3). Next levers: a room's GIF-frame canvases, the map's full-screen layers.
+  Round eight (2026-10-19, a check of the Safari shinies and the Plaza's buddies): the Outfitter drew at full rate under
+  the full-screen Shiny Exchange (~840 draws/s headless, now 0 till it closes), and on a phone that slowdown could make the
+  mall's keepUp() step its shadows or resolution down for good. The buddies cost ~1.7 MB and no measurable draws (a walking
+  buddy is a starter's first form, ~1 MB of frames at most), and trips with four of them leak nothing. Left as is: a ★5
+  card's foil repaints (one card, like a rare's shimmer).
 
 - **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
   after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game
