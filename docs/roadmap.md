@@ -38,7 +38,17 @@ rowboats and jungle). `tools/draw-probe.mjs` measures a place and walks into eve
 **Six new types for the Safari's duo pool: Electric, Ice, Fighting, Ground, Flying, Dark** (the user's go, 2026-10-19:
 "let's add the 6"). The plan and its reasons are in Ideas' "Safari duos, real types and new areas" (the duo, the Duo pass,
 real types in the Safari, why six). Safari only at first: a duo run starts with Fire / Water / Grass, and catching a new
-type's starter in its area adds it to your duo pool. Sessions, in order, each ▶ Run in: CLOUD (both repos):
+type's starter in its area adds it to your duo pool.
+**Branch rule** (the user's call, 2026-10-19, like `towns` and `secret-base`): all of it lives on branch **`duo-types`**
+(and pokeDB-sim's `duo-types`), never pushed to `main` until the user says it goes live. A session starts from
+`duo-types`; a session working alongside another (below) works on its own `duo-types-<part>` branch and merges into
+`duo-types` when done, the later one to finish resolving the merge. Playtest links are githack links on its commit.
+**Two at a time** (the user's ask): 0, 1, 2 and 15 run alone, in order (each changes rules the next builds on).
+From 3 on, two sessions can run together when they are different types (Electric's first beside Ice's first, or a
+type's second beside the next type's first), never two halves of the same type. Since a duo puts two types in one run,
+the later of the pair re-runs `tests/cards.test.mjs` after merging and fixes any same cost + same text twin across
+types, and any clash of two new keywords for the same idea.
+Sessions, in order, each ▶ Run in: CLOUD (both repos):
 0. **Design doc first** (effort: high) (`docs/duo-design.md`, the user approves it before any code): the duo's rules (switch cost, STAB,
    the deck split, rewards), the Duo pass screen, the Safari's real chart (no immunities, x2 cap, Neutral outside it),
    and per new type 3 archetypes for a ~70-card deck (the user's call, 2026-10-19: 70, not 35, like Fire / Grass /
@@ -56,9 +66,9 @@ type's starter in its area adds it to your duo pool. Sessions, in order, each �
    medium for its second, which follows them) (~35 cards each, 70 a type; card rewards split 50/50 between a duo's types): its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
    `SPRITE_FIT`, cries), its themed area and the catch that adds it to the pool; sim mirror and a bot check of its pairs.
 15. **The balance pass** (effort: high) over all 36 pairs, then patch notes and a githack link.
-Prompt for session 0: "Read CLAUDE.md, docs/roadmap.md's 'Six new types for the Safari's duo pool' and 'Safari duos,
+Prompt for session 0 (start from branch `duo-types`): "Read CLAUDE.md, docs/roadmap.md's 'Six new types for the Safari's duo pool' and 'Safari duos,
 real types and new areas' entries, docs/reference/safari.md, docs/reference/cards.md and docs/card-design.md. Write
-docs/duo-design.md as that entry's session 0 lists, show me the open choices, and change nothing else until I approve."
+docs/duo-design.md as that entry's session 0 lists, show me the open choices, and change nothing else until I approve. Push only to duo-types."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
