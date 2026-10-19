@@ -989,6 +989,12 @@ uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS 
 5. **Enemy variety** (the biggest gap now): StS's enemy tricks, such as Artifact (blocks your next debuffs), splitting,
    enemies that buff each other, fights with two or three enemies. Every fight is one enemy cycling its moves today.
    Engine work in `js/battle.js` and the sim, then enemies retuned.
+   ▶ Run in: CLOUD (both repos), effort: high, on `main` (the user's pick, 2026-10-19, to run beside the duo types'
+   design doc; it lands before the duo's battle session, which merges `main` into `duo-types` first). Prompt: "Read
+   CLAUDE.md, docs/roadmap.md's 'Enemy variety' item, docs/reference/cards.md and docs/reference/battle-screen-layout.md,
+   and pokeDB-sim's README. Propose 5-6 enemy tricks (Artifact, splitting, enemies buffing each other, fights with two or
+   three enemies) and which enemies get them, pick with me, then build them in js/battle.js with the sim mirror, retune,
+   bot-check at Levels 0/3/5, add a patch-notes line and give me a githack link. Push to main."
 Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` / `cardTerms()` lines and the sim mirror.
 
 **Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
