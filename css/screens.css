@@ -541,6 +541,20 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .enemy-zone[data-type="water"] { --accent: #3fa3ff; }
 .enemy-zone[data-type="grass"] { --accent: #4fcf6c; }
 .enemy-zone[data-type="normal"] { --accent: #b7bdd6; }
+.enemy-zone[data-type="electric"] { --accent: #f8d030; }
+.enemy-zone[data-type="ice"] { --accent: #78d8e8; }
+.enemy-zone[data-type="fighting"] { --accent: #e05848; }
+.enemy-zone[data-type="poison"] { --accent: #b868d0; }
+.enemy-zone[data-type="ground"] { --accent: #d8b060; }
+.enemy-zone[data-type="flying"] { --accent: #a898f0; }
+.enemy-zone[data-type="psychic"] { --accent: #f070a8; }
+.enemy-zone[data-type="bug"] { --accent: #a8c830; }
+.enemy-zone[data-type="rock"] { --accent: #c8b058; }
+.enemy-zone[data-type="ghost"] { --accent: #8a70c0; }
+.enemy-zone[data-type="dragon"] { --accent: #8060f0; }
+.enemy-zone[data-type="dark"] { --accent: #8a7058; }
+.enemy-zone[data-type="steel"] { --accent: #b0b0c8; }
+.enemy-zone[data-type="fairy"] { --accent: #f0a0c8; }
 
 .enemy-zone {
   position: relative;
@@ -3044,6 +3058,21 @@ body.battle-intro { pointer-events: none; }
 .index-only.type-grass { background: #2e8a40; }
 .index-only.type-water { background: #2a68c8; }
 .index-only.type-psychic { background: #7138a8; }
+/* the Safari's real types (js/data/real-types.js) */
+.index-only.type-normal { background: #86866a; }
+.index-only.type-electric { background: #b08a00; }
+.index-only.type-ice { background: #2f98a8; }
+.index-only.type-fighting { background: #a83028; }
+.index-only.type-poison { background: #84389a; }
+.index-only.type-ground { background: #9a7434; }
+.index-only.type-flying { background: #6a62c0; }
+.index-only.type-bug { background: #6e8c14; }
+.index-only.type-rock { background: #8a7630; }
+.index-only.type-ghost { background: #56468a; }
+.index-only.type-dragon { background: #5434c8; }
+.index-only.type-dark { background: #584636; }
+.index-only.type-steel { background: #6a6a88; }
+.index-only.type-fairy { background: #c05a90; }
 #dex-total { white-space: nowrap; }
 @media (max-width: 720px) { #dex-total { font-size: 0.75rem; } }
 
@@ -4766,6 +4795,8 @@ body.scene-peek #backdrop { display: none; }
 .pdx-role.role-elite { background: #7a3cb8; }
 .pdx-role.role-boss { background: #b8322a; }
 .pdx-screen .index-only { right: 8px; }
+.pdx-screen .sdx-typechips { position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.pdx-screen .sdx-typechips .index-only { position: static; }
 .pdx-caught { top: auto; bottom: 8px; right: 8px; background: rgba(0, 0, 0, 0.45); }
 .pdx-caught.gold { background: #d8a010; color: #fff8d0; }
 .pdx-text.muted { opacity: 0.75; font-style: italic; }

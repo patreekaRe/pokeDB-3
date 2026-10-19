@@ -3163,3 +3163,12 @@ bobs. The jeep opens it too. +6 draws in the Outfitter (246 -> 252 headless). De
 hard refresh). Stale cached files after many pushes in a day. `load3d()` in `js/run.js` now asks once a page load after its
 second failure, and Reload fetches the game's scripts past the cache first (`freshReload()`). Checked in the browser pane
 with a forced failure (No walks out, Reload reloads); tests pass (367). Detail in `docs/reference/walk-in-rooms.md`.
+
+**Real types in the Safari** (2026-10-19, the duo types' session 2; branch `duo-types-realtypes` merged into `duo-types`,
+both repos, not on `main`). Every Safari wild and its moves on their real types (`js/data/real-types.js`, the table from
+`tools/real-types.py` off PokeAPI), the real 18-type chart with no immunities, capped at x2 and floored at x0.5, Neutral
+cards x1, elites and bosses typeless; dual-type icons on the nameplate, the move's type in the intent, a ▲ / ▼ on attack
+cards in hand, real types in the Safari Pokédex, the Net Ball on Water and Bug, the tough match-up prize by real types.
+The main game keeps its triangle (checked headless: no hint, the old chip). Sim mirror (`b.real`, variant `triangle`,
+`cfg.safariType`); human bot, 300 a cell, triangle -> real: Fire 89.7 -> 86.7, Grass 85.0 -> 79.0, Water 75.0 -> 73.0,
+within noise, no retune. Tests pass (`tests/realtypes.test.mjs`). Detail in `docs/reference/safari.md`'s Real types.

@@ -42,7 +42,7 @@ export const LUXURY_COINS = 10;
 
 /**
  * The balls. `stock`: a consumable bought in packs at the Safari Outfitter (save.balls[id]); the Master Ball is bought once and gives one throw a UTC week; the Safari Ball is free, SAFARI_BALLS a run.
- * `mult(ctx)` is the ball's multiplier for a throw: ctx = { night, turn, type } (the wild Pokémon's type).
+ * `mult(ctx)` is the ball's multiplier for a throw: ctx = { night, turn, type, types } (the wild Pokémon's game type and real types).
  */
 export const BALLS = [
   { id: 'safari', name: 'Safari Ball', sprite: 'safari-ball', free: true,
@@ -58,7 +58,7 @@ export const BALLS = [
   { id: 'timer', name: 'Timer Ball', sprite: 'timer-ball', stock: true, pack: 3, cost: 150,
     text: 'Better the longer the fight: x1 on turn 1, +0.25 a turn, up to x3. Used up when thrown.', mult: (c) => Math.min(3, 1 + 0.25 * (c.turn - 1)) },
   { id: 'net', name: 'Net Ball', sprite: 'net-ball', stock: true, pack: 3, cost: 150,
-    text: 'x3 on Water and Grass Pokémon, x1 otherwise. Used up when thrown.', mult: (c) => (c.type === 'water' || c.type === 'grass' ? 3 : 1) },
+    text: 'x3 on Water and Bug Pokémon, x1 otherwise. Used up when thrown.', mult: (c) => ((c.types ?? [c.type]).some(t => t === 'water' || t === 'bug') ? 3 : 1) },   // the real types (js/data/real-types.js) since 2026-10-19: it was Water and Grass while Bug Pokémon showed as Grass
   { id: 'luxury', name: 'Luxury Ball', sprite: 'luxury-ball', stock: true, pack: 3, cost: 100,
     text: `Plain odds (x1), but a catch pays ${LUXURY_COINS} more PokéCoins. Used up when thrown.`, mult: () => 1 },
   { id: 'master', name: 'Master Ball', sprite: 'master-ball', weekly: true, cost: 1500,
@@ -77,10 +77,10 @@ export function baseOdds(hpFrac) {
  * the Bait thrown at it, `rare` a rare spawn. Multipliers work like the games' catch rate: the chance of a miss is
  * raised to the multiplier's power, so better balls help a lot at low odds and never quite reach a sure thing.
  */
-export function catchChance({ hpFrac, ball = 'safari', turn = 1, night = false, type = 'normal', debuffs = 0, bait = 0, rare = false }) {
+export function catchChance({ hpFrac, ball = 'safari', turn = 1, night = false, type = 'normal', types, debuffs = 0, bait = 0, rare = false }) {
   if (hpFrac <= 0) return 0;
   const def = BALLS_BY_ID[ball] ?? BALLS_BY_ID.safari;
-  const mult = def.mult({ night, turn, type });
+  const mult = def.mult({ night, turn, type, types });
   if (mult === Infinity) return 1;
   const total = mult * (1 + DEBUFF_BONUS * debuffs) * (1 + BAIT.bonus * bait) * (rare ? RARE.mult : 1);
   return Math.min(CATCH_CAP, 1 - Math.pow(1 - baseOdds(hpFrac), total));

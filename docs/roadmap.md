@@ -62,18 +62,13 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    Vanillite / Snorunt, Fighting Timburr / Machop, Ground Sandshrew / Drilbur / Phanpy, Flying Starly / Pidgey, Dark
    Zorua / Poochyena / Purrloin.
 1. **The duo and the Duo pass** (effort: high) on today's three types, sim mirror, bot check.
-2. **Real types in the Safari** (effort: high): the chart, every Safari Pokémon and move retyped, the super-effective hint on cards.
+2. ~~**Real types in the Safari**~~ done 2026-10-19 on `duo-types-realtypes`, merged into `duo-types` (both repos;
+   `docs/roadmap-done.md`, `docs/reference/safari.md`'s Real types). Open for the user: the x0.5 floor (a x0.25 would be a
+   step the game hasn't got; one line in `realFactor()`), and Grass's 6-point drop in the Safari, left for the balance pass.
 3-14. **One new type in two sessions** (effort: high for a type's first session, which brings its new mechanics;
    medium for its second, which follows them) (~35 cards each, 70 a type; card rewards split 50/50 between a duo's types): its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
    `SPRITE_FIT`, cries), its themed area and the catch that adds it to the pool; sim mirror and a bot check of its pairs.
 15. **The balance pass** (effort: high) over all 36 pairs, then patch notes and a githack link.
-Prompt for session 2 (start from branch `duo-types`, effort high): "Read CLAUDE.md, docs/roadmap.md's 'Six new types
-for the Safari's duo pool' and 'Safari duos, real types and new areas' entries, docs/reference/safari.md,
-docs/reference/cards.md and pokeDB-sim's README. Build that entry's session 2, real types in the Safari only: the real
-18-type chart with no immunities, a x2 cap, Neutral cards outside it, elites and bosses typeless, every Safari Pokémon
-and its moves on their real types, a super-effective hint on cards, the sim mirror and a bot check. The main game keeps
-its triangle. Work on a new branch duo-types-realtypes in both repos, merge it into duo-types when done, and give me a
-githack link."
 Prompt for session 0 (start from branch `duo-types`): "Read CLAUDE.md, docs/roadmap.md's 'Six new types for the Safari's duo pool' and 'Safari duos,
 real types and new areas' entries, docs/reference/safari.md, docs/reference/cards.md and docs/card-design.md. Write
 docs/duo-design.md as that entry's session 0 lists, show me the open choices, and change nothing else until I approve. Push only to duo-types."

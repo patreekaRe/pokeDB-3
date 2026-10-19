@@ -10,9 +10,10 @@
    grow from biome to biome (Biome 1's ~45 HP and 6/9 attacks, Biome 3's ~64 and 8/12), on top of BIOMES' hpMult and
    dmgBonus (buildEncounter() in enemies.js).
 
-   Types are the main game's four (Psychic would show Mewtwo's type before it's unlocked): Bug Pokémon are Grass, Ice
-   ones Water, and Rock, Ground, Poison, Ghost and Flying ones Normal. A move whose real type isn't its Pokémon's (Bite
-   on a Water Pokémon) is wrapped in N() so it stays x1, like `type: 'normal'` in enemies.js.
+   A line's type is the main game's four (its signature card's type): Bug Pokémon are Grass, Ice ones Water, and Rock,
+   Ground, Poison, Ghost and Flying ones Normal, and an off-type move is wrapped in N(). Battles in the Safari use the
+   real types instead (js/data/real-types.js, the table from tools/real-types.py): a new Pokémon or move needs that
+   script run again.
    ============================================================ */
 
 /** How the Safari's own Pokémon grow with the area's place in the run (0, 1, 2): HP x, and + damage on every attack. */

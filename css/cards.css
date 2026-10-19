@@ -523,3 +523,10 @@
   .sig-twinkle { animation: none; opacity: 0.85; }
   .card.sparkle-5 .card-face::after { animation: none; background-position: 50% 0; }
 }
+
+/* the Safari's type hint on an attack in hand (markEdge() in js/battle.js): the type line turns green with a ▲ when it's
+   super effective on the wild Pokémon, grey with a ▼ when it's resisted */
+.card.edge-up .card-type { background: #23963a; box-shadow: 0 0 0 0.6cqw #9cf0a8; }
+.card.edge-down .card-type { background: rgba(40, 40, 48, 0.62); color: #d4d4dc; }
+.card-edge { font-weight: 900; }
+.card.edge-up .card-edge { color: #eaffb0; }

@@ -118,7 +118,7 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   without it starts full); with none left and no packs, the Throw button says "You're out of balls!". Every other ball but the Master Ball comes in packs, used up when thrown (the save is
   written as the ball is thrown, so a refresh that replays the room doesn't give it back): Great (x1.5) and Ultra (x2),
   5 for 40 / 90 coins; Dusk (x3 at `timeOfDay()` night), Quick (x4 in turns 1-3; chosen when a throw needed red HP, so
-  turn 1 alone could never be used; kept now a throw can open the fight), Timer (x1 +0.25 a turn, up to x3) and Net (x3 on Water and Grass), 3 for 150; Luxury (x1,
+  turn 1 alone could never be used; kept now a throw can open the fight), Timer (x1 +0.25 a turn, up to x3) and Net (x3 on Water and Bug, by the real types since 2026-10-19; it was Water and Grass), 3 for 150; Luxury (x1,
   +10 PokéCoins on a catch), 3 for 100. Master Ball (1500): a sure catch, one throw a UTC ISO week (`ballWeek()`,
   `masterWeek`).
 - Until 2026-10-02 Dusk / Quick / Timer / Net / Luxury were one-time unlocks (300 / 250, thrown freely, in
@@ -252,12 +252,37 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 - `PLACE`: a template Pokémon in the run's 2nd / 3rd area has x1.16 / x1.42 HP and +1 / +2 on its attacks (its
   `strength` from `buildEncounter()`), on top of that biome's `hpMult` / `dmgBonus`, like the main game's wilds grow. The
   borrowed wilds keep their own numbers.
-- Types: only the main game's four (a Psychic chip would give Mewtwo's type away): Bug is Grass, Ice is Water, the rest
-  of the off types Normal.
+- Types: a line's `type` is only the main game's four (Bug is Grass, Ice is Water, the rest of the off types Normal): its
+  signature card's type. Battles use the real types (below).
 - A new Pokémon: its line, `assets/pokemon/<id>-front.gif` (PokeAPI's `versions/generation-v/black-white/animated/<dex>.gif`
   from raw.githubusercontent.com) and its `SPRITE_FIT` line (a PIL median bbox over all frames). `tests/safarimons.test.mjs`
   checks them all, that it isn't a main-game Pokémon, and that no signature card has the same cost, text and keywords as
   another card a Fire / Grass / Water run can meet (Mewtwo's Psychic cards are left out: it never walks the Safari).
+
+## Real types (2026-10-19, the roadmap's "Six new types for the Safari's duo pool", session 2)
+
+- **The rule** (the user's shape): in a Safari run every wild Pokémon wears its real (dual) types and every move its real
+  type, on the real 18-type chart, with no immunities (an x0 is a resistance), the product capped at x2 and floored at
+  x0.5, so a hit is still one of the game's three steps (`SUPER_EFFECTIVE` 1.3, 1, `NOT_VERY_EFFECTIVE` 0.75). Neutral
+  cards stay outside the chart (x1 both ways); a wild's Normal move is a real Normal move. Elites and bosses stay
+  typeless (`typeless()`). You defend as your starter's deck type (Fire / Grass / Water) alone. The main game keeps its
+  triangle. The floor at x0.5 is this session's call (a x0.25 would be a step the game doesn't have): one line in
+  `realFactor()` to change.
+- **Data**: `js/data/real-types-table.js` (`CHART`, `SPECIES` grouped by types, `MOVES` grouped by type), written by
+  `tools/real-types.py` from PokeAPI's CSVs (today's types, Fairy included, to match the 18-type chart); it maps our ids
+  and a few old move names (`Faint Attack`, `Hi Jump Kick`, and the Abilities `Forecast` / `Stench` used as moves). **A new
+  Safari Pokémon or move needs the script run again**; `tests/realtypes.test.mjs` fails until it is. Helpers in
+  `js/data/real-types.js`: `REAL_TYPES` (names and icons; `js/icons.js` draws all 18, ❄️ ⛰️ 🪶 🪨 added for them),
+  `speciesTypes(def)` (by `spriteId`), `moveType(move, def)`, `realFactor()`, `realMultiplier(type, defenders, { card })`,
+  `realBeats()` (the tough match-up prize: one of its types hits yours super effectively).
+- **The battle** (`js/battle.js`, all behind `battle.safari`): `cardMultiplier()` and `enemyTypeMultiplier()`; the
+  nameplate's chip shows one icon per type (title "Grass / Fairy type") and the frame takes the first type's colour
+  (`.enemy-zone[data-type]`); the intent's title names the move's type ("Grass move: 14 damage"); **the hint**:
+  `markEdge()` turns an attack's type line green with a ▲ when it's super effective on this wild, grey with a ▼ when
+  it's resisted (`.card.edge-up` / `.edge-down` in `css/cards.css`), in hand and on the risen card. The Safari Pokédex
+  shows a caught Pokémon's real types (`.sdx-typechips`), and the lobby's rules a line on them.
+- **The bot**: the sim mirrors it (`b.real`; variant `triangle` restores the old Safari; `cfg.safariType` deals only days
+  whose starter is that type). Numbers in pokeDB-sim's README.
 
 ## The areas' scenes (phase 5b, 2026-10-02)
 

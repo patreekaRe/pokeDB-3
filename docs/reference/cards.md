@@ -168,6 +168,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (the nameplate chip, `setupBattleScreen()` in `js/battle.js`; the map shows no type badge at all), since
   their own type would suggest a match-up; `def.type` stays as theme for the Pokédex. The sim
   mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
+  **In the Safari** (2026-10-19) wild fights use the real 18-type chart on real types instead (`js/data/real-types.js`,
+  `docs/reference/safari.md`'s Real types); Neutral cards stay x1 there too.
 
 ## The balance pass (2026-10-16, the user's ask: "match Slay the Spire's numbers... find broken builds")
 
