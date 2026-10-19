@@ -3158,3 +3158,8 @@ the player"). The eave had hidden its plaque and its "!" (both sat above the wal
 brass-edged plaque, a lantern either side, a warm glow, and its notes the player's own tasks (ready ones gold with a CLAIM
 stamp); while a task waits or till it's first opened (`save.ranger.seen`) the glow breathes, sparkles twinkle and the "!"
 bobs. The jeep opens it too. +6 draws in the Outfitter (246 -> 252 headless). Detail in `docs/reference/hub-base-mall.md`.
+
+**A room that won't load offers a reload** (2026-10-18, the user's report: Kenmatta's dojo walked them out each time until a
+hard refresh). Stale cached files after many pushes in a day. `load3d()` in `js/run.js` now asks once a page load after its
+second failure, and Reload fetches the game's scripts past the cache first (`freshReload()`). Checked in the browser pane
+with a forced failure (No walks out, Reload reloads); tests pass (367). Detail in `docs/reference/walk-in-rooms.md`.

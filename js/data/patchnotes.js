@@ -46,7 +46,7 @@ export const NEXT = [
   ['runs', 'Materials and Waystone Shards you find on a run now pop up in their own window, big enough to see over the card choices.'],
   ['hub', 'Your Trainers\' buddies in the Plaza wear bigger, clearer name tags, and once one has had its say, its trainer\'s Trainer Card opens.'],
   ['dex', 'Your Trainers page shows friends your Pokédex colour: their page opens in the shell they wear.'],
-  ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again.'],
+  ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again, and a room that won\'t load just after an update offers a reload instead of sending you back out.'],
   ['mall', 'The Safari Outfitter\'s Ranger Task Board is lit by lanterns, shows your own tasks, and glows and sparkles when one waits to be claimed.'],
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
 ];

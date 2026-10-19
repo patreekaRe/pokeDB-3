@@ -3883,13 +3883,39 @@ let event3dMod = null;
     none, as a Mart already up and redrawn after a purchase). */
 function load3d(mount, box, mark = loadingMark()) {
   const thisRun = run, waiting = () => run === thisRun && box.isConnected && !$('reward-screen').hidden;
+  const settle = () => { if (mark) endLoading(mark); mark = null; };
   return mount()
     .catch(err => {
       if (!waiting()) throw err;
       console.warn('3D place failed to load, trying again', err);
       return new Promise(done => setTimeout(done, 1000)).then(() => { if (!waiting()) throw err; return mount(); });
     })
-    .finally(() => mark && endLoading(mark));
+    .catch(async err => {
+      settle();
+      if (waiting() && !askedReload) {
+        askedReload = true;
+        if (await confirmDialog('This room didn\'t load. The game may have just updated: reload to get the new version?', 'Reload')) {
+          await freshReload();
+          return new Promise(() => {});   // the page is going: no pixel room or walk out meanwhile
+        }
+      }
+      throw err;
+    })
+    .finally(settle);
+}
+/* A room that fails twice asks once a page load, so a phone whose 3D never loads isn't asked at every room. Seen
+   2026-10-18: on a day of many pushes the browser held old and new files at once (GitHub Pages lets each be kept 10
+   minutes), Kenmatta's dojo failed and walked you out each time, and only a hard refresh let you in. */
+let askedReload = false;
+try { performance.setResourceTimingBufferSize(4000); } catch {}   // past the default 250 the sprites crowd out the game's files
+
+/** A reload that fetches the game's own files afresh (a plain reload takes them from the cache while they're fresh):
+    each script and stylesheet the page has asked for is fetched past the cache, which updates it, then the page. */
+async function freshReload() {
+  const files = performance.getEntriesByType('resource').map(e => e.name.split('#')[0])
+    .filter(u => u.startsWith(location.origin) && /\.(js|css)(\?|$)/.test(u));
+  await Promise.allSettled([location.href.split('#')[0], ...new Set(files)].map(u => fetch(u, { cache: 'reload' })));
+  location.reload();
 }
 
 /** Once shown, the loading screen stays up 0.6 s at least (a room ready just after it came would only flicker it), then

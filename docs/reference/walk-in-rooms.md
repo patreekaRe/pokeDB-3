@@ -68,3 +68,10 @@ reachable is built when it's walked into.
   `.loading-mark` (the user's layout, 2026-10-18: the room bar fades away, a navy banner bottom left with a red stripe and
   gold edges holds the room's name and LOADING with stepping dots, your Pokémon at 56px by a rolling 30px Poké Ball bottom
   right; still under `calmFx()`; once shown it stays 0.6 s at least and fades out over the room, the bar fading back, `endLoading()`), inside `#reward-screen` so it goes with it.
+- **A reload after a second failure** (2026-10-18, the user's report: Kenmatta's dojo walked them out each time until a
+  hard refresh). On a day of many pushes the browser held old and new files at once (GitHub Pages lets each be cached 10
+  minutes), and a home room's `onFail` walks you out. Now `load3d()`'s second failure asks once a page load ("This room
+  didn't load... reload?"); Reload runs `freshReload()`: every same-origin script and stylesheet in the resource timing
+  list (its buffer raised to 4000, the sprites filled the default 250) fetched with `cache: 'reload'`, then
+  `location.reload()`, since a plain reload takes fresh-cached modules from the cache. No goes on to the pixel room or
+  `onFail` as before.
