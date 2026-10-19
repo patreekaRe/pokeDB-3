@@ -3084,4 +3084,15 @@ into its hidden canvas (`js/title-light.js`); the hidden title logo's letter wav
 cards' sheens animate `background-position` (a repaint a frame, small), a forced layout a frame in town / Game Corner
 bubbles (`placeSigns()` after `corner-crowd.js`'s writes). A headless many-fights probe (DOM nodes, listeners, heap,
 compositor layers) was started; its results go in the roadmap's "Waiting on the user" entry.
+Its results (2026-10-19): 15-22 fights in one page load hold flat (DOM nodes, listeners; the JS heap levels off by fight
+8). A real leak: every Clearing -> mall / base trip kept ~5 MB, the Clearing drawing one more frame on its renderer after
+`sleepGL()` (three.js hears of the loss a task later) and hooking a new build's dispose listeners nothing took off; a
+sleeping renderer's `render()` is now a no-op till it wakes (`muted` in `js/hd2d.js`; heap over three trips +9 MB -> flat).
+The character select, its sky, `#backdrop` and the scenery stayed shown (full-screen layers, ~12 MB each at 3x) and the
+select's sky painted every frame under the Clearing, mall and base: hidden while covered (`css/hub.css`). Left: rooms
+keep their Pokémon's GIF-frame canvases (~11 MB, likely capped by `KEEP_ROOMS`), the map's layers, small infinite CSS
+animations on unseen elements. **The budget check** (the user's ask: keep it all from coming back):
+`tools/budget-check.mjs` loads 21 places at an iPhone's size and fails on draws or memory 10% over `tools/budgets.json`,
+more 3D places awake, a canvas drawn into while unseen, a page error, or the mall / base round trips growing;
+`tools/probe-kit.mjs` is what it shares with `tools/memory-probe.mjs`. CLAUDE.md's testing step 3.
 

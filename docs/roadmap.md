@@ -1116,8 +1116,9 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   smooth paintings' canvases kept on the CPU beside their textures (~40-60 MB a town), the full-screen DOM layers (the probe
   can't see them), a 32 kHz song decode (~3 dB off at 10 kHz in Safari, so not done).
   Round seven (2026-10-18, on `main`, archive): the pixel scene stopped redrawing under every 3D place, a Base jukebox
-  stops on leaving, the title's light loop no longer restarts under the Clearing. Open: a headless many-fights check of
-  DOM nodes, listeners, heap and compositor layers (rerun it if the session that started it ended first).
+  stops on leaving, the title's light loop no longer restarts under the Clearing; the Clearing's ~5 MB a mall / base trip
+  leak stopped; the covered select screen hidden. Fights don't leak. `tools/budget-check.mjs` now guards all of it
+  (CLAUDE.md's testing step 3). Next levers: a room's GIF-frame canvases, the map's full-screen layers.
 
 - **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
   after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game
