@@ -970,7 +970,7 @@ a friend's base as they left it, read-only (`openBase3d({ guest })`, every base 
 by `tools/trainers-check.mjs`'s save-unchanged test. Then (the user's picks): Visit house / Visit yard for a base with a
 backyard, and their trophy cases as they last saw them at home. **Next: the user playtests it** (two signed-in accounts, or
 `?base&asfriend` alone); a guestbook of stamps is still a maybe.
-~~**Friends' graves and the Plaza's buddies**~~ done 2026-10-18 on `claude/friends-tombstones` (pushed to `main` too;
+~~**Friends' graves and the Plaza's buddies**~~ done 2026-10-18 on `claude/friends-tombstones` (last commit `da65d5aa`, pushed to `main` too;
 `docs/roadmap-done.md`, details in `docs/reference/cloud-save.md`): a lost run (Safari and Sky Pillar too) goes up on
 `graves/<uid>`, friends find the grave where it fell (the very room on the Safari, the door on the Pillar, the same
 floor elsewhere), a tap opens the loss recap with Pay respects / Avenge, and up to 4 friends' buddies walk the Trainer
