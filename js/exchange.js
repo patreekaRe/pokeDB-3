@@ -3,21 +3,23 @@
    banners, each a capsule machine of the Safari Pokémon you've caught there (js/data/exchange.js has the rules and
    js/storage.js's exchangePull() / exchangePick() pay and save), and the reveal: the capsule drops into the tray (a gold
    one lands plain, then turns gold), a tap cracks it along its band and it bursts open, the shadow holds on the screen
-   (a gold one shakes), a flash, the shiny.
+   (a gold one shakes), a flash, the shiny. A Pokémon not caught yet stays a shadow: its capsule is sealed, and a Safari
+   catch of it opens it (openSealedReveal(), from js/run.js), the dark glass clearing before the same reveal.
    The capsules are SVG, so the window adds no WebGL context, and they move only by transform and opacity (no animated
    blur or masks); calmFx() turns every bit of it off. Closing it removes it from the page, timers and all. */
 
-import { getSave, exchangePull, exchangePick, exchangeCaught } from './storage.js';
+import { getSave, exchangePull, exchangePick, exchangeCaught, staleSealed, openSealedCapsules } from './storage.js';
 import { playSound, playCry } from './audio.js';
 import { calmFx } from './prefs.js';
 import { refreshCoins } from './ui.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES, SAFARI_ROSTER } from './data/safari.js';
 import { shinyImage, sparkleOf, SPARKLE_MAX } from './data/shinies.js';
-import { PULL_COST, PULL_TEN, TEN_COST, STARS_FOR_PICK, EXCHANGE_INK, goldOdds, machineOf } from './data/exchange.js';
+import { PULL_COST, PULL_TEN, TEN_COST, STARS_FOR_PICK, EXCHANGE_INK, goldOdds, sealedCount } from './data/exchange.js';
 
 const fmt = (n) => n.toLocaleString('en-US');
 const nameOf = (id) => ENEMY_DEFS[id]?.name ?? id;
+const sealedOf = (id = null) => sealedCount(getSave().exchange?.sealed, id);
 const STAR4 = 'M0 -6 1.4 -1.4 6 0 1.4 1.4 0 6 -1.4 1.4 -6 0 -1.4 -1.4Z';
 const STAR5 = 'M12 2l2.9 6.9 7.1.6-5.4 4.7 1.6 7.3L12 17.8 5.8 21.5l1.6-7.3L2 9.5l7.1-.6z';
 const COIN = '<svg class="sx-coin" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#ffd36b"/><circle cx="8" cy="8" r="4.2" fill="none" stroke="#b8901a" stroke-width="1.6"/></svg>';
@@ -33,8 +35,9 @@ function mix(a, b, k) {
 
 /* ---------- the capsules ---------- */
 
-/** A capsule's colours: an area's (its ink), 'gold' or 'prism' (the Lucky Star pick). */
+/** A capsule's colours: an area's (its ink), 'gold', 'prism' (the Lucky Star pick) or 'sealed' (smoked dark glass). */
 function lookOf(kind) {
+  if (kind === 'sealed') return { stops: ['#8a96aa', '#3a4660', '#161e30', '#05070d'], glow: '#5a6a8a', emblem: '#8a96aa', inside: '#05070d' };
   if (kind === 'gold') return { stops: ['#fffbe6', '#ffe590', '#f0b830', '#7a5200'], glow: '#ffd36b', emblem: '#7a5200', inside: '#5a3c00' };
   if (kind === 'prism') return { prism: true, glow: '#c8a0ff', emblem: '#8a5cff', inside: '#2a1a4a' };
   const [ink, deep] = EXCHANGE_INK[kind];
@@ -93,7 +96,7 @@ const burst = () => `<svg class="sx-rays" viewBox="0 0 240 240" aria-hidden="tru
 /* ---------- the window ---------- */
 
 let dlg = null, onDone = null, timers = [];
-const S = { area: null, filter: 'all', picking: false, reveal: null };
+const S = { area: null, filter: 'all', picking: false, reveal: null, after: false };   // after: the window is only a catch's reveal, closed with it
 const later = (ms, fn) => timers.push(setTimeout(fn, calmFx() ? 0 : ms));
 const stopTimers = () => { timers.forEach(clearTimeout); timers = []; };
 
@@ -108,26 +111,26 @@ function toast(text) {
 
 /** How a Pokémon's tile reads in a machine: owned (its Sparkle), in the capsules, or not caught yet. */
 function tile(id, rare, caught) {
-  const lvl = sparkleOf(getSave().safariShinies, id), have = caught.has(id), take = S.picking && have;
-  const tag = lvl ? sparkle(lvl) : !have ? 'CATCH FIRST' : take ? `FREE · ${STARS_FOR_PICK}★` : rare ? 'GOLD CAPSULE' : 'IN CAPSULES';
-  const label = !have ? 'Not caught yet' : `${nameOf(id)}, ${lvl ? `shiny owned, Sparkle ${lvl}` : 'shiny not owned yet'}${take ? ', free with your Lucky Stars' : ''}`;
+  const lvl = sparkleOf(getSave().safariShinies, id), have = caught.has(id), take = S.picking && have, held = !have && sealedOf(id);
+  const tag = lvl ? sparkle(lvl) : held ? `SEALED ×${held}` : take ? `FREE · ${STARS_FOR_PICK}★` : rare ? 'GOLD CAPSULE' : 'IN CAPSULES';
+  const label = !have ? `Not caught yet${held ? `, ${held} sealed capsule${held > 1 ? 's' : ''}: catch it to open` : ''}` : `${nameOf(id)}, ${lvl ? `shiny owned, Sparkle ${lvl}` : 'shiny not owned yet'}${take ? ', free with your Lucky Stars' : ''}`;
   const src = have ? shinyImage(id) : ENEMY_DEFS[id]?.image ?? shinyImage(id);
-  return `<button type="button" class="sx-mon${lvl ? ' owned' : ''}${have ? '' : ' unknown'}${take ? ' take' : ''}" data-id="${id}" aria-label="${label}"${take ? '' : ' aria-disabled="true"'}>
-    ${rare ? '<span class="sx-rare">RARE</span>' : ''}
+  return `<button type="button" class="sx-mon${lvl ? ' owned' : ''}${have ? '' : ' unknown'}${held ? ' sealed' : ''}${take ? ' take' : ''}" data-id="${id}" aria-label="${label}"${take ? '' : ' aria-disabled="true"'}>
+    ${rare ? '<span class="sx-rare">RARE</span>' : ''}${held ? `<span class="sx-seal">${capsule('sealed')}</span>` : ''}
     <img class="pixel" src="${src}" alt="" loading="lazy" decoding="async">
     <b>${have ? nameOf(id) : '???'}</b><small>${tag}</small></button>`;
 }
 
 function homeView(save, caught) {
-  const owned = SAFARI_ROSTER.filter(id => sparkleOf(save.safariShinies, id)).length, stars = save.exchange?.stars ?? 0;
+  const owned = SAFARI_ROSTER.filter(id => sparkleOf(save.safariShinies, id)).length, stars = save.exchange?.stars ?? 0, held = sealedOf();
   const row = Array.from({ length: STARS_FOR_PICK }, (_, k) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${STAR5}" fill="${k < stars ? '#ffd36b' : '#2a3a5c'}"/></svg>`).join('');
   const banners = SAFARI_DEX_PAGES.map((p, i) => {
-    const [ink, deep] = EXCHANGE_INK[p.area], m = machineOf(p.area, [...caught]);
-    const shinies = p.ids.filter(id => sparkleOf(save.safariShinies, id)).length, inside = m.plain.length + m.gold.length;
+    const [ink, deep] = EXCHANGE_INK[p.area];
+    const shinies = p.ids.filter(id => sparkleOf(save.safariShinies, id)).length, sealed = p.ids.reduce((n, id) => n + sealedOf(id), 0);
     const peek = [...p.ids].sort((a, b) => sparkleOf(save.safariShinies, b) - sparkleOf(save.safariShinies, a) || caught.has(b) - caught.has(a)).slice(0, 3);
     return `<button type="button" class="sx-banner" data-area="${p.area}" style="--ink:${ink};--deep:${deep};animation-delay:${i * 40}ms" aria-label="${p.name}: ${shinies} of ${p.ids.length} shinies">
       <span class="sx-banner-text"><b>${p.name.toUpperCase()}</b>
-        <span class="sx-pills"><i>Shinies ${shinies} / ${p.ids.length}</i><i class="cy">${inside ? `${inside} in capsules` : 'Empty: catch one first'}</i></span></span>
+        <span class="sx-pills"><i>Shinies ${shinies} / ${p.ids.length}</i><i class="cy">${sealed ? `${sealed} sealed` : `Caught ${p.ids.filter(id => caught.has(id)).length} / ${p.ids.length}`}</i></span></span>
       <span class="sx-peek">${peek.map(id => `<img class="pixel${sparkleOf(save.safariShinies, id) ? '' : ' shade'}" src="${sparkleOf(save.safariShinies, id) ? shinyImage(id) : ENEMY_DEFS[id]?.image}" alt="" loading="lazy">`).join('')}</span>
       <span class="sx-chev" aria-hidden="true">›</span>
       <span class="sx-bar"><i style="width:${Math.round(shinies / p.ids.length * 100)}%"></i></span>
@@ -138,30 +141,33 @@ function homeView(save, caught) {
       <span class="sx-bar gold"><i style="width:${Math.max(1, Math.round(owned / SAFARI_ROSTER.length * 100))}%"></i></span>
       <div class="sx-row"><span class="sx-label">LUCKY STARS${stars > STARS_FOR_PICK ? ` · ${stars}` : ''}</span><span class="sx-stars">${row}</span></div>
       <p>Every capsule pays a Lucky Star, a repeat 2 (3 once it's at ★5). ${STARS_FOR_PICK} of them pick any shiny you've caught, free.</p>
+      ${held ? `<div class="sx-row"><span class="sx-label">SEALED CAPSULES</span><span class="sx-big cy">${held}</span></div><p>A Pokémon you haven't caught comes out sealed. Catch it in the Safari Zone and its capsule opens.</p>` : ''}
       ${S.picking ? '<button type="button" class="sx-btn ghost" data-act="unpick">Not now: keep my stars</button>'
-        : stars >= STARS_FOR_PICK ? `<button type="button" class="sx-btn gold" data-act="pick">USE ${STARS_FOR_PICK} STARS: PICK ANY SHINY</button>` : ''}
+        : stars >= STARS_FOR_PICK && caught.size ? `<button type="button" class="sx-btn gold" data-act="pick">USE ${STARS_FOR_PICK} STARS: PICK ANY SHINY</button>`
+        : stars >= STARS_FOR_PICK ? '<p class="sx-note">Catch a Pokémon in the Safari Zone to pick its shiny with them.</p>' : ''}
     </section>
     <p class="sx-note">${S.picking ? 'Open a biome and tap any Pokémon you\'ve caught.' : `${PULL_COST} PokéCoins a capsule. A pull of ${PULL_TEN} always holds a gold one.`}</p>
     ${banners}`;
 }
 
 function areaView(save, caught) {
-  const p = SAFARI_DEX_PAGES.find(x => x.area === S.area), [ink, deep] = EXCHANGE_INK[p.area], m = machineOf(p.area, [...caught]);
-  const inside = m.plain.length + m.gold.length, coins = save.coins ?? 0, stars = save.exchange?.stars ?? 0;
+  const p = SAFARI_DEX_PAGES.find(x => x.area === S.area), [ink, deep] = EXCHANGE_INK[p.area];
+  const coins = save.coins ?? 0, stars = save.exchange?.stars ?? 0, sealed = p.ids.reduce((n, id) => n + (caught.has(id) ? 0 : sealedOf(id)), 0);
   const shinies = p.ids.filter(id => sparkleOf(save.safariShinies, id)).length;
-  const keep = { all: () => true, owned: id => sparkleOf(save.safariShinies, id), new: id => caught.has(id) && !sparkleOf(save.safariShinies, id), rare: id => p.rare.includes(id) };
-  const chips = [['all', 'All'], ['owned', 'Owned'], ['new', 'Not owned'], ['rare', 'Rare']]
+  const keep = { all: () => true, owned: id => sparkleOf(save.safariShinies, id), new: id => !sparkleOf(save.safariShinies, id), sealed: id => !caught.has(id) && sealedOf(id), rare: id => p.rare.includes(id) };
+  if (S.filter === 'sealed' && !sealed) S.filter = 'all';
+  const chips = [['all', 'All'], ['owned', 'Owned'], ['new', 'Not owned'], ...(sealed ? [['sealed', 'Sealed']] : []), ['rare', 'Rare']]
     .map(([id, label]) => `<button type="button" class="sx-chip${S.filter === id ? ' on' : ''}" data-filter="${id}" aria-pressed="${S.filter === id}">${label}</button>`).join('');
   const odds = Math.round(goldOdds(save.exchange?.pity ?? 0) * 100);
   return `<section class="sx-head-banner" style="--ink:${ink};--deep:${deep}">
-      <b>${p.name.toUpperCase()}</b><span>Caught ${p.ids.filter(id => caught.has(id)).length} / ${p.ids.length} · Shinies ${shinies}</span></section>
+      <b>${p.name.toUpperCase()}</b><span>Caught ${p.ids.filter(id => caught.has(id)).length} / ${p.ids.length} · Shinies ${shinies}${sealed ? ` · Sealed ${sealed}` : ''}</span></section>
     <section class="sx-card machine">
       <div class="sx-machine">${capsule(p.area, !calmFx(), 'sx-icon')}
-        <div><b>SHINY CAPSULES</b><p>${inside ? `${inside} Pokémon in this machine. A repeat raises its Sparkle.` : 'Empty. Catch a Pokémon here on a Safari run to fill it.'}</p></div></div>
-      <p class="sx-odds">${m.gold.length ? `<i class="gold-dot"></i>Gold capsule (a rare spawn): ${odds}%, up ${Math.round(goldOdds(1) * 100) - Math.round(goldOdds(0) * 100)}% each plain one` : '<i class="gold-dot off"></i>No gold capsules till you catch a rare spawn here'}</p>
+        <div><b>SHINY CAPSULES</b><p>All ${p.ids.length} of the area's Pokémon are in this machine. A repeat raises its Sparkle; one you haven't caught comes out sealed till you catch it.</p></div></div>
+      <p class="sx-odds"><i class="gold-dot"></i>Gold capsule (a rare spawn): ${odds}%, up ${Math.round(goldOdds(1) * 100) - Math.round(goldOdds(0) * 100)}% each plain one</p>
       <div class="sx-pulls">
-        <button type="button" class="sx-btn line" data-pull="1"${!inside || coins < PULL_COST ? ' disabled' : ''}><b>PULL ×1</b><small>${fmt(PULL_COST)} coins</small></button>
-        <button type="button" class="sx-btn cyan" data-pull="${PULL_TEN}"${!inside || coins < TEN_COST ? ' disabled' : ''}><b>PULL ×${PULL_TEN}</b><small>${fmt(TEN_COST)}${m.gold.length ? ' · a gold one' : ' coins'}</small></button>
+        <button type="button" class="sx-btn line" data-pull="1"${coins < PULL_COST ? ' disabled' : ''}><b>PULL ×1</b><small>${fmt(PULL_COST)} coins</small></button>
+        <button type="button" class="sx-btn cyan" data-pull="${PULL_TEN}"${coins < TEN_COST ? ' disabled' : ''}><b>PULL ×${PULL_TEN}</b><small>${fmt(TEN_COST)} · a gold one</small></button>
       </div>
       <p class="sx-starline${S.picking ? ' on' : ''}">${S.picking ? `★ Tap any caught Pokémon below to take its shiny free.` : stars >= STARS_FOR_PICK ? starLine(stars) : `${starLine(stars)}. Each capsule adds one.`}</p>
     </section>
@@ -183,9 +189,10 @@ function render() {
 
 /* ---------- the reveal ---------- */
 
-function startReveal(list, free = false) {
+/** `unseal`: sealed capsules a catch opens, their dark glass clearing as they land. */
+function startReveal(list, free = false, unseal = false) {
   stopTimers();
-  S.reveal = { list, i: 0, free, phase: 'drop' };
+  S.reveal = { list, i: 0, free, unseal, phase: 'drop' };
   dlg.querySelector('.sx-reveal').hidden = false;
   showCapsule();
 }
@@ -201,6 +208,7 @@ function showCapsule() {
     R.phase = 'wait';
     drawReveal();
     if (c.gold && !R.free) later(420, () => { dlg?.querySelector('.sx-tray')?.classList.add('golden'); playSound('stat-up'); });
+    if (R.unseal) later(300, () => { dlg?.querySelector('.sx-tray')?.classList.add('cleared'); playSound('stat-up'); });
   });
 }
 
@@ -221,6 +229,7 @@ function openCapsule() {
       R.phase = 'shadow';
       drawScreen();
       later(c.gold ? 1700 : 950, () => {
+        if (c.sealed) return showShiny();   // it stays a shadow: no flash
         dlg.querySelector('.sx-screen').classList.add('flash');
         later(160, showShiny);
       });
@@ -232,7 +241,7 @@ function showShiny() {
   const R = S.reveal, c = R.list[R.i];
   R.phase = 'shiny';
   drawReveal();
-  playSound('shiny');
+  playSound(c.sealed ? 'select' : 'shiny');
   playCry(ENEMY_DEFS[c.id]?.spriteId ?? c.id);
 }
 
@@ -245,6 +254,7 @@ function nextCapsule() {
 }
 
 function closeReveal() {
+  if (S.after) return close();
   stopTimers();
   S.reveal = null;
   const r = dlg.querySelector('.sx-reveal');
@@ -254,7 +264,9 @@ function closeReveal() {
 }
 
 /** What the capsule did, in a word or two: new, its Sparkle, or the stars a ★5 repeat paid. */
-const gainText = (c) => (c.gain.isNew ? 'NEW SHINY' : c.gain.maxed ? `★5 · +${c.stars} LUCKY STARS` : `SPARKLE ★${c.gain.was} → ★${c.gain.level}`);
+const gainText = (c) => (c.sealed ? 'SEALED' : c.gain.isNew ? 'NEW SHINY' : c.gain.maxed ? `★5 · +${c.stars} LUCKY STARS` : `SPARKLE ★${c.gain.was} → ★${c.gain.level}`);
+/** A sealed one's name, once you've met it in the Safari; ??? till then. */
+const seenName = (id) => (getSave().safariDex?.seen?.includes(id) ? nameOf(id) : '???');
 
 function drawScreen() {
   const R = S.reveal, c = R.list[Math.min(R.i, R.list.length - 1)], ph = R.phase, inner = dlg.querySelector('.sx-led');
@@ -263,15 +275,19 @@ function drawScreen() {
   screen.style.setProperty('--glow', ph === 'shadow' ? (gold ? '#ffd36bee' : `${ink}dd`) : ph === 'shiny' ? (gold ? '#ffd36b66' : `${ink}66`) : `${ink}33`);
   screen.classList.toggle('gold', gold && (ph === 'shadow' || ph === 'shiny'));
   screen.classList.remove('flash');
-  if (ph === 'shadow') {
-    inner.innerHTML = `<div class="sx-shadow${gold ? ' shake' : ''}"><img class="pixel" src="${shinyImage(c.id)}" alt="A shadow"><b>${gold ? '★ RARE ★' : '???'}</b></div>`;
+  if (ph === 'shadow' || (R.unseal && ph === 'wait')) {
+    inner.innerHTML = `<div class="sx-shadow${gold ? ' shake' : ''}"><img class="pixel" src="${shinyImage(c.id)}" alt="A shadow"><b>${R.unseal && ph === 'wait' ? 'TAP TO OPEN' : gold ? '★ RARE ★' : '???'}</b></div>`;
+  } else if (ph === 'shiny' && c.sealed) {
+    inner.innerHTML = `<div class="sx-shown sealed"><img class="pixel" src="${shinyImage(c.id)}" alt="A sealed shadow"><b>${seenName(c.id)}</b>
+      <span class="sx-tags"><i style="background:${ink}">${area.name.toUpperCase()}</i><i class="dark">${gold ? 'RARE · ' : ''}SEALED</i></span>
+      <span class="sx-sealnote">Catch it in the Safari Zone to open it</span></div>`;
   } else if (ph === 'shiny') {
     inner.innerHTML = `<div class="sx-shown"><span class="sx-twinkles">${[0, 1, 2].map(k => `<svg viewBox="-7 -7 14 14" aria-hidden="true" style="animation-delay:${k * 0.45}s"><path d="${STAR4}" fill="${k === 1 ? '#ffd36b' : '#fff6c8'}"/></svg>`).join('')}</span>
       <img class="pixel" src="${shinyImage(c.id)}" alt="Shiny ${nameOf(c.id)}"><b>${nameOf(c.id).toUpperCase()}</b>
       <span class="sx-tags"><i style="background:${ink}">${area.name.toUpperCase()}</i><i class="gold">${R.free ? 'LUCKY STAR PICK · ' : gold ? 'RARE · ' : ''}${gainText(c)}</i></span>
       <span class="sx-sparkle" aria-label="Sparkle ${c.gain.level}">${sparkle(c.gain.level)}</span></div>`;
   } else {
-    inner.innerHTML = `<div class="sx-idle"><b>?</b><span>${ph === 'wait' ? 'TAP THE CAPSULE' : 'DISPENSING...'}</span></div>`;
+    inner.innerHTML = `<div class="sx-idle"><b>?</b><span>${R.unseal ? 'IT\'S REACTING!' : ph === 'wait' ? 'TAP THE CAPSULE' : 'DISPENSING...'}</span></div>`;
   }
 }
 
@@ -279,32 +295,35 @@ function drawReveal() {
   const R = S.reveal, box = dlg.querySelector('.sx-reveal'), multi = R.list.length > 1, ph = R.phase, stars = getSave().exchange?.stars ?? 0;
   const c = R.list[Math.min(R.i, R.list.length - 1)], area = SAFARI_DEX_PAGES.find(p => p.ids.includes(c.id)).area;
   const kind = R.free ? 'prism' : area, last = R.i + 1 >= R.list.length;
-  const left = S.area ? (() => { const m = machineOf(S.area, exchangeCaught()); return m.plain.length + m.gold.length; })() : 0;
+  const foot = R.unseal ? 'Caught in the Safari Zone: its sealed capsule opened!' : starLine(stars);
   const dots = R.list.map((x, k) => {
     const shown = ph === 'done' || k < R.i || (k === R.i && ph === 'shiny');
     return `<i class="${shown ? 'on' : ''}${shown && x.gold ? ' gold' : ''}"></i>`;
   }).join('');
   if (ph === 'done') {
+    const sealed = R.list.filter(x => x.sealed).length;
     box.innerHTML = `<header class="sx-rv-top"><b>${R.list.length} CAPSULES</b></header><div class="sx-dots">${dots}</div>
-      <div class="sx-all"><h3>${R.list.filter(x => x.gain.isNew).length} NEW SHINIES</h3><div class="sx-all-grid">${R.list.map((x, k) => `<div class="sx-got${x.gold ? ' gold' : ''}" style="animation-delay:${k * 50}ms">
-        <img class="pixel" src="${shinyImage(x.id)}" alt=""><b>${nameOf(x.id)}</b><small>${x.gain.isNew ? 'NEW' : x.gain.maxed ? `+${x.stars}★` : `★${x.gain.level}`}</small></div>`).join('')}</div></div>
-      <footer class="sx-rv-foot"><p>${starLine(stars)}</p><button type="button" class="sx-btn line" data-act="done">Done</button></footer>`;
+      <div class="sx-all"><h3>${(n => `${n} NEW SHIN${n === 1 ? 'Y' : 'IES'}`)(R.list.filter(x => x.gain?.isNew).length)}${sealed ? ` · ${sealed} SEALED` : ''}</h3><div class="sx-all-grid">${R.list.map((x, k) => `<div class="sx-got${x.gold ? ' gold' : ''}${x.sealed ? ' sealed' : ''}" style="animation-delay:${k * 50}ms">
+        <img class="pixel" src="${shinyImage(x.id)}" alt=""><b>${x.sealed ? seenName(x.id) : nameOf(x.id)}</b><small>${x.sealed ? 'SEALED' : x.gain.isNew ? 'NEW' : x.gain.maxed ? `+${x.stars}★` : `★${x.gain.level}`}</small></div>`).join('')}</div></div>
+      <footer class="sx-rv-foot"><p>${foot}</p><button type="button" class="sx-btn line" data-act="done">Done</button></footer>`;
     return;
   }
-  const trayCls = ph === 'drop' ? 'drop' : ph === 'wait' && c.gold && !R.free && calmFx() ? 'golden' : '';
-  box.innerHTML = `<header class="sx-rv-top"><b>${R.free ? 'LUCKY STAR CAPSULE' : multi ? `CAPSULE ${R.i + 1} / ${R.list.length}` : 'SHINY CAPSULE'}</b>
+  const trayCls = ph === 'drop' ? 'drop' : ph === 'wait' && calmFx() ? (R.unseal ? 'cleared' : c.gold && !R.free ? 'golden' : '') : '';
+  const what = R.free ? 'LUCKY STAR CAPSULE' : R.unseal ? 'SEALED CAPSULE' : multi ? 'CAPSULE' : 'SHINY CAPSULE';
+  box.innerHTML = `<header class="sx-rv-top"><b>${multi ? `${what} ${R.i + 1} / ${R.list.length}` : what}</b>
       ${multi ? '<button type="button" class="sx-btn ghost small" data-act="skip">Skip to all</button>' : ''}</header>
     <div class="sx-dots">${dots}</div>
     <div class="sx-screen"><div class="sx-led"></div><i class="sx-scan" aria-hidden="true"></i><i class="sx-dotmask" aria-hidden="true"></i></div>
     <div class="sx-tray ${trayCls}${c.gold && !R.free ? ' has-gold' : ''}">
       ${ph === 'shiny' ? '<span class="sx-tray-label">CAPSULE TRAY</span>' : `<button type="button" class="sx-tray-cap" data-act="open" aria-label="Open the capsule"${ph === 'wait' ? '' : ' disabled'}>
-        <span class="sx-cap-wrap plain">${capsule(kind, !calmFx())}</span>
+        <span class="sx-cap-wrap plain">${capsule(R.unseal ? 'sealed' : kind, !calmFx())}</span>
+        ${R.unseal ? `<span class="sx-cap-wrap clear">${capsule(kind, !calmFx())}</span>` : ''}
         ${c.gold && !R.free ? `<span class="sx-cap-wrap goldcap">${capsule('gold', !calmFx())}</span><span class="sx-ring" aria-hidden="true"></span>` : ''}
         <span class="sx-burst" aria-hidden="true">${burst()}</span></button><span class="sx-tray-shadow" aria-hidden="true"></span>`}
     </div>
-    <footer class="sx-rv-foot"><p>${starLine(stars)}</p>
+    <footer class="sx-rv-foot"><p>${foot}</p>
       ${ph === 'shiny' && multi ? `<button type="button" class="sx-btn cyan" data-act="next">${last ? 'SEE THEM ALL' : 'NEXT CAPSULE'}</button>` : ''}
-      ${ph === 'shiny' && !multi && !R.free && left ? `<button type="button" class="sx-btn gold" data-act="again"${(getSave().coins ?? 0) < PULL_COST ? ' disabled' : ''}>PULL AGAIN · ${fmt(PULL_COST)}</button>` : ''}
+      ${ph === 'shiny' && !multi && !R.free && !R.unseal && S.area ? `<button type="button" class="sx-btn gold" data-act="again"${(getSave().coins ?? 0) < PULL_COST ? ' disabled' : ''}>PULL AGAIN · ${fmt(PULL_COST)}</button>` : ''}
       ${ph === 'shiny' && !multi ? '<button type="button" class="sx-btn line" data-act="done">Done</button>' : ''}
     </footer>`;
   drawScreen();
@@ -314,7 +333,7 @@ function drawReveal() {
 
 function pull(n) {
   const got = exchangePull(S.area, n);
-  if (!got) { playSound('cancel'); return toast((getSave().coins ?? 0) < PULL_COST * n ? 'Not enough PokéCoins for that.' : 'Nothing in this machine yet.'); }
+  if (!got) { playSound('cancel'); return toast('Not enough PokéCoins for that.'); }
   playSound('buy');
   refreshCoins();
   render();
@@ -377,14 +396,18 @@ function close() {
   dlg.close();
   dlg.remove();
   dlg = null;
-  Object.assign(S, { area: null, filter: 'all', picking: false, reveal: null });
+  Object.assign(S, { area: null, filter: 'all', picking: false, reveal: null, after: false });
   refreshCoins();
   const done = onDone;
   onDone = null;
   done?.();
 }
 
-/** The Exchange, over the Outfitter. `done` runs as it closes. */
+/** The capsules a reveal of `gains` (openSealed()'s) opens. */
+const unsealed = (id, gains) => gains.map(gain => ({ id, gold: false, gain, stars: 0 }));
+
+/** The Exchange, over the Outfitter. `done` runs as it closes. A Pokémon caught with its sealed capsules still shut
+    (the tab closed on the catch's rewards) opens them first. */
 export function openShinyExchange(done = null) {
   if (dlg) return;
   onDone = done;
@@ -392,4 +415,17 @@ export function openShinyExchange(done = null) {
   render();
   dlg.showModal();
   playSound('confirm');
+  const shut = staleSealed().flatMap(id => unsealed(id, openSealedCapsules(id)));
+  if (shut.length) { render(); startReveal(shut, false, true); }
+}
+
+/** A Safari catch of `id` opening its sealed capsules (`gains`, openSealed()'s; js/run.js saves them with the
+    rewards): the window is only the reveal, each capsule's dark glass clearing to the shadow before it opens. */
+export function openSealedReveal(id, gains, done) {
+  if (dlg || !gains.length) return done();
+  onDone = done;
+  S.after = true;
+  build();
+  dlg.showModal();
+  startReveal(unsealed(id, gains), false, true);
 }
