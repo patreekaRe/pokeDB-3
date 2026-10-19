@@ -210,10 +210,10 @@ body:has(> .base3d) :is(#start-screen, #backdrop, #scene-bg, #scene-light) { vis
 .title-screen.hub-mode .title-refresh.spinning .ta-update { animation: none; opacity: 1; }
 html.calm-fx .title-screen.hub-mode .title-refresh .ta-update { animation: none; }
 @media (prefers-reduced-motion: reduce) { .title-screen.hub-mode .title-refresh:not(.spinning) .refresh-ico, .title-screen.hub-mode .title-refresh .ta-update { animation: none; } }
-/* the Clearing's speaker: the same small shell key, just left of Refresh (the user's ask, 2026-10-18: the big speaker
-   alone in the top-left was too much); its pop-out opens under it, right-aligned, so it stays on screen */
+/* the Clearing's speaker: the same small shell key as Refresh, in the top-left corner (the user's ask, 2026-10-18: the
+   big speaker there was too much, but it belongs top left); its pop-out opens under it */
 .title-screen.hub-mode .title-sound {
-  position: fixed; z-index: 3; top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 52px);
+  position: fixed; z-index: 3; top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left));
 }
 .title-screen.hub-mode .title-sound .title-account { margin: 0; padding: 2px; }
 .title-screen.hub-mode #title-sound-btn .ta-pc {
@@ -225,7 +225,7 @@ html.calm-fx .title-screen.hub-mode .title-refresh .ta-update { animation: none;
 .title-screen.hub-mode #title-sound-btn .ta-pc :is(svg, .smooth-icon) { width: 18px; height: 18px; }
 .title-screen.hub-mode #title-sound-btn:is(:hover, :focus-visible, [aria-expanded="true"]) .ta-pc { opacity: 1; }
 .title-screen.hub-mode #title-sound-btn:active .ta-pc { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 0 0 var(--shell-deep); }
-.title-screen.hub-mode .title-sound .sound-pop { top: calc(100% + 4px); left: auto; right: -48px; translate: none; animation-name: soundPop; }
+.title-screen.hub-mode .title-sound .sound-pop { top: calc(100% + 4px); left: 0; right: auto; translate: none; animation-name: soundPop; }
 
 /* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: the Clearing's Pokédex bar along the bottom
    (2026-10-13, the user's ask), the place's name and the coins on its LCDs, and over it a front's line pops up a moment. */
