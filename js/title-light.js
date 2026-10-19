@@ -75,7 +75,9 @@ export function paintTitleLight(el, { time, orb, ground, hills }) {
   sprite = glowSprite(look.mote);
   motes = Array.from({ length: look.count }, () => mote(true));
   draw(performance.now());
-  if (!raf) runTitleLight(true);   // switched back on in Settings while the title is up
+  // switched back on in Settings while the title is up; not under the Clearing, where a resize (a phone turned, its
+  // keyboard up) repaints the title and this started a loop drawing into the hidden light for the rest of the session
+  if (!raf && !document.querySelector('#title-screen.hub-mode')) runTitleLight(true);
 }
 
 /** One glowing mote: a firefly wanders low over the grass and blinks; pollen rises slowly and fades. */

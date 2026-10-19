@@ -4,8 +4,9 @@
    this file draws it on an arcade cabinet's screen, character-select
    style, and handles the joystick and buying.
 
-   The screen holds four rows, Pokémon, Perks, Shiny and Poké Balls (the
-   Safari Zone's, js/data/balls.js): the joystick's
+   The screen holds three rows, Pokémon, Perks and Shiny (Poké Balls are
+   the Safari Outfitter's, 2026-10-19; the Safari prep window's Buy shows
+   only them, `ballsApp`): the joystick's
    up/down switches row, left/right moves along it, and the choice under
    the cursor is shown big. A row longer than WINDOW cells shows the
    WINDOW around the cursor, with arrows for the rest. Buy takes two
@@ -31,8 +32,10 @@ const ROWS = [
   { id: 'balls', name: 'Poké Balls', entries: () => BALLS.filter(b => !b.free).map(ballEntry) },
 ];
 const rowEntries = (row) => row.entries();
+const SHELF = ROWS.filter(r => r.id !== 'balls');
+let shown = SHELF;   // the rows on the screen
 
-const cursor = { row: 0, col: [0, 0, 0, 0], armed: false, news: null };   // news: what the last purchase got you, on the screen in place of a toast
+const cursor = { row: 0, col: {}, armed: false, news: null };   // news: what the last purchase got you, on the screen in place of a toast
 const WINDOW = 6;     // cells a row shows at once
 const PUSH = 16;      // px the stick must be dragged before it counts as a push
 const TRAVEL = 12;    // px the ball can lean
@@ -48,6 +51,7 @@ export function toggleShop(highlightId, { modal = false } = {}) {
   const dialog = $('shop-dialog');
   if (dialog.open) { playSound('cancel', 'confirm'); return dialog.close(); }
 
+  shown = SHELF;
   const at = aimCorner(highlightId);
   cursor.armed = false;
   cursor.news = null;
@@ -59,14 +63,14 @@ export function toggleShop(highlightId, { modal = false } = {}) {
   if (at >= 0) flash('flash');
 }
 
-/** Points the Game Corner at a skin or a row by id, for the next time it opens; the skin's index, or -1. */
+/** Points the Game Corner at a skin by id, for the next time it opens; the skin's index, or -1. */
 export function aimCorner(id) {
   const at = SKIN_SHOP_ITEMS.findIndex(item => item.id === id);
-  if (at >= 0) { cursor.row = 0; cursor.col[0] = at; }
-  const row = ROWS.findIndex(r => r.id === id);   // a row's id opens on that row: 'balls' from the Safari's prep window
-  if (row >= 0) cursor.row = row;
+  if (at >= 0) { cursor.row = 0; cursor.col.skins = at; }
   return at;
 }
+
+const colOf = (r) => cursor.col[shown[r].id] ?? 0;
 
 /**
  * The Game Corner as one of the Pokédex's apps (its dock): the cabinet's screen moves into the device's screen while
@@ -74,7 +78,9 @@ export function aimCorner(id) {
  * screen instead of shutting it (the user's call, 2026-10-07). Its own Buy and the coins sit under the screen.
  */
 export const cornerApp = {
-  mount(panel) {
+  mount(panel, rows = SHELF) {
+    shown = rows;
+    if (cursor.row >= rows.length) cursor.row = 0;
     cursor.armed = false;
     cursor.news = null;
     preloadSounds('stick', 'buy');
@@ -97,8 +103,12 @@ export const cornerApp = {
   press,
   unmount() {
     document.querySelector('#shop-dialog .gc-bezel').append(document.querySelector('.cdev-app .gc-crt') ?? document.querySelector('.gc-crt'));
+    shown = SHELF;
   },
 };
+
+/** The same screen with only the Poké Balls, for the Safari prep window's Buy key. */
+export const ballsApp = { ...cornerApp, mount: (panel) => cornerApp.mount(panel, ROWS.filter(r => r.id === 'balls')) };
 
 /** Called once at startup: the cabinet's fixed parts and its controls. */
 export function initShop() {
@@ -218,10 +228,10 @@ function ballEntry(ball) {
 function render() {
   refreshCoins();
   const coins = getSave().coins;
-  const rows = ROWS.map(rowEntries);
-  const pick = rows[cursor.row][cursor.col[cursor.row]];
+  const rows = shown.map(rowEntries);
+  const pick = rows[cursor.row][colOf(cursor.row)];
 
-  $('gc-section').textContent = `${ROWS[cursor.row].name} ${cursor.col[cursor.row] + 1}/${rows[cursor.row].length}`;
+  $('gc-section').textContent = `${shown[cursor.row].name} ${colOf(cursor.row) + 1}/${rows[cursor.row].length}`;
 
   const art = pick.sprite ? el('img', `pixel gc-pick-sprite${pick.dark ? ' dark' : ''}`) : el('span', 'gc-pick-icon', pick.icon);
   if (pick.sprite) { art.src = pick.sprite; art.alt = ''; }
@@ -238,16 +248,16 @@ function render() {
   $('gc-roster').replaceChildren(...rows.map((entries, r) => {
     const line = el('div', 'gc-row');
     line.setAttribute('role', 'group');
-    line.setAttribute('aria-label', ROWS[r].name);
-    const start = Math.max(0, Math.min(cursor.col[r] - Math.floor(WINDOW / 2) + 1, entries.length - WINDOW));
-    const shown = entries.length > WINDOW;
-    if (shown) line.append(el('span', `gc-more${start > 0 ? '' : ' none'}`, '◀'));
+    line.setAttribute('aria-label', shown[r].name);
+    const start = Math.max(0, Math.min(colOf(r) - Math.floor(WINDOW / 2) + 1, entries.length - WINDOW));
+    const scrolls = entries.length > WINDOW;
+    if (scrolls) line.append(el('span', `gc-more${start > 0 ? '' : ' none'}`, '◀'));
     entries.forEach((entry, c) => {
-      if (shown && (c < start || c >= start + WINDOW)) return;
+      if (scrolls && (c < start || c >= start + WINDOW)) return;
       const cell = el('button', 'gc-cell');
       cell.type = 'button';
       cell.setAttribute('aria-label', `${entry.name}${entry.done ? `, ${entry.done}` : `, ${entry.cost} PokéCoins`}`);
-      if (r === cursor.row && c === cursor.col[r]) { cell.classList.add('on'); cell.setAttribute('aria-current', 'true'); }
+      if (r === cursor.row && c === colOf(r)) { cell.classList.add('on'); cell.setAttribute('aria-current', 'true'); }
       if (entry.sprite) {
         const img = el('img', `pixel${entry.dark ? ' dark' : ''}`);
         img.src = entry.sprite;
@@ -258,7 +268,7 @@ function render() {
       cell.addEventListener('click', () => select(r, c));
       line.append(cell);
     });
-    if (shown) line.append(el('span', `gc-more${start + WINDOW < entries.length ? '' : ' none'}`, '▶'));
+    if (scrolls) line.append(el('span', `gc-more${start + WINDOW < entries.length ? '' : ' none'}`, '▶'));
     return line;
   }));
 
@@ -277,10 +287,10 @@ function render() {
 }
 
 function move(dx, dy) {
-  if (dy) cursor.row = (cursor.row + dy + ROWS.length) % ROWS.length;
+  if (dy) cursor.row = (cursor.row + dy + shown.length) % shown.length;
   if (dx) {
-    const count = rowEntries(ROWS[cursor.row]).length;
-    cursor.col[cursor.row] = (cursor.col[cursor.row] + dx + count) % count;
+    const count = rowEntries(shown[cursor.row]).length;
+    cursor.col[shown[cursor.row].id] = (colOf(cursor.row) + dx + count) % count;
   }
   cursor.armed = false;
   cursor.news = null;
@@ -291,7 +301,7 @@ function move(dx, dy) {
 
 function select(row, col) {
   cursor.row = row;
-  cursor.col[row] = col;
+  cursor.col[shown[row].id] = col;
   cursor.armed = false;
   cursor.news = null;
   playSound('stick', 'confirm');
@@ -315,7 +325,7 @@ export function buyCorner(pick) {
 
 /** First press arms the button, the second buys (the menu blip covers the first). */
 function press() {
-  const pick = rowEntries(ROWS[cursor.row])[cursor.col[cursor.row]];
+  const pick = rowEntries(shown[cursor.row])[colOf(cursor.row)];
   if (pick.done || pick.blocked || getSave().coins < pick.cost) return;
   if (!cursor.armed) { cursor.armed = true; cursor.news = null; vibrate(12); render(); return; }
   cursor.armed = false;

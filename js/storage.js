@@ -17,6 +17,9 @@
 import { RENAMED_STARTERS, STARTERS } from './data/starters.js';
 import { GATE_HP, seedGate } from './data/gate.js';
 import { migrateBalls } from './data/balls.js';
+import { addShiny, sparkleOf } from './data/shinies.js';
+import { PULL_COST, STARS_FOR_PICK, machineOf, pullCapsules, luckyPick, openSealed } from './data/exchange.js';
+import { SAFARI_ROSTER } from './data/safari.js';
 
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
@@ -87,10 +90,12 @@ const freshSave = () => ({
   tower: { week: null, tries: 0, best: 0, bestEver: 0, summits: 0, bestTurns: 0 },   // the Sky Pillar (js/data/tower.js): the week (its Monday), its tries (only the first counts), that try's floor, your highest floor ever (any try: the Tower Badges), climbs that reached the top, the fewest turns one took, the weeks climbed (`weeks`, missing in an old save: towerWeeks()) and guardians beaten (`guardians`, likewise: guardiansBeaten()); the augment badges' `augDex` (every augment taken), `sets` (sets completed) and `prismFloor` / `tradeFloor` (the highest floor cleared holding 3 Prismatics / trade-offs), all missing in an old save
   corner: {},   // the Game Corner's day: Voltorb Flip's (js/data/corner.js) and the Gachapon's week ({ week, pulls })
   safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD"), its tries so far (only the first counts) the days played (`days`, missing in an old save: safariDays()), the day its Day Pass was bought (`pass`) and the Safari Balls left in the run under way (`balls`)
+  safariShinies: {},          // Safari Pokémon whose shiny was caught, by id -> its Sparkle 1-5, a duplicate +1 (js/data/shinies.js)
+  exchange: { stars: 0, pity: 0, sealed: {} },   // the Shiny Exchange (js/data/exchange.js): Lucky Stars held, plain capsules pulled since the last gold one, and sealed capsules held (id -> how many)
   safariDex: { seen: [], caught: [], done: [], complete: false },   // Safari Pokémon met and caught, on any try (the Safari Pokédex), the areas whose reward was paid, and Rayquaza's full dex
   ranger: { claimed: [], log: {} },   // the Safari Outfitter's Ranger Task Board (js/data/ranger.js): tasks claimed, and the catches it counts that the Pokédex doesn't (balls, night, first turns, unhurt, best run, bosses, wins, days in a row)
   journal: { claimed: [] },   // the Trainer's Journal at the Clearing's PC (js/data/journal.js): tasks claimed; its progress is counted from the rest of the save
-  balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Game Corner (js/data/balls.js): stock per ball id, the Master Ball if owned, the week the Master Ball was thrown and its throws (`masterThrows`, missing in an old save: masterThrows())
+  balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Safari Outfitter (js/data/balls.js): stock per ball id, the Master Ball if owned, the week the Master Ball was thrown and its throws (`masterThrows`, missing in an old save: masterThrows())
   losses: [],                 // lost runs, a short line each (js/halloffame.js recordLoss()): where it fell and to what, newest LOSS_KEEP
   hallOfFame: [],             // every Trainer Level 5 win, oldest first (js/halloffame.js); old saves start empty   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
   stats: {
@@ -134,6 +139,8 @@ function load() {
         dex: seedCounts({ ...base.dex, ...saved.dex }),
         shiny: { ...base.shiny, ...saved.shiny },
         safariDex: { ...base.safariDex, ...saved.safariDex },
+        safariShinies: { ...saved.safariShinies },
+        exchange: { ...base.exchange, ...saved.exchange, sealed: { ...saved.exchange?.sealed } },
         ranger: { ...base.ranger, ...saved.ranger },
         journal: { ...base.journal, ...saved.journal },
         tower: { ...base.tower, ...saved.tower },
@@ -275,6 +282,56 @@ export function markSafari(list, id) {
   data.safariDex[list].push(id);
   persist();
   return true;
+}
+
+/** A Safari shiny's Sparkle, 0 until caught; ?sparkle=N lends every one at ★N for the page load. */
+export function safariSparkle(id) {
+  const lent = new URLSearchParams(location.search).get('sparkle');
+  return lent !== null ? sparkleOf({ [id]: +lent || 0 }, id) : sparkleOf(data.safariShinies, id);
+}
+
+/** A wild shiny caught: its Sparkle goes up (js/data/shinies.js), and what changed. */
+export function gainShiny(id) {
+  const gain = addShiny(data.safariShinies, id);
+  persist();
+  return gain;
+}
+
+/** The Safari Pokémon the Shiny Exchange counts as caught; ?safaridex lends every one for the page load (pulls still save). */
+export const exchangeCaught = () => (new URLSearchParams(location.search).has('safaridex') ? SAFARI_ROSTER : data.safariDex.caught);
+
+/** Pull `n` capsules from an area's machine: pays for them, saves each shiny's Sparkle (or the sealed capsule of one not
+    caught yet), the Lucky Stars and the gold odds, and returns the capsules (js/data/exchange.js), or null with too few
+    coins. */
+export function exchangePull(area, n, roll) {
+  const machine = machineOf(area, exchangeCaught()), cost = PULL_COST * n;
+  if (data.coins < cost) return null;
+  const ex = data.exchange, sealed = { ...ex.sealed }, pull = pullCapsules(machine, n, data.safariShinies, ex.pity, roll, sealed);
+  data.coins -= cost;
+  data.exchange = { ...ex, stars: ex.stars + pull.stars, pity: pull.pity, sealed };
+  persist();
+  return pull.capsules;
+}
+
+/** Pokémon caught with sealed capsules still shut (the tab closed on the catch's rewards, before they were saved open). */
+export const staleSealed = () => Object.keys(data.exchange.sealed || {}).filter(id => data.safariDex.caught.includes(id));
+
+/** A Safari catch opens its sealed capsules (openSealed()): their gains, saved. */
+export function openSealedCapsules(id) {
+  const sealed = { ...data.exchange.sealed }, gains = openSealed(data.safariShinies, sealed, id);
+  if (!gains.length) return gains;
+  data.exchange = { ...data.exchange, sealed };
+  persist();
+  return gains;
+}
+
+/** Ten Lucky Stars on one caught shiny: its gain, or null. */
+export function exchangePick(id) {
+  const gain = luckyPick(data.safariShinies, data.exchange.stars, exchangeCaught(), id);
+  if (!gain) return null;
+  data.exchange = { ...data.exchange, stars: data.exchange.stars - STARS_FOR_PICK };
+  persist();
+  return gain;
 }
 
 /** The Pokédex: `list` is 'seen' (fought it) or 'defeated' (beat it). Returns true the first time. */

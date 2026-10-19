@@ -494,7 +494,7 @@
         <div class="ability-banner" id="ability-banner" aria-hidden="true" hidden><span id="ability-banner-who"></span><strong id="ability-banner-name"></strong></div>
 
         <div class="nameplate" id="enemy-plate">
-          <div class="nameplate-title"><strong id="enemy-name"></strong><span id="enemy-type" class="chip"></span></div>
+          <div class="nameplate-title"><strong id="enemy-name"></strong><span id="enemy-shiny" class="shiny-tag" hidden>Shiny</span><span id="enemy-type" class="chip"></span></div>
           <div class="gb-hp" id="enemy-hp" role="progressbar" aria-label="Enemy HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
             <span class="gb-hp-track"><span class="gb-hp-fill" id="enemy-hp-fill"></span></span>
@@ -749,6 +749,18 @@
     <form method="dialog" class="records-close"><button class="btn primary">Continue</button></form>
   </dialog>
 
+  <dialog id="grave-dialog" data-smooth-icons class="dialog records-dialog hof-dialog loss-dialog grave-dialog dev-window">
+    <h2 tabindex="-1" autofocus id="grave-title">🪦 A friend's grave</h2>
+    <p class="records-sub" id="grave-sub"></p>
+    <div id="grave-body" class="hof-body bdx-sheet"></div>
+    <p class="records-sub grave-said" id="grave-said" aria-live="polite"></p>
+    <div class="records-close grave-keys">
+      <button type="button" class="btn" id="grave-respect">💐 Pay respects</button>
+      <button type="button" class="btn" id="grave-avenge">⚔️ Avenge</button>
+      <form method="dialog"><button class="btn primary">Close</button></form>
+    </div>
+  </dialog>
+
   <dialog id="map-dialog" class="dialog wide-dialog dev-window">
     <h2 id="map-dialog-title">Map</h2>
     <div class="map-peek-wrap dev-screen"><div class="map map-peek" id="map-peek"></div></div>
@@ -872,7 +884,7 @@
         <button type="button" class="mdex-btn" id="sp-dex"><span class="mdex-ico" data-icon="dex"></span><span class="mdex-label">Pokédex</span></button>
         <button type="button" class="mdex-btn" id="sp-board"><span class="mdex-ico" data-icon="trophy"></span><span class="mdex-label">Ranks</span></button>
         <button type="button" class="mdex-btn" id="sp-tasks" title="The Ranger Task Board"><span class="mdex-ico" data-icon="map"></span><span class="mdex-label">Tasks</span><em class="sp-tasks-n" hidden></em></button>
-        <button type="button" class="mdex-btn" id="sp-corner" title="Buy more balls at the Game Corner"><span class="mdex-ico" data-icon="corner"></span><span class="mdex-label">Buy</span></button>
+        <button type="button" class="mdex-btn" id="sp-corner" title="Buy more Poké Balls"><span class="mdex-ico" data-icon="corner"></span><span class="mdex-label">Buy</span></button>
       </div>
       <div class="tdev-ab">
         <span class="tdev-key b"><button type="button" class="cdev-btn" id="sp-close" aria-label="Back">B</button>Back</span>

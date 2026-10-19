@@ -70,6 +70,7 @@ import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
 import { startCrumbs } from './crumbs.js';
 import { initTrainers, onVisit } from './trainers.js';
+import { initGraves } from './graves.js';
 import { $, el, confirmDialog } from './ui.js';
 import './no-loupe.js';
 import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
@@ -278,6 +279,7 @@ function init() {
   startCrumbs();
   initLeaderboard();
   initTrainers();
+  initGraves();
   initSafariPrep({
     onStart: async () => {
       if (!(await safariTicket())) return openSafariPrep();

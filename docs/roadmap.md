@@ -9,16 +9,65 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check: Ruins drew 677 times a frame,
-Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186). One town a session, the user checking each on their
-phone. **Driftwood Landing done 2026-10-17** (`stillParts()` in `js/event-3d.js`, `merge: true` on the `lagoon` style;
-how it works in `docs/reference/towns.md`'s "Merged buildings"): 674 -> ~495 GL draws a frame headless, waiting on the
-user's phone check (`?town=ruins&towns`). Next, Thornwood (Highbough), then Savanna:
-> Run in: CLOUD. Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/reference/towns.md's "Merged buildings". Do the
-> towns' draw calls for Highbough (`?town=thornwood`, style `canopy`): add `merge: true` to its style, mark every part a
-> tick moves or hides in `treehouse()`, `greatTree()`, `nursery()`, `canopyManor()` and anything they attach with
-> `moves()`, then check headless (draws a frame before and after, every door opens, no console errors, one GL context
-> awake; no screenshots), update the roadmap, push to main and give me the githack link.
+**▶ Run in: CLOUD. Safari shinies: catching, Sparkle levels and the Shiny Exchange** (the user's asks, 2026-10-18;
+agreed on the mock https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy, boards 1-7). Decided:
+- **Shiny catching**, look only: any wild in a Safari room is shiny at `SHINY_ODDS` (1 in 150), rares too; the same
+  fight, HP, moves and catch odds, so the roll is cosmetic (`Math.random`, off the daily seed: the run and leaderboard
+  stay the same for everyone). It comes out in the starters' ✨ burst (`shinySparkle()` in `js/battle.js`) under a gold
+  "A SHINY X APPEARED!" banner and sparkles all fight; the ball's shakes trail gold. Knocked out, it's gone. Caught, the
+  GOTCHA box says NEW SHINY (and fills its Safari Pokédex page if new), or raises its Sparkle if owned.
+- **Sparkle** ★1-★5 per owned Safari shiny (a duplicate +1). Shown on its signature card (★1 shiny art, ★2 a burst when
+  played, ★3 a glowing edge, ★4 sparkles over the art, ★5 a gold frame and foil, under `calmFx()`), the catch box, the
+  Safari Pokédex and its Secret Base resident. Wild Pokémon stay their normal colours whatever you own.
+- **The Shiny Exchange**: a kiosk on the Outfitter's floor right of the Day Pass dais (tile 13,8), facing the door, no
+  taller than the booth; its LED screen cycles the Safari shinies (a shadow until caught); a capsule tray at its base.
+  Its window (dark hi-tech, not the Pokédex look): six biome banners, each a capsule machine of the shinies you've
+  caught. Coins only pull, never buy outright (the user's call): 150 a pull, x10 for 1,500 always holding a gold one.
+  Duplicates allowed (a duplicate is +1 Sparkle and 2 Lucky Stars, 3 past ★5; about 1 plain capsule in 3 is a shiny you
+  don't own yet). A gold capsule is a rare (8%, +4% each plain one, back to 8% after a gold). Every capsule is a Lucky
+  Star; 10 pick any caught shiny free (a prism capsule). The reveal: the capsule drops in the tray (a gold one shows
+  plain, then turns gold), a tap opens it (rays, stars), the shadow holds (a gold one shakes), a flash, the shiny.
+  Capsules are smooth SVG in the window (no new GL context); the tray's one is a sphere in the lodge's own scene.
+  Make them look cool (the user's only ask; the design is session 2's call): start from the mock's glossy capsule
+  (biome colour, gold, prism; pearl base, chrome band and button), and push it: a see-through top with sparkles
+  drifting inside, a rim light in its colour, a slow idle turn in the tray, a crack of light along the band before it
+  opens. Animate only transform and opacity, no animated blur or masks, and all of it off under `calmFx()`.
+- Sprites: every Safari Pokémon (514, all Gen 1-5) has PokeAPI's black-white animated shiny, the source of the normal
+  ones; numbers from `raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv` (pokeapi.co is blocked).
+
+Three sessions, in order. **Session 1 done 2026-10-18, on `main`** (patch 1.26): the 514 shiny GIFs, `save.safariShinies`,
+the roll, the battle's entrance, banner, twinkles, gold shakes and catch box, the signature card's Sparkle looks; how it
+works is `docs/reference/safari.md`'s "Wild shinies and Sparkle". The user plays a Safari run with `?wildshiny` (every
+wild shiny, a catch saves nothing) and looks at the cards with `?sparkle=1` to `?sparkle=5`, and says what to change.
+**Session 2 done 2026-10-18, on `main`**: the Shiny Exchange kiosk right of the Day Pass dais (LED screen, tray
+capsule), its window, the pulls and the reveal; how it works is `docs/reference/hub-base-mall.md`'s Safari Outfitter part
+("The Shiny Exchange"), the rules `js/data/exchange.js` (`tests/exchange.test.mjs`). The user tries it at
+`?mall=outfitter&ribbon&coins=5000&safaridex` (every Safari Pokémon counted caught) and says what to change. **Session 2b done 2026-10-19, on `main`: sealed capsules** (the user's catch: with one
+Pokémon caught in an area its machine held one shiny, so a pull was a sure buy). A machine holds the area's every
+Pokémon, `NEW_ODDS` is a floor (else any of the machine), and one you haven't caught comes out sealed (its shadow, 1
+Lucky Star, saved by id). A Safari catch of it opens it as the first reward step: the Exchange's reveal alone, the
+smoked glass clearing as it lands, a tap, the shiny; the box says it and the signature card shows the new Sparkle. How
+it works: `docs/reference/hub-base-mall.md`'s "Sealed capsules". **The user tries it** at
+`?mall=outfitter&ribbon&coins=5000` (a fresh save: pulls come out sealed), then on a Safari run catches a Pokémon
+they hold sealed. One call made for them: the opening is its own window right after the catch, before the reward box
+tells the GOTCHA, not inside the box (simpler, and it never covers the box's lines); say if it should move. Next,
+session 3:
+
+> Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md's Safari Pokédex part, hub-base-mall.md's residents and the
+> Ranger Task Board, and this roadmap entry. Session 3, shinies everywhere else: the Safari Pokédex shows owned shinies
+> and their Sparkle (a shiny toggle on a page) and sealed capsules (a capsule badge with the count on a Pokémon's page,
+> "2 sealed — catch to open", the same mark on the list and a "Sealed: N" total; the user's ask, 2026-10-19), Secret
+> Base residents come out shiny, Ranger tasks for shiny catches,
+> the Trainer Card's count and a ✨ on the day's leaderboard. Check headless, a patch-notes line, move this entry to
+> docs/roadmap-done.md, push to main and give me the githack link.
+
+**▶ PLAYTEST ON THE LIVE SITE. The towns' and the Clearing's draw calls: done, waiting on the user's phone check** (all five towns merged,
+2026-10-17 / 18; numbers in `docs/roadmap-done.md` and `docs/reference/towns.md`'s "Merged buildings"). On a phone, each of
+`?town=ruins&towns`, `thornwood`, `savanna`, `shrine`, `wastes` (`&gymwins=1` for the leaders' homes): smoother, nothing
+sunk, bent or gapped, banners and flags still sway, roofs still fade behind you. The Clearing too (2026-10-18, ~459 -> ~243 a frame,
+`mergeStill()`; `docs/reference/hub-base-mall.md`): on a phone, the walls and roofs whole, the cauldron's fire flickering,
+every place still tapped. Not queued, the user's call: the towns' ground extras (Cinder Springs' lava field, Driftwood's
+rowboats and jungle). `tools/draw-probe.mjs` measures a place and walks into every door.
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
@@ -906,9 +955,15 @@ a friend's base as they left it, read-only (`openBase3d({ guest })`, every base 
 by `tools/trainers-check.mjs`'s save-unchanged test. Then (the user's picks): Visit house / Visit yard for a base with a
 backyard, and their trophy cases as they last saw them at home. **Next: the user playtests it** (two signed-in accounts, or
 `?base&asfriend` alone); a guestbook of stamps is still a maybe.
-Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
-seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
-in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
+~~**Friends' graves and the Plaza's buddies**~~ done 2026-10-18 on `claude/friends-tombstones` (last commit `da65d5aa`, pushed to `main` too;
+`docs/roadmap-done.md`, details in `docs/reference/cloud-save.md`): a lost run (Safari and Sky Pillar too) goes up on
+`graves/<uid>`, friends find the grave where it fell (the very room on the Safari, the door on the Pillar, the same
+floor elsewhere), a tap opens the loss recap with Pay respects / Avenge, and up to 4 friends' buddies walk the Trainer
+Plaza. **Next: the user publishes `firestore.rules`** (Waiting on the user) **and playtests it** (`?graves=3`, or two
+signed-in accounts).
+Later: name search and Follow, then the rest of the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes
+(best on the seeded Safari / Sky Pillar, rated for coins), a daily gift in a friend's Lost & Found (the user's pick to
+build first), maybe an Assist (a friend's partner for one fight, bot-checked).
 **Friend ideas saved 2026-10-17** (the user's pick of these: **the daily gift**, one item a day to a friend, built
 first when friends work resumes; the rest just saved). Real email was ruled out: it needs a server (Cloud Functions on
 Blaze plus a mail service), iCloud drops Firebase's mail, and it means using sign-in addresses. Instead, in-game:
@@ -1033,8 +1088,8 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
         **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
      d) ~~**The east front**: the Safari Outfitter~~ done 2026-10-15, made a grand safari lodge the same day
         (`docs/roadmap-done.md`). **Next**: the user playtests it (`?mall=outfitter&safari&coins=3000`) and says what to
-        change. Poké Balls are still also sold in the Pokédex's Game Corner app and the Safari prep window's Buy key: say
-        if they should move to the Outfitter only. ▶ Run in: CLOUD.
+        change. Poké Balls left the Pokédex's Game Corner app 2026-10-19 (the user's ask); the Safari prep window's Buy
+        key still sells them (`ballsApp` in `js/shop.js`): say if that should go too. ▶ Run in: CLOUD.
 - **Ranger Task Board and Trainer's Journal**: built and rebalanced 2026-10-16, with the Trainer furniture set and the gold
   shell, and its cases sparkling with news when you come home (`docs/roadmap-done.md`). **Next, if wanted**: a reward per Ranger rank, more tasks, seasonal Expeditions.
   Waiting on the user's playtest (`?base` to see the set once claimed). ▶ Run in: CLOUD.
@@ -1049,19 +1104,13 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.
 - A Safari "zone legend" (a weekly Pokémon catchable only on the last floor): the user said no, 2026-10-03.
-- Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
+- Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
-- **The Safari Shiny Exchange, a mock** (2026-10-18, the user's ask): a kiosk in the Safari Outfitter for the shinies
-  of every Safari Pokémon (516 on the pages), its LED screen cycling them (a shadow until caught), opening a hi-tech
-  window (not the Pokédex look) of biome banners. Made a gacha the same day (the user's ask, "but fun"): each biome is a
-  capsule machine that only draws caught shinies you don't own (never a repeat), a gold capsule for a rare (8%, +4% a
-  plain one), a multi-pull always holding a gold one, a Lucky Star a capsule and 10 to pick any free, 150 coins a
-  pull. No buying one outright (the user's call: it undercut the gacha); the biome's grid only shows what's inside. The reveal: the capsule drops into the
-  kiosk's tray, a tap opens it, the shadow holds (a gold one shakes gold), a flash, the shiny. Placed on the floor right
-  of the Day Pass dais (tile 13,8), facing the door, no taller than the booth (the user wanted it front-facing and
-  obvious). Mock: https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy. The user says yes or what to change; still open is
-  what an owned Safari shiny shows (the Safari Pokédex, Secret Base residents, Safari runs' catches).
+- **Friends' graves** (2026-10-18, branch `claude/friends-tombstones`, on `main` too): paste the new `firestore.rules` into
+  the Firebase console (Firestore Database > Rules > Publish): it adds `graves/`. Until then a lost run is kept in the
+  save but friends can't see it, and nothing else changes. Then playtest: `?graves=3` on any run's map and in the
+  Clearing (made-up friends, nothing saved), or lose a run on one signed-in account and look on the other's map.
 
 - **Smoother transitions, on a phone** (2026-10-18, the user's ask; `docs/roadmap-done.md`): a new run's Clearing film,
   its first wild fight's wipe, the Shrine's and Wastes' films (biome and place) were measured headless and fixed. The
@@ -1077,6 +1126,10 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   listens to the boss, wild, elite and gym songs loop and looks at a town's ground. Next levers if it still reloads: the
   smooth paintings' canvases kept on the CPU beside their textures (~40-60 MB a town), the full-screen DOM layers (the probe
   can't see them), a 32 kHz song decode (~3 dB off at 10 kHz in Safari, so not done).
+  Round seven (2026-10-18, on `main`, archive): the pixel scene stopped redrawing under every 3D place, a Base jukebox
+  stops on leaving, the title's light loop no longer restarts under the Clearing; the Clearing's ~5 MB a mall / base trip
+  leak stopped; the covered select screen hidden. Fights don't leak. `tools/budget-check.mjs` now guards all of it
+  (CLAUDE.md's testing step 3). Next levers: a room's GIF-frame canvases, the map's full-screen layers.
 
 - **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
   after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game

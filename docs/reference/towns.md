@@ -135,6 +135,12 @@ lights 1-2 of a biome map's fight / ❓ / Center rooms (not floor 0) with `spark
 drops from a fight and takes a biome's first sparkle. Each gift is keyed in `run.gleaned` and written into the saved run
 at once (`glean()`, `creditRoom()`'s way), so a refresh can't give it twice. All rolls go through `js/rng.js`. About 10 a
 biome a pass, so a gather step is a run or two (`tests/quests.test.mjs` checks it).
+**Found materials pop up** (2026-10-18, the user's ask: "i didnt know when i got materials"): `popFinds()` in
+`js/satchel-pop.js` floats each one's icon and name over the screen, then flies it to the Bag on screen; it takes no tap.
+A find rides its line: `tell(line, find)` / `noteLater()` in `js/rewards.js` pop it as the line is told, and a fight's
+drop is `pendingCoins.finds`, popped with the reward news. A Berry Tree's berries pop at once (`pocketBerries()`).
+**A Waystone Shard gets its own reward screen**, first after the Alpha (`offerKeyItem()` in `js/run.js`, the found
+item's look; a material dropped too pops as the Shard flies off). It's still saved in `collect()`.
 
 **Kurt's Workshop** (session 3 of Towns step 6, 2026-10-14; only while `townsOpen()`). A timber workshop in the
 Clearing's north-east (`WORKSHOP_AT` 23,8 in `js/hub-3d.js` since 2026-10-15, the user's ask: its door right on the east avenue, a short `towns:
@@ -143,7 +149,7 @@ true` road joining them; Halloween's pumpkin patch moved off to the south-east l
 (`kurtAt`: Kurt, `assets/trainers/kurt.png` drawn for it, is the room's spot 0 like a shop's keeper). **Shut till the story sends you** (2026-10-15, the user's call: he "just showed up"): `workshopOpen()` in `js/data/towns.js` opens it at the Nietos' Waystone Chime step (`WORKSHOP_STEP`, Law's line now points you there), or on a lit stone, a town questline, anything already made, or `?satchel`; before, it's boarded, its windows dark, a note on the door, no Go in (`kurtWorkshop(..., open)` in `js/hub-3d.js`). The first time in, Kurt slides in (`gymTalk()`, plate APRICORN SMITH) with `homes.workshop.meet` (plus `meetChime` while the chime is your step), then `save.workshop.met`. His window is
 `openWorkshop()` in `js/workshop.js` (since 2026-10-15, the user's ask, a crafting bench, `.dialog.craft`: a wooden window,
 Kurt's line on a tag, a tab per shelf counting made / total and a green dot for how many are ready, the picked recipe on a
-parchment card (where it goes, a gift's reward piece, each material's have / need with a bar, one big Make button), the
+parchment card (where it goes, a gift's reward piece, each material's have / need with a bar, a tap on one opening a box of where it drops, `matHints()` in `js/data/satchel.js`, the Satchel app's lines too, 2026-10-18, the user's ask; one big Make button), the
 shelf below sorted ready / short / made; making plays `forge()`: the materials fly into a glow, sparks, the thing pops out
 stamped MADE!; reduced motion skips to the result); recipes are
 `RECIPES` in `js/data/workshop.js` (pure, `tests/workshop.test.mjs`), each `needs` materials from the Satchel, and
@@ -490,7 +496,7 @@ page load, `?mended=shrine,ruins` only those, so the Clearing's Waystone offers 
 The Clearing's Waystone counts a mended town as met (`showWaystone()`), so it isn't shown sealed.
 
 **Merged buildings** (2026-10-17, the towns' draw calls; Driftwood Landing first, one town a session). A town style with
-`merge: true` (`TOWN_STYLES`, only `lagoon` so far) runs `stillParts(g)` on each house `buildTown()` builds (not the
+`merge: true` (`TOWN_STYLES`: `lagoon`, and `canopy` since 2026-10-18) runs `stillParts(g)` on each house `buildTown()` builds (not the
 `LANDMARKS`: the Waystone, pagoda, minehead...), before `fadeBehind()` and the door's `spot` tag, which then lands on the
 merged meshes. It lifts out what a tick moves (marked with `moves()`: a flag's hang, the bait shop's vane, the houseboat's
 `boat` and paddlewheel, the beacon's beam, `tradePost()`'s ball and swinging board), anything hidden, instanced or
@@ -500,7 +506,25 @@ many-material meshes by face (`byFace()`), rounds plain parts' roughness to quar
 still parts inside it. **A new moving or hidden part in a merged town's building needs `moves()`**, or it freezes.
 Headless at 390 x 844: Driftwood Landing 674 -> ~495 GL draws a frame, its ten buildings 428 meshes -> ~194, every door
 still tapped and opened, one context awake. What's left there is mostly the ground's extras (rowboats, columns, jungle)
-and textured faces (each painting its own material). Next: add `merge: true` to another style, mark its moving parts.
+and textured faces (each painting its own material). Highbough (2026-10-18): only `canopyManor()`'s banners and the
+Nursery's wisps needed `moves()`; the crowns' fade, the lit windows' flicker and the gamer's RGB change materials, not
+meshes, and merging keeps every material (transparent, glowing and pictured parts aren't baked). Headless at 390 x 844:
+~590 -> ~360 GL draws a frame at the way in, ~1,660 -> ~900 from above, 1,062 meshes -> 499, every door's taps the same
+as before, every home walked into, one context awake. Sunwell Bazaar (`bazaar`, 2026-10-18): `moves()` on `kasbah()`'s two
+banners and `bazaarTent()`'s flag and turning Poké Ball; the rondavels, caravanserai and wagons have nothing a tick moves
+(the windpump and kopje are `LANDMARKS`, never merged). Headless at 390 x 844: 557 -> 376 GL draws a frame at the way in,
+1,781 -> 1,156 from above, 952 meshes -> 651, every door the same as before (the tent, caravanserai and both kasbahs
+walked into, the rest knock), no console errors, one context awake. Lantern Village (`village`, 2026-10-18): only
+`manor()`'s two banners needed `moves()` (`house()` has nothing a tick moves; the theater, pagoda and Waystone are
+`LANDMARKS`). The 2026-10-17 check's 154 and 186 for Lantern Village and Cinder Springs were low: `tools/draw-probe.mjs`
+read ~600 and ~590 a frame for them on 2026-10-18, more than the three towns already merged. Headless at 390 x 844:
+Lantern Village ~604 -> ~360 at the way in, ~1,510 -> ~800 from above, ~614 -> ~374 at night with the lantern festival,
+688 meshes -> 333, every home walked into (the shop, John's, Jahmes's, the theater), the rest knock, no console errors,
+one context awake. Cinder Springs (`springs`, 2026-10-18): only `lodge()`'s two banners needed `moves()`; the chimney
+smoke, the springs' steam and the forge's sparks are built outside the houses (`smoke` / `steam` hold positions, sparks
+are sprites), and the minehead is a `LANDMARK`. Headless: ~583 -> ~428 at the way in, ~1,394 -> ~910 from above,
+576 meshes -> 313, every home walked into (Shaun's, Clarence's, the bathhouse, the forge). Less of a cut than the other
+towns: what's left is mostly the lava field and the ground's extras. Every town's buildings are merged now.
 
 ## Leaving a town lets go of it (2026-10-17)
 

@@ -233,8 +233,9 @@ The first section began as the note on playtesting the live site and grew into t
   (features a player might miss); every fifth tap ends on that professor's reminder to tap the refresh key for updates
   (`hintsHeard`; every tap until 2026-10-15, the user's ask). **The refresh key** (2026-10-19, the user's ask): in the
   Clearing the title corner's Refresh (`#title-refresh`, `refreshGame()` in `js/title.js`) stands alone top right as a
-  small round key in the shell colour, like the map's Home key but a size smaller and 80% opaque, its arrow turning once
-  every 9 s, the faint "Updates" under it (`.title-screen.hub-mode .title-refresh` in `css/hub.css`); the Signs title keeps
+  small round key in the shell colour, 28px (made a tad smaller the same day), 80% opaque, its arrow turning once
+  every 9 s and the faint "Updates" under it brightening and swelling on the same beat (`updatesPulse`, off under calm
+  effects and reduced motion; `.title-screen.hub-mode .title-refresh` in `css/hub.css`); the Signs title keeps
   the white arrow under the speaker. The 2026-10-17 key that also brought you back where you stood was reverted for its
   bugs; this one is only the look. Sprites
   `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
@@ -340,12 +341,58 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   and how many you carry. The booth opens `passWindow()`: what a pass is, where today stands and its price, a gold ticket
   turning (`passPreview()`); once held, `held` shows "Yours today" and only OK. The board opens the leaderboard on one tap
   (`game.direct`). The Furniture store's lift asks for the second floor on its first tap too.
-- All buys go through `cornerEntries('balls')` / `buyCorner()` in `js/shop.js`, the same as the Pokédex's Game Corner app
-  and the Safari prep window's Buy, which still sell them too.
+- All buys go through `cornerEntries('balls')` / `buyCorner()` in `js/shop.js`, the same as the Safari prep window's Buy
+  (`ballsApp`: the Game Corner's screen with only the balls row). The Pokédex's Game Corner app and the top bar's cabinet
+  no longer sell balls (2026-10-19, the user's ask): their rows are `SHELF`, skins, perks and shinies.
 - **Tapping through your partner**: standing at a stand, `onTap()` takes a tap on your partner as one on the stand it
   stands at when that stand is behind it in the same ray (2026-10-15).
 - **Headless**: under software GL, `ImageDecoder` crawls while the mall draws, so Kangaskhan's 135-frame GIF takes a minute
   to load; add `&gifjs` to a headless check (real devices are fine; `?mall=corner&ribbon` does the same with Meowth).
+- **The Shiny Exchange** (2026-10-18, the roadmap's "Safari shinies" session 2; agreed on the mock's boards 1-5): a kiosk
+  right of the Day Pass dais (`KIOSK`, tile 13,8, its step in front, facing the door), no taller than the booth: a navy
+  body with cyan edges, an LED screen (`ledArt()`, a 320 x 240 canvas repainted every 2.6 s) cycling every Safari
+  Pokémon's shiny an area at a time (`LED_ORDER`; a shadow till you've caught it, OWNED ★ once its shiny is yours), a
+  SHINY EXCHANGE plate (`kioskSignArt()`), and a capsule in the tray at its foot (spheres in the lodge's own scene, its
+  top in the screen's area colour, turning slowly, still under `calmFx()`). 10 meshes, 2 casting shadows. A tap is a
+  `game` spot (`direct`) opening `openShinyExchange()` in `js/exchange.js`.
+  - **Sealed capsules** (2026-10-19, session 2b; the user's catch: a machine of only what you'd caught held one shiny at
+    first, so a pull was a sure buy): `machineOf()` is the area's whole Safari Pokédex page, caught or not, so a shiny's
+    odds are the same for everyone. `NEW_ODDS` is a floor: that often a capsule is one you neither own nor hold sealed
+    (while the machine has both), else any of the machine at random. One not caught (`exchangeCaught()`) comes out
+    `sealed`: no gain, 1 Lucky Star (`CAPSULE_STARS.sealed`), saved as `save.exchange.sealed` (id -> how many). The
+    reveal ends on its shadow (SEALED, its name once seen in the Safari, else ???; no flash); the grid shows SEALED ×N
+    with a smoked capsule in the corner (a Sealed chip when the area has any), the banners and home card count them. A
+    Safari catch of it (`afterFight()` in `js/run.js`, never on a peeked run) opens them all (`openSealed()`), after a
+    wild shiny's own gain: the box says each, the signature card shows the last Sparkle, and `openSealedReveal()` runs
+    as the first reward step, the Exchange's reveal alone in its own dialog (SEALED CAPSULE, the smoked glass clearing
+    to the area's colour as it lands, the shadow on the screen, a tap opens it). Saved in `collect()` with the coins
+    (`openSealedCapsules()`), so a refresh replays it. One caught with its capsules still shut (the tab closed on the
+    rewards; `staleSealed()`) opens with the same reveal the next time the window opens. The Lucky Star pick stays
+    caught-only, and its button waits for a catch.
+  - **The rules** (`js/data/exchange.js`, pure, `tests/exchange.test.mjs`; the machine as sealed capsules above
+    changed it): each area is a machine of the Pokémon you've caught there (`machineOf()`, `safariDex.caught`): its wilds are plain capsules, its rare spawns gold ones. Coins only
+    pull (the user's call): `PULL_COST` 150, ten for `TEN_COST` 1,500, and a pull of ten always holds a gold one (its
+    last capsule turns gold if none has) while the area has a rare caught. Gold odds `goldOdds(pity)`: 8% + 4% for each
+    plain capsule since the last gold one (`save.exchange.pity`, one count for every machine). A capsule holds a shiny
+    you don't own yet `NEW_ODDS` of the time (1/3 plain, 1/2 gold) while the machine has both kinds; otherwise a repeat:
+    +1 Sparkle (`addShiny()`). Lucky Stars (`save.exchange.stars`, no cap): 1 a new shiny, 2 a repeat, 3 a repeat at
+    ★5 (`CAPSULE_STARS`); `STARS_FOR_PICK` (10) pick any caught shiny free (`luckyPick()`, a prism capsule, paying no
+    star). `exchangePull()` / `exchangePick()` in `js/storage.js` pay and save; capsules come back plain first, gold
+    last. `?safaridex` lends every Safari Pokémon as caught for the page load (pulls still save; for a githack link).
+  - **The window** (`js/exchange.js`, styles `.shiny-ex` / `.sx-*` at the end of `css/hub.css`): its own modal
+    `<dialog>`, dark and hi-tech in Chakra Petch (not the Pokédex look), built on open and removed on close, timers and
+    all. Home: your shinies out of 514, the Lucky Stars row and its free pick, six biome banners (`EXCHANGE_INK`). A
+    biome: its machine (PULL ×1 / ×10, the gold odds, the stars), chips (All, Owned, Not owned, Rare) and a grid of its
+    Pokémon (a silhouette till caught, its Sparkle once owned; in a free pick, caught ones glow gold and take a tap).
+  - **The reveal**: an LED screen over a capsule tray. The capsule drops in (a gold one lands in its area's colour, then
+    turns gold with a ring), a tap cracks a line of light along its band, the halves fly apart with rays and stars, the
+    screen holds the shadow (a gold one shakes, ★ RARE ★), a flash, the shiny with NEW SHINY / SPARKLE ★2 → ★3 / ★5 · +3
+    LUCKY STARS. A pull of ten steps through with NEXT CAPSULE, or Skip to all, then shows all ten.
+  - **The capsules** (`capsule()`): smooth SVG, so no new GL context: a see-through top in the area's colour (gold, or
+    prism for a Lucky Star pick) over a darker inside with sparkles drifting up in it, a pearl base, a chrome band, a rim
+    light, a soft glow; live, two buttons (front and back) pass across the band as it turns. Everything moves by transform
+    and opacity only (no animated blur or masks); `.calm` (`calmFx()`, reduced motion too) stills it all and skips the
+    crack and burst.
 - **The Furniture store's buy window and price tags** (2026-10-16, the user's ask: a merchant window instead of "tap again", the piece turning and turnable, and legible prices): a tap on a plinth walks there and opens `merchant()` in `js/mall-3d.js` (`.mall-shop`, css/hub.css): the keeper's tag, the department on a ribbon in its `ink`, the name, the piece on a velvet turntable in a spotlit box (`piecePreview()` in `js/mall-furniture.js`, built by `pieceInto()`, the same builder as the plinths), how many styles come with it, the price and your coins (red when short), Buy / Not now; a tap outside is a no. It turns on its own; a drag turns it and tips it, a flick spins on and slows (`spinPiece()` / `spinBy()`). It draws through `js/turntable.js`, one small off-screen renderer shared with Meowth's prize counter (`js/prizes.js`), so a window never adds a WebGL context. The painted price cards are gone: each unsold stand's price is a DOM tag at its plinth's front (`priceTags()`, 13px pixel font with a coin, the department's colour on its border), placed each frame by projection, hidden under the buy window and once sold.
 - **The Furniture store's lift moved to the head of the nave** (2026-10-16, the user's ask: "a better place", and their partner hidden going in): at the back right it stood behind the Plants stand, whose piece hid the lift's doors and your partner at them. `LIFT.x` is `NAVE` now, at the end of the carpet runner with nothing in front of it, 3 tiles wide with a 1.3-tile doorway (`DOORWAY`; a partner's sprite is wider than a tile, so the old 1-tile door clipped it in the car; the doors slide by `userData.slide`) and 2.0 tall, the store's crest painted on its shaft (`liftShaftArt()` takes the floor; `crest()` fits its name to the board). The counter moved left of it (`COUNTER` x 6, 3 wide, a CASHIER plaque over it, the keeper at tile 7), and right of it `GALLERY`: Smeargle's painting over a bench (`bench` added to `hallKit()`) between two topiaries. Checked headless by raycasting from the camera to your partner at the doors, in the car and after the ride: nothing in between.
 
@@ -367,6 +414,10 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   Now hall 345, 1F 360, 2F 351, Game Corner 463, Outfitter 233 draws a frame; taps and colours checked as before.
 
 ### The Ranger Task Board (2026-10-16)
+
+- **Its tabs wrap** (2026-10-18, the user couldn't see them all on a phone): `.rb-tabs` is a grid of `minmax(150px, 1fr)`
+  columns, so four in a row on a PC and two rows of two on a phone, a long name on two lines; it was one row scrolling
+  sideways with its scrollbar hidden, so the last two tabs sat off screen with no sign of them. The Journal shares it.
 
 The user's ask: a board that tracks things for players ("catch 10 for a piece of furniture"), a tracker per task and a
 claim, "cool and immersive when they pull it up"; no Pokémon dolls as rewards (the user's call). The tasks are
@@ -729,3 +780,16 @@ owns, so old saves don't light up. A friend's base on a visit and a `?hearts=` p
   16 MB. The cabinet marquee's sunburst, Who's That's and the showcases' rays are `rayWheel()` canvases, not spinning
   `repeating-conic-gradient`s (see `rayWheel()` in `js/ui.js`).
 
+
+## The Clearing's draw calls (2026-10-18)
+
+The Clearing drew ~460 times a frame headless at 390 x 844, the most of any place once the towns were merged.
+`mergeStill()` in `js/hub-3d.js` is `mergeStatic()` plus the towns' `stillParts()` steps: each part bent first
+(`bendFine()`), many-material meshes split by face (`byFace()`, moved here from `js/event-3d.js`), roughness rounded to
+quarters, plain colours baked onto vertices (`bakeColours()`, which now takes a `skip` and keeps an untappable part's
+raycast), then one mesh a material. Every place that called `mergeStatic()` calls it (the mall, Nietos, Kurt, the arch,
+the plaza board, the pillar, the dojo, the Sealed Gate, the Safari gate, the dressing), and the Waystone, quest board,
+PC, Safari fence and the plaza board's ball and lanterns are merged too. The cauldron (`makeCauldron(THREE, merge)`)
+joins its pot, logs and stones, and its twelve flame tongues are two instanced meshes. Headless: ~459 -> ~243 GL draws a
+frame (night ~245, winter ~174), 506 meshes -> 312, the same 18 places tappable and the same parts moving, no console
+errors. `tools/draw-probe.mjs --why` lists where a scene's draws go, group by group.

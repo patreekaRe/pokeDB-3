@@ -4,8 +4,8 @@
    A played card arcs to where it acts with a trail in its type's
    colour (Fire embers, Water droplets, Grass leaves, Psychic
    sparkles, Neutral white specks); an exhausted card burns away
-   from the bottom up into embers. The card is a clone flown by
-   hand; the particles live on one low-res canvas over everything,
+   from the bottom up into embers. The card is a clone flown by a
+   Web Animation; the particles live on one low-res canvas over everything,
    drawn in whole pixels and faded by stepping down a palette, like
    celebrate.js. battle.js never waits on a flight, so the next card
    is playable at once; only a picked exhaust waits for its burn.
@@ -138,6 +138,9 @@ function ghostOf(src, cls) {
 /**
  * A played card arcs from `src` to `target`, shedding its type's trail. An attack is thrown high, spinning, and lands
  * as the hit does (~0.22 s, like the old flight); anything else drops gently into your Pokémon with a soft glow.
+ * The card itself flies on the browser's compositor (a Web Animation of transform and opacity), not by restyling it
+ * every frame: the 3D arena, the hand's redraw and the text box all run on the main thread while it's in the air, and
+ * a frame-by-frame flight stuttered whenever they ran long (the user, 2026-10-18). Only its trail is drawn per frame.
  */
 export function flyTrail(src, target, { type = 'normal', attack = true, fast = false } = {}) {
   if (!src || !target || reduced()) return;
@@ -149,19 +152,35 @@ export function flyTrail(src, target, { type = 'normal', attack = true, fast = f
   const lift = attack ? Math.max(70, Math.hypot(x2 - x0, y2 - y0) * 0.4) : 40;
   const x1 = (x0 + x2) / 2 + (attack ? (x0 - x2) * 0.15 : 0), y1 = Math.min(y0, y2) - lift;
   const total = attack ? (fast ? 200 : 400) : (fast ? 330 : 650), arrive = 0.55;   // an attack still lands with its hit
+  const at = (t) => {
+    const u = Math.min(1, t / arrive);
+    const e = u * u * 0.55 + u * 0.45;   // speeds up into the hit
+    const after = Math.max(0, (t - arrive) / (1 - arrive));
+    return {
+      u, e, after,
+      x: (1 - e) ** 2 * x0 + 2 * (1 - e) * e * x1 + e * e * x2,
+      y: (1 - e) ** 2 * y0 + 2 * (1 - e) * e * y1 + e * e * y2,
+      scale: u < 1 ? 1 + (attack ? 0.22 - 1 : 0.25 - 1) * e : (attack ? 0.22 - 0.12 * after : 0.25 - 0.1 * after),
+    };
+  };
+  const STEPS = 24, frames = [], glows = [];
+  for (const t of [...Array.from({ length: STEPS + 1 }, (_, i) => i / STEPS), arrive].sort((a, b) => a - b)) {
+    const { x, y, scale, e, after } = at(t);
+    frames.push({ offset: t, opacity: 1 - after, transform: `translate(${x - x0}px, ${y - y0}px) scale(${scale}) rotate(${attack ? -30 * e - 10 * after : 0}deg)` });
+    glows.push({ offset: t, opacity: Math.min(1, e * 0.6 + after * 0.4) });
+  }
+  ghost.animate(frames, { duration: total, fill: 'forwards' }).finished.then(() => wrap.remove(), () => wrap.remove());
+  if (!attack) {   // a block, buff or power brightens as it sinks into your Pokémon
+    const glow = document.createElement('i');
+    glow.className = 'fly-glow';
+    ghost.append(glow);
+    glow.animate(glows, { duration: total, fill: 'forwards' });
+  }
   const t0 = performance.now();
   let lastX = x0, lastY = y0, landed = false;
   jobs.push((now) => {
     const t = Math.min(1, (now - t0) / total);
-    const u = Math.min(1, t / arrive);
-    const e = u * u * 0.55 + u * 0.45;   // speeds up into the hit
-    const x = (1 - e) ** 2 * x0 + 2 * (1 - e) * e * x1 + e * e * x2;
-    const y = (1 - e) ** 2 * y0 + 2 * (1 - e) * e * y1 + e * e * y2;
-    const after = Math.max(0, (t - arrive) / (1 - arrive));
-    const scale = u < 1 ? 1 + (attack ? 0.22 - 1 : 0.25 - 1) * e : (attack ? 0.22 - 0.12 * after : 0.25 - 0.1 * after);
-    ghost.style.transform = `translate(${x - x0}px, ${y - y0}px) scale(${scale}) rotate(${attack ? -30 * e - 10 * after : 0}deg)`;
-    ghost.style.opacity = String(1 - after);
-    if (!attack) ghost.style.filter = `brightness(${1 + e * 0.6 + after * 0.4}) drop-shadow(0 0 ${Math.round(8 * e)}px #a8d8ff)`;
+    const { u, x, y, scale } = at(t);
     if (u < 1) {   // a trail as dense as the distance covered, from across the card's shrinking width
       const steps = Math.max(1, Math.round(Math.hypot(x - lastX, y - lastY) / 4.5));
       const half = (r.width * scale) / 2;
@@ -177,7 +196,7 @@ export function flyTrail(src, target, { type = 'normal', attack = true, fast = f
         if (!attack) p.vy -= 0.6;   // the glow rises off your Pokémon
       }
     }
-    if (t >= 1) { wrap.remove(); return false; }
+    if (t >= 1) return false;
   });
   start();
 }

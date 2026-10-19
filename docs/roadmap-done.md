@@ -2676,6 +2676,10 @@ the prize counter's turntable (`js/prizes.js`) keeps a small context of its own 
 - **Done (2026-10-17): Driftwood Landing's buildings merged** (the towns' draw calls, one town a session): each house's
   still parts one mesh a material or colour-baked, moving parts lifted out (`stillParts()`, `moves()`), the door's tap
   kept; 674 -> ~495 GL draws a frame headless, ten buildings 428 meshes -> ~194, every door opens. `docs/reference/towns.md`.
+- **Done (2026-10-18): every town's buildings merged** (the towns' draw calls, one town a session after Driftwood):
+  `merge: true` on each style, `moves()` on what a tick moves. GL draws a frame headless at the way in: Highbough ~590 ->
+  ~360, Sunwell Bazaar 557 -> 376, Lantern Village ~604 -> ~360, Cinder Springs ~583 -> ~428 (the 2026-10-17 check's 154
+  and 186 for those two were low). Every door opens, one context awake. `tools/draw-probe.mjs` kept for the next pass.
 - **Done (2026-10-17): a second performance check** (the user's ask). Headless across the hub, base, yard, mall floors,
   Center, Mart, five towns, a gym, the dojo, arena and Sky Pillar: one GL context awake everywhere. Fixed: the shared
   turntable (the prize counter, the Furniture store's and garden's buy windows) now sleeps 4 s after its last draw
@@ -3048,7 +3052,64 @@ that many rooms. Lantern Village 215 -> 183 MB, the Secret Base 89 -> 74, Mall 2
 boss fight 79 -> 46. Checked headless: every cut MP3 decodes past its loop (ffmpeg and Chromium), the four new joins as clean
 as the old, each song wraps at its new loop end, no page errors; tests pass.
 
+## A loading mark and a second try for the 3D rooms (2026-10-18, the user's ask)
+The Moon Dance showed its pixel room on the user's phone before the 3D one. Not reproduced headless (warmed from the map it
+went blank -> 3D in ~0.35 s); the pixel room only shows when a mount fails. Now every walk-in room retries once a second
+later (with a fresh Three.js URL, since Chrome keeps a failed module import) and shows your Pokémon by a rolling Poké Ball
+past half a second's wait (`load3d()` in `js/run.js`; `walk-in-rooms.md`). Checked headless with the CDN failing once
+(retry -> 3D) and always (pixel room after the retry) on the Moon Dance, Center, Mart and Britt's gym.
+
+**Card flights stutter in battle (2026-10-18, branch `claude/card-animation-lag-battle-xrpann`).** The user saw played cards
+lag now and then. Traced headless: the flying clone was restyled by JS every frame, on the main thread the 3D arena, the
+text box and the hand's full rebuild share, and the Ability chip repainted every frame. Now the flight is a Web Animation,
+`renderHand()` keeps unchanged cards (0 rebuilt over 20 taps, was 100) and the chip animates transform and opacity
+(`battle-screen-layout.md`).
+
+## Where a material drops, on a tap (2026-10-18, the user's ask; branch `claude/material-drop-source-vtltyf`)
+Kurt's Workshop's material slots are buttons now: a tap opens a box under them saying where it drops (its biome's wild
+Pokémon, Alphas and boss, its sparkling rooms, where the biome sits on the road, a friend's letter), a second tap shuts it.
+One source of truth, `matHints()` in `js/data/satchel.js`, also feeds the Satchel app (`tests/quests.test.mjs`).
+
+## Found materials pop up, and a Shard gets its own screen (2026-10-18, the user's ask; branch `claude/quest-item-popups-us8wjw`)
+"I didn't know when I got materials": a found material (a fight's drop, a sparkling room, a Berry Tree) now floats up
+over the screen with its name and flies to the Bag (`js/satchel-pop.js`, no tap needed), and a Waystone Shard over an
+Alpha opens its own reward screen first, like a found item (`offerKeyItem()`). Notes in `docs/reference/towns.md`.
+
+### Phone reloads, round seven: work running behind what you see (2026-10-18)
+A code read for what rounds one to six (GPU, canvases, audio) couldn't see. Fixed: the pixel scene's 30 Hz redraw (and the
+hybrid light's) ran on under the 3D arena, walk-in rooms and the Mart, which only hid it (`unseen()` in `js/scene.js`;
+the 3D Center headless 4 redraws in 3 s -> 0); a Secret Base jukebox / radio / record player left on played on after
+`leave()`, making a note sprite every 600 ms no frame freed; a resize under the Clearing restarted the title light's loop
+into its hidden canvas (`js/title-light.js`); the hidden title logo's letter waves paused (`css/hub.css`). Left: rare
+cards' sheens animate `background-position` (a repaint a frame, small), a forced layout a frame in town / Game Corner
+bubbles (`placeSigns()` after `corner-crowd.js`'s writes). A headless many-fights probe (DOM nodes, listeners, heap,
+compositor layers) was started; its results go in the roadmap's "Waiting on the user" entry.
+Its results (2026-10-19): 15-22 fights in one page load hold flat (DOM nodes, listeners; the JS heap levels off by fight
+8). A real leak: every Clearing -> mall / base trip kept ~5 MB, the Clearing drawing one more frame on its renderer after
+`sleepGL()` (three.js hears of the loss a task later) and hooking a new build's dispose listeners nothing took off; a
+sleeping renderer's `render()` is now a no-op till it wakes (`muted` in `js/hd2d.js`; heap over three trips +9 MB -> flat).
+The character select, its sky, `#backdrop` and the scenery stayed shown (full-screen layers, ~12 MB each at 3x) and the
+select's sky painted every frame under the Clearing, mall and base: hidden while covered (`css/hub.css`). Left: rooms
+keep their Pokémon's GIF-frame canvases (~11 MB, likely capped by `KEEP_ROOMS`), the map's layers, small infinite CSS
+animations on unseen elements. **The budget check** (the user's ask: keep it all from coming back):
+`tools/budget-check.mjs` loads 21 places at an iPhone's size and fails on draws or memory 10% over `tools/budgets.json`,
+more 3D places awake, a canvas drawn into while unseen, a page error, or the mall / base round trips growing;
+`tools/probe-kit.mjs` is what it shares with `tools/memory-probe.mjs`. CLAUDE.md's testing step 3.
+
+## Friends' graves and the Trainer Plaza's buddies (2026-10-18, the user's ask; branch `claude/friends-tombstones`)
+"How can we add more interactive friends stuff like the tombstone thing?", then the build. Every lost run (Safari and Sky
+Pillar too, never a playtest) is packed into the save's last five and `graves/<uid>`, a small doc of its own (the trainer
+page carries the whole base, too big to read for every friend on a map). Friends' graves stand where they fell: the very
+room on the day's Safari, the door on the week's Sky Pillar, the same floor of the same biome elsewhere. A tap opens the
+loss recap with Pay respects (+5 PokéCoins, flowers on the stone) and Avenge (beat the Pokémon that beat them on this map,
++25). Up to four friends' buddies walk the Trainer Plaza with name tags and talk when tapped. Checked: `tests/graves.test.mjs`,
+84 rules cases in the Firestore emulator (19 new), `tools/graves-check.mjs` (a real lost run on one account, its grave,
+recap and buddy on the other; and with the old rules, nothing breaks), the memory probe (Clearing +1.5 MB with four buddies,
+a map unchanged, one GL context awake). `tools/trainers-check.mjs` stops at its leaderboard step on `main` too (it predates
+the leaderboard's new look), not fixed here.
+
 **The Clearing's refresh key** (2026-10-19, the user's ask): the title corner's Refresh stands alone top right in the
 Clearing as a small round key in the shell colour (a quieter take on the reverted 2026-10-17 key: look only, the same
-`refreshGame()`), the faint "Updates" under it; Oak and Sonia's reminder points at it. Patch 1.26 "Well Met" cut, as NEXT
-reached 12. Checked headless on a phone and a wide screen: the key top right, takes the tap, no page errors; tests pass.
+`refreshGame()`), the faint "Updates" under it; Oak and Sonia's reminder points at it. Follow-up the same day: the key
+28px (was 32), and "Updates" pulses as the arrow turns, every 9 s. Its line is in NEXT (main had cut 1.26
+"Shine Bright" first). Checked headless on a phone and a wide screen: the key top right, takes the tap, no page errors; tests pass.

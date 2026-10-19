@@ -10,10 +10,11 @@ import { sharpness } from './prefs.js';
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
 export const MON_PX = 1 / 32;   // Pokémon GIFs are drawn at twice the furniture's detail
 
-let THREE = null, loading = null;
+let THREE = null, loading = null, failed = 0;
 /** Three.js, loaded once; throws offline (the callers fall back to their 2D version). */
 export async function loadThree() {
-  loading ??= import(THREE_URL).then(m => { noteDisposeHooks(m); noteMade(); return m; }, e => { loading = null; throw e; });
+  // a failed import() of a URL fails again from the browser's module map without fetching, so a retry asks anew
+  loading ??= import(failed ? `${THREE_URL}?try=${failed}` : THREE_URL).then(m => { noteDisposeHooks(m); noteMade(); return m; }, e => { loading = null; failed++; throw e; });
   THREE ??= await loading;
   return THREE;
 }
@@ -62,7 +63,12 @@ export function sleepGL(renderer) {
   unhook(renderer);
   letGo(renderer);
   try { renderer.forceContextLoss(); } catch { /* already gone */ }
+  // three.js skips a lost context only once its 'webglcontextlost' event has come, a task later: a frame drawn before
+  // then (the Clearing's, under the mall's curtain) hooked a new build's dispose listeners onto everything, which no
+  // sleep took off again, ~5 MB more on every trip to the mall or the base (2026-10-19)
+  if (!muted.has(renderer)) { muted.set(renderer, renderer.render); renderer.render = () => {}; }
 }
+const muted = new WeakMap();   // a sleeping renderer -> its own render()
 
 /* A lost context frees nothing in Safari. WebKit's loseContext() only cuts its objects loose: the GPU context behind it,
    with every texture, render target, shader and screen-sized buffer it made, lives on until the context is restored or
@@ -170,6 +176,7 @@ export function wakeGL(renderer) {
 export function wakeBeside(renderer) {
   if (!renderer || !asleep.has(renderer)) return Promise.resolve();
   asleep.delete(renderer);
+  if (muted.has(renderer)) { renderer.render = muted.get(renderer); muted.delete(renderer); }
   regrow(renderer);
   return new Promise(done => {
     const timer = setTimeout(done, 2000);
@@ -274,15 +281,15 @@ export function trim(src) {
     tap's `front` and js/base-mesh.js's part `kind`) baked into one mesh per finish that carries each part's colour on its vertices: a Game Corner cabinet
     was 18 draw calls a frame, twice with its shadow, most of them one colour each (2026-10-16). Looks the same; only for
     models whose parts never move or change on their own. */
-export function bakeColours(root) {
+export function bakeColours(root, skip = null) {
   root.updateMatrixWorld(true);
   const inv = root.matrixWorld.clone().invert(), sets = new Map();
   root.traverse(o => {
     const m = o.material;
-    if (!o.isMesh || o.isInstancedMesh || !o.visible || Array.isArray(m) || !m?.isMeshStandardMaterial) return;
+    if (!o.isMesh || o.isInstancedMesh || !o.visible || Array.isArray(m) || !m?.isMeshStandardMaterial || skip?.(o)) return;
     if (m.map || m.emissiveMap || m.alphaMap || m.normalMap || m.vertexColors || m.transparent || m.alphaTest || m.emissive.getHex()) return;
     if (Object.keys(o.userData).some(k => k !== 'front') || Object.keys(m.userData).some(k => k !== 'kind') || o.geometry.morphAttributes.position) return;
-    const k = [m.roughness, m.metalness, m.side, m.flatShading, m.envMapIntensity, o.castShadow, o.receiveShadow].join('|');
+    const k = [m.roughness, m.metalness, m.side, m.flatShading, m.envMapIntensity, o.castShadow, o.receiveShadow, o.raycast === THREE.Mesh.prototype.raycast].join('|');
     if (sets.has(k)) sets.get(k).push(o); else sets.set(k, [o]);
   });
   for (const list of sets.values()) {
@@ -307,6 +314,7 @@ export function bakeColours(root) {
     mat.color.set('#ffffff'); mat.vertexColors = true;
     const baked = new THREE.Mesh(geo, mat);
     baked.castShadow = list[0].castShadow; baked.receiveShadow = list[0].receiveShadow;
+    if (list[0].raycast !== THREE.Mesh.prototype.raycast) baked.raycast = list[0].raycast;
     Object.assign(baked.userData, list[0].userData);
     root.add(baked);
     for (const o of list) { o.removeFromParent(); o.geometry.dispose(); }

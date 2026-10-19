@@ -59,7 +59,7 @@ sounds alike; `showChoice` plays it when an `ask` option is taken, or the option
 `confirmSound`, which Mart purchases and the Mart's removal set to `buy`. It's also the menu
 blip, the user's call: `menuBlip()` in `js/audio.js` plays it on any click on a control
 (`CONTROLS`: buttons, tabs, map rooms, cards, the reward text box, a card's dimmed focus layer
-or zoom), unless that click already started an effect of its own; cries don't count, so a
+or zoom), unless that click already asked for an effect of its own (counted as it's asked, not as it starts: the tab's own sound could still be waiting on the context, and the Ranger Task Board's tabs clicked twice on a phone, 2026-10-18); cries don't count, so a
 starter tap blips then cries. New buttons get it for free; to silence one, keep it out of `CONTROLS`),
 `item` (`useItem()` in battle), `potion` (a healing item, in battle or
 `useItemOnMap()`; falls back to `item` while its file is missing), `buy` (a Mart ware or

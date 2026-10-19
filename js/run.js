@@ -31,7 +31,9 @@ import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, sta
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
+import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
+import { openSealed } from './data/exchange.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
@@ -45,12 +47,13 @@ import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerT
 import { openDeviceApp } from './collection.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
-import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf, reachableNodes } from './map.js';
+import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf, reachableNodes, setMapGraves } from './map.js';
+import { recordFall, mapGraves, openGrave, graveMarks, avengeGrave, sampleGraves } from './graves.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning, arenaReady } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, noteLater, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, noteLater, popLater, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, zoomCard, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog, chestRays } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
@@ -60,13 +63,13 @@ import { biomeIntro, placeIntro } from './biome-intro.js';
 import { bootDevice } from './device-boot.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { wellEnding } from './well.js';
-import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene, conquered } from './halloffame.js';
+import { recordWin, recordLoss, draftLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene, conquered } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
 import { meowthDue } from './meowth.js';
-import { renderTower, hideTower, guardianIntro, towerFall, barReady } from './tower.js';
+import { renderTower, hideTower, guardianIntro, towerFall, barReady, setTowerGraves } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
@@ -88,6 +91,7 @@ const mendFlag = () => new URLSearchParams(location.search).has('mend');
 /** `&fest=lantern|moon|fireworks` on a `?town=shrine` peek: John's festival picked (with `&mend`, the stone still to mend; alone, mended). */
 const festFlag = () => new URLSearchParams(location.search).get('fest');
 /** `?hearts=N`: every friend at N hearts at home for a page load, their heart lines unheard till said (nothing saved). */
+const wildShinyFlag = () => new URLSearchParams(location.search).has('wildshiny');   // ?wildshiny: every Safari wild is shiny, and catching one saves nothing
 const heartsFlag = () => { const n = new URLSearchParams(location.search).get('hearts'); return n === null ? null : Math.max(0, Math.min(HEARTS, +n || 0)); };
 const heardPeek = {};
 /** A friend's hearts at home, and how many of their heart lines they've said (js/data/towns.js's HEART_LINES). */
@@ -341,6 +345,7 @@ function checkpoint() {
     tally: run.tally,
     safari: run.safari,
     tower: run.tower,
+    avenge: run.avenge,       // a friend's grave you vowed to avenge on this map (js/graves.js): { id, name, foeId, zone }
   });
 }
 
@@ -396,6 +401,7 @@ function pocketBerries() {
   if (!canPocket()) return '';
   const id = TREE_BERRIES[randIndex(TREE_BERRIES.length)], n = random() < 0.5 ? 2 : 1;
   if (!glean(gleanKey(run.map.byId[run.current], 'berries'), { id, n })) return '';
+  popLater([{ id, n }]);
   const name = MATERIALS_BY_ID[id].name;
   return ` You pocket ${n === 1 ? `${/^[AEIOU]/.test(name) ? 'an' : 'a'} ${name}` : `${n} ${name.replace(/y$/, 'ies')}`} for your Satchel.`;
 }
@@ -931,6 +937,7 @@ function peekRoom(id) {
 
 function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
   run.gymWon = null;   // Mewtwo falls in from its third gym (fallIn()) without walkOn()
+  run.avenge = null;   // a vow at a friend's grave lasts its map
   reseed(`biome:${zone()}`);
   if (isTower()) return startFlight(quiet);
   if (!isSafari() && !peeking) updateSave(d => {
@@ -946,6 +953,7 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
     dealEnemies(mainBiome(), kind, nodes.filter(node => node.type === kind), run.map.byId, isSafari() ? undefined : dexWeight, safariArea()?.normals);
   }
   if (isSafari()) markRares(nodes.filter(node => node.type === 'fight'), safariArea(), rareOdds(safariArea().id, getSave().safariDex, fairTry()));   // rare spawns, on the biome's seed (more on a replay once the area's page is complete)
+  if (isSafari()) markShinies(nodes.filter(node => node.type === 'fight'), wildShinyFlag() ? 1 : SHINY_ODDS);   // off the seed (looks only), and saved on the map so a refresh can't reroll one
   if (gleaning()) markSparkles(nodes, mainBiome().id, random);   // a town's materials, sparkling in a room or two
   const shard = shardHere();
   if (shard) markShard(nodes, shard, random);   // the town's Waystone Shard, floating over one of its Alphas
@@ -1080,7 +1088,7 @@ function showAbility() {
   }
   el.dataset.state = state;
   el.dataset.type = run.starter.type;
-  el.textContent = ability.name;
+  el.replaceChildren(Object.assign(document.createElement('i'), { className: 'ability-shine' }), ability.name);
   el.title = `Ability: ${ability.name}. ${ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ` Active now: +${ability.amount} damage!` : ''}`;
 }
 
@@ -1665,14 +1673,15 @@ const scopeUsed = () => Object.values(run.map.byId).filter(n => n.revealed).leng
 
 function drawMap() {
   if (isTower()) return renderTower({ map: run.map, current: run.current, flight: run.tower.flight, trail: run.tower.trail, best: peeking ? 0 : getSave().tower.bestEver || 0,
-    sprite: spriteUrl(run.starter, 'front', run.stage), onPick: enterNode, hold: run.tower.pick != null || !!run.tower.train });   // the climb waits for the pick
+    sprite: spriteUrl(run.starter, 'front', run.stage), onPick: enterNode, hold: run.tower.pick != null || !!run.tower.train,   // the climb waits for the pick
+    graves: gravesNow(), onGrave: tapGrave });
   const biome = land();
   const nodes = Object.values(run.map.byId);
   if (scoping && !nodes.some(scopeable)) scoping = false;
   if (rubbing && !nodes.some(readable)) rubbing = false;
   renderMap(run.map, run.current, enterNode, {
     biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, reveal: scoping ? revealRoom : null, ken: getSave().kenBeaten,
-    read: rubbing ? readRoom : null, gym: gymOnMap(), ...tracking(),
+    read: rubbing ? readRoom : null, gym: gymOnMap(), ...tracking(), graves: gravesNow(), onGrave: tapGrave,
   });
   $('key-ken').hidden = !getSave().kenBeaten;
   $('map').classList.toggle('scoping', scoping || rubbing);
@@ -1687,6 +1696,51 @@ function drawMap() {
   btn.querySelector('.scope-label').textContent = scoping ? 'Pick a room' : `${left}/${total}`;
   btn.title = scoping ? 'Tap a lit-up fight room to reveal it, or tap here to put the Scope away.'
     : `${SCOPE.name}: ${SCOPE.text} ${left} of ${total} left in this biome.`;
+}
+
+/* ---------- friends' graves (js/graves.js): where they fell, on this map ---------- */
+
+/** Where the map is, as a friend's fall says it: the Safari's area and day, the Sky Pillar's week (and the flight's first
+    floor), or a run's biome. */
+function graveSpot() {
+  if (isTower()) return { here: { mode: 'tower', land: '', day: run.tower.week, name: 'Sky Pillar' }, base: run.tower.flight * FLIGHT };
+  if (isSafari()) return { here: { mode: 'safari', land: run.safari.areas[run.biome], day: run.safari.day, name: safariArea().name }, base: 0 };
+  return { here: { mode: 'run', land: mainBiome().id, day: '', name: mainBiome().name }, base: 0 };
+}
+
+/** The graves on this map, with your flowers and vengeance on them (a playtest run's flowers are never saved). */
+function gravesNow() {
+  if (!run?.map) return [];
+  const { here, base } = graveSpot(), marks = graveMarks();
+  return mapGraves(here, run.map, base, refreshGraves).map(g => ({ ...g, flowers: marks.r.has(g.id), avenged: marks.a.has(g.id) }));
+}
+
+/** Only the graves drawn again (friends' docs just landed, or flowers left), never the rest of the map mid-walk. */
+function refreshGraves() {
+  if (!run || run.over || !run.map || document.body.dataset.screen !== 'map-screen') return;
+  if (isTower()) setTowerGraves(gravesNow());
+  else setMapGraves(gravesNow(), tapGrave);
+}
+
+/** A grave tapped: their recap, Pay respects, and Avenge while the Pokémon that beat them is still ahead on this map. */
+function tapGrave(g) {
+  const foe = g.fall.foeId, here = zone();
+  const vowed = run.avenge?.id === g.id && run.avenge.zone === here;
+  const ahead = foe && Object.values(run.map.byId).some(n => n.enemyId === foe && !n.visited && n.id !== run.current);
+  openGrave(g, {
+    playtest: peeking || sampleGraves(), onChange: refreshGraves,
+    avenge: vowed ? 'vowed' : ahead ? () => { run.avenge = { id: g.id, name: g.name, foeId: foe, zone: here }; checkpoint(); } : null,
+  });
+}
+
+/** A lost run as a friend's grave keeps it (recordFall()): its recap, and where on which map it ended. */
+function fallNow(loss) {
+  const here = run.current && run.map.byId[run.current], tower = isTower(), safari = isSafari();
+  const where = tower ? { biomeName: 'Sky Pillar', place: null, floor: run.tower.floor + 1 }
+    : safari ? { biomeName: 'Safari Zone', place: safariArea().name, floor: here ? here.floor + 1 : 0 } : whereNow();
+  const entry = draftLoss(run, { ...loss, ...where }, getSave().shiny.on.includes(run.starter.id));
+  const door = tower && here ? Math.max(0, (run.map.floors[here.floor] ?? [run.map.boss]).indexOf(here)) : 0;
+  return { ...entry, ...graveSpot().here, floor: where.floor, node: tower ? String(door) : here?.id ?? '', foeId: here?.enemyId ?? '', at: Date.now() };
 }
 
 function toggleScope() {
@@ -1765,10 +1819,7 @@ function enterNode(node) {
   reseed(`room:${zone()}:${node.id}`);
   markHp(node);
   node.visited = true;
-  if (node.sparkle && gleaning() && glean(gleanKey(node, 'sparkle'), node.sparkle)) {   // told back on the map
-    playSound('item-get');
-    tell(`Something sparkled here! ${matLine(node.sparkle)}`);
-  }
+  if (node.sparkle && gleaning() && glean(gleanKey(node, 'sparkle'), node.sparkle)) tell(`Something sparkled here! ${matLine(node.sparkle)}`, node.sparkle);   // told back on the map
   if (isTower()) {   // the tower's screen draws a statue of every foe beaten before the door it came through
     const row = node.type === 'boss' ? [node] : run.map.floors[node.floor], f = floorOf(run.tower.flight, node.floor);
     run.tower.trail = [...(run.tower.trail || []).filter(e => e.f !== f), { f, type: node.type, enemy: node.enemyId || null, n: row.length, k: row.indexOf(node) }];
@@ -1813,6 +1864,7 @@ async function fight(node, { talked = false } = {}) {
   if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
+  encounter.shiny = isSafari() && node.type === 'fight' && Boolean(node.shiny);
   encounter.leader = gymLeader(node);
   if (encounter.leader && !peeking) markSeen('gym', encounter.leader.id);   // met: the Gym Leaders app shows them from now on
   encounter.leaderTalked = talked;   // they already spoke in their gym (gymRoom())
@@ -2545,7 +2597,7 @@ function afterFight(node, result) {
   if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)
   if (result.fled || result.escaped) {
     run.hp = result.hp;
-    tell(result.escaped ? `The wild ${ENEMY_DEFS[node.enemyId]?.name ?? 'Pokémon'} ran away. Nothing won.` : 'Got away safely!');
+    tell(result.escaped ? `The ${node.shiny ? 'shiny' : 'wild'} ${ENEMY_DEFS[node.enemyId]?.name ?? 'Pokémon'} ran away. Nothing won.` : 'Got away safely!');
     missionTally(result.tally);
     return showMap();
   }
@@ -2555,6 +2607,11 @@ function afterFight(node, result) {
   if (!result.evolved) run.hp = result.hp;   // evolved in the gym: already set, healed and raised (gymRoom())
   run.fights += 1;
   if (isTower()) augmentsAfterFight(result);
+  if (run.avenge && run.avenge.foeId === node.enemyId && run.avenge.zone === zone()) {   // a friend's grave avenged
+    const line = avengeGrave(run.avenge, peeking || sampleGraves());
+    run.avenge = null;
+    if (line) tell(line);
+  }
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
   const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari() || isTower();   // the Sky Pillar would farm it too
   const recounted = node.type === 'boss' && run.gymWon?.counted;   // back from Continue in the gym: its Pokédex research is already counted
@@ -2580,9 +2637,18 @@ function afterFight(node, result) {
   const base = Math.round(Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * prizeMult(run.relics));   // Amulet Coin, Relic Statue
   const prize = Math.round(base * (augs().prizeMult || 1) * (augs().riskyClimb && node.type === 'elite' ? augs().riskyClimb : 1)) + (augs().goldenTouch ? result.tally?.biggest || 0 : 0);   // Pocket Change, Risky Climb, Golden Touch
   const luxury = result.caught && BALLS_BY_ID[result.ball]?.id === 'luxury' ? LUXURY_COINS : 0;   // the Luxury Ball's bonus
+  // a shiny caught: its Sparkle is raised as the rewards are collected, like the coins, so a refresh can't raise it twice
+  const shinyCatch = result.caught && result.shiny && isSafari() ? shinyGain(getSave().safariShinies, node.enemyId) : null;
+  const lentShiny = peeking || wildShinyFlag();
+  // the Shiny Exchange's sealed capsules of it open on the catch, after a wild shiny's own gain; saved in collect() too
+  const opened = result.caught && isSafari() && !peeking && getSave().exchange?.sealed?.[node.enemyId]
+    ? (() => { const s = { ...getSave().safariShinies }; if (shinyCatch && !lentShiny) addShiny(s, node.enemyId); return openSealed(s, { ...getSave().exchange.sealed }, node.enemyId); })()
+    : [];
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
     if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+    if (shinyCatch) dexNews.unshift(shinyLine(ENEMY_DEFS[node.enemyId].name, shinyCatch) + (lentShiny ? ' (A playtest: nothing is saved.)' : ''));
+    if (opened.length) dexNews.splice(shinyCatch ? 1 : 0, 0, ...opened.map(g => `🔓 Sealed capsule opened! ${shinyLine(ENEMY_DEFS[node.enemyId].name, g).replace(/^✨ /, '')}`));
     // a Ranger task this catch finishes, said now (it's logged as the rewards are collected)
     if (!peeking && isSafari()) for (const t of finishedBy(getSave(), rangerInfo(node, result))) dexNews.push(`📋 Ranger task done: ${t.title}! Claim it on the board at the Safari Outfitter.`);
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
@@ -2597,12 +2663,14 @@ function afterFight(node, result) {
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
     coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs]) + luxury), money: prize, dex: dexNews, safari: safariStep,
-    beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${foe} was caught!` : null,
+    beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${shinyCatch ? 'Shiny ' : ''}${foe} was caught!` : null,
+    shiny: Boolean(shinyCatch || opened.length),   // the catch box's gold
+    finds: drop ? [drop] : [],   // popped up as the news is told
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
-    if (!run.pendingCoins.told) dexNews.forEach(tell);   // no reward screen said it
+    if (!run.pendingCoins.told) { dexNews.forEach(line => tell(line)); if (drop) popLater([drop]); }   // no reward screen said it
     // counted here, not as the fight ends: a refresh on a reward screen replays the fight
     missionTally(result.tally);
     mission(['fight', 'fight-type', 'fight-special']);
@@ -2616,10 +2684,12 @@ function afterFight(node, result) {
     if (tough) mission('tough');
     if (result.caught) mission('catch');
     if (result.caught && isSafari() && !peeking) rangerCatch(rangerInfo(node, result));
+    if (shinyCatch && !lentShiny) gainShiny(node.enemyId);
+    if (opened.length) openSealedCapsules(node.enemyId);
     if (isSafari() && node.type === 'boss' && !peeking) rangerTick('bosses');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     glean(gleanKey(node, 'drop'), drop);
-    if (shard && glean(gleanKey(node, 'shard'), { key: shard.id })) playSound('crystal-2');
+    if (shard) glean(gleanKey(node, 'shard'), { key: shard.id });
     run.money += prize + (result.tally?.payDay || 0);   // Pay Day's ₽ (StS's Hand of Greed)
     setMoney(run.money);
     updateSave(d => {
@@ -2632,7 +2702,8 @@ function afterFight(node, result) {
   };
 
   const steps = [];   // screens to show one after another
-  if (node.type === 'fight') steps.push(next => (result.caught ? offerSignature(node.enemyId, next) : offerCard('fight', next)));
+  const sparkle = opened.at(-1)?.level ?? shinyCatch?.level;   // the signature card at the Sparkle it's getting
+  if (node.type === 'fight') steps.push(next => (result.caught ? offerSignature(node.enemyId, next, sparkle) : offerCard('fight', next)));
   if (node.type === 'elite') {
     run.tally.elites += 1;
     steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
@@ -2689,6 +2760,8 @@ function afterFight(node, result) {
       });
     }
   } else steps.unshift(next => unlockWindow(unlocked, next));
+  if (shard) steps.unshift(next => offerKeyItem(shard, next));   // first, where the news says it was floating over the Alpha
+  if (opened.length) steps.unshift(next => import('./exchange.js').then(m => m.openSealedReveal(node.enemyId, opened, next)));   // right on the catch
 
   // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
   if (run.relics.includes('dusk-stone')) {
@@ -2869,7 +2942,7 @@ function creditSafari() {
 }
 
 /** A caught Pokémon offers its signature card for the run, take it or leave it, like a card reward (one copy a run). */
-function offerSignature(enemyId, next) {
+function offerSignature(enemyId, next, sparkle) {   // sparkle: a shiny just caught, so its card shows the Sparkle it's getting
   const card = CARDS_BY_ID[SIGNATURE_FOR[enemyId]];
   const name = ENEMY_DEFS[enemyId].name;
   if (!card) return next();
@@ -2878,7 +2951,7 @@ function offerSignature(enemyId, next) {
     title: `${name}'s move`,
     sub: known ? `You already know ${card.name}, ${name}'s signature move.`
       : `${name} can teach you its signature move, ${card.name}. Add it to your deck, or skip.`,
-    options: known ? [] : [learnOption(card, next)],
+    options: known ? [] : [learnOption(card, next, sparkle && { sparkle })],
     onSkip: next,
     skipLabel: known ? 'Continue' : 'Skip',
     coins: run.pendingCoins,
@@ -2908,13 +2981,13 @@ function newBadge(node, kind, thing) {
   return node;
 }
 
-function learnOption(card, next) {
+function learnOption(card, next, look) {
   const option = cardOption(card, run.stage, () => {
       run.deck.push(learnedId(card));
       mission('learn');
       tell(`${card.name} added to your deck!`);
       next();
-    });
+    }, 1, look);
   newBadge(option.node, 'cards', card);
   return {
     ...option,
@@ -3117,16 +3190,45 @@ function offerItem(item, next, { opened = false, title = 'Item found', skip = tr
   }
 }
 
-/** A relic or item bobbing in the light with no tile round it (the treasure room's look), its name under it. */
+/** A relic or item bobbing in the light with no tile round it (the treasure room's look), its name under it. A Satchel
+    key item has no sprite, only its icon. */
 function floatingThing(thing, i = 0, size = 72) {
   const btn = el('button', 'float-thing'), float = el('span', 'relic-float');
   btn.type = 'button';
   btn.style.setProperty('--i', i);
   btn.style.setProperty('--size', `${size}px`);
   btn.setAttribute('aria-label', `${thing.name}: ${thing.text}`);
-  float.append(itemSprite(thing, 'treasure-sprite'));
+  float.append(KEY_BY_ID[thing.id] ? el('span', 'satchel-glyph', thing.icon) : itemSprite(thing, 'treasure-sprite'));
   btn.append(el('span', 'relic-halo'), float, el('span', 'float-label', thing.name));
   return btn;
+}
+
+/** A key item for the Satchel found after a fight (a Waystone Shard over an Alpha): it floats up in the light like a
+    found item, what it is in a window under it, and a tap (or Put in Satchel) flies it off with a chime. It's saved as
+    the rewards end, with the coins (collect()). */
+function offerKeyItem(key, next) {
+  const thisRun = run, coins = run.pendingCoins, finds = coins?.told ? [] : coins?.finds ?? [];
+  if (coins) coins.finds = [];   // a material dropped too pops as the key item flies off, not over it
+  showChoice({ title: 'Key item found', sub: [], options: [], coins, layout: 'item-found' });
+  const stage = el('div', 'float-stage open'), spot = el('div', 'ball-spot'), thing = floatingThing(key, 0, 96);
+  const go = goButton('Put in Satchel', () => take());
+  go.disabled = false;
+  spot.append(chestRays(), thing);
+  stage.append(spot, swapTip('found', key.name, key.text));
+  $('reward-options').append(stage);
+  playSound('crystal-2');
+  let taking = false;
+  thing.addEventListener('click', () => take());
+  async function take() {
+    if (taking) return;
+    taking = true;
+    playSound('item-get');
+    pressConfirm(go);
+    stage.querySelector('.swap-tip').hidden = true;
+    if (finds.length) popLater(finds);
+    await flyToBag(thing);
+    if (run === thisRun) next();
+  }
 }
 
 function swapTip(kind, name, text) {
@@ -3450,7 +3552,7 @@ function restSite({ used = false } = {}) {
     // The lines are only told if the pixel room has to stand in.
     const lines = holdLines();
     const greet = () => { if (run === thisRun && box.isConnected && !$('reward-screen').hidden) sayLines(lines); };
-    import('./center-3d.js').then(m => m.mountCenter({
+    load3d(() => import('./center-3d.js').then(m => m.mountCenter({
       run: thisRun, hp: run.hp, maxHp: run.maxHp, heal: banned ? 0 : heal, name: stageName(run.starter, run.stage),
       mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
       onPick: async (i) => {
@@ -3462,7 +3564,7 @@ function restSite({ used = false } = {}) {
         if (run === thisRun && box.isConnected) btn.click();
       },
       onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
-    })).then(ctl => { room3d = ctl; placeCenterSpots(); if (!ctl) greet(); })
+    })), box).then(ctl => { room3d = ctl; placeCenterSpots(); if (!ctl) greet(); })
       .catch(err => { console.warn('3D Center unavailable', err); greet(); })
       .finally(() => box.classList.remove('c3d-wait'));
   }
@@ -3771,6 +3873,51 @@ const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'billspc', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'library', 'fishing', 'sludge', 'storeroom', 'contest', 'tablet', 'studio', 'bonfire', 'flip', 'rival', 'gym', 'town', 'home'];
 let event3dMod = null;
 
+/** A 3D place mounted under `box` (its pixel room hidden meanwhile), tried once more a second after a failure: a
+    download dropped on a weak signal, or a phone short of memory refusing a WebGL context once, showed the pixel room
+    (2026-10-18). A wait that runs long shows your Pokémon by a rolling Poké Ball, not a blank screen (`mark`: null for
+    none, as a Mart already up and redrawn after a purchase). */
+function load3d(mount, box, mark = loadingMark()) {
+  const thisRun = run, waiting = () => run === thisRun && box.isConnected && !$('reward-screen').hidden;
+  return mount()
+    .catch(err => {
+      if (!waiting()) throw err;
+      console.warn('3D place failed to load, trying again', err);
+      return new Promise(done => setTimeout(done, 1000)).then(() => { if (!waiting()) throw err; return mount(); });
+    })
+    .finally(() => mark && endLoading(mark));
+}
+
+/** Once shown, the loading screen stays up 0.6 s at least (a room ready just after it came would only flicker it), then
+    fades out over the room. */
+function endLoading(mark) {
+  const shown = performance.now() - mark.since - 500;   // its CSS fades it in after half a second
+  if (shown < 0 || $('reward-screen').hidden) return mark.remove();
+  setTimeout(() => { mark.classList.add('out'); setTimeout(() => mark.remove(), 300); }, Math.max(0, 600 - shown));
+}
+
+/** The place's name on a banner bottom left and your Pokémon hopping by a rolling Poké Ball bottom right, over the
+    reward screen (gone with it), the room bar stepping aside: shown only once a 3D place has kept you waiting half a
+    second (its CSS), so a quick one never flashes it. */
+function loadingMark() {
+  const mark = el('div', `loading-mark${calmFx() ? ' calm' : ''}`), buddy = el('div', 'loading-buddy');
+  const mon = el('img', 'loading-mon'), ball = el('img', 'loading-ball'), banner = el('div', 'loading-banner');
+  mon.src = spriteUrl(run.starter, 'front', run.stage);
+  ball.src = 'assets/items/poke-ball.png';
+  mon.alt = ball.alt = '';
+  buddy.append(mon, ball);
+  const place = $('room-title').textContent.trim();
+  if (place) banner.append(el('b', 'loading-place', place));
+  const word = el('span', 'loading-word', 'Loading');
+  word.append(...[0, 1, 2].map(() => el('i', '', '.')));
+  banner.append(word);
+  mark.setAttribute('role', 'status');
+  mark.append(banner, buddy);
+  mark.since = performance.now();
+  $('reward-screen').append(mark);
+  return mark;
+}
+
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
     how a choice is pressed (the grotto's chest is no `.reward-option`). */
 function event3d(node, kind, figures, after, { onPick = null, spent = false, extra = {}, onSaid = null, onIn = null, onFail = null } = {}) {
@@ -3780,7 +3927,7 @@ function event3d(node, kind, figures, after, { onPick = null, spent = false, ext
   // its text waits until you're inside (the box coming and going jolted the camera while it loaded)
   const lines = holdLines();
   const greet = () => { if (lines && run === thisRun && box.isConnected && !$('reward-screen').hidden) sayLines(lines, 'reward-log', onSaid); };
-  import('./event-3d.js').then(m => {
+  load3d(() => import('./event-3d.js').then(m => {
     event3dMod = m;
     return m.mountEvent({
       kind, run: thisRun, node, figures, after, spent, biome: land().id, type: run.starter.type, ...extra,
@@ -3788,7 +3935,7 @@ function event3d(node, kind, figures, after, { onPick = null, spent = false, ext
       onPick: (i) => { if (run === thisRun && box.isConnected) (onPick ? onPick(i) : box.querySelectorAll('.reward-option')[i]?.click()); },
       onLeave: extra.onLeave ?? (() => document.querySelector('#room-bar .room-leave, #reward-skip')?.click()),   // a visit's barred gate says so
     });
-  }).then(() => setTimeout(() => { greet(); if (run === thisRun && box.isConnected && !$('reward-screen').hidden) onIn?.(); }, 350))
+  }), box).then(() => setTimeout(() => { greet(); if (run === thisRun && box.isConnected && !$('reward-screen').hidden) onIn?.(); }, 350))
     .catch(err => {
       console.warn('3D event room unavailable', err);
       if (!onFail) return greet();
@@ -5064,7 +5211,7 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
   // the welcome waits until you're inside (a purchase's news is said at once: the room is already up)
   const lines = document.querySelector('.mart3d-view.on') ? null : holdLines();
   box.classList.add('m3d-wait');
-  import('./mart-3d.js').then(m => m.mountMart({
+  load3d(() => import('./mart-3d.js').then(m => m.mountMart({
     run: thisRun, wares,
     mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
     onPick: (i) => {
@@ -5076,7 +5223,7 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
     onClerk: () => sayLines(BRITT_TALKS[brittTalk++ % BRITT_TALKS.length], 'reward-log', null, 'BRITT'),
     onSoldOut: () => sayLines(['That one has sold out.']),
     onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
-  })).then(up => { if (up && lines) setTimeout(() => sayLines(lines), 500); })
+  })), box, lines ? undefined : null).then(up => { if (up && lines) setTimeout(() => sayLines(lines), 500); })
     .catch(err => { console.warn('3D Mart unavailable', err); if (lines) sayLines(lines); })
     .finally(() => box.classList.remove('m3d-wait'));
 }
@@ -5261,6 +5408,7 @@ async function endTower(won) {
 function endRun(won, atLastBoss = false, loss = null) {
   run.over = true;
   if (!peeking) clearRunData();
+  if (!won && !peeking) try { recordFall(fallNow(loss)); } catch (err) { console.warn('No grave for this run', err); }   // a grave on your friends' maps (js/graves.js)
   if (!peeking) for (const id of run.items) markSeen('items', id);   // found on the last rewards, with no map checkpoint after
   if (isTower()) return endTower(won);
   const mewtwoRun = isMewtwoRun(run.starter);

@@ -26,12 +26,13 @@ import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, itemsForType } from './data/items.js';
 import { heldFires, heldHeal, clearsCard } from './data/held.js';
 import { toldHeld, tellHeld } from './held-tips.js';
-import { isShiny, getSave, updateSave, markSeen } from './storage.js';
+import { isShiny, getSave, updateSave, markSeen, safariSparkle } from './storage.js';
+import { shinyImage } from './data/shinies.js';
 import { vibrate, battleFx, calmFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
-import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
+import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS } from './data/enemies.js';
 import { journey } from './map.js';
@@ -208,6 +209,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     safari: Boolean(run.safari),   // a Safari Zone daily run: its starter may not be yours, so it earns no achievement goals
     catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown any turn
     rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
+    shiny: Boolean(run.safari) && encounter.kind === 'fight' && Boolean(encounter.shiny),   // a Safari wild in its shiny colours: looks only, the fight is the same (js/data/shinies.js)
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
     hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
     phased: false,     // the boss has already risen in its second form
@@ -295,7 +297,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
 
   log(trial ? def.intro ?? `${def.name} steps onto the mat!` : encounter.kind === 'boss'
     ? def.prelude ?? (run.safari ? SAFARI_PRELUDE_LINES[run.safari.areas[run.biome]] : BOSS_PRELUDE_LINES[land]) ?? 'A powerful presence stirs...'
-    : `A wild ${def.name} appeared!`);
+    : `A ${encounter.shiny && run.safari && encounter.kind === 'fight' ? 'shiny' : 'wild'} ${def.name} appeared!`);
   if (deferIntro) {
     document.body.classList.add('boss-prelude');
     $('player-zone').classList.add('awaiting');
@@ -352,7 +354,7 @@ async function playIntro() {
     preloadMusic(b.def.phase2.music);
   }
   preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.def.phase2 ? ['charge', ...bossRebirthSounds()] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.def.phase2 ? ['charge', ...bossRebirthSounds()] : []), ...(b.shiny ? ['shiny'] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -391,6 +393,11 @@ async function playIntro() {
     await sleep(800);
     if (!still()) return;
     enemyZone.classList.replace('entering', 'revealed');
+  }
+  if (b.shiny) {   // the games' shiny sparkle as it appears, then its banner
+    if (motion) shinySparkle(enemyZone);
+    playSound('shiny');
+    shinyBanner(b.def.name);
   }
   await Promise.all([cry(b.def.spriteId), sleep(motion ? 500 : 300)]);
   if (!still()) return;
@@ -451,6 +458,15 @@ function shinySparkle(zone) {
   setTimeout(() => burst.remove(), 1200);
 }
 
+/** A wild shiny's gold banner across the arena: "A SHINY X APPEARED!", slid in and out like the Ability's. */
+function shinyBanner(name) {
+  const banner = el('div', `shiny-banner${battleFx() ? ' show' : ''}`);
+  banner.setAttribute('aria-hidden', 'true');
+  banner.append(el('span', 'shiny-banner-star', '✨'), el('strong', '', `A shiny ${name} appeared!`), el('span', 'shiny-banner-star', '✨'));
+  $('arena').append(banner);
+  setTimeout(() => banner.remove(), 2600);
+}
+
 /** Put the intro's pieces back to rest (also run before each battle, in case one was cut short). */
 function resetIntro() {
   document.body.classList.remove('boss-prelude');
@@ -460,7 +476,7 @@ function resetIntro() {
   $('player-sprite').classList.remove('released');
   $('player-zone').classList.remove('awaiting');
   $('enemy-zone').classList.remove('entering', 'revealed', 'boss-waiting', 'ball-out');
-  document.querySelectorAll('.enemy-ball').forEach(n => n.remove());
+  document.querySelectorAll('.enemy-ball, .shiny-banner').forEach(n => n.remove());
 }
 
 /** A Gym Leader's own Poké Ball, thrown in from the right where they stood, arcing onto the boss's pad and bursting open. */
@@ -900,6 +916,7 @@ async function playCard(uid) {
   b.energy -= cost === 'X' ? b.energy : cost;
   if (!card.power && (card.exhaust || corrupts(card) || lumCures(card))) burnOut(uid);   // it burns away as it's played
   else flyCard(uid, card);
+  if (card.safari && card.from && battleFx() && safariSparkle(card.from) >= 2) shinySparkle($('player-zone'));   // its shiny's Sparkle ★2
   b.hand.splice(index, 1);
   const echoes = b.echoNext || 0;                // Inferno Overdrive / Gold Bottle Cap, waiting for this card (not set by it)
   b.echoNext = 0;
@@ -1657,7 +1674,7 @@ async function ballAnimation(ball, shakes, caught) {
   const b = battle;
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const box = $('enemy-portrait-box'), arena = $('arena');
-  const thrown = el('span', 'thrown-ball');
+  const thrown = el('span', `thrown-ball${b.shiny ? ' gold' : ''}`);   // a shiny's ball shakes in gold
   thrown.append(itemSprite(looks(ball)));
   arena.append(thrown);
   const a = arena.getBoundingClientRect(), target = box.getBoundingClientRect(), from = $('player-zone').getBoundingClientRect();
@@ -1684,6 +1701,7 @@ async function ballAnimation(ball, shakes, caught) {
     await sleep(motion ? SHAKE_GAPS[i] : 250);
     if (battle !== b) { thrown.remove(); return false; }
     playSound(['catch-shake', 'catch-shake-2', 'catch-shake-3'][i]);
+    if (b.shiny && motion) goldTrail(thrown);
     if (motion) await thrown.animate([{ transform: `${at(x, ground)} rotate(0deg)` }, { transform: `${at(x, ground)} rotate(-24deg)` },
       { transform: `${at(x, ground)} rotate(18deg)` }, { transform: `${at(x, ground)} rotate(0deg)` }], { duration: 420, easing: 'ease-in-out' }).finished;
   }
@@ -1707,6 +1725,17 @@ async function ballAnimation(ball, shakes, caught) {
   return battle === b;
 }
 
+/** A gold shake leaves sparkles drifting up off the ball. */
+function goldTrail(ball) {
+  for (let i = 0; i < 4; i++) {
+    const spark = el('span', 'gold-spark');
+    spark.style.setProperty('--dx', `${(i - 1.5) * 14}px`);
+    spark.style.setProperty('--delay', `${i * 60}ms`);
+    ball.append(spark);
+    setTimeout(() => spark.remove(), 900);
+  }
+}
+
 /** Gotcha! The fight ends as a win, without the knockout (run.js pays less ₽ and offers its signature card). */
 async function caughtIt(ballId) {
   const b = battle;
@@ -1715,7 +1744,7 @@ async function caughtIt(ballId) {
   closeBallPicker();
   const grew = hasAbility('overgrow') && healPlayer(b.ability.amount);
   if (grew) abilityBanner();
-  log(`Gotcha! The wild ${b.def.name} was caught!`);
+  log(`Gotcha! The ${b.shiny ? 'shiny' : 'wild'} ${b.def.name} was caught!`);
   renderAll();
   await sleep(Math.max(grew ? 1900 : 1500, (b.jingle || 0) * 1000 + 150));
   if (battle !== b) return;
@@ -1725,7 +1754,7 @@ async function caughtIt(ballId) {
   $('enemy-portrait-box').classList.add('defeated');
   stopAura();
   closeDialog('piles-dialog');
-  b.onEnd({ won: true, caught: true, ball: ballId, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
+  b.onEnd({ won: true, caught: true, shiny: b.shiny, ball: ballId, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
 }
 
 /** On its turn, before anything else: does the wild Pokémon run off? A rare spawn leaves after RARE.turns of your turns
@@ -2364,7 +2393,7 @@ function setupBattleScreen() {
   $('player-type').className = `chip type-${type}`;
   $('player-ability').hidden = !b.ability;
   $('player-ability').dataset.type = type;
-  if (b.ability) $('player-ability').textContent = b.ability.name;
+  if (b.ability) $('player-ability').replaceChildren(el('i', 'ability-shine'), b.ability.name);
   showAbilityState();
   $('ability-banner').hidden = true;
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
@@ -2383,8 +2412,8 @@ function setupBattleScreen() {
 function setupEnemy() {
   const b = battle;
   const img = $('enemy-img');
-  img.src = b.def.image;
-  img.alt = b.def.name;
+  img.src = b.shiny ? shinyImage(b.def.spriteId) : b.def.image;
+  img.alt = `${b.shiny ? 'Shiny ' : ''}${b.def.name}`;
   img.classList.toggle('pixel', !b.def.art);
   setAura(img, 0);   // puts out Kenmatta's aura from a previous fight (aura.js)
   const box = $('enemy-portrait-box');
@@ -2399,8 +2428,17 @@ function setupEnemy() {
 
   const type = typeless() ? 'normal' : b.def.type;   // elites and bosses ignore the chart, so show them as Neutral
   $('enemy-zone').dataset.type = type;
-  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.rare ? '✨ ' : '') + b.def.name;
+  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.rare || b.shiny ? '✨ ' : '') + b.def.name;
   $('enemy-plate').classList.toggle('rare', b.rare);
+  $('enemy-plate').classList.toggle('shiny', b.shiny);
+  $('enemy-shiny').hidden = !b.shiny;
+  box.querySelector('.shiny-aura')?.remove();
+  if (b.shiny && battleFx()) {   // it sparkles all fight
+    const aura = el('div', 'shiny-aura');
+    aura.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < 5; i++) aura.append(el('span', `shiny-twinkle t${i}`));
+    box.append(aura);
+  }
   box.classList.remove('captured', 'ran');
   closeBallPicker();
   $('enemy-type').textContent = TYPES[type].icon;
@@ -2624,38 +2662,48 @@ function badgeFor([icon, value, title, kind = '']) {
   return node;
 }
 
+/* A card still in hand that would look the same keeps its node (its art, its fitted text): rebuilding the whole hand
+   on every tap restyled and re-measured every card, a hitch just as the played card took off (2026-10-18). */
 function renderHand() {
   const b = battle;
   const box = $('hand');
-  box.replaceChildren();
+  const shown = new Map([...box.children].map(node => [Number(node.dataset.uid), node]));
   if (b.busy || !b.hand.some(entry => entry.uid === selectedUid)) selectedUid = null;
 
-  b.hand.forEach((entry, i) => {
+  const nodes = b.hand.map((entry, i) => {
     const { card } = entry;
-    const node = makeCard(asShown(card), { stage: b.stage, cost: costOf(card) });
+    let node = makeCard(asShown(card), { stage: b.stage, cost: costOf(card) });
+    const look = node.innerHTML.replace(/(id="|#)ca[0-9a-z]+/g, '$1'), old = shown.get(entry.uid);   // its art's SVG ids are numbered per drawing
+    if (old?.handLook === look && !entry.fresh && !(old.classList.contains('deal') && dealing())) {
+      forgetCard(node);
+      old.className = node.className;
+      old.style.cssText = node.style.cssText;
+      node = old;
+    } else {
+      node.handLook = look;
+      node.dataset.uid = entry.uid;
+      node.tabIndex = 0;
+      node.setAttribute('role', 'button');
+      node.addEventListener('click', () => tapCard(entry.uid));
+      node.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
+      });
+    }
     node.classList.add('in-hand');
-
     if (choosing) node.classList.toggle('choosable', choosing.only(entry));
     else if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     else if (b.busy) node.classList.add('waiting');
     if (entry.uid === (choosing ? choosing.picked : selectedUid)) node.classList.add('selected');
-    node.dataset.uid = entry.uid;
-
     if (entry.fresh) {                            // cards just drawn slide in
       node.classList.add('deal');
       node.style.animationDelay = `${i * 70}ms`;
       entry.fresh = false;
     }
-
-    node.tabIndex = 0;
-    node.setAttribute('role', 'button');
     node.setAttribute('aria-label', choosing?.only(entry) ? `Choose ${card.name}` : `${card.name}, costs ${costOf(card)}`);
-    node.addEventListener('click', () => tapCard(entry.uid));
-    node.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCard(entry.uid); }
-    });
-    box.append(node);
+    return node;
   });
+  for (const node of [...box.children]) if (!nodes.includes(node)) { forgetCard(node); node.remove(); }
+  nodes.forEach((node, i) => { if (box.children[i] !== node) box.insertBefore(node, box.children[i] ?? null); });
   fanHand();
   renderFocus();
   renderPose();

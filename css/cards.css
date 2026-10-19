@@ -423,6 +423,8 @@
 /* card trails (js/cardfx.js): a played card's clone arcs to where it acts and an exhausted one burns away; their
    particles are drawn on one low-res canvas over everything, in whole pixels */
 .exhaust-fx { position: fixed; inset: 0; z-index: 130; pointer-events: none; }
+.exhaust-fx .fly-ghost { will-change: transform, opacity; }
+.fly-glow { position: absolute; inset: 0; border-radius: 8cqw; background: rgba(255, 255, 255, 0.45); box-shadow: 0 0 8px #a8d8ff; opacity: 0; pointer-events: none; }
 .card-fx { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 131; pointer-events: none; image-rendering: pixelated; }
 .pile.bump { animation: pileBump 0.35s ease-out; }
 @keyframes pileBump { 40% { scale: 1.35; } }
@@ -469,4 +471,55 @@
 @media (max-width: 720px) {
   .card-focus .tip-row .up-pair .card.focus-card { --card-w: min(52vw, 240px, calc(50vh - var(--tips) * 5.5vh)); }
   .card-focus .tip-row .up-pair .card.up-before { --card-w: min(30vw, 150px, calc(29vh - var(--tips) * 3.2vh)); }
+}
+
+/* a Safari signature card whose shiny is yours (makeCard() in js/ui.js): the shiny Pokémon in its art window, cropped
+   to its pose (--bx..--bh, in GIF px), and a ★ for its Sparkle; ★3 a glowing edge, ★4 sparkles over the art, ★5 a gold
+   frame and foil (★2 is a burst when it's played, in battle.js) */
+.card:not(.small) .sig-art { --box-h: 28cqw; --box-w: 58cqw; }
+.sig-art { position: relative; overflow: hidden; }
+.sig-fit {
+  --gw: 1; --gh: 1; --bx: 0; --by: 0; --bw: 1; --bh: 1;
+  --k: min(calc(var(--box-w) / var(--bw)), calc(var(--box-h) / var(--bh)));
+  position: relative; width: calc(var(--k) * var(--bw)); height: calc(var(--k) * var(--bh));
+  opacity: 0;
+}
+.sig-fit.ready { opacity: 1; }
+.sig-fit img {
+  position: absolute; max-width: none;
+  left: calc(var(--k) * var(--bx) * -1); top: calc(var(--k) * var(--by) * -1);
+  width: calc(var(--k) * var(--gw)); height: calc(var(--k) * var(--gh));
+  filter: drop-shadow(0 0.5cqw 0 rgba(0, 0, 0, 0.18));
+}
+.card-sparkle {
+  position: absolute; top: 11cqw; right: 3cqw;
+  padding: 0.8cqw 1.8cqw 0.4cqw; border-radius: 3cqw;
+  background: #fff; color: var(--c2);
+  font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 5.2cqw; line-height: 1.1;
+  box-shadow: 0 0.6cqw 1.2cqw rgba(0, 0, 0, 0.35);
+}
+.card.sparkled { --edge: #8fd0ff; }
+.card:is(.sparkle-3, .sparkle-4) { --edge: #b8f9ff; --halo: 0 0 4.5cqw rgba(184, 249, 255, 0.75); }
+.card:is(.sparkle-3, .sparkle-4) .card-sparkle { background: #b8f9ff; color: #0b3a6a; }
+.card.sparkle-5 { --edge: #ffd34a; --halo: 0 0 6cqw 1cqw rgba(255, 211, 74, 0.8); }
+.card.sparkle-5 .card-sparkle { background: #ffd34a; color: #4a3000; }
+.card.sparkle-5 .card-name { color: #ffe590; }
+.card.sparkle-5 .card-face::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.4) 48%, rgba(255, 230, 150, 0.38) 52%, transparent 62%) no-repeat;
+  background-size: 250% 100%;
+  animation: sigFoil 3.2s linear infinite;
+}
+@keyframes sigFoil { 0% { background-position: 150% 0; } 100% { background-position: -50% 0; } }
+.sig-twinkle { display: none; width: 6cqw; height: 6cqw; opacity: 0; animation: sigTwinkle 1.8s ease-in-out infinite; }
+.card:is(.sparkle-4, .sparkle-5) .sig-twinkle { display: block; }
+.sig-twinkle.t0 { left: 14%; top: 10%; }
+.sig-twinkle.t1 { right: 14%; top: 22%; animation-delay: 0.6s; background: #ffd34a; }
+.sig-twinkle.t2 { left: 32%; bottom: 14%; animation-delay: 1.2s; width: 4.5cqw; height: 4.5cqw; }
+@keyframes sigTwinkle { 0%, 100% { opacity: 0; transform: scale(0.4); } 50% { opacity: 1; transform: scale(1); } }
+:root.calm-fx .sig-twinkle { animation: none; opacity: 0.85; }
+:root.calm-fx .card.sparkle-5 .card-face::after { animation: none; background-position: 50% 0; }
+@media (prefers-reduced-motion: reduce) {
+  .sig-twinkle { animation: none; opacity: 0.85; }
+  .card.sparkle-5 .card-face::after { animation: none; background-position: 50% 0; }
 }

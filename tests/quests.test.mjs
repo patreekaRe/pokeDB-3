@@ -246,3 +246,17 @@ test('a friend\'s heart lines: one a heart, the unheard said first, then behind 
   assert.deepEqual([heard.topical, heard.freshAt, heard.fresh], [1, 0, [3]]);
   assert.deepEqual(homeTalk(town, 'john', st, 5, 5).lines, [...usual, ...H]);
 });
+
+test('every material says where it turns up, the right way for how it drops', async () => {
+  const { matHints } = await import('../js/data/satchel.js');
+  for (const m of MATERIALS) {
+    const lines = matHints(m, 'Somewhere', true);
+    assert.ok(lines.length >= 2, m.id);
+    if (m.grown) assert.match(lines[0], /berry plot/);
+    else if (m.from === 'map') { assert.match(lines[0], /Never dropped in a fight/); assert.ok(!lines.some(l => /letter/.test(l)), m.id); }
+    else { assert.match(lines[0], /Wild Pokémon in the Somewhere/); assert.match(lines.at(-1), /letter/); }
+  }
+  assert.match(matHints(MATERIALS_BY_ID.acorn, 'Whispering Clearing')[2], /first stretch/);
+  assert.match(matHints(MATERIALS_BY_ID.driftwood, 'Sunken Ruins')[2], /either fork/);
+  assert.ok(!matHints(MATERIALS_BY_ID.acorn, 'Whispering Clearing', false).some(l => /letter/.test(l)));
+});

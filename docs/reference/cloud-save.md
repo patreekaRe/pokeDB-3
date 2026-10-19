@@ -82,7 +82,7 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   samples with nothing sent.
 - **The welcome** (the same day, the user's ask): the first time the Trainers app opens signed in (`save.trainersWelcome`),
   and from the ? key by your code, a TRAINER NETWORK card in the same style (`showTrainerWelcome()`): your buddy out of
-  the ball, YOUR TRAINER CODE on the plate, six lines paged with A NEXT (the last LET'S GO!), B SKIP (`WELCOME` in
+  the ball, YOUR TRAINER CODE on the plate, seven lines (the seventh, friends' graves, 2026-10-18) paged with A NEXT (the last LET'S GO!), B SKIP (`WELCOME` in
   `js/trainers.js`); its last line points at Visit (session 2's visits landed the same day).
 - **The Trainer Plaza's board in the Clearing** (the same day, the user's ask: "the physical 3D board"):
   `plazaBoard()` in `js/hub-plaza.js`, the place `plaza` on `PLAZA_AT` (since the user's marks on an aerial shot, the
@@ -110,6 +110,37 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   calls `endGuest()` and doesn't `publishTrainer()`. The next open of your own base takes the `reopen()` path with
   `loadBase()`. A friend's base has no 2D fallback (no WebGL: straight home). `?base&asfriend` opens your own saved base
   as a visitor sees it.
+- **Friends' graves** (2026-10-18, the user's ask: "the tombstone thing", the 2026-10-07 phase 2's ghosts where they lost):
+  every lost run, Safari and Sky Pillar ones too (not a playtest), is packed small (`fallNow()` in `js/run.js` →
+  `recordFall()` in `js/graves.js` → `packFall()` in `js/data/graves.js`: where, what beat it and the loss recap's page,
+  JSON of at most `FALL_LEN` 4,000, its deck and chart trimmed to fit), kept as the save's last `FALL_MAX` 5
+  (`save.falls`) and written to **`graves/<uid>`** = `{ name, buddy, tier, falls, at }` (`publishGraves()`, also on every
+  sign-in). Its own doc, not a key on `trainers/<uid>`: that page carries the whole base (up to 600 KB), and a map reads
+  every friend's at once (one small `getDoc` each, cached 5 min, `friendsNow()`; the map draws at once and only the graves
+  are drawn again when the fetch lands, `setMapGraves()` / `setTowerGraves()`). Rules: signed-in `get`, never listed, only
+  the owner writes, 5 strings of 4,000 at most (`fallOk()`). Before those rules are published every write is refused and
+  nothing else changes. **Where a grave stands** (`gravesHere()`): a Safari fall at its very room on that day's map (the
+  seed makes it everyone's), a Sky Pillar one by the door it went through on that week's tower (`graveStones()` in
+  `js/tower.js`, any floor in view), any other run's on the same floor of the same biome by a room a hash of the grave
+  picks (each map differs), a boss fall by the boss; `GRAVES_SHOWN` 8 on a map at most, the newest first. A pixel
+  tombstone (`graveSvg()` in `js/map.js`) by the room's foot, a wisp over it till you leave flowers. A secret starter's
+  fall (Mewtwo) stays hidden until it's yours. **A tap** opens `#grave-dialog`: the loss recap (`lossPage()` in
+  `js/halloffame.js`), **Pay respects** (flowers on the stone, +`RESPECT_COINS` 5 PokéCoins, once a grave) and
+  **Avenge** (open while the Pokémon that beat them is still ahead on this map: a vow, `run.avenge`, saved with the run;
+  winning a fight against that Pokémon on this map pays +`AVENGE_COINS` 25, once a grave, `avengeGrave()`); both kept in
+  `save.graveMarks` `{ r, a }` (the last 200 ids). PokéCoins only, never anything in the run, so a Safari first try stays
+  fair. A playtest run shows real graves too but saves nothing. `?graves=N` puts N made-up friends' graves on any map and
+  their buddies in the Plaza, nothing fetched or sent.
+- **The Trainer Plaza's buddies** (the same day): up to 4 trainers on your list, on most lately first, walk the paved
+  plaza as their buddies (`makeBuddies()` in `js/hub-buddies.js`, from `plazaBuddies()`), a name tag over each in their
+  card's colour, one strolling at a time; a tap and it hops, cries and talks in the Halloween ghosts' speech window
+  (whose it is and when they played, where their last run ended, Visit). Billboards in the Clearing's own scene (no
+  renderer of its own), read again at most every 10 minutes and rebuilt only when who's there changed
+  (`friendBuddies()` in `js/hub-3d.js`). Memory (tools/memory-probe.mjs, 2026-10-18): the Clearing 123.8 MB -> 125.3 MB
+  with 4, a map unchanged at 32 MB, one GL context awake either way.
+- Tests: `tools/graves-check.mjs` (two stand-in accounts: B loses a real run, A finds the grave on that floor, opens the
+  recap, pays respects, meets B's buddy; `OLD_RULES=1` refuses graves/ and checks nothing breaks), `tests/graves.test.mjs`,
+  the graves cases in `tools/trainers-rules.mjs`.
 - Tests: `tools/trainers-check.mjs`, two stand-in accounts in Playwright sharing one in-memory Firestore that mirrors
   the rules (gstatic routed to stand-in SDK modules, Three.js from disk as its argument or `THREE_JS`, so the Clearing and
   the base run; codes and pages, adding by code, leaderboard and Plaza, the welcome, the TRAINER LINK pop-up, Added you,

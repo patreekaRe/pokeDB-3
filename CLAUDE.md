@@ -156,13 +156,13 @@ These used to be buried in the notes. Each one has its detail in the reference f
 Flags on the live site or a githack link. Most are never saved. Details are in the file named.
 
 - **Save and unlocks**: `?levels` (every Trainer Level), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
-  `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?holiday=<id>` (a seasonal furniture set on sale, `js/data/holidays.js`), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp), `?addnotice=N` (N sample TRAINER LINK pop-ups, the last one an add-back; nothing sent), `?lbsample=tower|safari|arcade` (the leaderboard on made-up trainers; nothing fetched or posted), `?hearts=N` (every friend at N hearts at home and in the Secret Base, their heart lines unheard; nothing saved; `?base&hearts=5&visit` a best friend sitting).
+  `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?holiday=<id>` (a seasonal furniture set on sale, `js/data/holidays.js`), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp), `?addnotice=N` (N sample TRAINER LINK pop-ups, the last one an add-back; nothing sent), `?lbsample=tower|safari|arcade` (the leaderboard on made-up trainers; nothing fetched or posted), `?sparkle=N` (every Safari signature card at Sparkle ★N; nothing saved), `?graves=N` (N made-up friends' graves on any run's map and their buddies in the Trainer Plaza; nothing fetched or saved), `?hearts=N` (every friend at N hearts at home and in the Secret Base, their heart lines unheard; nothing saved; `?base&hearts=5&visit` a best friend sitting).
 - **Look**: `?time=dawn|day|dusk|night`, `?season=halloween|winter|none`, `?hybrid` / `?pixel` / `?smooth`,
   `?pixelcards`, `?sharp=soft|sharp|max` (the Sharpness setting for a page load), `?phone` (a phone frame on a wide screen), `?standalone` (3D drawn as in a Home Screen app), `?signs` / `?walk` (old title / walkable Clearing).
 - **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`
   (`&center2d`), `?mart` (`&money=`), `?crossroads` (`&slot=2&from=`, `&road=`, `&meowth`; `?xr2d` the painted one),
   `?bossfight=<area>|depths` (`&hp=`), `?tower=25` (`&hp=`, `&aug=`), `?climb`, `?gym=<id>` (`&n=2`, `&hp=`),
-  `?arena=ken`. Any of these takes `&relics=a,b`, `&cards=a,b+` and `&items=a` (`playtestKit()` in `js/run.js`).
+  `?arena=ken`, `?wildshiny` (every Safari wild shiny; a catch saves nothing), `?safaridex` (the Shiny Exchange counts every Safari Pokémon caught; pulls save). Any of these takes `&relics=a,b`, `&cards=a,b+` and `&items=a` (`playtestKit()` in `js/run.js`).
 - **Films and scenes**: `?travel=<biome>` (`&from=`, `&at=`, `&flyer=`), `?descent=mewtwo`, `?gate=N`, `?strike=N`
   (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).
 - **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`, `&asfriend` your base as a friend visiting sees it), `?yard` (out in the Secret Base's backyard, lent for the page load; `?yard=big` the bigger one), `?mall=furniture|2f|3f|corner|arcade|outfitter` (3f the Grand Ballroom, lent open)
@@ -240,7 +240,12 @@ There's no automated test suite. Before committing:
 2. Actually play the affected flow in the browser — pick a starter, fight,
    reach the screen/dialog you changed, and interact with it — rather than
    just reading the code.
-3. If it's a balance change (card damage, achievement difficulty, drop
+3. **The phone's budgets** (a cloud session, 2026-10-19, the user's ask: the reload and lag fixes kept by a check): any
+   change to a 3D place, a screen's animations or what the game keeps in memory runs
+   `NODE_PATH=$(npm root -g) node tools/budget-check.mjs` (`--only=name,...` for the places touched; the full run takes
+   several minutes) before pushing. Over budget is a bug to fix, not to record; a change meant to cost more reruns it with
+   `--update` and says so in its commit. Its header says what it counts.
+4. If it's a balance change (card damage, achievement difficulty, drop
    rates), use the headless-bot harness in `../pokeDB-sim/` (a sibling
    folder, never committed to this repo; its README says how to run it).
    Reuse it rather than rebuilding it. This machine has no Node or Python,
@@ -261,7 +266,7 @@ There's no automated test suite. Before committing:
    (Choice Scarf) must rank with the boss relics, or old-vs-new relic pool
    comparisons swing 20–40 points from pick bias alone. Absolute win rates
    differ between bot versions; only compare runs of the same bot.
-4. After pushing, GitHub Pages can take several minutes (occasionally
+5. After pushing, GitHub Pages can take several minutes (occasionally
    10+) to actually serve the new files — `raw.githubusercontent.com/.../main/<path>`
    reflects the pushed source immediately and is the fastest way to confirm
    a push landed, before blaming the CDN for a stale live check.

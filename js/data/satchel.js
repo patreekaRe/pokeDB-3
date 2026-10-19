@@ -85,6 +85,23 @@ export function markShard(rooms, key, rand) {
 /** `?shard` marks a playtest's Alpha with its biome's shard (`?biome=shrine&shard`, or on into the biome from `?town=`). */
 export const shardFlag = () => typeof location !== 'undefined' && new URLSearchParams(location.search).has('shard');
 
+const ROAD = { clearing: 'is every run\'s first stretch', shrine: 'is a run\'s second stretch', wastes: 'is a run\'s third stretch' };
+
+/** Where a material turns up, a few short lines (2026-10-18, the user's ask: tap a material to see where it drops).
+    `biome` is its biome's name; `mail` says a Gym Leader from there can be a friend who writes (friendLetter()). */
+export function matHints(m, biome = 'wild', mail = false) {
+  if (m.grown) return ['Grown in a berry plot in your Secret Base\'s backyard, then picked when it\'s ripe.', 'Water it each day it grows for more berries.'];
+  const map = `the ${biome}${biome.endsWith('s') ? '\'' : '\'s'} map`;
+  const road = `The ${biome} ${ROAD[m.biome] ?? 'can turn up at either fork in the road'}.`;
+  if (m.from === 'map') return [`Never dropped in a fight. It glints in sparkling rooms on ${map}.`, road];
+  return [
+    `Wild Pokémon in the ${biome} drop it now and then. Alphas always do, and its boss drops 2 or 3.`,
+    `Sparkling rooms on ${map} hold a few too.`,
+    road,
+    ...(mail ? [`A Gym Leader from there may tuck one into a letter, once you're friends.`] : []),
+  ];
+}
+
 /** The line that says a material went into the Satchel. */
 export const matLine = ({ id, n }) => `${MATERIALS_BY_ID[id].icon} ${MATERIALS_BY_ID[id].name}${n > 1 ? ` ×${n}` : ''} went into your Satchel.`;
 

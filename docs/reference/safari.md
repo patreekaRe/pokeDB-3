@@ -70,6 +70,39 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   RARE.turns - rock` (4 of your turns): `runAway()` -> `onEnd({ escaped: true })`, and the map says "ran away. Nothing
   won." Its catch odds are halved (`RARE.mult`).
 
+## Wild shinies and Sparkle (2026-10-18, the roadmap's "Safari shinies" session 1)
+
+- **The roll** (`js/data/shinies.js`): `markShinies()` from `startBiome()`, after `markRares()`, marks a wild room
+  (`node.type === 'fight'`, a rare spawn too) `node.shiny` at `SHINY_ODDS` (1 in 150) on `Math.random`, never the
+  seed: the fight is the same (HP, moves, catch odds), so the daily run and leaderboard stay the same for everyone.
+  Saved on the map with the checkpoint, so a refresh can't reroll it. `fight()` hands it on as `encounter.shiny`;
+  `battle.shiny` only for a Safari wild.
+- **The battle** (`js/battle.js`): `setupEnemy()` swaps in `<id>-shiny-front.gif` (`shinyImage()`; all 514, PokeAPI's
+  black-white animated `shiny/`, byte for byte the normal ones' source; `spriteFit()` lends the normal entry, but
+  Chansey's normal GIF isn't PokeAPI's, so it has its own `chansey-shiny-front` line), a ✨ and gold rim on the plate
+  (`#enemy-plate.shiny`) with a SHINY tag (`#enemy-shiny`), and five twinkles on it all fight (`.shiny-aura`, only under
+  `battleFx()`). `playIntro()` bursts the starters' ✨ (`shinySparkle()`) as it appears, plays `shiny` (a synth chime in
+  `js/audio.js`) and slides the gold `shinyBanner()` across the arena (still, without battle effects). The log says "A
+  shiny X appeared!". The thrown ball glows gold and each shake throws gold sparks (`goldTrail()`).
+- **A catch**: `onEnd` carries `shiny`. `afterFight()` reads `shinyGain()` (not saved yet) for the GOTCHA box: "Gotcha!
+  Shiny X was caught!" and `shinyLine()` (NEW SHINY at ★1, or ★2 → ★3, or already ★5), the box gold
+  (`.reward-log.shiny-catch`, from `pendingCoins.shiny`), its signature card offered at the new Sparkle
+  (`offerSignature(id, next, level)` -> `makeCard(..., { sparkle })`). `gainShiny()` saves it in `collect()`, with the
+  coins, so a refresh on the reward screen (which replays the fight) can't raise it twice. Knocked out, it's gone.
+- **The save**: `save.safariShinies` = { id: Sparkle 1-5 }; a duplicate +1, never past `SPARKLE_MAX` (5).
+  `safariSparkle(id)` in `js/storage.js` reads it. Pinned by `tests/shinies.test.mjs`.
+- **Sparkle on the signature card** (`makeCard()` in `js/ui.js`, `css/cards.css`): ★1 its art window shows the shiny
+  Pokémon (`shinyArt()`, cropped to its pose by `spriteFit()`) and a ★N chip in the rarity gem's place; ★2 a ✨ burst
+  when it's played (`playCard()`); ★3 an ice-blue glowing edge; ★4 three sparkles over the art; ★5 a gold edge, gold name
+  and a foil sweep. The twinkles and foil stand still under `calmFx()` and reduced motion. Wild Pokémon stay their
+  normal colours whatever you own.
+- **Playtest**: `?wildshiny` makes every Safari wild shiny, and a catch saves nothing (the box says so); `?sparkle=N`
+  shows every signature card at ★N for the page load.
+- **The Shiny Exchange** (session 2): the Safari Outfitter's kiosk pulls capsules of caught Pokémon's shinies for coins,
+  through the same `addShiny()` (repeats raise Sparkle); `docs/reference/hub-base-mall.md`'s Safari Outfitter part. A
+  Pokémon not caught yet comes out sealed, and a Safari catch of it opens it right on the catch (session 2b, sealed
+  capsules, there too).
+
 ## Poké Balls (the Game Corner's fourth row)
 
 - `BALLS` in `js/data/balls.js`; `save.balls = { great, ultra, dusk, ..., owned, masterWeek }` (a count per pack ball,

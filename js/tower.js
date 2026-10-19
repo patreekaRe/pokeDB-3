@@ -10,7 +10,7 @@
  * one overlay (#tower-fx) painted by the same art, so every floor looks the same wherever it's seen.
  */
 import { FH, SLAB, TOP, K, bay, hash, makeBuffer, flush, paintSky, paintTower, towerLayout, doorXs, stairSteps, skyHex, DOOR_GEM } from './tower-art.js';
-import { NODE_INFO } from './map.js';
+import { NODE_INFO, graveSvg } from './map.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { playSound, preloadSounds } from './audio.js';
@@ -246,6 +246,38 @@ function doorButtons() {
     btn.addEventListener('click', () => pick(node, k, xs[k]));
     box.append(btn);
   });
+  graveStones(box);
+}
+
+/** Friends' graves (js/graves.js) on the floors in view, each at the right foot of the door they went through (a second
+    at the same door on its left): small enough to stand in the gap between two doors on a phone. */
+function graveStones(box) {
+  const { lay, P, H } = V, at = {}, w = 8, h = 9;
+  for (const g of S.graves || []) {
+    const f = g.floor, surf = surfRow(f), types = S.rows(f);
+    if (!types?.length || surf < h || surf > H + h) continue;
+    const guardian = f % 10 === 0;
+    const xs = guardian ? [Math.round((lay.doorL + (f === TOP ? lay.iR - 3 : lay.doorR)) / 2)] : doorXs(lay, types.length);
+    const k = Math.min(g.door, xs.length - 1), n = at[`${f}:${k}`] = (at[`${f}:${k}`] ?? -1) + 1;
+    const half = (guardian ? 30 : 19) / 2, x = xs[k] + (n % 2 ? -1 : 1) * (half + w / 2 + 1);
+    const btn = el('button', `tw-grave${g.flowers ? ' flowers' : ''}${g.avenged ? ' avenged' : ''}`);
+    btn.type = 'button';
+    btn.innerHTML = graveSvg(g);
+    btn.append(el('span', 'map-grave-wisp'));
+    Object.assign(btn.style, { left: `${(x - w / 2) * P}px`, top: `${(surf - h) * P}px`, width: `${w * P}px`, height: `${h * P}px` });
+    const label = `${g.name}'s grave: their climb ended on floor ${f}. Tap to see it.`;
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
+    btn.addEventListener('click', (e) => { e.stopPropagation(); S?.onGrave?.(g); });
+    box.append(btn);
+  }
+}
+
+/** The climb's graves drawn again (a fetch landed, or flowers were left), unless a walk is under way (it redraws after). */
+export function setTowerGraves(graves) {
+  if (!S) return;
+  S.graves = graves || [];
+  if (!busy) doorButtons();
 }
 
 async function pick(node, k, x) {
@@ -310,7 +342,7 @@ function setGauge(floor, best) {
  * the room you last went into, `flight`, `trail` the floors climbed so far ({ f, type, enemy, n, k }), `best` your best
  * floor, `sprite` your Pokémon's front GIF, `onPick(node)` going into a door.
  */
-export function renderTower({ map, current, flight, trail, best, sprite, onPick, hold = false }) {
+export function renderTower({ map, current, flight, trail, best, sprite, onPick, hold = false, graves = [], onGrave = null }) {
   const view = $('tower-view');
   view.hidden = false;
   $('map-screen').classList.add('tower');
@@ -329,7 +361,7 @@ export function renderTower({ map, current, flight, trail, best, sprite, onPick,
   };
   if (busy && S?.floorNow === floorNow) return;   // redrawn mid-walk (the Bag closed): the walk carries on
   const prev = S;
-  S = { floorNow, flight, rows, nodes, trail: trail || [], onPick, opening: null, rising: null };
+  S = { floorNow, flight, rows, nodes, trail: trail || [], onPick, opening: null, rising: null, graves, onGrave };
   const img = $('tw-mon');
   if (!img.src.endsWith(sprite)) { img.onload = fitMon; img.src = sprite; }
   if (!V || V.W !== Math.ceil(innerWidth / pixel()) || V.H !== Math.ceil(innerHeight / pixel())) layout();

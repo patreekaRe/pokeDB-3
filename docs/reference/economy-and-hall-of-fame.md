@@ -22,7 +22,8 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   a legendary's Super Saiyan forms too. The 126 GIFs are PokeAPI's black-white animated `shiny/` and
   `back/shiny/` sprites (the same source as the normal ones, byte for byte); `spriteFit()` in
   `js/data/sprite-fit.js` lends a shiny its normal sprite's entry. In battle a shiny comes out of its ball in a
-  burst of ✨ (`shinySparkle()` in `js/battle.js`).
+  burst of ✨ (`shinySparkle()` in `js/battle.js`). Safari wilds have shinies of their own, caught not bought (2026-10-18; `docs/reference/safari.md`'s
+  "Wild shinies and Sparkle").
 - **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
   `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
   `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character

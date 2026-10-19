@@ -56,16 +56,22 @@ export const LOSS_KEEP = 100;
  * keeps plus its HP over the run (one point a floor, then the faint), for the loss recap. `after` is how many wins came
  * before it, which places it among them in the list.
  */
-export function recordLoss(run, { foe = null, move = null, kind = null, biomeName, place, floor }, shiny) {
+export function recordLoss(run, where, shiny) {
+  const entry = draftLoss(run, where, shiny);
+  updateSave(d => { d.losses = [...(d.losses || []), entry].slice(-LOSS_KEEP); });
+  return entry;
+}
+
+/** A lost run's entry, unsaved: recordLoss() saves it, and a friend's grave carries it (js/graves.js), Safari and Sky
+    Pillar falls too. */
+export function draftLoss(run, { foe = null, move = null, kind = null, biomeName, place, floor }, shiny) {
   const trail = run.tally.hpTrail || [];
-  const entry = {
+  return {
     ...runRecord(run, shiny), hp: 0,
     after: getSave().hallOfFame.length,
     biome: run.biome, biomeName, place, floor, foe, move, kind,
     hpTrail: [...trail.map(([hp, max, biome]) => [hp, max, biome]), [0, run.maxHp, run.biome]],   // it ends where it fainted
   };
-  updateSave(d => { d.losses = [...(d.losses || []), entry].slice(-LOSS_KEEP); });
-  return entry;
 }
 
 /** What a win conquered: the last biome on its road, any pool biome walked there too (a record saved before the crossroads
@@ -122,7 +128,7 @@ function runRecord(run, shiny) {
 }
 
 const starterOf = (entry) => STARTERS_BY_ID[entry.starter];
-const nameOf = (entry) => stageName(starterOf(entry), entry.stage);
+export const nameOf = (entry) => stageName(starterOf(entry), entry.stage);
 const imgOf = (entry) => spriteUrl(starterOf(entry), 'front', entry.stage, entry.shiny);
 const typeOf = (entry) => TYPES[entry.type] ?? { label: entry.type, icon: '' };
 const pad3 = (n) => String(n).padStart(3, '0');
@@ -137,7 +143,7 @@ const champNo = (entry) => `Depths ${pad3(entry.champ ?? getSave().hallOfFame.fi
 let book = 'fame';
 const numberOf = (entry) => (entry.summit && `Floor ${entry.floor}`) || (book === 'fame' && (fameNo(entry) || (isDepths(entry) && champNo(entry)))) || winNo(entry);
 /** "28 Sep 2026", read as a local date (a bare "2026-09-28" would parse as UTC midnight and show the day before in the Americas). */
-function dateOf(day) {
+export function dateOf(day) {
   const [y, m, d] = day.split('-').map(Number);
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
@@ -537,8 +543,8 @@ function hpChart(entry) {
   return [box, caption];
 }
 
-/** A lost run's page: who beat it and with what, its numbers, its HP over the run and its final deck. */
-function lossPage(entry) {
+/** A lost run's page: who beat it and with what, its numbers, its HP over the run and its final deck (a friend's grave too). */
+export function lossPage(entry) {
   const top = el('div', `hof-entry lost type-${entry.type}`);
   const pic = el('span', 'hof-entry-pic');
   const img = el('img', 'pixel');
