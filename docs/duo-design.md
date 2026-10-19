@@ -15,6 +15,10 @@ an area. With Fire / Grass / Water that makes 9 types and 36 duos.
 
 ## 1. The duo (session 1, on Fire / Grass / Water)
 
+**Changing (the user's call, 2026-10-19, after session 1): two decks, not one.** Each partner keeps its own deck and
+piles, as if you control two starters; it replaces the Starting deck and Card rewards rows below (answers 6 and 7). The
+rest stands. Session 1b settles the details (the roadmap's entry 1b) and rewrites this section.
+
 | Rule | Proposal |
 |---|---|
 | Where | Safari runs only (`run.safari`), from the Duo Run screen (section 2). The Daily run stays one dealt starter. |

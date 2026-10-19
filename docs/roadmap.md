@@ -70,6 +70,19 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    Vine Whip / Water Gun "Deal 7", Scorch / Seed Bomb, Solar Beam / Firestorm, Withdraw / Flame Wall...). The test keys
    on type (a duo plays them differently: STAB, the chart), so they stay unless the user wants them renamed.
    Playtest: the commit's githack link with `?duorun&coins=500`, the Safari lobby's Duo key.
+1b. **Two decks** (effort: high; **next**). The user's call, 2026-10-19, after session 1 ("it should be as if you're
+   controlling two completely different starters"): **each partner keeps its own deck**, replacing answer 6's shared 5 + 5.
+   This settles session 1's findings (a) (each brings its full solo 10, so no thinned halves) and (c) (each hand is one
+   type plus Neutral). Kept: one HP bar, a shared PP pool, the out one's type, STAB and Ability, powers and block staying
+   on a switch, the Duo Run screen and pool. **Rules to settle first, as answer cards** (Claude's defaults in brackets):
+   (1) what a switch does to the hands [the one out's hand goes to its discard pile and the partner draws a fresh 5; the
+   other choice keeps each hand aside until it comes back]; (2) its cost [1 PP, re-measured, since a fresh hand is worth
+   far more than STAB]; (3) the benched partner's piles [untouched while benched]; (4) a card reward [one card of each
+   type plus a third of either, each joining its own type's deck; a Neutral card asks which partner takes it]; (5) the
+   Mart, Center, PC and events' deck picks [both decks in one picker, grouped under each partner]; (6) the save [`run.duo.decks`
+   beside `run.deck`, a session 1 save on the branch read as before or dropped]. Then the engine (`js/battle.js`: piles per
+   partner), the deck viewer and bench chip (the partner's hand and deck size), the run's pickers, the sim mirror and a
+   bot check of the 3 pairs against solo, which also re-asks (b): is the switch worth its PP now.
 2. ~~**Real types in the Safari**~~ done 2026-10-19 on `duo-types-realtypes`, merged into `duo-types` (both repos;
    `docs/roadmap-done.md`, `docs/reference/safari.md`'s Real types). Built on the 18-type chart as the prompt said. The user's answers settle both its opens:
    **Gen 5** (answer 13), so session 1 first runs `tools/real-types.py --gen5` and the tests; and the x0.5 floor (a double resist is x0.75, as the
@@ -82,9 +95,14 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
 15. **The balance pass** (effort: high) over all 36 pairs, then patch notes and a githack link.
 - **The new areas' art** (the user's pick: data first, art after): each new area's scene, intro film, boss prelude and
   arena, one or two areas a session, after the type sessions or beside the balance pass.
-Prompt for session 3, Electric's first (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start from
-branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md (approved), the roadmap's duo entry (the user's calls on
-session 1's three findings) and docs/reference/safari.md's duo section, cards.md and card-design.md. Build Electric's
+Prompt for session 1b, two decks (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start from branch
+`duo-types` in both): "Read CLAUDE.md, docs/duo-design.md, the roadmap's duo entry 1b and docs/reference/safari.md's duo
+section, cards.md and device-and-screens.md. First put entry 1b's six rules to me as answer cards, with your defaults.
+Then rebuild the duo as two decks (each partner its own deck and piles, one HP bar), with pokeDB-sim's mirror and a bot
+check of the 3 pairs against solo. Write the rules into duo-design.md. Push only to duo-types in both repos and give me
+a githack link."
+Prompt for session 3, Electric's first, after 1b (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start from
+branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md (approved), the roadmap's duo entry (the two decks of 1b) and docs/reference/safari.md's duo section, cards.md and card-design.md. Build Electric's
 first session (the doc's section 5 and 7): write its card table into the doc first, then Static, Overcharge and Volt
 Switch, the Static Ability, the starting deck and ~35 cards with art, describe() / cardTerms() lines, the free switch,
 and the sim mirror with a bot check of Electric's pairs. Push only to duo-types in both repos and give me a githack link."
@@ -1015,14 +1033,6 @@ uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS 
    three enemies) and which enemies get them, pick with me, then build them in js/battle.js with the sim mirror, retune,
    bot-check at Levels 0/3/5, add a patch-notes line and give me a githack link. Push to main."
 Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` / `cardTerms()` lines and the sim mirror.
-
-**A duo as two separate decks?** (raised by the user, 2026-10-19, after session 1: "it should be as if you're controlling two
-completely different starters? 10 + 10?"; undecided). Built today: one shared deck, 5 + 5 (answer 6), any card playable
-whoever is out. Options discussed: (a) keep it; (b) one shared deck of 10 + 10 (simple, but a 20-card deck draws its best
-cards half as often, so likely weaker, with no more of a two-starters feel); (c) **two decks**, each partner its own 10 with
-its own draw and discard piles, your hand its cards, a switch bringing out the partner's hand (a high-effort engine session
-plus the sim: which deck a reward joins, the Mart's and Center's picks, the deck viewer; open: does a switch keep each
-hand or deal a new one, and its cost). Claude's view: (c) is the one that feels like two starters; (b) isn't worth it.
 
 **Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
 - **The duo** (built first, Safari only): bring two starters of different types, one out at a time. Switch for 1 PP
