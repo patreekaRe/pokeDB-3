@@ -973,8 +973,9 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   Dojo Mountain (Fighting: Machop, Mankey, Makuhita, Throh, Sawk, Mienfoo, Hitmonlee), Night Alley (Dark: Poochyena,
   Purrloin, Absol, Umbreon rare), Psychic Grove (Drowzee, Spoink, Munna, Elgyem, Solosis, Ralts, Espeon rare); later a
   Power Plant (Electric) or an Ice Cave.
-- **Growing the duo through the Safari** (the user's shape, 2026-10-19): a duo run starts with Fire / Water / Grass only;
-  each Safari area holds starters of its own to catch, and a catch unlocks that type for your duos. **How many types:
+- **Growing the duo pool through the Safari** (the user's shape and words, 2026-10-19): a duo is always two, picked from
+  a **duo pool** that starts as Fire / Water / Grass only; each Safari area holds starters of its own to catch, and a
+  catch adds that starter (and its type) to the pool. **How many types:
   6 new, 9 in all** (worked out on the real chart, 2026-10-19): Fire / Water / Grass hit 8 of the 18 types super
   effectively; the best 3 more reach 15, 4 reach 16, 5 reach 17, and 6 is the fewest that gives every one of the 18 a
   counter (only Fighting hits Normal). Suggested six, all Gen 1-5 types: **Electric, Ice, Fighting, Ground, Flying,
