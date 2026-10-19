@@ -45,6 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['runs', 'Materials and Waystone Shards you find on a run now pop up in their own window, big enough to see over the card choices.'],
   ['hub', 'Your Trainers\' buddies in the Plaza wear bigger, clearer name tags, and once one has had its say, its trainer\'s Trainer Card opens.'],
+  ['dex', 'Your Trainers page shows friends your Pokédex colour: their page opens in the shell they wear.'],
   ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again.'],
 ];
 

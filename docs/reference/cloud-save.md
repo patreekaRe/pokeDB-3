@@ -36,9 +36,11 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
 - **`trainers/<uid>`** = `{ code, name, card, buddy, base, at }`, the public page: `card` the Trainer Card's numbers
   (`cardDoc()`: tier, earned badge ids, wins, Pokédex, Safari, stars, play minutes, the partner as a `save.partner`
   key; since 2026-10-18 also `rank` the Journal rank's index, `top` the highest Trainer Level won, `fave` the starter
-  with most wins, `pillar` the best Sky Pillar floor, -1 / '' / 0 when none or on an older page). Rules published
+  with most wins, `pillar` the best Sky Pillar floor, -1 / '' / 0 when none or on an older page; `shell` the Pokédex
+  shell they wear, Settings > Device colour, '' on an older page: their page in the Trainers app wears it, `dress` on
+  `shelfApp()` setting `data-shell-of`, css/base.css's shell colours under that attribute too, 2026-10-18). Rules published
   before those keys refuse them, so `publishTrainer()` writes the page again without them on `permission-denied`
-  (`NEW_CARD_KEYS`). Rules with them published 2026-10-18. Later that day `shinies` (the Trainer Card's SHINIES,
+  (`NEW_CARD_KEYS`; `NEWEST_CARD_KEYS`, `shell`, is tried off first). Rules with them published 2026-10-18. Later that day `shinies` (the Trainer Card's SHINIES,
   `shinyTotal()`) and `ranger` (the Ranger Rank's index, -1 before the Safari opens) joined; `NEW_CARD_KEYS` now holds
   only those two, and they stay 0 / -1 until the rules are published again. Later still (the user's list): `gyms` /
   `gymsOf` (Gym Leaders beaten), `streak` (`stats.bestStreak`), `ken` / `belt` (`kenWinsOf()`, `beltOf()`), `summits`,

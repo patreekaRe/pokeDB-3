@@ -913,7 +913,8 @@ backyard, and their trophy cases as they last saw them at home. **Next: the user
 `docs/roadmap-done.md`, details in `docs/reference/cloud-save.md`): a lost run (Safari and Sky Pillar too) goes up on
 `graves/<uid>`, friends find the grave where it fell (the very room on the Safari, the door on the Pillar, the same
 floor elsewhere), a tap opens the loss recap with Pay respects / Avenge, and up to 4 friends' buddies walk the Trainer
-Plaza. **Next: the user publishes `firestore.rules`** (Waiting on the user) **and playtests it** (`?graves=3`, or two
+Plaza. Since: tapping a buddy past its talk opens its trainer's Trainer Card, and a page carries its Pokédex shell
+(`card.shell`, the friend's page wears it; needs the new rules, else it's left off). **Next: the user publishes `firestore.rules`** (Waiting on the user) **and playtests it** (`?graves=3`, or two
 signed-in accounts).
 Later: name search and Follow, then the rest of the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes
 (best on the seeded Safari / Sky Pillar, rated for coins), a daily gift in a friend's Lost & Found (the user's pick to

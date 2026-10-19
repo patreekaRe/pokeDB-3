@@ -68,59 +68,66 @@
   --pad: #2a2a30; --pad-on: #48484f;
   --btn-a: radial-gradient(circle at 35% 30%, #a8dcff 0 12%, #3d8ae0 40%, #1d4fa0);
 }
-:root[data-shell="blue"] {
+/* a friend's Trainers page wears their shell (js/trainers.js): red's colours first, so a shell that sets fewer doesn't
+   keep the viewer's own */
+[data-shell-of] {
+  --shell-hi: #e0343a; --shell: #c41f2a; --shell-lo: #b01822; --shell-fold: #a8141e;
+  --shell-rim: #7a1016; --shell-deep: #5a0c12; --shell-hinge: #8a1018;
+  --btn-a: radial-gradient(circle at 35% 30%, #a8dcff 0 12%, #3d8ae0 40%, #1d4fa0);
+}
+:root[data-shell="blue"], [data-shell-of="blue"] {
   --shell-hi: #3a7ae0; --shell: #245cc4; --shell-lo: #1a4aac; --shell-fold: #16409c;
   --shell-rim: #0f2a6e; --shell-deep: #0a1d4f; --shell-hinge: #133584;
   --btn-a: radial-gradient(circle at 35% 30%, #ffc0d8 0 12%, #e0407a 40%, #a01c50);
 }
-:root[data-shell="yellow"] {
+:root[data-shell="yellow"], [data-shell-of="yellow"] {
   --shell-hi: #f8d040; --shell: #ecb818; --shell-lo: #d8a20c; --shell-fold: #cc960a;
   --shell-rim: #7a5608; --shell-deep: #573c04; --shell-hinge: #8c6408;
 }
-:root[data-shell="green"] {
+:root[data-shell="green"], [data-shell-of="green"] {
   --shell-hi: #3cbc58; --shell: #229a3e; --shell-lo: #198632; --shell-fold: #157a2c;
   --shell-rim: #0c4e1c; --shell-deep: #083814; --shell-hinge: #10602a;
 }
-:root[data-shell="pink"] {
+:root[data-shell="pink"], [data-shell-of="pink"] {
   --shell-hi: #f070a8; --shell: #dc4c8c; --shell-lo: #c63a78; --shell-fold: #ba3270;
   --shell-rim: #7a1a48; --shell-deep: #561034; --shell-hinge: #8c2058;
 }
-:root[data-shell="gold"] {   /* Grand Champion's, the Trainer's Journal's top rank */
+:root[data-shell="gold"], [data-shell-of="gold"] {   /* Grand Champion's, the Trainer's Journal's top rank */
   --shell-hi: #f8d868; --shell: #d8a830; --shell-lo: #c09020; --shell-fold: #b0841a;
   --shell-rim: #6a4a08; --shell-deep: #4a3204; --shell-hinge: #7a5a10;
   --btn-a: radial-gradient(circle at 35% 30%, #ffc0b0 0 12%, #d83a2a 40%, #8a1810);
 }
-:root[data-shell="black"] {
+:root[data-shell="black"], [data-shell-of="black"] {
   --shell-hi: #50505c; --shell: #383840; --shell-lo: #2a2a32; --shell-fold: #26262c;
   --shell-rim: #101014; --shell-deep: #060608; --shell-hinge: #1c1c22;
   --pad: #a8a8b4; --pad-on: #d0d0da;
   --btn-a: radial-gradient(circle at 35% 30%, #ffb0b0 0 12%, #e03a3a 40%, #9a1414);
 }
 
-:root[data-shell="silver"] {   /* the Grand Catalogue's shells from here (js/data/catalogue.js), bought at the PC */
+:root[data-shell="silver"], [data-shell-of="silver"] {   /* the Grand Catalogue's shells from here (js/data/catalogue.js), bought at the PC */
   --shell-hi: #d4d8e2; --shell: #b4b8c4; --shell-lo: #9ea2b0; --shell-fold: #9296a4;
   --shell-rim: #5a5e6a; --shell-deep: #3e424c; --shell-hinge: #6a6e7a;
 }
-:root[data-shell="crystal"] {
+:root[data-shell="crystal"], [data-shell-of="crystal"] {
   --shell-hi: #a898ec; --shell: #8a78d8; --shell-lo: #7664c4; --shell-fold: #6c5ab8;
   --shell-rim: #3e2e7a; --shell-deep: #2a1e58; --shell-hinge: #4a3a8c;
   --btn-a: radial-gradient(circle at 35% 30%, #c8fff4 0 12%, #3cc8b0 40%, #148a78);
 }
-:root[data-shell="teal"] {
+:root[data-shell="teal"], [data-shell-of="teal"] {
   --shell-hi: #30b8b0; --shell: #189a94; --shell-lo: #12867f; --shell-fold: #0f7a74;
   --shell-rim: #08504c; --shell-deep: #053835; --shell-hinge: #0a605b;
   --btn-a: radial-gradient(circle at 35% 30%, #ffd8b0 0 12%, #f08a3a 40%, #a84e10);
 }
-:root[data-shell="orange"] {
+:root[data-shell="orange"], [data-shell-of="orange"] {
   --shell-hi: #f8904a; --shell: #e8742a; --shell-lo: #d4621c; --shell-fold: #c85818;
   --shell-rim: #7a320a; --shell-deep: #562206; --shell-hinge: #8c3e0e;
 }
-:root[data-shell="purple"] {
+:root[data-shell="purple"], [data-shell-of="purple"] {
   --shell-hi: #8a4ad0; --shell: #6a32b0; --shell-lo: #5a2898; --shell-fold: #52228c;
   --shell-rim: #301258; --shell-deep: #200a3e; --shell-hinge: #3c1868;
   --btn-a: radial-gradient(circle at 35% 30%, #fff4b0 0 12%, #e8c030 40%, #9a7a10);
 }
-:root[data-shell="white"] {
+:root[data-shell="white"], [data-shell-of="white"] {
   --shell-hi: #fbfbf8; --shell: #ecebe6; --shell-lo: #dcdbd4; --shell-fold: #d2d1ca;
   --shell-rim: #8a8a84; --shell-deep: #5e5e5a; --shell-hinge: #9a9a94;
   --btn-a: radial-gradient(circle at 35% 30%, #ffb0b0 0 12%, #e03a3a 40%, #9a1414);

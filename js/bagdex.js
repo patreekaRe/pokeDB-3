@@ -120,6 +120,7 @@ export const typeChip = (type) => el('span', `index-only type-${type}`, `${TYPES
     tally(g, done)           the tally's words
     doneSub                  the banner's sub once all are found
     onShow(g, t, known)      after stepping to a thing (a cry)
+    dress(dev, g, t, known)  each time a thing fills the page, on its device (a friend's shell colour)
     count(g, things)         a plain count for the banner and tally, for a shelf where nothing is ever "not found" (the books)
     direct                   no banners: the device opens straight on the first group, and B leaves the app
     sheet(g, t, known)       the thing's full page (nodes, or null for none): a tap on the screen or A slides it over the device
@@ -263,6 +264,7 @@ export function shelfApp(spec) {
     }
     body.replaceChildren(nameplate, screen, ...lines, slots, tally, ...(spec.foot?.(group) ?? []));
     dev.querySelector('.pdx-counter').textContent = `${at + 1} / ${things.length}`;
+    spec.dress?.(dev, group, thing, known);
 
     typeOut([...body.querySelectorAll('.pdx-type')]);
     if (dir && old && !calm()) slide(old, screen, dir);

@@ -27,9 +27,13 @@ export const PLAZA_SHOWN = 30;
 
 export const TRAINER_KEYS = ['code', 'name', 'card', 'buddy', 'base', 'at'];
 export const CARD_KEYS = ['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar', 'shinies', 'ranger',
-  'gyms', 'gymsOf', 'streak', 'ken', 'belt', 'summits', 'starters', 'startersOf', 'defeated', 'sdays', 'earned', 'fame', 'best', 'sparkle', 'pin', 'rare', 'hof'];
+  'gyms', 'gymsOf', 'streak', 'ken', 'belt', 'summits', 'starters', 'startersOf', 'defeated', 'sdays', 'earned', 'fame', 'best', 'sparkle', 'pin', 'rare', 'hof', 'shell'];
 /** The newest keys (2026-10-18); rules published before them refuse them, so a page is written again without (publishTrainer()). */
 export const NEW_CARD_KEYS = CARD_KEYS.slice(CARD_KEYS.indexOf('shinies'));
+/** Keys newer still: tried off first, so rules from before only these keep the rest of NEW_CARD_KEYS. */
+export const NEWEST_CARD_KEYS = ['shell'];
+/** Every Pokédex shell (Settings > Device colour): the free ones, Grand Champion's gold and the Grand Catalogue's. */
+export const SHELLS = ['red', 'blue', 'yellow', 'green', 'pink', 'black', 'gold', 'silver', 'crystal', 'teal', 'orange', 'purple', 'white'];
 /** The newest Hall of Fame win rides along as JSON: { s starter, g stage, sh shiny, f its Hall of Fame number, d date, k deck }. */
 export const HOF_LEN = 1500;
 const TIERS = ['green', 'bronze', 'silver', 'gold', 'violet'];
@@ -85,6 +89,7 @@ export function cardDoc(c = {}) {
     defeated: count(c.defeated), sdays: count(c.sdays, 99999), earned: count(c.earned, 1e9), fame: count(c.fame, 9999),
     best: key(c.best), sparkle: count(c.sparkle, 5), pin: key(c.pin).slice(0, 32), rare: key(c.rare),
     hof: typeof c.hof === 'string' && c.hof.length <= HOF_LEN ? c.hof : '',
+    shell: SHELLS.includes(c.shell) ? c.shell : '',
   };
 }
 

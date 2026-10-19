@@ -11,9 +11,10 @@
    ============================================================ */
 
 import { TRAINERS, CODES, PLAZA, ADDS, PLAZA_SHOWN, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend,
-  trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, hofDoc, readHof, FRIENDS_MAX, BASE_MAX, NEW_CARD_KEYS } from './data/trainers.js';
+  trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, hofDoc, readHof, FRIENDS_MAX, BASE_MAX, NEW_CARD_KEYS, NEWEST_CARD_KEYS } from './data/trainers.js';
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
+import { pref } from './prefs.js';
 import { trainerName } from './leaderboard.js';
 import { partnerKey, buddyKey, cardTier, badgeArt, shinyTotal, pinnable, TIERS as CARD_TIERS } from './trainercard.js';
 import { BADGES, BADGES_BY_ID, safariDays } from './data/badges.js';
@@ -69,6 +70,7 @@ function myCard(save) {
     defeated: save.stats.enemiesDefeated || 0, sdays: safari ? safariDays(save) : 0, earned: save.stats.coinsEarned || 0,
     fame: fameWins(save).length, best: safari ? bestShiny(save) : '', sparkle: safari ? sparkleOf(save.safariShinies, bestShiny(save)) : 0,
     pin: pinnable(save.pinBadge, save) ? save.pinBadge : '', rare: safari ? rarestCatch(save) : '', hof: hofDoc(fameWins(save).at(-1)),
+    shell: pref('shell'),
   };
 }
 
@@ -119,12 +121,11 @@ export function publishTrainer() {
       const doc = trainerDoc({ code, name: trainerName(), card: myCard(save), buddy: b, base: save.secretBase });
       if (checkTrainer(doc)) return code;
       const page = s.F.doc(s.db, TRAINERS, s.user.uid);
-      try { await s.F.setDoc(page, { ...doc, at: s.F.serverTimestamp() }); }
-      catch (err) {
-        // rules published before the card's newer numbers refuse them: the page still goes up without
-        if (err?.code !== 'permission-denied') throw err;
-        const card = Object.fromEntries(Object.entries(doc.card).filter(([k]) => !NEW_CARD_KEYS.includes(k)));
-        await s.F.setDoc(page, { ...doc, card, at: s.F.serverTimestamp() });
+      // rules published before the card's newer numbers refuse them: the page still goes up without, the newest off first
+      for (const off of [[], NEWEST_CARD_KEYS, NEW_CARD_KEYS]) {
+        const card = Object.fromEntries(Object.entries(doc.card).filter(([k]) => !off.includes(k)));
+        try { await s.F.setDoc(page, { ...doc, card, at: s.F.serverTimestamp() }); break; }
+        catch (err) { if (err?.code !== 'permission-denied' || off === NEW_CARD_KEYS) throw err; }
       }
       const spot = s.F.doc(s.db, PLAZA, s.user.uid);
       if (save.plazaHidden) await s.F.deleteDoc(spot).catch(() => {});
@@ -626,6 +627,8 @@ export function trainersApp() {
       },
       tally: (g) => (g.id === 'plaza' ? 'Trainers in the Plaza' : g.id === 'added' ? 'Trainers who added you' : 'Trainer Card'),
       empty: (g) => (g.id === 'plaza' ? 'Nobody\'s here yet. Check back soon!' : ''),
+      // their page in their own Pokédex colour; a Plaza blurb doesn't carry it, so that stays yours
+      dress(dev, g, uid) { const shell = docs.get(uid)?.card.shell; if (shell) dev.dataset.shellOf = shell; else delete dev.dataset.shellOf; },
       onShow: (g, uid) => { removing = null; const m = sprite(partnerOf(uid)); if (partnerOf(uid) && !m.masked) playCry(m.cry); },
       top: topBox,
     });

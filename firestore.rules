@@ -109,7 +109,7 @@ service cloud.firestore {
     // read it one at a time; only its owner writes it, under a code they own. `base` is their Secret Base as JSON.
     function validCard(c) {
       return c is map
-        && c.keys().hasOnly(['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar', 'shinies', 'ranger', 'gyms', 'gymsOf', 'streak', 'ken', 'belt', 'summits', 'starters', 'startersOf', 'defeated', 'sdays', 'earned', 'fame', 'best', 'sparkle', 'pin', 'rare', 'hof'])
+        && c.keys().hasOnly(['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar', 'shinies', 'ranger', 'gyms', 'gymsOf', 'streak', 'ken', 'belt', 'summits', 'starters', 'startersOf', 'defeated', 'sdays', 'earned', 'fame', 'best', 'sparkle', 'pin', 'rare', 'hof', 'shell'])
         && c.tier in ['green', 'bronze', 'silver', 'gold', 'violet']
         && c.badges is list && c.badges.size() <= 100
         && inRange(c.wins, 0, 10000000) && inRange(c.dex, 0, 9999) && inRange(c.dexOf, 0, 9999)
@@ -126,7 +126,8 @@ service cloud.firestore {
         && (!('earned' in c) || inRange(c.earned, 0, 1000000000)) && (!('fame' in c) || inRange(c.fame, 0, 9999))
         && (!('best' in c) || (c.best is string && c.best.size() <= 64)) && (!('sparkle' in c) || inRange(c.sparkle, 0, 5))
         && (!('pin' in c) || (c.pin is string && c.pin.size() <= 32)) && (!('rare' in c) || (c.rare is string && c.rare.size() <= 64))
-        && (!('hof' in c) || (c.hof is string && c.hof.size() <= 1500));
+        && (!('hof' in c) || (c.hof is string && c.hof.size() <= 1500))
+        && (!('shell' in c) || (c.shell is string && c.shell.size() <= 16));
     }
     function validTrainer(d) {
       return d.keys().hasOnly(['code', 'name', 'card', 'buddy', 'base', 'at'])

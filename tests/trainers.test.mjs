@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { CODE_LETTERS, CODE_LEN, FRIENDS_MAX, BASE_MAX, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend,
-  trainerDoc, checkTrainer, cardDoc, lastSeen, TRAINER_KEYS, CARD_KEYS, NEW_CARD_KEYS, HOF_LEN, hofDoc, readHof, blurbDoc, addId, addDoc, plazaPick, PLAZA_SHOWN, PLAZA_KEYS, ADD_KEYS } from '../js/data/trainers.js';
+  trainerDoc, checkTrainer, cardDoc, lastSeen, TRAINER_KEYS, CARD_KEYS, NEW_CARD_KEYS, NEWEST_CARD_KEYS, SHELLS, HOF_LEN, hofDoc, readHof, blurbDoc, addId, addDoc, plazaPick, PLAZA_SHOWN, PLAZA_KEYS, ADD_KEYS } from '../js/data/trainers.js';
 
 test('codes have no look-alikes and read either way', () => {
   for (const c of 'O0I1L') assert.ok(!CODE_LETTERS.includes(c));
@@ -115,6 +115,15 @@ test('the card\'s extras: bounded, and a page from before them reads as nothing 
   assert.deepEqual([c.gyms, c.gymsOf, c.belt, c.sparkle, c.earned, c.pin.length, c.hof], [4, 13, 9, 5, 1e9, 32, '']);
   for (const k of ['gyms', 'pin', 'hof', 'shinies']) assert.ok(NEW_CARD_KEYS.includes(k));
   assert.ok(!NEW_CARD_KEYS.includes('pillar'));
+});
+
+test('the card\'s Pokédex shell: a known one, else none (the viewer\'s own colour shows)', () => {
+  assert.equal(cardDoc({ shell: 'teal' }).shell, 'teal');
+  assert.equal(cardDoc({ shell: 'rainbow' }).shell, '');
+  assert.equal(cardDoc({}).shell, '');
+  const css = readFileSync(new URL('../css/base.css', import.meta.url), 'utf8');
+  for (const id of SHELLS) assert.ok(css.includes(id === 'red' ? '[data-shell-of] {' : `[data-shell-of="${id}"]`), id);
+  assert.ok(NEWEST_CARD_KEYS.every(k => NEW_CARD_KEYS.includes(k)));
 });
 
 test('the newest Hall of Fame win fits its key, and reads back only known ids', () => {
