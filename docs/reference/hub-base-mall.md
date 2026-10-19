@@ -335,8 +335,9 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   and how many you carry. The booth opens `passWindow()`: what a pass is, where today stands and its price, a gold ticket
   turning (`passPreview()`); once held, `held` shows "Yours today" and only OK. The board opens the leaderboard on one tap
   (`game.direct`). The Furniture store's lift asks for the second floor on its first tap too.
-- All buys go through `cornerEntries('balls')` / `buyCorner()` in `js/shop.js`, the same as the Pokédex's Game Corner app
-  and the Safari prep window's Buy, which still sell them too.
+- All buys go through `cornerEntries('balls')` / `buyCorner()` in `js/shop.js`, the same as the Safari prep window's Buy
+  (`ballsApp`: the Game Corner's screen with only the balls row). The Pokédex's Game Corner app and the top bar's cabinet
+  no longer sell balls (2026-10-19, the user's ask): their rows are `SHELF`, skins, perks and shinies.
 - **Tapping through your partner**: standing at a stand, `onTap()` takes a tap on your partner as one on the stand it
   stands at when that stand is behind it in the same ray (2026-10-15).
 - **Headless**: under software GL, `ImageDecoder` crawls while the mall draws, so Kangaskhan's 135-frame GIF takes a minute

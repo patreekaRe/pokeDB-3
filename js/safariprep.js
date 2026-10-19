@@ -21,7 +21,7 @@ import { safariDexApp } from './safaridex.js';
 import { boardApp, safariTop } from './leaderboard.js';
 import { cloudConfigured } from './cloud.js';
 import { startGate, stopGate } from './safari-lobby.js';
-import { cornerApp, aimCorner } from './shop.js';
+import { ballsApp } from './shop.js';
 import { playSound } from './audio.js';
 import { bootDevice } from './device-boot.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -80,7 +80,7 @@ export function initSafariPrep(handlers) {
 const APPS = {
   'sp-dex': { name: 'Safari Dex', cls: 'cdev-dex', app: safariDexApp },
   'sp-board': { name: 'Ranks', cls: 'cdev-dex sp-board-app', app: boardApp('safari') },
-  'sp-corner': { name: 'Game Corner', cls: 'cdev-win cdev-corner', app: cornerApp, a: 'Buy', before: () => aimCorner('balls') },
+  'sp-corner': { name: 'Poké Balls', cls: 'cdev-win cdev-corner', app: ballsApp, a: 'Buy' },
 };
 const SLIDE = { duration: 260, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
