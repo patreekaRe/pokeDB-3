@@ -440,6 +440,81 @@ ice+grass 61.7, ice+water 62.3, ice+electric 70.3; solo Ice 74.0** (session 4's:
 43.7 / 36.3, fire+grass 82, fire+water 55, grass+water 37). Ice lifts Grass and Water, the pairs Electric can't; its
 second half and relics come next, and the balance pass (session 15) settles the rest.
 
+#### Ice's second session: its other cards (session 6, 2026-10-19)
+
+Written here before the code, as Electric's second was. The other 36 pool cards (10 common, 18 uncommon, 8 rare),
+**defence-leaning** like Electric's second: 30 of the 36 block, Weaken, Sap or stop a move (the first half's 30 are
+mostly hits). Ice is then whole: 20 common, 32 uncommon, 14 rare and 8 evolution cards (74), plus the Icicle token. Each
+card is on a StS 1 card at x~1.2 (the last column and a comment on its line) with a hand-picked upgrade.
+
+**The new rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- `blockPerFrost` / `blockPerIcicle`: +N block per Frostbite on the enemy / per Icicle card played this fight (Hoarfrost,
+  Igloo); `thaw` (Shatter: after its hit, the enemy's Frostbite is gone).
+- Powers: `thornFrost` (whenever the enemy attacks you, Frostbite N: Ice Scales), `frostBlock` (at the start of each
+  turn, block equal to the enemy's Frostbite: Ice Core), `hailChipBlock` (whenever Hail hurts the enemy, N block: Polar
+  Vortex), `hailIcicle` (whenever Hail hurts the enemy, an Icicle to your hand: Icefall), `icicleEachTurn` (at the start
+  of each turn, an Icicle to your hand: Ice Crown), `retainZero` (your 0-cost cards stay in your hand at the end of your
+  turn: Cold Storage), `hailKeep` (Hail no longer runs out: Endless Winter).
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Ice Pellet | C | 0 | Deal 2, Weak 1. Icicle *(up 4, 2)* | Icicle | Neutralize, as a Claw |
+| Icicle Guard | C | 0 | Block 4. Icicle *(up 6)* | Icicle | Deflect, as an Icicle |
+| Freezing Glare | C | 1 | Frostbite 3, Weak 1 *(up 4, 2)* | Frostbite | Neutralize's big brother, Frostbite for its hit |
+| Cold Shoulder | C | 1 | Block 7; if the enemy has Frostbite, +4 *(up 9, +5)* | Frostbite | Defend with Bane's condition |
+| Frost Nip | C | 1 | Deal 5, block 5, Frostbite 1 *(up 7, 7)* | Frostbite | Iron Wave |
+| Ice Wall | C | 2 | Block 11, Frostbite 3 *(up 14, 4)* | Frostbite | Glacier, its Frost orbs as Frostbite |
+| Chilly Reception | C | 1 | Block 6, Hail 2 *(up 9)* | Hail | Deflect and Noxious Fumes |
+| Snowdrift | C | 1 | Block 6; in Hail, 6 more next turn *(up 8 / 8)* | Hail | Dodge and Roll, in Hail |
+| Sleet | C | 1 | Deal 3 twice; in Hail, block 5 *(up 4, 7)* | Hail | Twin Strike, with block in Hail |
+| Black Ice | C | 1 | Deal 7, Weak 1, Frostbite 1 *(up 9, 2)* | Frostbite | Sucker Punch |
+| Ice Scales | U | 1 | Power: whenever the enemy attacks you, Frostbite 2 *(up 3)* | Frostbite | Static Discharge |
+| Hoarfrost | U | 1 | Block 5, +2 per Frostbite on the enemy *(up 8)* | Frostbite | Spirit Shield, on Frostbite |
+| Cold Front | U | 1 | Frostbite 3; the enemy's attacks deal 5 less this turn. Exhaust *(up 4, 7)* | Frostbite | Piercing Wail |
+| Numbing Cold | U | 1 | Weak 1; if the enemy has Frostbite, Weak 1 more and draw 1 *(up Weak 2)* | Frostbite | Blind, with Bane's condition |
+| Frost Barrier | U | 2 | Block 12; if the enemy has Frostbite, Weak 2 *(up 16)* | Frostbite | Leg Sweep, on a frostbitten foe |
+| Ice Sheet | U | 0 | Block 3, draw 1. Icicle *(up 5)* | Icicle | Claw with Pommel Strike's draw, as block |
+| Igloo | U | 2 | Block 8, +2 per Icicle card played this fight *(up 11)* | Icicle | Perfected Strike as block (Volt Guard's shape) |
+| Brinicle | U | 1 | Deal 4, block 4. Icicle *(up 6, 6)* | Icicle | Iron Wave, as an Icicle |
+| Shard Storm | U | 1 | Block 6, add an Icicle to your hand *(up 9)* | Icicle | Cloak and Dagger |
+| Refreeze | U | 1 | Block 7; put a card from your discard pile on top of your draw pile *(up 10)* | Icicle | Headbutt, as block |
+| Snow Fort | U | 2 | Block 11, Hail 2 *(up 14, 3)* | Hail | Glacier, in Hail |
+| Whiteout | U | 1 | Weak 2; in Hail, the enemy's attacks deal 5 less this turn *(up 3, 7)* | Hail | Blind, with Piercing Wail in Hail |
+| Polar Vortex | U | 1 | Power: whenever Hail hurts the enemy, block 4 *(up 6)* | Hail | (Hail's Wired: block on its chip) |
+| Diamond Dust | U | 1 | Block 6; in Hail, draw 2 *(up 9)* | Hail | Sanctity, in Hail |
+| Freezing Rain | U | 2 | Hail 3; your block doesn't wear off next turn *(up Hail 4)* | Hail | Blur, with Fumes |
+| Icefall *(bridge)* | U | 1 | Power: whenever Hail hurts the enemy, add an Icicle to your hand *(up cost 0)* | Icicle/Hail | Infinite Blades, on Hail's chip |
+| Frost Shard *(bridge)* | U | 0 | Block 3, Frostbite 2. Icicle *(up 4, 3)* | Icicle/Frostbite | Claw, as block and Frostbite |
+| Thick Fat | U | 1 | Block 6, Sap 1 *(up 9)* | — | Disarm, with a Defend |
+| Ice Core | R | 2 | Power: at the start of each turn, block equal to the enemy's Frostbite *(up cost 1)* | Frostbite | (Frostbite's Metallicize: Electric Seed's twin) |
+| Flash Freeze | R | 3 | Frostbite 4. The enemy skips its next turn. Exhaust *(up cost 2)* | Frostbite | Vault |
+| Shatter | R | 2 | Deal 4, +4 per Frostbite, then its Frostbite is gone *(up +5)* | Frostbite | (Frostbite cashed in: Catalyst's other end) |
+| Ice Crown | R | 2 | Power: at the start of each turn, add an Icicle to your hand *(up cost 1)* | Icicle | Infinite Blades |
+| Cold Storage | R | 1 | Power: your 0-cost cards stay in your hand at the end of your turn *(up cost 0)* | Icicle | Runic Pyramid, on 0-costs |
+| Iceberg | R | 3 | Block 22, Hail 3 *(up 28)* | Hail | Impervious-lite, with the weather |
+| Endless Winter | R | 3 | Power: Hail 3; Hail no longer runs out *(up cost 2)* | Hail | (Hail's Permafrost) |
+| Absolute Zero *(bridge)* | R | 2 | Deal 12; in Hail, Frostbite 6 *(up 16, 8)* | Hail/Frostbite | Bludgeon's little brother, Frostbite in Hail |
+
+Ice whole: 20 common (Frostbite 8, Icicle 5, Hail 5, 2 basics), 32 uncommon, 14 rare, 8 evolution = **74**.
+
+**Relics** (`only: 'ice'`, 6 plus its held item; the user's answer 21): **Never-Melt Ice** (common: your Ice attacks
+deal +2), **Snowball** (common: enemies start each battle with 3 Frostbite; Light Ball's shape), **Safety Goggles**
+(common: whenever Hail hurts the enemy, gain 3 block), **Icy Rock** (uncommon: whenever a weather starts, it lasts 3
+more turns), **Icicle Plate** (uncommon: your Icicle cards start each battle +4, as if 2 were played), **Ice Memory**
+(rare: Frostbite doesn't thaw while Hail falls), **Ice Stone** (boss: draw 1 more each turn, and Snow Warning brings 4
+turns of Hail, not 2; Water Stone's shape). **Items**: **Ice Gem** (Hail 3, gain 8 block) and **Chill Drive** (double
+the enemy's Frostbite).
+
+**Starters**: Swinub (Swinub, Piloswine, Mamoswine), a `DUO_STARTERS` skin of Vanillite's deck (`ICE_DECK`), as Electric's
+four are of Shinx's. Catching any stage adds Ice with that look (`DUO_LINES.ice`).
+
+**The Ice Cave** (`icecave`): Frozen Falls, Ice Cave, Crystal Hall, the Frozen Lake. Its roster is every Ice-typed
+Safari Pokémon (the Peak's 21: the Vanillite, Swinub, Snorunt, Cubchoo, Sneasel, Snover, Smoochum lines, Delibird,
+Cryogonal, Dewgong, Glaceon; the Wetland's Cloyster and Lapras), moved in; Glaceon and Lapras are its rare spawns.
+Painted as the **Wetland recoloured** to a frozen lake under a pale sky until its art session (the Power Plant already
+borrows the Peak). **Date-gated** like the Power Plant (`SAFARI_FROM`, 2026-10-20 on the branch: move it to the day
+after the branch goes live); from then, 3 of the 8 a day.
+
 ### Fighting: Follow-up, Counter, Guts
 
 The only type that hits Normal, the Safari's most common. Fears Flying and Psychic.

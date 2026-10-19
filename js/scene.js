@@ -530,6 +530,45 @@ SAFARI_ART.powerplant = {
     night: { clouds: { count: 0.8 }, life: ['stars', 'clouds', 'blades', 'safari'] },
   }),
 };
+/* The Ice Cave (the duo pool's Ice area, docs/duo-design.md section 5): the Wetland's painters as a frozen lake under a
+   pale sky until its own art session (the Power Plant already borrows the Peak). */
+SAFARI_ART.icecave = {
+  ...SAFARI_ART.wetland,
+  paintAs: 'wetland',
+  storm: { rain: ['#ffffff', '#d0e0f0'], fall: 1.2, count: 1.4, sky: [0.6, 10, 14, 30], ground: [0.78, 8, 10, 24] },   // a snowstorm
+  sun: ['#ffffff', '#f4f8ff', '#dce8f8'],
+  cloud: ['#ffffff', '#f0f4fa', '#d8e2ee', '#bccadc'], clouds: { count: 1.2 },
+  sky: ['#88acd6', '#98badc', '#a8c6e2', '#b8d2e8', '#c8deee', '#d8e8f4', '#e8f2f8'],
+  farHills: ['#dce8f2', '#c4d6e6'],
+  trees: ['#f0f8ff', '#b4ccda', '#6a90a2', '#38586a'], trunk: ['#5a5048', '#38302a'],   // pines heavy with frost
+  lake: ['#f4fcff', '#d4eef8', '#b0dcf0', '#8cc4e4', '#6aa8d4'],   // the lake frozen over
+  ripple: ['#ffffff', '#7aa4c4'], glint: ['#ffffff'],
+  lily: ['#f4faff', '#c0d8e8', '#a8d8f0', '#ffffff'],   // ice floes
+  reed: ['#f0f6fa', '#a8b8b0', '#6a7a74'],
+  trail: [
+    { at: 0, style: 'dirt', c: ['#f8fcff', '#dce8f2', '#b8c8da', '#c8dcec'], edge: 'post' },   // a track trodden in the snow
+    { at: 1, style: 'planks', c: ['#e0e8f0', '#b4c0cc', '#7a8696', '#3a4452'], edge: 'rail' },   // the boardwalk, iced over
+  ],
+  ground: ['#eef6fc', '#e2eef8', '#d6e6f4', '#c8dcee', '#bad2e8', '#acc8e2'],
+  blade: ['#ffffff', '#c8dcec', '#8aa8c0'], patch: '#c0d4e6',
+  tall: ['#e8f4fc', '#a8c4d8', '#6a8aa4', '#344c64'],
+  flowers: [['#ffffff', '#a8d8f8'], ['#c8e0ff', '#ffffff']],
+  rock: ['#e8f0f8', '#b0c0d0', '#708090'],
+  butterflies: ['#ffffff', '#e8f4ff', '#c8e4f8'], bird: '#3a4a60',   // flurries
+  pollen: ['#ffffff', '#e0f0ff'], firefly: ['#e8f8ff', '#a8d8f8'],
+  pad: { style: 'stone', top: '#e8f4fc', mid: '#c4dcec', low: '#9cbcd4', rim: '#3a5a78', earth: '#6a88a4', moss: '#ffffff' },
+  marks: {
+    ...SAFARI_MARKS,
+    wood: ['#e4eaf0', '#b0bac6', '#76808e', '#323a46'],   // frosted planks: the pier, the fence, the signboard
+    roof: ['#ffffff', '#d8e6f2', '#9ab0c8'],   // snow on the rest house
+    bank: ['#8aa8c0'], cattail: ['#e8f0f6', '#a0b2c0'],
+  },
+  times: safariTimes({
+    dawn: { sky: ['#7a8cc4', '#9498c8', '#b4a8cc', '#d0b8cc', '#e4c8cc', '#f0d8d0', '#f8e8e0'], sun: ['#ffffff', '#fff4e8', '#f8dcc8'] },
+    dusk: { sky: ['#3a4078', '#55508a', '#7a6494', '#a07494', '#c08c98', '#d8a8a8', '#e8c4b8'], life: ['clouds', 'birds', 'blades', 'safari'] },
+    night: { clouds: { count: 0.5 }, life: ['stars', 'clouds', 'blades', 'safari'] },
+  }),
+};
 for (const [area, art] of Object.entries(SAFARI_ART)) {
   BIOME_ART[area] = {
     backdrop: 'safari', floor: 'safari', area: art.paintAs ?? area, kin: { meadow: 'clearing', forest: 'shrine', wetland: 'clearing', marsh: 'shrine', peak: 'clearing', desert: 'wastes' }[art.paintAs ?? area],
@@ -1669,6 +1708,7 @@ const WEATHER = {
   peak: 'snow',
   desert: 'sand',
   powerplant: { dawn: 'drizzle', day: 'drizzle', dusk: 'ash', night: 'drizzle' },
+  icecave: 'snow',
 };
 const WEATHER_LOOK = {
   drizzle: { colours: ['#d8e6fa', '#8aa2c8'], per: 420, glow: true },

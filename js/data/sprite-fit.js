@@ -408,6 +408,7 @@ export const SPRITE_FIT = {
   'misdreavus-front': [10, 7, 2, 3],
   'carnivine-front': [4, 2, 6, 5],
   'spiritomb-front': [5, 0, 6, 3],
+  'swinub-back': [1, 1, 1, 1],
   'swinub-front': [3, 0, 2, 0],
   'snorunt-front': [0, 0, 0, 1],
   'cubchoo-front': [1, 1, 2, 1],
@@ -578,6 +579,7 @@ export const SPRITE_FIT = {
   'graveler-front': [2, 0, 1, 2],
   'machoke-front': [3, 0, 1, 4],
   'golbat-front': [23, 14, 13, 10],
+  'piloswine-back': [0, 0, 0, 1],
   'piloswine-front': [0, 1, 2, 2],
   'glalie-front': [2, 4, 0, 4],
   'beartic-front': [4, 0, 2, 0],
@@ -662,6 +664,7 @@ export const SPRITE_FIT = {
   'jynx-front': [4, 2, 1, 2],
   'vanillish-back': [2, 3, 10, 6],
   'vanillish-front': [3, 3, 7, 10],
+  'mamoswine-back': [4, 0, 2, 2],
   'mamoswine-front': [4, 0, 2, 2],
   'froslass-front': [12, 8, 1, 2],
   'ferrothorn-front': [0, 12, 2, 3],
@@ -964,6 +967,10 @@ export const BODY_X = {
   'eelektrik-back': 2,
   'eelektross-back': -3,
   'vanillish-back': -2,
+  'piloswine-front': -2,
+  'piloswine-back': -2,
+  'mamoswine-front': 6,
+  'mamoswine-back': -4,
 };
 
 /** GIF pixels to add to a sprite's pose-box centring so its body, not its box, stands in the middle. */

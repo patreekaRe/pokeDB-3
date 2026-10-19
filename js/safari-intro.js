@@ -70,6 +70,13 @@ const SKY_PLANT = {
   night: { sky: ['#06080e', '#0a0e18', '#0e1420', '#141a28', '#1a2030', '#202838'], cloud: ['#2a2e3a', '#1e222c', '#14181e'] },
 };
 
+const SKY_ICE = {
+  day: { sky: ['#88acd6', '#9cbcde', '#b0cae4', '#c4d8ec', '#d8e6f2', '#eaf2f8'], cloud: ['#ffffff', '#e4ecf4', '#c4d2e2'] },
+  dawn: { sky: ['#7a8cc4', '#9a9cc8', '#bcaccc', '#d8bccc', '#ecd0d0', '#f8e4dc'], cloud: ['#fcecec', '#e0c8d4', '#b0a0b8'] },
+  dusk: { sky: ['#3a4078', '#5a528a', '#806694', '#a87896', '#c8909a', '#e0b0ac'], cloud: ['#e8c0c0', '#b08ca8', '#76648a'] },
+  night: { sky: ['#060a20', '#0c1430', '#141e42', '#1e2a54', '#2a3866', '#384876'], cloud: ['#3a4a6e', '#2c3a5a', '#1e2a46'] },
+};
+
 const film = (id, o) => ({ safari: true, title: ['SAFARI', 'ZONE'], scene: safariScene, ...o, art: { id, ...o.art } });
 
 export const SAFARI_INTROS = {
@@ -121,6 +128,26 @@ export const SAFARI_INTROS = {
     stages: nearer([null, { lake: 1.5 }, { lake: 2 }, { lake: 2.6 }]),
     beats: { DESCEND: [0, 3200], PAN: [0, 7200], POPS: [2800, 3800, 4800], TITLE_AT: 5200, END: 9000 },
     art: { move: 'glide', far: wetlandFar, mid: wetlandMid, back: wetlandBack, ground: plainGround, shore: 0.09, trail: [{ at: 0, style: 'dirt' }, { at: 1, style: 'planks', key: 'wood' }], birds: '#f8f8f8', air: ['glints', 'butterflies'] },
+  }),
+  // the duo pool's Ice Cave: the Wetland's film on a frozen lake under a pale sky, until its own art session
+  icecave: film('icecave', {
+    ink: ['#f4fcff', '#5a90c0', '#14304e'], skies: SKY_ICE,
+    land: {
+      far: ['#c4d6e6', '#dce8f2'], trees: ['#f0f8ff', '#b4ccda', '#6a90a2', '#38586a'],
+      lake: ['#f4fcff', '#d4eef8', '#b0dcf0', '#8cc4e4', '#6aa8d4'], ripple: ['#ffffff', '#7aa4c4'],
+      lily: ['#f4faff', '#c0d8e8', '#c8e8ff', '#ffffff', '#88c0e8'], reed: ['#f0f6fa', '#a8b8b0', '#6a7a74', '#e8f0f6'],
+      wood: ['#e4eaf0', '#b0bac6', '#76808e', '#323a46'],
+      ground: ['#eef6fc', '#e2eef8', '#d6e6f4', '#c8dcee', '#bad2e8', '#acc8e2'], blade: ['#ffffff', '#c8dcec', '#8aa8c0'],
+      tall: ['#e8f4fc', '#a8c4d8', '#344c64'], fore: ['#e8f4fc', '#c0d6e6', '#8aa8c0', '#4a6680'],
+      flowers: ['#ffffff', '#a8d8f8', '#c8e0ff'], trail: ['#f8fcff', '#dce8f2', '#b8c8da', '#c8dcec'],
+      ...ZONE,
+      fence: ['#e8eef4', '#b4bec8', '#76808e'], roof: ['#ffffff', '#d8e6f2', '#9ab0c8'],
+    },
+    glow: { aura: ['#ffffff', '#d8f0ff', '#a8d8f8'], glint: ['#ffffff', '#e0f4ff'], firefly: ['#e8f8ff', '#a8d8f8'], flake: ['#ffffff', '#dce6f4'], wing: ['#ffffff', '#e8f4ff', '#c8e4f8'] },
+    stages: nearer([null, { lake: 1.5 }, { lake: 2 }, { lake: 2.6 }]),
+    beats: { DESCEND: [0, 3200], PAN: [0, 7200], POPS: [2800, 3800, 4800], TITLE_AT: 5200, END: 9000 },
+    sounds: ['gust'],
+    art: { move: 'glide', far: wetlandFar, mid: wetlandMid, back: wetlandBack, ground: plainGround, shore: 0.09, trail: [{ at: 0, style: 'dirt' }, { at: 1, style: 'planks', key: 'wood' }], birds: '#3a4a60', air: ['glints', 'snow'] },
   }),
   marsh: film('marsh', {
     ink: ['#eef4e0', '#4e6a3a', '#1a2614'], skies: SKY_MARSH,
@@ -872,7 +899,7 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   // ---- the air ----
   const air = new Set(art.air);
   const clouds = [];
-  const cloudy = art.move === 'drop' || ['meadow', 'wetland', 'peak', 'desert'].includes(art.id);
+  const cloudy = art.move === 'drop' || ['meadow', 'wetland', 'peak', 'desert', 'icecave'].includes(art.id);
   if (cloudy) for (let n = 0; n < (art.id === 'desert' ? 3 : 6); n++) clouds.push({ img: cloudImage(Math.round(W * (0.22 + rand() * 0.3)), cloud, rand), x: rand() * W * 1.6 - W * 0.3, y: -H * 0.3 + rand() * hz * 0.9, lift: 0.5, drift: 0.6 + rand() });
   if (!mini && art.move === 'drop') for (let n = 0; n < 3; n++) clouds.push({ img: cloudImage(Math.round(W * (0.7 + rand() * 0.4)), cloud, rand), x: rand() * W - W * 0.3, y: -H * 1.25 + rand() * H * 0.5, lift: 1.7, drift: 2 });
   const motes = Array.from({ length: 40 }, () => ({ x: rand(), y: rand(), speed: 0.5 + rand(), wob: rand() * 6, c: Math.floor(rand() * 3) }));

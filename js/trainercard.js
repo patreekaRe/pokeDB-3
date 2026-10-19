@@ -198,6 +198,7 @@ const AREA_LOOK = {
   peak: ['diamond', ['#f0f8ff', '#a8b8d0', '#4c5870']],
   desert: ['gem', ['#ffe0a0', '#e0a048', '#7a4c18']],
   powerplant: ['hex', ['#fff4a0', '#e8c020', '#5a4a10']],
+  icecave: ['gem', ['#f0faff', '#90cce8', '#2a5878']],
 };
 const TYPE_LOOK = {
   fire: [LOOK.fire[1], 'flame'], water: [LOOK.water[1], 'drop'], grass: [LOOK.grass[1], 'leafy'],

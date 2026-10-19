@@ -327,6 +327,9 @@ const ART = {
     <path d="M10.6 19.6c0 2.8 1.6 5 3.8 5.8" fill="none" stroke="#bfe4ff" stroke-width="2" stroke-linecap="round"/>`,
   electric: `<path d="M19 2.5L6.5 18h8l-3 11.5L25.5 13h-8.5Z" fill="#ffd23a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M17.2 5.6l-6.4 8.6" stroke="#fff6c0" stroke-width="1.6" stroke-linecap="round"/>`,
+  ice: `<path d="M16.0 3.5L16.0 28.5M5.2 9.8L26.8 22.2M5.2 22.2L26.8 9.8M13.6 20.9L16.0 23.6L18.4 20.9M10.5 16.4L9.4 19.8L12.9 20.6M12.9 11.4L9.4 12.2L10.5 15.6M18.4 11.1L16.0 8.4L13.6 11.1M21.5 15.6L22.6 12.2L19.1 11.4M19.1 20.6L22.6 19.8L21.5 16.4" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M16.0 3.5L16.0 28.5M5.2 9.8L26.8 22.2M5.2 22.2L26.8 9.8M13.6 20.9L16.0 23.6L18.4 20.9M10.5 16.4L9.4 19.8L12.9 20.6M12.9 11.4L9.4 12.2L10.5 15.6M18.4 11.1L16.0 8.4L13.6 11.1M21.5 15.6L22.6 12.2L19.1 11.4M19.1 20.6L22.6 19.8L21.5 16.4" fill="none" stroke="#a8ecff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="16" cy="16" r="2.2" fill="#ffffff"/>`,
   normal: `<circle cx="16" cy="16" r="12.5" fill="#e4e8f0" stroke="${INK}" stroke-width="2"/>
     <path d="M16 7.4l7.6 13.2H8.4ZM16 24.6L8.4 11.4h15.2Z" fill="#9aa2c8" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`,
   psychic: `<path d="M9 23.5h14l2.4 5H6.6Z" fill="#a8642c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>

@@ -611,9 +611,11 @@ export function beginSafari(daily = safariDaily(), pair = null) {
   // a Duo Run (js/duoprep.js): a replay with two starters of your own, whoever you picked first out first; it never
   // spends the day's free try (only ?duorun can start one before it)
   const duo = pair && newDuo(pair);
-  // ?powerplant: a Duo Run whose first area is the Power Plant, before its day (a playtest; a Duo Run is never posted)
-  if (duo && new URLSearchParams(location.search).has('powerplant') && !daily.areas.some(a => a.id === 'powerplant')) {
-    daily = { ...daily, areas: [SAFARI_AREAS_BY_ID.powerplant, ...daily.areas.slice(1)] };
+  // ?powerplant / ?icecave: a Duo Run whose first area is the Power Plant or the Ice Cave, before its day (both: the first
+  // two, in that order); a playtest, and a Duo Run is never posted
+  const lent = duo ? ['powerplant', 'icecave'].filter(id => new URLSearchParams(location.search).has(id)) : [];
+  if (lent.length) {
+    daily = { ...daily, areas: [...lent.map(id => SAFARI_AREAS_BY_ID[id]), ...daily.areas.filter(a => !lent.includes(a.id))].slice(0, daily.areas.length) };
   }
   updateSave(d => { d.safari = { day: daily.day, tries: tries + (duo ? 0 : 1), days: duo ? safariDays(d) : days, pass: d.safari.pass, done: d.safari.done, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
   rangerDay(daily.day);

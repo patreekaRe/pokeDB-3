@@ -59,3 +59,9 @@ Static), Eject Button (4 block a switch), Zap Plate (8 block when a 3+ PP card i
 turn after a Paralysis), Electric Memory (a Paralysis halves the Static instead of emptying it) and Thunder Stone (boss:
 +1 draw, the Static Ability 4; `abilityFor()`'s `stone`). Items: Electric Gem (2 PP, Static 3) and Shock Drive (Static x2).
 The sim measured them on solo Electric (150 runs each) and borrows Water's ranks for the rest (`rankCfg()`).
+
+**Ice's** (2026-10-19, Ice's second session; `docs/duo-design.md` section 5): **Never-Melt Ice** (its held item in
+`TYPE_RELIC`), Snowball (enemies start with 3 Frostbite), Safety Goggles (3 block whenever Hail hurts the enemy), Icy
+Rock (a weather that starts lasts 3 more turns, `ICY_ROCK`; Snow Warning's opening Hail too), Icicle Plate (`b.icicles`
+starts at 2), Ice Memory (no thaw while Hail falls) and Ice Stone (boss: +1 draw, Snow Warning's Hail 4). Items: Ice Gem
+(Hail 3, 8 block) and Chill Drive (Frostbite x2). Measured on solo Ice like Electric's.

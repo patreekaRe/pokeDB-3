@@ -52,7 +52,7 @@ export const NEXT = [
   ['modes', 'Safari wild Pokémon fight on their real types and moves, on Gen 5\'s type chart; a ▲ on a card means super effective, and Net Balls suit Water and Bug.'],
   ['modes', 'Duo Run: once the day\'s Safari run is done, replay it with two of your own starters, each with its own deck and hand; switch for 1 PP.'],
   ['modes', 'Electric joins the Duo Run: catch Shinx, Mareep, Pichu, Elekid or Tynamo in the new Power Plant, then Paralyze foes with Static and Volt Switch out free.'],
-  ['modes', 'Ice joins the Duo Run: catch Vanillite, then stack Frostbite on foes, grow your Icicles and call down Hail.'],
+  ['modes', 'Ice joins the Duo Run: catch Vanillite or Swinub in the new Ice Cave, then stack Frostbite on foes, grow your Icicles and call down Hail.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

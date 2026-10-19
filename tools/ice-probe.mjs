@@ -88,6 +88,37 @@ await B(() => window.__endTurn());
 s = await B(() => window.__battle().enemy.frostbite);
 check(s === fb + 2, `Permafrost: no thaw, Cold Snap's +2 (${fb} -> ${s})`);
 
+// session 6: its relics at the fight's start, then its new keys and powers
+await page.goto(`http://localhost:${port}/?arena=fight&starter=vanillite&relics=icy-rock,icicle-plate,snowball,safety-goggles`);
+await page.waitForTimeout(8000);
+await ready();
+s = await B(() => { const b = window.__battle(); return { w: b.weather, ic: b.icicles, fb: b.enemy.frostbite }; });
+check(s.w?.turns === 5 && s.ic === 2 && s.fb === 3, `Icy Rock: Hail 2 + 3 (${s.w?.turns}); Icicle Plate: 2 Icicles (${s.ic}); Snowball: Frostbite 3 (${s.fb})`);
+await B(() => { const b = window.__battle(); b.energy = 30; b.enemy.hp = b.enemy.maxHp = 999; b.enemy.block = 0; b.enemy.vulnerable = 0; b.strength = 0; b.block = 0; b.kind = 'fight'; });
+await calm();
+check(await hit('ice-shard') === 3 + 3 + 3 + 4, 'Ice Shard with Icicle Plate: 3 + Hail 3 + Frostbite 3 + 4');
+let blk0 = await B(() => window.__battle().block);
+await B(() => window.__play('hoarfrost'));
+s = await B(() => window.__battle().block);
+check(s - blk0 === 5 + 2 * 3, `Hoarfrost: 5 + 2 a Frostbite (${s - blk0})`);
+blk0 = s;
+await B(() => window.__play('igloo'));
+s = await B(() => window.__battle().block);
+check(s - blk0 === 8 + 2 * 3, `Igloo: 8 + 2 an Icicle played (${s - blk0})`);
+const sh = await hit('shatter');
+s = await B(() => window.__battle().enemy.frostbite);
+check(sh === 4 + 4 * 3 + 3 + 3 && s === 0, `Shatter: 4 + 4 a Frostbite, its +3 and Hail's (${sh}), then the Frostbite is gone (${s})`);
+for (const id of ['ice-scales', 'ice-core', 'polar-vortex', 'icefall', 'endless-winter', 'cold-storage', 'ice-crown']) await B((c) => window.__play(c), id);
+await B(() => { const b = window.__battle(); b.def = { ...b.def, moves: [{ kind: 'attack', amount: 1, name: 'Tackle', type: 'normal' }] }; b.enemy.moveIndex = 0; b.block = 0; b.enemy.frostbite = 4; b.hand = []; });
+await B(() => window.__give('ice-shard'));
+const pre = await B(() => ({ turns: window.__battle().weather.turns }));
+await B(() => window.__endTurn());
+s = await B(() => { const b = window.__battle(); return { w: b.weather, fb: b.enemy.frostbite, block: b.block, hand: b.hand.map(h => h.card.id) }; });
+check(s.w?.turns === pre.turns, `Endless Winter: Hail doesn't run out (${pre.turns} -> ${s.w?.turns})`);
+check(s.fb === 4 + 2 - 1, `Ice Scales: the attack adds Frostbite 2, then it thaws 1 (${s.fb})`);
+check(s.hand.filter(id => id === 'icicle').length === 2 && s.hand.includes('ice-shard'), `Icefall's and Ice Crown's Icicles, and Cold Storage kept Ice Shard (${s.hand.join(' ')})`);
+check(s.block >= 5, `Ice Core: block equal to its Frostbite at the turn's start (${s.block})`);
+
 // a Duo Run: Snow Warning the first time Vanillite comes out, never again that fight
 await page.goto(`http://localhost:${port}/?arena=fight&starter=charmander`);
 await page.waitForTimeout(6000);
@@ -116,7 +147,7 @@ s = await B(async () => {
   const cry = (await fetch('/assets/audio/cries/vanillite.mp3')).ok;
   return { n: Object.keys(ICE).length, broken, img, cry };
 });
-check(s.n === 39 && !s.broken.length && s.img > 0 && s.cry, `${s.n} Ice arts parse${s.broken.length ? ` (broken: ${s.broken.join(', ')})` : ''}; Vanilluxe's back GIF ${s.img}px wide, Vanillite's cry ${s.cry ? 'there' : 'missing'}`);
+check(s.n === 75 && !s.broken.length && s.img > 0 && s.cry, `${s.n} Ice arts parse${s.broken.length ? ` (broken: ${s.broken.join(', ')})` : ''}; Vanilluxe's back GIF ${s.img}px wide, Vanillite's cry ${s.cry ? 'there' : 'missing'}`);
 
 const bad = errors.filter(e => !/favicon|net::|Failed to load resource|cloud|firebase|gstatic/i.test(e));
 check(!bad.length, `no console errors${bad.length ? `: ${bad.slice(0, 3).join(' | ')}` : ''}`);

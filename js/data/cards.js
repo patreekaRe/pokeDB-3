@@ -579,7 +579,7 @@ const ELECTRIC_CARDS = [
 /* Ice (the Safari's duo pool, docs/duo-design.md section 5): Frostbite on the enemy adds to every hit and thaws a turn
    at a time (Lock-On, Envenom's shape), Icicle cards grow every Icicle as they're played (Claw), Hail chips the enemy
    and powers Ice attacks while it lasts (Noxious Fumes, with Watcher's "in a stance" payoffs). Session 5 built 30 of
-   its ~66 pool cards and all 8 evolution cards. */
+   its 66 pool cards and all 8 evolution cards, session 6 the other 36. */
 const ICE_CARDS = [
   { id: 'powder-snow',    name: 'Powder Snow',    type: 'ice', cost: 1, art: '🌨️', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike (8, like Thunder Shock)
   { id: 'frost-shield',   name: 'Frost Shield',   type: 'ice', cost: 1, art: '🧊', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
@@ -611,6 +611,43 @@ const ICE_CARDS = [
   { id: 'snow-cloak',     name: 'Snow Cloak',     type: 'ice', cost: 1, art: '🧥', effects: { icicleFrost: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // an Icicle / Frostbite bridge: Envenom, on Claws
   { id: 'mountain-gale',  name: 'Mountain Gale',  type: 'ice', cost: 3, art: '🏔️', effects: { damage: 28, hail: 3 }, rarity: 'rare', upgrade: { effects: { damage: 36 } } },   // Bludgeon
   { id: 'ice-age',        name: 'Ice Age',        type: 'ice', cost: 2, art: '🦣', effects: { hailFrost: 3 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // a Hail / Frostbite bridge (Hail's payoff)
+  // session 6's 36 (docs/duo-design.md section 5, "Ice's second session"): defence-leaning, the first half being attack-heavy
+  { id: 'ice-pellet',     name: 'Ice Pellet',     type: 'ice', cost: 0, art: '⚪', effects: { damage: 2, weaken: 1 }, icicle: true, upgrade: { effects: { damage: 4, weaken: 2 } } },   // Neutralize, as a Claw
+  { id: 'icicle-guard',   name: 'Icicle Guard',   type: 'ice', cost: 0, art: '🛡️', effects: { block: 4 }, icicle: true, upgrade: { effects: { block: 6 } } },   // Deflect, as an Icicle
+  { id: 'freezing-glare', name: 'Freezing Glare', type: 'ice', cost: 1, art: '👀', effects: { frostbite: 3, weaken: 1 }, upgrade: { effects: { frostbite: 4, weaken: 2 } } },   // Neutralize's big brother, Frostbite for its hit
+  { id: 'cold-shoulder',  name: 'Cold Shoulder',  type: 'ice', cost: 1, art: '🧊', effects: { block: 7, ifFrost: { block: 4 } }, upgrade: { effects: { block: 9, ifFrost: { block: 5 } } } },   // Defend with Bane's condition
+  { id: 'frost-nip',      name: 'Frost Nip',      type: 'ice', cost: 1, art: '🦀', effects: { damage: 5, block: 5, frostbite: 1 }, upgrade: { effects: { damage: 7, block: 7 } } },   // Iron Wave
+  { id: 'ice-wall',       name: 'Ice Wall',       type: 'ice', cost: 2, art: '🧱', effects: { block: 11, frostbite: 3 }, upgrade: { effects: { block: 14, frostbite: 4 } } },   // Glacier, its Frost orbs as Frostbite
+  { id: 'chilly-reception', name: 'Chilly Reception', type: 'ice', cost: 1, art: '👋', effects: { block: 6, hail: 2 }, upgrade: { effects: { block: 9 } } },   // Deflect and Noxious Fumes
+  { id: 'snowdrift',      name: 'Snowdrift',      type: 'ice', cost: 1, art: '🌨️', effects: { block: 6, ifHail: { blockNext: 6 } }, upgrade: { effects: { block: 8, ifHail: { blockNext: 8 } } } },   // Dodge and Roll, in Hail
+  { id: 'sleet',          name: 'Sleet',          type: 'ice', cost: 1, art: '🌧️', effects: { damage: 3, hits: 2, ifHail: { block: 5 } }, upgrade: { effects: { damage: 4, ifHail: { block: 7 } } } },   // Twin Strike, with block in Hail
+  { id: 'black-ice',      name: 'Black Ice',      type: 'ice', cost: 1, art: '⚫', effects: { damage: 7, weaken: 1, frostbite: 1 }, upgrade: { effects: { damage: 9, weaken: 2 } } },   // Sucker Punch (its Frostbite 1 keeps it from reading like Zorua's, Banette's and Sharpedo's signatures)
+  { id: 'ice-scales',     name: 'Ice Scales',     type: 'ice', cost: 1, art: '🦋', effects: { thornFrost: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { thornFrost: 3 } } },   // Static Discharge
+  { id: 'hoarfrost',      name: 'Hoarfrost',      type: 'ice', cost: 1, art: '🌿', effects: { block: 5, blockPerFrost: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 8 } } },   // Spirit Shield, on Frostbite
+  { id: 'cold-front',     name: 'Cold Front',     type: 'ice', cost: 1, art: '🗺️', effects: { frostbite: 3, tempSap: 5 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { frostbite: 4, tempSap: 7 } } },   // Piercing Wail
+  { id: 'numbing-cold',   name: 'Numbing Cold',   type: 'ice', cost: 1, art: '🥶', effects: { weaken: 1, ifFrost: { weaken: 1, draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { weaken: 2 } } },   // Blind, with Bane's condition
+  { id: 'frost-barrier',  name: 'Frost Barrier',  type: 'ice', cost: 2, art: '🚧', effects: { block: 12, ifFrost: { weaken: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 16 } } },   // Leg Sweep, on a frostbitten foe
+  { id: 'ice-sheet',      name: 'Ice Sheet',      type: 'ice', cost: 0, art: '⬜', effects: { block: 3, draw: 1 }, icicle: true, rarity: 'uncommon', upgrade: { effects: { block: 5 } } },   // Claw with Pommel Strike's draw, as block
+  { id: 'igloo',          name: 'Igloo',          type: 'ice', cost: 2, art: '🛖', effects: { block: 8, blockPerIcicle: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 11 } } },   // Perfected Strike as block (Volt Guard's shape)
+  { id: 'brinicle',       name: 'Brinicle',       type: 'ice', cost: 1, art: '🧂', effects: { damage: 4, block: 4 }, icicle: true, rarity: 'uncommon', upgrade: { effects: { damage: 6, block: 6 } } },   // Iron Wave, as an Icicle
+  { id: 'shard-storm',    name: 'Shard Storm',    type: 'ice', cost: 1, art: '💠', effects: { block: 6, addCard: { id: 'icicle', n: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // Cloak and Dagger
+  { id: 'refreeze',       name: 'Refreeze',       type: 'ice', cost: 1, art: '🔄', effects: { block: 7, returnCard: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Headbutt, as block
+  { id: 'snow-fort',      name: 'Snow Fort',      type: 'ice', cost: 2, art: '🏰', effects: { block: 11, hail: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 14, hail: 3 } } },   // Glacier, in Hail
+  { id: 'whiteout',       name: 'Whiteout',       type: 'ice', cost: 1, art: '🌫️', effects: { weaken: 2, ifHail: { tempSap: 5 } }, rarity: 'uncommon', upgrade: { effects: { weaken: 3, ifHail: { tempSap: 7 } } } },   // Blind, with Piercing Wail in Hail
+  { id: 'polar-vortex',   name: 'Polar Vortex',   type: 'ice', cost: 1, art: '🌀', effects: { hailChipBlock: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { hailChipBlock: 6 } } },   // (Hail's Wired: block on its chip)
+  { id: 'diamond-dust',   name: 'Diamond Dust',   type: 'ice', cost: 1, art: '💎', effects: { block: 6, ifHail: { draw: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // Sanctity, in Hail
+  { id: 'freezing-rain',  name: 'Freezing Rain',  type: 'ice', cost: 2, art: '☔', effects: { hail: 3, blur: true }, rarity: 'uncommon', upgrade: { effects: { hail: 4 } } },   // Blur, with Fumes
+  { id: 'icefall',        name: 'Icefall',        type: 'ice', cost: 1, art: '🏔️', effects: { hailIcicle: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Infinite Blades, on Hail's chip: an Icicle / Hail bridge
+  { id: 'frost-shard',    name: 'Frost Shard',    type: 'ice', cost: 0, art: '🔷', effects: { block: 3, frostbite: 2 }, icicle: true, rarity: 'uncommon', upgrade: { effects: { block: 4, frostbite: 3 } } },   // Claw, as block and Frostbite: an Icicle / Frostbite bridge
+  { id: 'thick-fat',      name: 'Thick Fat',      type: 'ice', cost: 1, art: '🦭', effects: { block: 6, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // Disarm, with a Defend
+  { id: 'ice-core',       name: 'Ice Core',       type: 'ice', cost: 2, art: '💙', effects: { frostBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Frostbite's Metallicize: Electric Seed's twin)
+  { id: 'flash-freeze',   name: 'Flash Freeze',   type: 'ice', cost: 3, art: '🧊', effects: { frostbite: 4, skipEnemy: true }, exhaust: true, rarity: 'rare', upgrade: { cost: 2 } },   // Vault
+  { id: 'shatter',        name: 'Shatter',        type: 'ice', cost: 2, art: '💥', effects: { damage: 4, perFrost: 4, thaw: true }, rarity: 'rare', upgrade: { effects: { perFrost: 5 } } },   // (Frostbite cashed in: Catalyst's other end)
+  { id: 'ice-crown',      name: 'Ice Crown',      type: 'ice', cost: 2, art: '👑', effects: { icicleEachTurn: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Infinite Blades
+  { id: 'cold-storage',   name: 'Cold Storage',   type: 'ice', cost: 1, art: '🗄️', effects: { retainZero: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // Runic Pyramid, on 0-costs
+  { id: 'iceberg',        name: 'Iceberg',        type: 'ice', cost: 3, art: '🏔️', effects: { block: 22, hail: 3 }, rarity: 'rare', upgrade: { effects: { block: 28 } } },   // Impervious-lite, with the weather
+  { id: 'endless-winter', name: 'Endless Winter', type: 'ice', cost: 3, art: '☃️', effects: { hail: 3, hailKeep: 1 }, power: true, rarity: 'rare', upgrade: { cost: 2 } },   // (Hail's Permafrost)
+  { id: 'absolute-zero',  name: 'Absolute Zero',  type: 'ice', cost: 2, art: '🌡️', effects: { damage: 12, ifHail: { frostbite: 6 } }, rarity: 'rare', upgrade: { effects: { damage: 16, ifHail: { frostbite: 8 } } } },   // Bludgeon's little brother: a Hail / Frostbite bridge
 ];
 
 /* ============================================================
@@ -815,7 +852,7 @@ const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, streng
   tideEachTurn: 1, drizzle: 1, riptide: 2, retainN: 1, tideSpendBlock: 1, tideSurge: 1,
   healStrength: 1, attackHeal: 1, attackSeed: 1, debuffDamage: 2, weakEachTurn: 1, weakBlock: 2, strengthHeal: 1,
   staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1, thornStatic: 1, energyBlock: 1, switchStatic: 1,
-  frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1 };
+  frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1, thornFrost: 1, hailChipBlock: 2 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -961,6 +998,13 @@ export const POWERS = {
   hailDraw:         { icon: '🏂', text: (n) => `In Hail, draw ${plural(n, 'more card')} each turn.` },
   hailBlock:        { icon: '⛄', text: (n) => `At the start of each turn in Hail, gain ${n} block.` },
   hailFrost:        { icon: '🦣', text: (n) => `Whenever Hail hurts the enemy, Frostbite ${n}.` },
+  thornFrost:       { icon: '🦋', text: (n) => `Whenever the enemy attacks you, Frostbite ${n}.` },
+  frostBlock:       { icon: '💙', text: (n) => `At the start of each turn, gain block equal to the enemy's Frostbite${n > 1 ? ` x${n}` : ''}.` },
+  hailChipBlock:    { icon: '🌀', text: (n) => `Whenever Hail hurts the enemy, gain ${n} block.` },
+  hailIcicle:       { icon: '🏔️', text: (n) => `Whenever Hail hurts the enemy, add ${n > 1 ? `${n} Icicles` : 'an Icicle'} to your hand.` },
+  icicleEachTurn:   { icon: '👑', text: (n) => `At the start of each turn, add ${n > 1 ? `${n} Icicles` : 'an Icicle'} to your hand.` },
+  retainZero:       { icon: '🗄️', flag: true, text: () => 'Your 0-cost cards stay in your hand at the end of your turn.' },
+  hailKeep:         { icon: '☃️', flag: true, text: () => 'Hail no longer runs out.' },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -995,6 +1039,7 @@ function sentences(e) {
   if (e.perStatic)    parts.push(`+${e.perStatic} for each Static on the enemy.`);
   if (e.perSwitch)    parts.push(`+${e.perSwitch} for each time you've switched this fight.`);
   if (e.perFrost)     parts.push(`+${e.perFrost} for each Frostbite on the enemy.`);
+  if (e.thaw)         parts.push('Then remove all its Frostbite.');
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
   if (e.burn)         parts.push(e.burnTimes > 1 ? `Burn ${e.burn}, ${TIMES[e.burnTimes] ?? `${e.burnTimes} times`}.` : `Burn ${e.burn}.`);
   if (e.burnMult)     parts.push(`${MULT[e.burnMult] ?? `Multiply by ${e.burnMult}`} the enemy's Burn.`);
@@ -1016,6 +1061,8 @@ function sentences(e) {
   if (e.blockPerTide) parts.push(e.perTide ? `Gain ${e.blockPerTide} block per Tide spent.` : `Gain ${e.blockPerTide} block per Tide, then spend all your Tide.`);
   if (e.blockPerStatic) parts.push(`+${e.blockPerStatic} block for each Static on the enemy.`);
   if (e.blockPerSwitch) parts.push(`+${e.blockPerSwitch} block for each time you've switched this fight.`);
+  if (e.blockPerFrost) parts.push(`+${e.blockPerFrost} block for each Frostbite on the enemy.`);
+  if (e.blockPerIcicle) parts.push(`+${e.blockPerIcicle} block for each Icicle card you've played this fight.`);
   if (e.blockPerCard) parts.push(`Gain ${e.blockPerCard} block for each card in your hand.`);
   if (e.blockNext)    parts.push(`Next turn, gain ${e.blockNext} block.`);
   if (e.blur)         parts.push('Your block doesn\'t wear off at the start of your next turn.');

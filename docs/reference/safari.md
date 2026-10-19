@@ -378,8 +378,13 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   the card's own hit), **Weather** (`b.weather = { kind, turns }`, `setWeather()`, `hailing()`, the 🌨️ badge; `endTurn()`
   chips the enemy `HAIL.chip` through its block, then a turn goes; Hail adds `HAIL.bonus` to every hit of an Ice card),
   and **Snow Warning** (Hail 2 at the fight's start, or the first time Ice comes out in a duo, `comeOut()`).
-  `tools/ice-probe.mjs` checks them in a real fight. The relics, items, Swinub's look, the Card index's Ice tab and the
-  Ice Cave come in Ice's second session.
+  `tools/ice-probe.mjs` checks them in a real fight.
+- **Ice's second session** (session 6, 2026-10-19; `docs/duo-design.md` section 5's "Ice's second session"): 36 more
+  cards (defence-leaning), Never-Melt Ice + 6 relics (Snowball, Safety Goggles, Icy Rock `ICY_ROCK`, Icicle Plate, Ice
+  Memory, the boss Ice Stone in `abilityFor()`), Ice Gem and Chill Drive, the Card index's Ice tab, **Swinub** (a
+  `skinOf: 'vanillite'` look; `DUO_LINES.ice.swinub`) and **the Ice Cave** (`icecave`, an 8th area: every Ice-typed
+  Safari Pokémon moved in with `was:`, date-gated by `SAFARI_FROM` like the Power Plant, painted as the Wetland
+  recoloured to a frozen lake: `SAFARI_ART.icecave`, `paintAs: 'wetland'`). Playtest a Duo Run in it with `&icecave`.
 - **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric and Ice), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).

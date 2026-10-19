@@ -27,7 +27,7 @@ export const DUO_LINES = {
     shinx: ['shinx', 'luxio', 'luxray'], mareep: ['mareep', 'flaaffy', 'ampharos'], pichu: ['pichu', 'pikachu', 'raichu'],
     elekid: ['elekid', 'electabuzz', 'electivire'], tynamo: ['tynamo', 'eelektrik', 'eelektross'],
   },
-  ice: { vanillite: ['vanillite', 'vanillish', 'vanilluxe'] },
+  ice: { vanillite: ['vanillite', 'vanillish', 'vanilluxe'], swinub: ['swinub', 'piloswine', 'mamoswine'] },
 };
 
 /** The two starters of a duo, lead first. */

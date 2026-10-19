@@ -444,6 +444,17 @@ export const DUO_STARTERS = [
     blurb: 'Cold to the core. Frostbite makes every hit bite deeper, and Hail follows wherever it goes.',
     deck: ICE_DECK,
   },
+  // Vanillite's deck under another look, as Electric's four are Shinx's (session 6)
+  {
+    id: 'swinub', type: 'ice', duoOnly: true, skinOf: 'vanillite',
+    line: [
+      { id: 'swinub', name: 'Swinub' },
+      { id: 'piloswine', name: 'Piloswine' },
+      { id: 'mamoswine', name: 'Mamoswine' },
+    ],
+    blurb: 'Snout down in the snow, it plods on through any blizzard and tusks its way through the rest.',
+    deck: ICE_DECK,
+  },
 ];
 
 export const STARTERS_BY_ID = Object.fromEntries([...STARTERS, ...DUO_STARTERS].map(s => [s.id, s]));

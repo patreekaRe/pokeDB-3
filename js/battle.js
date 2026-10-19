@@ -54,10 +54,10 @@ const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
 const BOSS_PRELUDE_LINES = { clearing: 'The Ancient Tree stirs...', shrine: 'The shrine lanterns answer...', ruins: 'The water round the altar begins to churn...', wastes: 'The crater rumbles...', thornwood: 'The Heart Tree\'s roots begin to writhe...', savanna: 'The air above Sun Rock begins to blaze...', depths: 'The crystals hum with a terrible energy...' };
-const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...', powerplant: 'The generators begin to roar...' };
+const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...', powerplant: 'The generators begin to roar...', icecave: 'The frozen lake begins to crack...' };
 
 /** Relics that boost attacks of one type, by the type of your starter. */
-const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water', electric: 'bar-magnet' };
+const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water', electric: 'bar-magnet', ice: 'never-melt-ice' };
 
 /** The current battle, or null when no battle is running. */
 let battle = null;
@@ -156,7 +156,7 @@ const battleTypes = () => battle.duo?.types ?? [battle.starter.type];
 function abilityFor(type, relics, aug) {
   const base = ABILITIES[type] ?? null;
   const stone = base?.id === 'torrent' && relics.includes('water-stone') ? 2 : base?.id === 'overgrow' && relics.includes('leaf-stone') ? 7
-    : base?.id === 'static' && relics.includes('thunder-stone') ? 2 : 0;
+    : base?.id === 'static' && relics.includes('thunder-stone') ? 2 : base?.id === 'snow-warning' && relics.includes('ice-stone') ? 2 : 0;
   return base && (aug.abilityAdd || aug.abilityMult || stone) ? { ...base, amount: (base.amount + stone + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
 }
 /** Battle speed (Settings, js/settings.js): 2x halves the waits of the enemy's turn and your hits; CSS halves their
@@ -277,8 +277,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     switches: 0,       // switches this fight, a card's or the chip's (Volt Tackle); alone, a card's switch still counts
     switchesTurn: 0,   // ...and this turn (Shock Wave, Electro Drift)
     shed: false,       // Shed Shell's free switch is spent this turn
-    icicles: 0,        // Icicle cards played this fight: each makes every Icicle card deal ICICLE_STEP more (Ice)
-    weather: ability?.id === 'snow-warning' ? { kind: 'hail', turns: ability.amount } : null,   // Ice's Hail (Ground's Sandstorm later): one at a time
+    icicles: run.relics.includes('icicle-plate') ? 2 : 0,   // Icicle cards played this fight: each makes every Icicle card deal ICICLE_STEP more (Ice)
+    weather: ability?.id === 'snow-warning' ? { kind: 'hail', turns: ability.amount + (run.relics.includes('icy-rock') ? ICY_ROCK : 0) } : null,   // Ice's Hail (Ground's Sandstorm later): one at a time
 
     // the piles of cards
     drawPile: trial ? deck : piles ? piles[run.duo.out].drawPile : innateUp(deck),   // innate cards on top: always in the first hand
@@ -299,7 +299,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
       sap: 0,                         // its attacks deal this much less, all fight
       static: run.relics.includes('light-ball') ? 3 : 0,   // Electric's meter: at staticCap() it's Paralyzed and loses its move
       paras: 0,                       // times it's been Paralyzed this fight: each raises the next cap by 5
-      frostbite: 0,                   // Ice's: every hit on it deals +1 a stack, then it thaws by 1 at the end of its turn
+      frostbite: run.relics.includes('snowball') ? 3 : 0,   // Ice's: every hit on it deals +1 a stack, then it thaws by 1 at the end of its turn
       weak: (aug.startWeak || 0) + (run.relics.includes('sachet') ? 2 : 0),               // turns left dealing WEAK_MULT damage
       vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
       bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
@@ -591,6 +591,8 @@ function beginPlayerTurn() {
   if (p.staticBlock && b.enemy.static) gainBlock(b.enemy.static * p.staticBlock);   // Electric Seed
   if (p.frostEachTurn) applyFrost(p.frostEachTurn);   // Cold Snap
   if (p.hailBlock && hailing()) gainBlock(p.hailBlock);   // Ice Body
+  if (p.frostBlock && b.enemy.frostbite) gainBlock(b.enemy.frostbite * p.frostBlock);   // Ice Core
+  if (p.icicleEachTurn) addCards({ id: 'icicle', n: p.icicleEachTurn });   // Ice Crown
   if (p.tideEachTurn) gainTide(p.tideEachTurn);
   if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
   if (hasRelic('blue-flute')) gainTide(1);
@@ -623,7 +625,7 @@ function turnDraw() {
   return HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
     + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0)
-    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0) + (hailing() ? p.hailDraw || 0 : 0);
+    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0) + (hasRelic('ice-stone') ? 1 : 0) + (hailing() ? p.hailDraw || 0 : 0);
 }
 
 /* The opening hand can't be tapped until it has finished sliding in: a tap meant for the intro, or one landing on a
@@ -738,12 +740,14 @@ function applyFrost(n, delay = 0) {
 
 /** Hail is falling (Ice's weather). */
 const hailing = () => battle.weather?.kind === 'hail';
+/** Icy Rock: the turns a weather gains when it starts. */
+const ICY_ROCK = 3;
 
 /** A weather for n more turns: the same kind adds its turns, a new kind replaces the old (Ice's Hail, Ground's
     Sandstorm). */
 function setWeather(kind, n) {
   const b = battle;
-  b.weather = b.weather?.kind === kind ? { kind, turns: b.weather.turns + n } : { kind, turns: n };
+  b.weather = b.weather?.kind === kind ? { kind, turns: b.weather.turns + n } : { kind, turns: n + (hasRelic('icy-rock') ? ICY_ROCK : 0) };
   if (kind === 'hail') pop('enemy-zone', `🌨️ Hail ${n}`, 'note', 100);
 }
 
@@ -921,6 +925,8 @@ function effectsOf(card, x = 0) {
   if (e.ifWeather && b.weather) addExtras(e, e.ifWeather);
   if (e.blockPerStatic) e.block = (e.block || 0) + e.blockPerStatic * b.enemy.static;   // Faraday Cage
   if (e.blockPerSwitch) e.block = (e.block || 0) + e.blockPerSwitch * b.switches;       // Volt Guard
+  if (e.blockPerFrost) e.block = (e.block || 0) + e.blockPerFrost * b.enemy.frostbite;   // Hoarfrost
+  if (e.blockPerIcicle) e.block = (e.block || 0) + e.blockPerIcicle * b.icicles;         // Igloo
   return e;
 }
 
@@ -1258,6 +1264,7 @@ function applyEffects(e) {
   if (e.static)     applyStatic(e.static);
   if (e.frostbite)  applyFrost(e.frostbite);
   if (e.frostMult && b.enemy.frostbite) { b.enemy.frostbite *= e.frostMult; pop('enemy-zone', `❄️ Frostbite ×${e.frostMult}`, 'note', 150); }   // Sheer Cold
+  if (e.thaw && b.enemy.frostbite) { b.enemy.frostbite = 0; pop('enemy-zone', '❄️ Shattered', 'note', 150); }   // Shatter, after its hit
   if (e.hail)       setWeather('hail', e.hail);
   if (e.returnZero) returnZeroCost();
   if (e.staticMult && b.enemy.static) { b.enemy.static *= e.staticMult; pop('enemy-zone', `⚡ Static ×${e.staticMult}`, 'note', 150); }   // Static Storm
@@ -1659,6 +1666,8 @@ async function itemEffects(e) {
   if (e.seed)     applyDebuff('seed', e.seed);
   if (e.static)   applyStatic(e.static);
   if (e.staticMult) { b.enemy.static *= e.staticMult; pop('enemy-zone', `⚡ Static ${b.enemy.static}!`, 'note'); }   // Shock Drive
+  if (e.frostMult) { b.enemy.frostbite *= e.frostMult; pop('enemy-zone', `❄️ Frostbite ${b.enemy.frostbite}!`, 'note'); }   // Chill Drive
+  if (e.hail)     setWeather('hail', e.hail);   // Ice Gem
   if (e.tide)     gainTide(e.tide);
   if (e.maxHp)    { b.maxHp += e.maxHp; b.hp += e.maxHp; pop('player-zone', `💚 Max HP +${e.maxHp}`, 'heal'); playSound('stat-up'); statFx('player'); }
   if (e.block)    { b.block += e.block; pop('player-zone', `+${e.block} 🛡️`, 'block'); statFx('player'); }
@@ -2056,13 +2065,16 @@ async function endTurn() {
   // Weather: Hail chips the enemy through its block, then a turn goes (Ice Age: each chip adds Frostbite)
   if (b.weather) {
     const kind = b.weather.kind;
-    b.weather.turns -= 1;
+    if (!(kind === 'hail' && b.powers.hailKeep)) b.weather.turns -= 1;   // Endless Winter
     if (b.weather.turns <= 0) b.weather = null;
     enemyLoses(HAIL.chip);
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${HAIL.chip} 🌨️`, 'dmg');
     log(`${b.def.name} is buffeted by the ${kind}! ${HAIL.chip} damage.`);
     if (b.powers.hailFrost && b.enemy.hp > 0) applyFrost(b.powers.hailFrost, 200);
+    if (b.powers.hailChipBlock) gainBlock(b.powers.hailChipBlock);   // Polar Vortex
+    if (hasRelic('safety-goggles')) gainBlock(3);
+    if (b.powers.hailIcicle) addCards({ id: 'icicle', n: b.powers.hailIcicle });   // Icefall
     renderAll();
     await pause(450);
     if (battle !== b) return;
@@ -2098,7 +2110,8 @@ async function endTurn() {
   // Discard whatever is left in your hand, except cards that retain (Slowpoke Tail, StS's Runic Pyramid: all of it).
   // Grip Claw also keeps the leftmost card that would have been discarded, and Still Waters lets you pick more.
   const gripped = hasRelic('grip-claw') ? b.hand.find(h => !h.card.retain) : null;
-  const kept = new Set(b.hand.filter(h => h.card.retain || h === gripped || hasRelic('slowpoke-tail')));
+  const kept = new Set(b.hand.filter(h => h.card.retain || h === gripped || hasRelic('slowpoke-tail')
+    || (b.powers.retainZero && h.card.cost === 0 && !h.card.status)));   // Cold Storage
   if (b.powers.retainN && kept.size < b.hand.length) {
     await pickFromHand(b.powers.retainN, 'keep', (h) => kept.add(h), (h) => !kept.has(h));
     if (battle !== b) return;
@@ -2244,6 +2257,7 @@ async function enemyTurn() {
       }
       if (hasAbility('static')) applyStatic(b.ability.amount, 450);   // Static: each attack on you charges it
       if (b.powers.thornStatic) applyStatic(b.powers.thornStatic, 500);   // Electromorphosis
+      if (b.powers.thornFrost) applyFrost(b.powers.thornFrost, 500);      // Ice Scales
       if (move.kind === 'drain') {
         en.hp = Math.min(en.maxHp, en.hp + move.heal);
         pop('enemy-zone', `+${move.heal} HP`, 'heal', 200);
@@ -2289,7 +2303,7 @@ async function enemyTurn() {
 
   if (en.weak > 0) en.weak -= 1;                  // like StS, Weak and Vulnerable wear off at the end of the enemy's turn
   if (en.vulnerable > 0) en.vulnerable -= 1;
-  if (en.frostbite > 0 && !b.powers.frostKeep) en.frostbite -= 1;   // Frostbite thaws (Permafrost keeps it)
+  if (en.frostbite > 0 && !b.powers.frostKeep && !(hailing() && hasRelic('ice-memory'))) en.frostbite -= 1;   // Frostbite thaws (Permafrost keeps it)
 
   // Enrage: long fights get more dangerous.
   if (b.turn % ENRAGE_EVERY === 0) {

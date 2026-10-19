@@ -37,7 +37,7 @@ export const TEMPLATES = {
 const N = (name) => ({ name, type: 'normal' });
 
 /** sig: [name, cost, art, effects, extra card fields (retain, exhaust...)], built into a `sig-<id>` card by cards.js. */
-/* `was`: the area it lived in before its own (the Power Plant took the Electric ones, 2026-10-19): js/data/safari.js keeps it
+/* `was`: the area it lived in before its own (the Power Plant took the Electric ones and the Ice Cave the Ice ones, 2026-10-19): js/data/safari.js keeps it
    there on the days before that area opened (SAFARI_FROM), so a day already dealt never changes. */
 const mon = (id, name, type, area, template, moves, description, sig, more = {}) => ({ id, name, type, area, template, moves, description, sig, ...more });
 
@@ -89,10 +89,10 @@ export const SAFARI_MONS = [
   mon('spiritomb', 'Spiritomb', 'normal', 'marsh', 'heavy',      ['Grudge', 'Shadow Sneak', 'Dark Pulse'], 'Bound to an old stone in the marsh. Its 108 spirits do not like visitors.', ['Grudge', 1, '🗿', { damage: 6, ifHurt: { bonus: 8 } }], { rare: true }),
 
   /* ----- Peak ----- */
-  mon('swinub',    'Swinub',    'water',  'peak', 'tank',        [N('Mud Sport'), 'Powder Snow', N('Take Down')], 'Roots under the snow for mushrooms, nose first.', ['Ice Shard', 0, '🐗', { damage: 3, tide: 1, draw: 1 }]),
-  mon('snorunt',   'Snorunt',   'water',  'peak', 'paralyzer',   ['Icy Wind', N('Double Team'), 'Ice Fang'], 'Visits the mountain huts in blizzards. Lucky, if it likes you.', ['Icy Wind', 1, '❄️', { damage: 4, weaken: 2, tide: 1 }]),
-  mon('cubchoo',   'Cubchoo',   'water',  'peak', 'bruiser',     ['Powder Snow', N('Charm'), 'Icicle Crash'], 'Its runny nose is how it freezes things. Do not ask.', ['Flail', 1, '🐻‍❄️', { damage: 5, bonusIfLow: 10 }]),
-  mon('sneasel',   'Sneasel',   'normal', 'peak', 'striker',     ['Scratch', 'Quick Attack', 'Ice Punch'], 'Climbs the ice walls on hooked claws to raid nests.', ['Beat Up', 1, '🦡', { damage: 2, hits: 4 }]),
+  mon('swinub',    'Swinub',    'water',  'icecave', 'tank',        [N('Mud Sport'), 'Powder Snow', N('Take Down')], 'Roots under the snow for mushrooms, nose first.', ['Ice Shard', 0, '🐗', { damage: 3, tide: 1, draw: 1 }], { was: 'peak' }),
+  mon('snorunt',   'Snorunt',   'water',  'icecave', 'paralyzer',   ['Icy Wind', N('Double Team'), 'Ice Fang'], 'Visits the mountain huts in blizzards. Lucky, if it likes you.', ['Icy Wind', 1, '❄️', { damage: 4, weaken: 2, tide: 1 }], { was: 'peak' }),
+  mon('cubchoo',   'Cubchoo',   'water',  'icecave', 'bruiser',     ['Powder Snow', N('Charm'), 'Icicle Crash'], 'Its runny nose is how it freezes things. Do not ask.', ['Flail', 1, '🐻‍❄️', { damage: 5, bonusIfLow: 10 }], { was: 'peak' }),
+  mon('sneasel',   'Sneasel',   'normal', 'icecave', 'striker',     ['Scratch', 'Quick Attack', 'Ice Punch'], 'Climbs the ice walls on hooked claws to raid nests.', ['Beat Up', 1, '🦡', { damage: 2, hits: 4 }], { was: 'peak' }),
   mon('larvitar',  'Larvitar',  'normal', 'peak', 'heavy',       ['Sandstorm', 'Bite', 'Rock Slide'], 'Eats its way through the mountain, then eats the mountain next to it.', ['Rock Slide', 2, '⛰️', { damage: 8, hits: 2, weaken: 1 }]),
   mon('roggenrola','Roggenrola','normal', 'peak', 'tank',        ['Harden', 'Tackle', 'Rock Blast'], 'Its body is a single rock. Its one ear hears the cliffs crack.', ['Iron Defense', 1, '🧱', { block: 10, blockNext: 3 }]),
   mon('slugma',    'Slugma',    'fire',   'peak', 'tank',        [N('Harden'), 'Ember', 'Lava Plume'], 'Seeps out of the hot vents near the summit, glowing.', ['Lava Plume', 2, '🌋', { damage: 10, burn: 4 }]),
@@ -158,7 +158,7 @@ export const SAFARI_MONS = [
   mon('mantyke',   'Mantyke',   'water',  'wetland', 'tank',     ['Aqua Ring', 'Bubble', 'Bubble Beam'], 'Glides just under the surface, its back pattern rippling.', ['Wide Guard', 1, '🪁', { block: 8, tide: 1 }]),
   mon('azurill',   'Azurill',   'normal', 'wetland', 'confuser', ['Pound', 'Charm', 'Bubble Beam'], 'Bounces along the bank on its tail. It never lands where it means to.', ['Charm', 1, '🫧', { weaken: 3, block: 3 }]),
   mon('feebas',    'Feebas',    'water',  'wetland', 'tank',     ['Protect', N('Tackle'), 'Water Pulse'], 'Shabby and slow, it hides in the weeds. Fish it out with patience.', ['Beautify', 1, '🌈', { heal: 5, strength: 1, draw: 1 }, { exhaust: true }], { rare: true }),
-  mon('lapras',    'Lapras',    'water',  'wetland', 'heavy',    ['Mist', 'Water Gun', 'Ice Beam'], 'Sings across the lake on foggy mornings. Hardly any are left.', ['Ice Beam', 2, '🧊', { damage: 12, weaken: 2, tide: 2 }], { rare: true }),
+  mon('lapras',    'Lapras',    'water',  'icecave', 'heavy',    ['Mist', 'Water Gun', 'Ice Beam'], 'Sings across the lake on foggy mornings. Hardly any are left.', ['Ice Beam', 2, '🧊', { damage: 12, weaken: 2, tide: 2 }], { rare: true, was: 'wetland' }),
 
   /* ----- Batch 2: Marsh ----- */
   mon('gastly',    'Gastly',    'normal', 'marsh', 'confuser',   ['Lick', 'Mean Look', 'Hypnosis'], 'A puff of marsh gas with a grin in it.', ['Lick', 0, '👅', { damage: 3, vulnerable: 1 }]),
@@ -182,10 +182,10 @@ export const SAFARI_MONS = [
   mon('machop',    'Machop',    'normal', 'peak', 'bruiser',     ['Low Kick', 'Focus Energy', 'Karate Chop'], 'Trains by carrying boulders up the peak and back down.', ['Karate Chop', 1, '🥋', { damage: 7, draw: 1, focus: 3 }]),
   mon('onix',      'Onix',      'normal', 'peak', 'heavy',       ['Harden', 'Bind', 'Rock Slide'], 'Tunnels through the mountain at forty miles an hour. The path shakes.', ['Bind', 1, '⛓️', { damage: 5, weaken: 1, block: 5 }]),
   mon('seel',      'Seel',      'water',  'peak', 'bruiser',     ['Aqua Jet', 'Aqua Ring', 'Aurora Beam'], 'Naps on the frozen tarn and swims under the ice for fun.', ['Aurora Beam', 1, '🦭', { damage: 6, weaken: 1, tide: 1 }]),
-  mon('snover',    'Snover',    'grass',  'peak', 'tank',        ['Ingrain', N('Powder Snow'), 'Razor Leaf'], 'Grows berries like ice lollies on the snowline.', ['Snow Warning', 1, '🌲', { block: 6, weaken: 1, seed: 1 }]),
-  mon('delibird',  'Delibird',  'water',  'peak', 'striker',     [N('Present'), 'Powder Snow', N('Drill Peck')], 'Carries food in its tail and gives it to lost climbers. Sometimes it explodes.', ['Present', 1, '🎁', { randomCard: 1, heal: 3 }]),
-  mon('smoochum',  'Smoochum',  'water',  'peak', 'confuser',    ['Powder Snow', N('Reflect'), N('Confusion')], 'Checks its face in every frozen puddle on the way up.', ['Sweet Kiss', 1, '💋', { weaken: 2, tide: 2 }]),
-  mon('vanillite', 'Vanillite', 'water',  'peak', 'tank',        ['Mist', 'Icicle Spear', 'Avalanche'], 'Made of the snow on the summit. In summer it hides in the caves.', ['Avalanche', 2, '🍦', { damage: 8, ifHurt: { bonus: 8 } }]),
+  mon('snover',    'Snover',    'grass',  'icecave', 'tank',        ['Ingrain', N('Powder Snow'), 'Razor Leaf'], 'Grows berries like ice lollies on the snowline.', ['Snow Warning', 1, '🌲', { block: 6, weaken: 1, seed: 1 }], { was: 'peak' }),
+  mon('delibird',  'Delibird',  'water',  'icecave', 'striker',     [N('Present'), 'Powder Snow', N('Drill Peck')], 'Carries food in its tail and gives it to lost climbers. Sometimes it explodes.', ['Present', 1, '🎁', { randomCard: 1, heal: 3 }], { was: 'peak' }),
+  mon('smoochum',  'Smoochum',  'water',  'icecave', 'confuser',    ['Powder Snow', N('Reflect'), N('Confusion')], 'Checks its face in every frozen puddle on the way up.', ['Sweet Kiss', 1, '💋', { weaken: 2, tide: 2 }], { was: 'peak' }),
+  mon('vanillite', 'Vanillite', 'water',  'icecave', 'tank',        ['Mist', 'Icicle Spear', 'Avalanche'], 'Made of the snow on the summit. In summer it hides in the caves.', ['Avalanche', 2, '🍦', { damage: 8, ifHurt: { bonus: 8 } }], { was: 'peak' }),
   mon('aron',      'Aron',      'normal', 'peak', 'heavy',       ['Iron Defense', 'Headbutt', 'Iron Head'], 'Eats iron ore out of the cliffs, and the odd climbing peg.', ['Iron Head', 2, '🔩', { damage: 11, block: 9 }]),
   mon('magby',     'Magby',     'fire',   'wetland', 'striker',  ['Ember', N('Smog'), 'Fire Punch'], 'Breathes little flames by the hot springs on the lakeshore. Healthy ones glow yellow.', ['Fire Punch', 1, '🥊', { damage: 6, burn: 2 }]),
   mon('mankey',    'Mankey',    'normal', 'peak', 'bruiser',     ['Low Kick', 'Rage', 'Cross Chop'], 'Angry when it is cold, angry when it is warm, angry when you look at it.', ['Cross Chop', 2, '🐒', { damage: 11, bonusIfLow: 6 }]),
@@ -277,13 +277,13 @@ export const SAFARI_MONS = [
   mon('graveler',  'Graveler',  'normal', 'peak', 'tank',        ['Defense Curl', 'Rock Throw', 'Rollout'], 'Rolls down the mountain path once a year to shed its old skin of rock.', ['Rollout', 1, '🪨', { damage: 5 }, { retain: true, growOnRetain: { damage: 4 } }]),
   mon('machoke',   'Machoke',   'normal', 'peak', 'bruiser',     ['Low Kick', 'Bulk Up', 'Seismic Toss'], 'Helps carry supplies up to the summit hut, for the training.', ['Bulk Up', 1, '💪', { strength: 1, block: 7 }]),
   mon('golbat',    'Golbat',    'normal', 'peak', 'drainer',     ['Leech Life', 'Wing Attack', 'Air Cutter'], 'Drinks until it can barely fly, then flaps back into the caves.', ['Confuse Ray', 1, '🦇', { weaken: 1, vulnerable: 1, draw: 1 }]),
-  mon('piloswine', 'Piloswine', 'water',  'peak', 'tank',        [N('Mud Sport'), 'Ice Shard', N('Take Down')], 'Its hair hangs over its eyes, so it charges at everything by smell.', ['Blizzard', 2, '🌨️', { damage: 6, hits: 2, weaken: 1, tide: 1 }]),
-  mon('glalie',    'Glalie',    'water',  'peak', 'striker',     ['Ice Shard', N('Bite'), 'Ice Fang'], 'Freezes the air around it into armour. Hikers find frozen Zubat near its cave.', ['Ice Fang', 1, '🧊', { damage: 7, weaken: 1, tide: 1 }]),
-  mon('beartic',   'Beartic',   'water',  'peak', 'bruiser',     ['Icicle Crash', N('Swagger'), N('Slash')], 'Swims the icy lake by the summit and grows fangs of frozen breath.', ['Icicle Crash', 2, '🐻‍❄️', { damage: 13, weaken: 1, tide: 1 }]),
-  mon('cryogonal', 'Cryogonal', 'water',  'peak', 'confuser',    ['Ice Shard', N('Reflect'), 'Aurora Beam'], 'Born in snow clouds. It melts to vapour on warm days and forms again at night.', ['Light Screen', 1, '❄️', { blockNext: 10 }]),
+  mon('piloswine', 'Piloswine', 'water',  'icecave', 'tank',        [N('Mud Sport'), 'Ice Shard', N('Take Down')], 'Its hair hangs over its eyes, so it charges at everything by smell.', ['Blizzard', 2, '🌨️', { damage: 6, hits: 2, weaken: 1, tide: 1 }], { was: 'peak' }),
+  mon('glalie',    'Glalie',    'water',  'icecave', 'striker',     ['Ice Shard', N('Bite'), 'Ice Fang'], 'Freezes the air around it into armour. Hikers find frozen Zubat near its cave.', ['Ice Fang', 1, '🧊', { damage: 7, weaken: 1, tide: 1 }], { was: 'peak' }),
+  mon('beartic',   'Beartic',   'water',  'icecave', 'bruiser',     ['Icicle Crash', N('Swagger'), N('Slash')], 'Swims the icy lake by the summit and grows fangs of frozen breath.', ['Icicle Crash', 2, '🐻‍❄️', { damage: 13, weaken: 1, tide: 1 }], { was: 'peak' }),
+  mon('cryogonal', 'Cryogonal', 'water',  'icecave', 'confuser',    ['Ice Shard', N('Reflect'), 'Aurora Beam'], 'Born in snow clouds. It melts to vapour on warm days and forms again at night.', ['Light Screen', 1, '❄️', { blockNext: 10 }], { was: 'peak' }),
   mon('timburr',   'Timburr',   'normal', 'peak', 'bruiser',     ['Pound', 'Bulk Up', 'Hammer Arm'], 'Carries a log twice its size and helps fix the mountain huts.', ['Hammer Arm', 2, '🪵', { damage: 14, block: 4 }]),
   mon('swablu',    'Swablu',    'normal', 'peak', 'tank',        ['Safeguard', 'Peck', 'Dragon Breath'], 'Perches on hikers\' hats like a cloud. It hums when it is comfy.', ['Round', 1, '☁️', { block: 5, heal: 3 }]),
-  mon('abomasnow', 'Abomasnow', 'grass',  'peak', 'heavy',       [N('Mist'), 'Razor Leaf', N('Blizzard')], 'Lives above the snow line and whips up a blizzard when you get close.', ['Wood Hammer', 2, '🌲', { damage: 16, selfDamage: 4 }]),
+  mon('abomasnow', 'Abomasnow', 'grass',  'icecave', 'heavy',       [N('Mist'), 'Razor Leaf', N('Blizzard')], 'Lives above the snow line and whips up a blizzard when you get close.', ['Wood Hammer', 2, '🌲', { damage: 16, selfDamage: 4 }], { was: 'peak' }),
   mon('magmortar', 'Magmortar', 'fire',   'peak', 'striker',     ['Fire Punch', 'Ember', 'Fire Blast'], 'Fires blobs of lava from its arms into the crater, just to watch them hiss.', ['Heat Wave', 2, '🔥', { damage: 6, hits: 2, burn: 3 }], { rare: true }),
   mon('bagon',     'Bagon',     'normal', 'peak', 'bruiser',     ['Headbutt', 'Focus Energy', 'Dragon Breath'], 'Jumps off the cliffs every day, dreaming of wings. Its head is very hard.', ['Outrage', 2, '🐲', { damage: 9, hits: 2, strength: 1 }], { rare: true }),
 
@@ -343,7 +343,7 @@ export const SAFARI_MONS = [
   mon('alomomola', 'Alomomola', 'water',  'wetland', 'drainer',  ['Wish', 'Aqua Jet', 'Scald'], 'Wraps hurt Pokémon in its fins and carries them back to the shore.', ['Healing Wish', 1, '💗', { heal: 8 }, { exhaust: true, retain: true }]),
   mon('huntail',   'Huntail',   'water',  'wetland', 'striker',  [N('Bite'), 'Water Pulse', N('Sucker Punch')], 'Lives in the deepest part of the lake. Its tail looks like a little fish.', ['Sucker Punch', 1, '🎣', { damage: 6, ifEnemyAttacks: { bonus: 5 } }]),
   mon('gorebyss',  'Gorebyss',  'water',  'wetland', 'drainer',  ['Whirlpool', N('Confusion'), 'Water Pulse'], 'Thin as a ribbon. It sips from other Pokémon with its fine mouth.', ['Whirlpool', 1, '🌀', { damage: 3, hits: 2, tide: 1, weaken: 1 }]),
-  mon('cloyster',  'Cloyster',  'water',  'wetland', 'heavy',    ['Withdraw', 'Icicle Spear', 'Ice Beam'], 'Its shell is harder than diamond. Only its spikes ever come out.', ['Icicle Spear', 1, '🧊', { damage: 2, hits: 4, block: 3 }]),
+  mon('cloyster',  'Cloyster',  'water',  'icecave', 'heavy',    ['Withdraw', 'Icicle Spear', 'Ice Beam'], 'Its shell is harder than diamond. Only its spikes ever come out.', ['Icicle Spear', 1, '🧊', { damage: 2, hits: 4, block: 3 }], { was: 'wetland' }),
   mon('yanmega',   'Yanmega',   'grass',  'wetland', 'speedster',[N('Air Slash'), 'Bug Bite', 'Bug Buzz'], 'Its wing beats can cut through the reeds. It carries a grown-up with ease.', ['Air Slash', 1, '🪰', { damage: 7, weaken: 1, discard: 1, draw: 1 }]),
   mon('tranquill', 'Tranquill', 'normal', 'wetland', 'striker',  ['Quick Attack', 'Air Cutter', 'Facade'], 'Nests on the lake\'s islands and always finds its way back, however far it flies.', ['Facade', 1, '🕊️', { damage: 5, ifHurt: { bonus: 6 } }]),
   mon('gyarados',  'Gyarados',  'water',  'wetland', 'bruiser',  [N('Bite'), N('Dragon Dance'), 'Aqua Tail'], 'Rose from the lake in a rage the year the Magikarp were overfished. It hasn\'t calmed down.', ['Thrash', 2, '🐲', { damage: 8, hits: 2, strength: 1, selfDamage: 3 }], { rare: true }),
@@ -366,19 +366,19 @@ export const SAFARI_MONS = [
   mon('zoroark',   'Zoroark',   'normal', 'marsh', 'confuser',   ['Feint Attack', 'Nasty Plot', 'Night Daze'], 'Shows travellers a path through the marsh that isn\'t there. Its pack lives in the illusion.', ['Night Daze', 2, '🦊', { damage: 12, vulnerable: 1, weaken: 1 }], { rare: true }),
 
   /* ----- Batch 4: Peak ----- */
-  mon('dewgong',   'Dewgong',   'water',  'peak', 'tank',        [N('Rest'), 'Aurora Beam', 'Ice Beam'], 'Naps on the ice floes of the summit lake. The cold only makes it livelier.', ['Aurora Beam', 1, '🦭', { damage: 5, weaken: 1, block: 4 }]),
-  mon('jynx',      'Jynx',      'water',  'peak', 'confuser',    ['Powder Snow', N('Lovely Kiss'), 'Ice Punch'], 'Sways its hips as it walks the snowfields. Some say it is singing.', ['Lovely Kiss', 1, '💄', { weaken: 3 }, { exhaust: true, retain: true }]),
-  mon('vanillish', 'Vanillish', 'water',  'peak', 'tank',        ['Mist', 'Icy Wind', 'Avalanche'], 'Its snowy body never melts on the peak. Hikers keep their drinks cold on it.', ['Frost Breath', 1, '🍦', { damage: 4, block: 4, tide: 1 }]),
-  mon('mamoswine', 'Mamoswine', 'water',  'peak', 'heavy',       [N('Mud Slap'), 'Ice Shard', N('Earthquake')], 'Walked off the glacier one spring after ten thousand years. It still looks cross.', ['Ice Shard', 0, '🦣', { damage: 5, block: 3 }, { exhaust: true }]),
-  mon('froslass',  'Froslass',  'water',  'peak', 'confuser',    ['Icy Wind', N('Will-O-Wisp'), N('Shadow Ball')], 'Freezes lost climbers solid and keeps them in its ice cave. It hums as it works.', ['Icy Wind', 1, '👘', { damage: 3, weaken: 2, block: 4 }]),
+  mon('dewgong',   'Dewgong',   'water',  'icecave', 'tank',        [N('Rest'), 'Aurora Beam', 'Ice Beam'], 'Naps on the ice floes of the summit lake. The cold only makes it livelier.', ['Aurora Beam', 1, '🦭', { damage: 5, weaken: 1, block: 4 }], { was: 'peak' }),
+  mon('jynx',      'Jynx',      'water',  'icecave', 'confuser',    ['Powder Snow', N('Lovely Kiss'), 'Ice Punch'], 'Sways its hips as it walks the snowfields. Some say it is singing.', ['Lovely Kiss', 1, '💄', { weaken: 3 }, { exhaust: true, retain: true }], { was: 'peak' }),
+  mon('vanillish', 'Vanillish', 'water',  'icecave', 'tank',        ['Mist', 'Icy Wind', 'Avalanche'], 'Its snowy body never melts on the peak. Hikers keep their drinks cold on it.', ['Frost Breath', 1, '🍦', { damage: 4, block: 4, tide: 1 }], { was: 'peak' }),
+  mon('mamoswine', 'Mamoswine', 'water',  'icecave', 'heavy',       [N('Mud Slap'), 'Ice Shard', N('Earthquake')], 'Walked off the glacier one spring after ten thousand years. It still looks cross.', ['Ice Shard', 0, '🦣', { damage: 5, block: 3 }, { exhaust: true }], { was: 'peak' }),
+  mon('froslass',  'Froslass',  'water',  'icecave', 'confuser',    ['Icy Wind', N('Will-O-Wisp'), N('Shadow Ball')], 'Freezes lost climbers solid and keeps them in its ice cave. It hums as it works.', ['Icy Wind', 1, '👘', { damage: 3, weaken: 2, block: 4 }], { was: 'peak' }),
   mon('ferrothorn','Ferrothorn','grass',  'peak', 'heavy',       [N('Iron Defense'), 'Power Whip', N('Gyro Ball')], 'Clings to the cave roofs and drops its iron spikes on anything that walks under.', ['Iron Barbs', 1, '🌵', { block: 9, blockDamage: true }]),
-  mon('weavile',   'Weavile',   'normal', 'peak', 'speedster',   ['Night Slash', 'Ice Shard', 'Feint Attack'], 'Hunts the slopes in packs. They scratch signs in the ice to talk to each other.', ['Night Slash', 1, '🦡', { damage: 4, hits: 2, vulnerable: 1 }]),
+  mon('weavile',   'Weavile',   'normal', 'icecave', 'speedster',   ['Night Slash', 'Ice Shard', 'Feint Attack'], 'Hunts the slopes in packs. They scratch signs in the ice to talk to each other.', ['Night Slash', 1, '🦡', { damage: 4, hits: 2, vulnerable: 1 }], { was: 'peak' }),
   mon('skarmory',  'Skarmory',  'normal', 'peak', 'tank',        ['Steel Wing', 'Air Cutter', 'Drill Peck'], 'Nests in thornbushes on the cliffs. Its steel wings get battered sharp.', ['Steel Wing', 1, '🛩️', { damage: 6, block: 6 }, { exhaust: true }]),
   mon('makuhita',  'Makuhita',  'normal', 'peak', 'bruiser',     ['Arm Thrust', 'Bulk Up', 'Force Palm'], 'Trains by slapping the mountain trees. Some of them have fallen over.', ['Arm Thrust', 1, '🤚', { damage: 2, hits: 4 }, { retain: true }]),
   mon('lairon',    'Lairon',    'normal', 'peak', 'heavy',       ['Iron Defense', 'Headbutt', 'Iron Tail'], 'Charges into the cliffs to sharpen its armour. Rockfalls follow it.', ['Iron Tail', 2, '⚙️', { damage: 15, vulnerable: 1 }]),
   mon('gurdurr',   'Gurdurr',   'normal', 'peak', 'bruiser',     ['Low Kick', 'Bulk Up', 'Hammer Arm'], 'Carries a steel girder up the mountain. A team of grown-ups can\'t lift it.', ['Bulk Up', 1, '🏗️', { strength: 1, block: 7 }, { exhaust: true }]),
   mon('nosepass',  'Nosepass',  'normal', 'peak', 'tank',        ['Block', 'Rock Throw', 'Power Gem'], 'Its nose always points north. Lost climbers follow it home.', ['Rock Polish', 0, '🧭', { block: 3, draw: 1 }]),
-  mon('glaceon',   'Glaceon',   'water',  'peak', 'striker',     ['Ice Shard', N('Bite'), 'Ice Fang'], 'Freezes its fur into needles. Snow falls around it even under a clear sky.', ['Ice Fang', 1, '🥶', { damage: 7, weaken: 1, block: 3 }], { rare: true }),
+  mon('glaceon',   'Glaceon',   'water',  'icecave', 'striker',     ['Ice Shard', N('Bite'), 'Ice Fang'], 'Freezes its fur into needles. Snow falls around it even under a clear sky.', ['Ice Fang', 1, '🥶', { damage: 7, weaken: 1, block: 3 }], { rare: true, was: 'peak' }),
   mon('lucario',   'Lucario',   'normal', 'peak', 'striker',     ['Force Palm', 'Swords Dance', 'Aura Sphere'], 'Meditates on the summit at dawn. It can read your aura from the trailhead.', ['Aura Sphere', 1, '🔵', { damage: 9, draw: 1 }], { rare: true }),
 
   /* ----- Batch 4: Desert ----- */
@@ -457,7 +457,7 @@ export const SAFARI_MONS = [
   mon('reuniclus', 'Reuniclus', 'normal', 'marsh', 'tank',       ['Recover', 'Psyshock', 'Psychic'], 'Shakes hands with its huge jelly arms. One shake can crush a rock.', ['Psychic', 1, '🧠', { damage: 9, weaken: 1, vulnerable: 1 }], { rare: true }),
 
   /* ----- Batch 5: Peak ----- */
-  mon('vanilluxe', 'Vanilluxe', 'water',  'peak', 'heavy',       ['Mist', 'Icy Wind', 'Blizzard'], 'Two heads, one blizzard. It snows wherever it breathes out.', ['Blizzard', 2, '🌨️', { damage: 7, hits: 2, weaken: 2, tide: 1 }]),
+  mon('vanilluxe', 'Vanilluxe', 'water',  'icecave', 'heavy',       ['Mist', 'Icy Wind', 'Blizzard'], 'Two heads, one blizzard. It snows wherever it breathes out.', ['Blizzard', 2, '🌨️', { damage: 7, hits: 2, weaken: 2, tide: 1 }], { was: 'peak' }),
   mon('golem',     'Golem',     'normal', 'peak', 'heavy',       ['Defense Curl', 'Rollout', 'Explosion'], 'Sheds its shell once a year. The old ones lie on the slopes like boulders.', ['Explosion', 1, '💥', { selfDamage: 8, damage: 24 }, { exhaust: true }]),
   mon('machamp',   'Machamp',   'normal', 'peak', 'bruiser',     ['Karate Chop', 'Bulk Up', 'Dynamic Punch'], 'Four arms, a punch a second. It clears boulders off the mountain path.', ['Seismic Toss', 1, '💪', { damage: 10, selfDamage: 2 }]),
   mon('primeape',  'Primeape',  'normal', 'peak', 'striker',     ['Fury Swipes', 'Low Kick', 'Cross Chop'], 'Gets furious for no reason, chases you down the trail, then forgets why.', ['Stomping Tantrum', 1, '🐒', { damage: 6, ifHurt: { bonus: 5 } }]),

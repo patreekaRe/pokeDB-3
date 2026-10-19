@@ -104,6 +104,7 @@ test('Ice: a full starting deck, its evolution cards, its Ability, and Icicle on
   assert.equal(evolutionCardsFor('ice', 2).length, 4);
   assert.equal(ABILITIES.ice.id, 'snow-warning');
   const pool = typePool('ice');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [10, 14, 6]);
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 6
+  assert.equal(STARTERS_BY_ID.swinub.skinOf, 'vanillite');
   assert.ok(CARDS_BY_ID.icicle.token && CARDS_BY_ID.icicle.icicle);
 });

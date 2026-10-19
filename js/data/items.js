@@ -73,6 +73,9 @@ export const ITEMS = [
   // Electric's (docs/duo-design.md section 5: a Gem and a Drive a new type)
   { id: 'electric-gem', name: 'Electric Gem', icon: '🟡', rarity: 'uncommon', only: 'electric', effects: { energy: 2, static: 3 }, text: 'Gain 2 PP. Static 3.' },
   { id: 'shock-drive',  name: 'Shock Drive',  icon: '⚡', rarity: 'uncommon', only: 'electric', effects: { staticMult: 2 }, text: 'Double the enemy\'s Static.' },   // Catalyst, Burn Drive's for Static
+  // Ice's
+  { id: 'ice-gem',      name: 'Ice Gem',      icon: '🔹', rarity: 'uncommon', only: 'ice', effects: { hail: 3, block: 8 }, text: 'Hail 3. Gain 8 block.' },
+  { id: 'chill-drive',  name: 'Chill Drive',  icon: '❄️', rarity: 'uncommon', only: 'ice', effects: { frostMult: 2 }, text: 'Double the enemy\'s Frostbite.' },   // Catalyst, Shock Drive's for Frostbite
 ];
 
 export const ITEMS_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));

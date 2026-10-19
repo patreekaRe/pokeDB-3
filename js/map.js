@@ -400,6 +400,7 @@ const PALETTES = {
   peak:     { ground: 'grass', blobs: [['snow', 7, 14, 40], ['mountain', 5, 10, 28], ['trees', 3, 6, 14]] },
   desert:   { ground: 'sand',  blobs: [['mountain', 5, 12, 30], ['dune', 6, 12, 34], ['pool', 1, 8, 14]] },
   powerplant: { ground: 'cave', blobs: [['mountain', 4, 10, 26], ['boulder', 5, 5, 16], ['pool', 2, 8, 16]] },   // the duo pool's Power Plant, until its art session
+  icecave:  { ground: 'snow',  blobs: [['water', 9, 16, 50], ['geode', 3, 6, 16], ['trees', 3, 6, 14]] },   // the duo pool's Ice Cave: a frozen lake in the snow, ice crystal, until its art session
 };
 
 // base, light, dark, edge (the 1px line where it meets other terrain)

@@ -169,6 +169,10 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   to every Icicle card's hits this fight, `b.icicles`) and `freeIn: 'hail'` (costs 0 in Hail, `costOf()`); powers
   `frostEachTurn`, `frostKeep`, `zeroBlock`, `icicleFrost`, `hailDraw`, `hailBlock`, `hailFrost`. Boxes: Frostbite,
   Icicle, Hail. `TYPES.ice` is neutral outside the Safari, like Electric.
+  Session 6 (2026-10-19, "Ice's second session") brought the other 36 (74 in all, StS's split): new keys
+  `blockPerFrost`, `blockPerIcicle`, `thaw` (Shatter); powers `thornFrost`, `frostBlock`, `hailChipBlock`, `hailIcicle`,
+  `icicleEachTurn`, `retainZero` (Cold Storage: 0-cost cards kept at turn end), `hailKeep` (Endless Winter). Never-Melt
+  Ice is Ice's `TYPE_RELIC`.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,
