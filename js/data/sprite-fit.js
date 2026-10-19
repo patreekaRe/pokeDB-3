@@ -494,6 +494,7 @@ export const SPRITE_FIT = {
   'snover-front': [2, 3, 3, 3],
   'delibird-front': [2, 0, 1, 2],
   'smoochum-front': [10, 3, 2, 4],
+  'vanillite-back': [3, 8, 1, 30],
   'vanillite-front': [5, 4, 30, 1],
   'aron-front': [0, 0, 1, 0],
   'magby-front': [16, 1, 2, 3],
@@ -659,6 +660,7 @@ export const SPRITE_FIT = {
   'zoroark-front': [0, 0, 0, 2],
   'dewgong-front': [3, 2, 3, 6],
   'jynx-front': [4, 2, 1, 2],
+  'vanillish-back': [2, 3, 10, 6],
   'vanillish-front': [3, 3, 7, 10],
   'mamoswine-front': [4, 0, 2, 2],
   'froslass-front': [12, 8, 1, 2],
@@ -742,6 +744,7 @@ export const SPRITE_FIT = {
   'eelektross-back': [18, 7, 4, 4],
   'eelektross-front': [8, 7, 5, 12],
   'reuniclus-front': [5, 4, 5, 4],
+  'vanilluxe-back': [9, 5, 3, 2],
   'vanilluxe-front': [6, 5, 2, 2],
   'golem-front': [2, 1, 3, 5],
   'machamp-front': [9, 0, 0, 0],
@@ -960,6 +963,7 @@ export const BODY_X = {
   'tynamo-back': 3,
   'eelektrik-back': 2,
   'eelektross-back': -3,
+  'vanillish-back': -2,
 };
 
 /** GIF pixels to add to a sprite's pose-box centring so its body, not its box, stands in the middle. */

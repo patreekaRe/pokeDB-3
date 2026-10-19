@@ -370,7 +370,17 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   `paintAs: 'peak'` in `js/scene.js`; its film in `js/safari-intro.js`; map, badge, Exchange and Pokédex colours) until its
   art session; no furniture prize for its page yet. Its Ranger survey stops at I (23 Pokémon). `?powerplant` with
   `?duorun` puts it first in a Duo Run before its day.
-- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+- **Ice's first session** (session 5, 2026-10-19; rules and card table in `docs/duo-design.md` section 5's "Ice's first
+  session"): **Vanillite** (`DUO_STARTERS`, `ICE_DECK`; back GIFs, `SPRITE_FIT`, `BODY_X`, cries), `DUO_LINES.ice`
+  (catching Vanillite, Vanillish or Vanilluxe adds Ice; they still live in the Peak until the Ice Cave). In
+  `js/battle.js`: **Frostbite** (`applyFrost()`, `enemy.frostbite`, the ❄️ badge: +1 a stack on every hit in
+  `damageFor()`, thawing 1 at the end of the enemy's turn), **Icicle** (`b.icicles`, counted in `resolveCard()` after
+  the card's own hit), **Weather** (`b.weather = { kind, turns }`, `setWeather()`, `hailing()`, the 🌨️ badge; `endTurn()`
+  chips the enemy `HAIL.chip` through its block, then a turn goes; Hail adds `HAIL.bonus` to every hit of an Ice card),
+  and **Snow Warning** (Hail 2 at the fight's start, or the first time Ice comes out in a duo, `comeOut()`).
+  `tools/ice-probe.mjs` checks them in a real fight. The relics, items, Swinub's look, the Card index's Ice tab and the
+  Ice Cave come in Ice's second session.
+- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric and Ice), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 

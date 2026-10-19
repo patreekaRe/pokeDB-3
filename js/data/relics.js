@@ -169,6 +169,8 @@ export function relicTerms(relic) {
     says(/Static/) && term('Static'),
     says(/Paralyzed/) && term('Paralyzed'),
     says(/\bswitch/i) && term('Switch'),
+    says(/Frostbite/) && term('Frostbite'),
+    says(/Hail/) && term('Hail'),
     says(/Status cards/) && ['Status cards', 'Junk enemies put in your deck, for this fight only.'],
     says(/Sludge/) && ['Sludge', 'Junk: costs 1 PP, does nothing, then exhausts.'],
   ].filter(Boolean);
@@ -183,4 +185,5 @@ export const ABILITIES = {
   water: { id: 'torrent',  name: 'Torrent',  icon: '🌊', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Tide.' },
   psychic: { id: 'pressure', name: 'Pressure', icon: '🔮', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Focus: your next attack deals +2 damage.' },
   electric: { id: 'static', name: 'Static', icon: '⚡', sprite: 'ability-capsule', amount: 2, text: 'Each time the enemy attacks you, it gains 2 Static.' },
+  ice: { id: 'snow-warning', name: 'Snow Warning', icon: '🌨️', sprite: 'ability-capsule', amount: 2, text: 'Start each fight in Hail for 2 turns.' },
 };

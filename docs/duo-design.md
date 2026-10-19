@@ -356,6 +356,90 @@ turns left. A new weather replaces the old. Hail and Sandstorm both chip the ene
 adds +3 to Ice attacks, Sandstorm +3 to Ground blocks. An Ice + Ground duo can run both, one at a time. (The
 brainstorm's "Biome weather as a battle rule" could later set a weather on this same engine.)
 
+#### Ice's first session: its cards (session 5, 2026-10-19)
+
+Written here before the code, as Electric's were. 30 cards in the pools (10 common, 14 uncommon, 6 rare) and all 8
+evolution cards, so a run with Ice is whole; session 6 adds the other ~36 (10 common, 18 uncommon, 8 rare), the relics,
+items, the other look (Swinub) and the Ice Cave. Each card is on a StS 1 card at x~1.2 (its model in the last column and
+in a comment on its line) with a hand-picked upgrade. Starting from Electric's lesson, the deck is Fire's shape from the
+start (3 attacks, an Iron Wave, 4 blocks, the Bash and a second signature).
+
+**The rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- **Frostbite** (`frostbite: N`, `enemy.frostbite`, a ❄️ badge on the enemy): every hit on it deals +1 per Frostbite
+  (added like strength, before Vulnerable and the chart; any card's hit, the partner's and each hit of a multi-hit),
+  then it thaws by 1 at the end of the enemy's turn (Permafrost stops that). Not a hit: Burn, Leech Seed, Hail, relics.
+- **Icicle** (`icicle: true` on a card): each Icicle card you play makes every Icicle card deal +2 this fight
+  (`ICICLE_STEP`; StS's Claw, so a card's own play counts for the next one, not itself).
+- **Weather** (`battle.weather = { kind, turns }`, a badge on the enemy with the turns left): one at a time; a new kind
+  replaces the old, the same kind adds its turns. At the end of your turn the enemy loses 3 HP (through block, like
+  Burn), then a turn goes. **Hail**: your Ice attacks deal +3 on every hit while it lasts (`HAIL` in
+  `js/data/cards.js`). Ground's Sandstorm will add its own kind to the same engine.
+- **Snow Warning** (the Ability): the first time Ice comes out each fight (the fight's start for the lead), Hail 2.
+- `freeIn: 'hail'` (Blizzard costs 0 in Hail), `ifFrost` / `ifHail` / `ifWeather` extras, `perFrost` (+N per
+  Frostbite), `frostMult` (Sheer Cold), `returnZero` (Glaciate: every 0-cost card in the discard pile to your hand),
+  powers `frostEachTurn`, `frostKeep`, `zeroBlock` (whenever you play a 0-cost card), `icicleFrost`, `hailDraw`,
+  `hailBlock`, `hailFrost` (whenever Hail hurts the enemy). A token, **Icicle** (0: deal 3, Icicle, Exhaust), from
+  Snow Flurry.
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Powder Snow | C | 1 | Deal 8 *(up 11)* | — | Strike |
+| Frost Shield | C | 1 | Block 8 *(up 11)* | — | Defend |
+| Icy Wind | C | 2 | Deal 10, Frostbite 4, Weak 2 *(up 12, 5, 3)* | Frostbite | Bash, Frostbite for its Vulnerable (+ Weak, as Spark has) |
+| Frost Armor | C | 1 | Block 10, Frostbite 2 *(up 13, 3)* | Frostbite | Iron Wave (Eerie Impulse's shape) |
+| Ice Fang | C | 1 | Deal 7, Frostbite 2 *(up 9, 3)* | Frostbite | Poisoned Stab |
+| Ice Shard | C | 0 | Deal 3. Icicle *(up 5)* | Icicle | Claw |
+| Icicle Spear | C | 1 | Deal 2 three times. Icicle *(up 3)* | Icicle | Claw, three hits (Sword Boomerang) |
+| Ice Spinner | C | 0 | Deal 2, block 3. Icicle *(up 3, 4)* | Icicle | Claw's other half: a 0-cost Iron Wave |
+| Hail | C | 1 | Hail 4 *(up cost 0)* | Hail | Noxious Fumes, as a timer |
+| Aurora Veil | C | 1 | Block 8; in Hail, +6 *(up 11, +7)* | Hail | Dodge and Roll |
+| Frost Breath | U | 1 | Deal 6, +2 per Frostbite *(up 9)* | Frostbite | Bane (Discharge's shape) |
+| Ice Beam | U | 2 | Deal 11, Frostbite 3, Weak 1 *(up 14, 4, 2)* | Frostbite | Uppercut |
+| Freeze-Dry | U | 1 | Frostbite 5 *(up 7)* | Frostbite | Deadly Poison |
+| Cold Snap | U | 1 | Power: Frostbite 2 at the start of each turn *(up 3)* | Frostbite | Noxious Fumes |
+| Ice Punch | U | 1 | Deal 6; if the enemy has Frostbite, +1 PP and draw 1 *(up 9)* | Frostbite | Dropkick |
+| Icicle Crash | U | 2 | Deal 14. Icicle *(up 18)* | Icicle | Claw's big brother |
+| Snow Flurry | U | 1 | Add 2 Icicles to your hand *(up 3)* | Icicle | Blade Dance |
+| Refrigerate | U | 1 | Power: whenever you play a 0-cost card, block 2 *(up 3)* | Icicle | After Image, on 0-costs |
+| Blizzard | U | 2 | Deal 14; costs 0 in Hail *(up 18)* | Hail | Carnage, free in the weather |
+| Weather Ball | U | 1 | Deal 8; in any weather, +8 *(up 10, +10)* | Hail | (the weather's Bane) |
+| Slush Rush | U | 1 | Power: in Hail, draw 1 more card each turn *(up cost 0)* | Hail | Tools of the Trade, in Hail |
+| Ice Body | U | 1 | Power: at the start of each turn in Hail, block 5 *(up 7)* | Hail | Metallicize, in Hail |
+| Snowscape *(bridge)* | U | 1 | Hail 2, Frostbite 3 *(up 3, 4)* | Hail/Frostbite | Noxious Fumes + Deadly Poison |
+| Hailstone *(bridge)* | U | 0 | Deal 3. Icicle. In Hail, draw 1 *(up 5)* | Icicle/Hail | Claw with a Pommel in Hail |
+| Sheer Cold | R | 1 | Double the enemy's Frostbite. Exhaust *(up triple)* | Frostbite | Catalyst |
+| Permafrost | R | 2 | Power: Frostbite no longer thaws *(up cost 1)* | Frostbite | (Frostbite's Wildfire) |
+| Glaciate | R | 2 | Deal 10. Put every 0-cost card in your discard pile into your hand *(up 14)* | Icicle | All for One |
+| Snow Cloak *(bridge)* | R | 1 | Power: whenever you play an Icicle card, Frostbite 1 *(up cost 0)* | Icicle/Frostbite | Envenom, on Claws |
+| Mountain Gale | R | 3 | Deal 28, Hail 3 *(up 36)* | Hail | Bludgeon |
+| Ice Age *(bridge)* | R | 2 | Power: whenever Hail hurts the enemy, Frostbite 3 *(up cost 1)* | Hail/Frostbite | (Hail's payoff) |
+
+Evolution cards (evo-only, 1 copy; one per archetype and one general a tier):
+
+| Card | Tier | Cost | Effect | Arch |
+|---|---|---|---|---|
+| Aurora Beam | 1st | 1 | Deal 9, Frostbite 3 | Frostbite |
+| Ice Ball | 1st | 0 | Deal 5. Icicle | Icicle |
+| Avalanche | 1st | 2 | Deal 14, Hail 2 | Hail |
+| Ice Hammer | 1st | 2 | Deal 16, block 6 | — |
+| Glacial Lance | final | 2 | Deal 22, Frostbite 6 | Frostbite |
+| Triple Axel | final | 1 | Deal 5 three times. Icicle | Icicle |
+| Freeze Shock | final | 2 | Deal 20, Hail 3 | Hail |
+| Subzero Slammer | final | 3 | Deal 34, Weak 2 | — |
+
+Ice so far: 10 common, 14 uncommon, 6 rare, 8 evolution = **38**, plus the Icicle token.
+
+**Starting deck**: Powder Snow x3, **Frost Armor**, Frost Shield x4, Icy Wind, Ice Shard.
+
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`; solo the
+main game at Level 0), win %. The first draft (Icy Wind without Weak), 150 a cell: ice+fire 53, ice+grass 47, ice+water
+51, ice+electric 46; solo Ice ~47 against Fire 69. Screened on ice+fire / ice+grass / solo: Icy Wind + Weak 1 60 / 64 /
+64, + Vulnerable 2 69 / 53 / 57, **+ Weak 2 69 / 64 / 73**, + Weak 1 and Vulnerable 2 68 / 63 / 78; Snow Warning at 3,
+Hail's bonus at 4 and Ice Fang for Ice Shard within noise or worse. Shipped with Weak 2, 300 a cell: **ice+fire 67.0,
+ice+grass 61.7, ice+water 62.3, ice+electric 70.3; solo Ice 74.0** (session 4's: electric+fire / +grass / +water 64.7 /
+43.7 / 36.3, fire+grass 82, fire+water 55, grass+water 37). Ice lifts Grass and Water, the pairs Electric can't; its
+second half and relics come next, and the balance pass (session 15) settles the rest.
+
 ### Fighting: Follow-up, Counter, Guts
 
 The only type that hits Normal, the Safari's most common. Fears Flying and Psychic.

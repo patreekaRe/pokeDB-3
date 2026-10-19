@@ -306,7 +306,8 @@ export const contestWinner = (event, roll) => (roll < event.favourite ? 'favouri
 
 /** Each type's two basic moves, the attack and the block its deck starts with most of (the Unown Tablet PP Ups them;
     the Litwick Bonfire thinks little of them). */
-export const BASICS = { fire: ['ember', 'flame-wall'], grass: ['vine-whip', 'block'], water: ['water-gun', 'withdraw'], psychic: ['psywave', 'psychic-guard'] };
+export const BASICS = { fire: ['ember', 'flame-wall'], grass: ['vine-whip', 'block'], water: ['water-gun', 'withdraw'], psychic: ['psywave', 'psychic-guard'],
+  electric: ['thunder-shock', 'magnet-rise'], ice: ['powder-snow', 'frost-shield'] };
 
 /** The deck indexes the Unown Tablet PP Ups: every copy of the type's basics not yet PP Upped. */
 export const tabletUps = (type, deck) => deck.map((id, i) => i).filter(i => (BASICS[type] || []).includes(deck[i]));

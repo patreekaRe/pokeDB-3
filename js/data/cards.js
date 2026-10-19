@@ -129,6 +129,11 @@ export const NOT_VERY_EFFECTIVE = 0.75;
     Paralysis this fight raises it (docs/duo-design.md section 5). */
 export const STATIC_CAP = { fight: 7, elite: 11, boss: 15, step: 3 };   // 10 / 15 / 20 +5 at first: Electric's pairs trailed 15-40 points (2026-10-19)
 
+/** Ice's (docs/duo-design.md section 5): each Icicle card played makes every Icicle card deal this much more this fight,
+    and Hail's chip at the end of your turn and its bonus on every hit of your Ice attacks. */
+export const ICICLE_STEP = 2;
+export const HAIL = { chip: 3, bonus: 3 };
+
 /** StS's Weak and Vulnerable. Both wear off by one at the end of each enemy turn. */
 export const WEAK_MULT = 0.75;
 export const VULNERABLE_MULT = 1.5;
@@ -141,6 +146,7 @@ export const TYPES = {
   normal: { label: 'Neutral', icon: '🔯', beats: null,    losesTo: null    },
   psychic: { label: 'Psychic', icon: '🔮', beats: null,    losesTo: null    },
   electric: { label: 'Electric', icon: '⚡', beats: null,   losesTo: null    },   // the Safari's duo pool: there the real chart decides (js/data/real-types.js)
+  ice:      { label: 'Ice',      icon: '❄️', beats: null,   losesTo: null    },
 };
 
 /* Every card is modelled on a Slay the Spire 1 card (named in its comment), at StS's numbers
@@ -570,6 +576,43 @@ const ELECTRIC_CARDS = [
   { id: 'booster-energy', name: 'Booster Energy', type: 'electric', cost: 0, art: '🧪', effects: { energy: 2, switch: true }, exhaust: true, rarity: 'rare', upgrade: { effects: { energy: 3 } } },   // Adrenaline: a Volt Switch / Overcharge bridge
 ];
 
+/* Ice (the Safari's duo pool, docs/duo-design.md section 5): Frostbite on the enemy adds to every hit and thaws a turn
+   at a time (Lock-On, Envenom's shape), Icicle cards grow every Icicle as they're played (Claw), Hail chips the enemy
+   and powers Ice attacks while it lasts (Noxious Fumes, with Watcher's "in a stance" payoffs). Session 5 built 30 of
+   its ~66 pool cards and all 8 evolution cards. */
+const ICE_CARDS = [
+  { id: 'powder-snow',    name: 'Powder Snow',    type: 'ice', cost: 1, art: '🌨️', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike (8, like Thunder Shock)
+  { id: 'frost-shield',   name: 'Frost Shield',   type: 'ice', cost: 1, art: '🧊', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
+  { id: 'icy-wind',       name: 'Icy Wind',       type: 'ice', cost: 2, art: '🌬️', effects: { damage: 10, frostbite: 4, weaken: 2 }, upgrade: { effects: { damage: 12, frostbite: 5, weaken: 3 } } },   // Bash, Frostbite for its Vulnerable (Weak 2: without it Ice trailed ~15 points, 2026-10-19)
+  { id: 'frost-armor',    name: 'Frost Armor',    type: 'ice', cost: 1, art: '🥶', effects: { block: 10, frostbite: 2 }, upgrade: { effects: { block: 13, frostbite: 3 } } },   // Iron Wave (Eerie Impulse's shape)
+  { id: 'ice-fang',       name: 'Ice Fang',       type: 'ice', cost: 1, art: '🦷', effects: { damage: 7, frostbite: 2 }, upgrade: { effects: { damage: 9, frostbite: 3 } } },   // Poisoned Stab
+  { id: 'ice-shard',      name: 'Ice Shard',      type: 'ice', cost: 0, art: '🔹', effects: { damage: 3 }, icicle: true, upgrade: { effects: { damage: 5 } } },   // Claw
+  { id: 'icicle-spear',   name: 'Icicle Spear',   type: 'ice', cost: 1, art: '🍢', effects: { damage: 2, hits: 3 }, icicle: true, upgrade: { effects: { damage: 3 } } },   // Claw, three hits (Sword Boomerang)
+  { id: 'ice-spinner',    name: 'Ice Spinner',    type: 'ice', cost: 0, art: '⛸️', effects: { damage: 2, block: 3 }, icicle: true, upgrade: { effects: { damage: 3, block: 4 } } },   // Claw's other half: a 0-cost Iron Wave
+  { id: 'hail',           name: 'Hail',           type: 'ice', cost: 1, art: '🌨️', effects: { hail: 4 }, upgrade: { cost: 0 } },   // Noxious Fumes, as a timer
+  { id: 'aurora-veil',    name: 'Aurora Veil',    type: 'ice', cost: 1, art: '🌈', effects: { block: 8, ifHail: { block: 6 } }, upgrade: { effects: { block: 11, ifHail: { block: 7 } } } },   // Dodge and Roll
+  { id: 'frost-breath',   name: 'Frost Breath',   type: 'ice', cost: 1, art: '😮‍💨', effects: { damage: 6, perFrost: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 9 } } },   // Bane (Discharge's shape)
+  { id: 'ice-beam',       name: 'Ice Beam',       type: 'ice', cost: 2, art: '🔦', effects: { damage: 11, frostbite: 3, weaken: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 14, frostbite: 4, weaken: 2 } } },   // Uppercut
+  { id: 'freeze-dry',     name: 'Freeze-Dry',     type: 'ice', cost: 1, art: '🧂', effects: { frostbite: 5 }, rarity: 'uncommon', upgrade: { effects: { frostbite: 7 } } },   // Deadly Poison
+  { id: 'cold-snap',      name: 'Cold Snap',      type: 'ice', cost: 1, art: '🌡️', effects: { frostEachTurn: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { frostEachTurn: 3 } } },   // Noxious Fumes
+  { id: 'ice-punch',      name: 'Ice Punch',      type: 'ice', cost: 1, art: '👊', effects: { damage: 6, ifFrost: { energy: 1, draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 9 } } },   // Dropkick
+  { id: 'icicle-crash',   name: 'Icicle Crash',   type: 'ice', cost: 2, art: '🗡️', effects: { damage: 14 }, icicle: true, rarity: 'uncommon', upgrade: { effects: { damage: 18 } } },   // Claw's big brother
+  { id: 'snow-flurry',    name: 'Snow Flurry',    type: 'ice', cost: 1, art: '❄️', effects: { addCard: { id: 'icicle', n: 2 } }, rarity: 'uncommon', upgrade: { effects: { addCard: { id: 'icicle', n: 3 } } } },   // Blade Dance
+  { id: 'refrigerate',    name: 'Refrigerate',    type: 'ice', cost: 1, art: '🧊', effects: { zeroBlock: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { zeroBlock: 3 } } },   // After Image, on 0-costs
+  { id: 'blizzard',       name: 'Blizzard',       type: 'ice', cost: 2, art: '🌪️', effects: { damage: 14 }, freeIn: 'hail', rarity: 'uncommon', upgrade: { effects: { damage: 18 } } },   // Carnage, free in the weather
+  { id: 'weather-ball',   name: 'Weather Ball',   type: 'ice', cost: 1, art: '🔮', effects: { damage: 8, ifWeather: { bonus: 8 } }, rarity: 'uncommon', upgrade: { effects: { damage: 10, ifWeather: { bonus: 10 } } } },   // (the weather's Bane)
+  { id: 'slush-rush',     name: 'Slush Rush',     type: 'ice', cost: 1, art: '🏂', effects: { hailDraw: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Tools of the Trade, in Hail
+  { id: 'ice-body',       name: 'Ice Body',       type: 'ice', cost: 1, art: '⛄', effects: { hailBlock: 5 }, power: true, rarity: 'uncommon', upgrade: { effects: { hailBlock: 7 } } },   // Metallicize, in Hail
+  { id: 'snowscape',      name: 'Snowscape',      type: 'ice', cost: 1, art: '🏔️', effects: { hail: 2, frostbite: 3 }, rarity: 'uncommon', upgrade: { effects: { hail: 3, frostbite: 4 } } },   // a Hail / Frostbite bridge: Noxious Fumes + Deadly Poison
+  { id: 'hailstone',      name: 'Hailstone',      type: 'ice', cost: 0, art: '🧊', effects: { damage: 3, ifHail: { draw: 1 } }, icicle: true, rarity: 'uncommon', upgrade: { effects: { damage: 5 } } },   // an Icicle / Hail bridge: Claw with a Pommel in Hail
+  { id: 'sheer-cold',     name: 'Sheer Cold',     type: 'ice', cost: 1, art: '🥶', effects: { frostMult: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { frostMult: 3 } } },   // Catalyst
+  { id: 'permafrost',     name: 'Permafrost',     type: 'ice', cost: 2, art: '🏔️', effects: { frostKeep: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Frostbite's Wildfire)
+  { id: 'glaciate',       name: 'Glaciate',       type: 'ice', cost: 2, art: '🧊', effects: { damage: 10, returnZero: true }, rarity: 'rare', upgrade: { effects: { damage: 14 } } },   // All for One
+  { id: 'snow-cloak',     name: 'Snow Cloak',     type: 'ice', cost: 1, art: '🧥', effects: { icicleFrost: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // an Icicle / Frostbite bridge: Envenom, on Claws
+  { id: 'mountain-gale',  name: 'Mountain Gale',  type: 'ice', cost: 3, art: '🏔️', effects: { damage: 28, hail: 3 }, rarity: 'rare', upgrade: { effects: { damage: 36 } } },   // Bludgeon
+  { id: 'ice-age',        name: 'Ice Age',        type: 'ice', cost: 2, art: '🦣', effects: { hailFrost: 3 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // a Hail / Frostbite bridge (Hail's payoff)
+];
+
 /* ============================================================
    EVOLUTION CARDS  -  powerful, signature moves you don't win from
    normal fights. There are two TIERS per type, one per evolution:
@@ -651,11 +694,25 @@ const ELECTRIC_EVO_HIGH = [
   { id: 'bolt-strike',    name: 'Bolt Strike',    type: 'electric', cost: 3, art: '🌠', effects: { damage: 32, draw: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 40 } } },
 ];
 
+const ICE_EVO_MID = [
+  { id: 'aurora-beam',    name: 'Aurora Beam',    type: 'ice', cost: 1, art: '🌈', effects: { damage: 9, frostbite: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 12, frostbite: 4 } } },   // Frostbite
+  { id: 'ice-ball',       name: 'Ice Ball',       type: 'ice', cost: 0, art: '⚪', effects: { damage: 5 }, icicle: true, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 8 } } },   // Icicle
+  { id: 'avalanche',      name: 'Avalanche',      type: 'ice', cost: 2, art: '🏔️', effects: { damage: 14, hail: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18, hail: 3 } } },   // Hail
+  { id: 'ice-hammer',     name: 'Ice Hammer',     type: 'ice', cost: 2, art: '🔨', effects: { damage: 16, block: 6 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 20, block: 8 } } },
+];
+const ICE_EVO_HIGH = [
+  { id: 'glacial-lance',  name: 'Glacial Lance',  type: 'ice', cost: 2, art: '🔱', effects: { damage: 22, frostbite: 6 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 28, frostbite: 8 } } },   // Frostbite
+  { id: 'triple-axel',    name: 'Triple Axel',    type: 'ice', cost: 1, art: '⛸️', effects: { damage: 5, hits: 3 }, icicle: true, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 7 } } },   // Icicle
+  { id: 'freeze-shock',   name: 'Freeze Shock',   type: 'ice', cost: 2, art: '🧊', effects: { damage: 20, hail: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 26, hail: 4 } } },   // Hail
+  { id: 'subzero-slammer', name: 'Subzero Slammer', type: 'ice', cost: 3, art: '💥', effects: { damage: 34, weaken: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42, weaken: 3 } } },
+];
+
 /* Fight-only cards made by other cards (`addCard`): never offered, not in the Card index, never in your run deck. */
 const TOKEN_CARDS = [
   { id: 'cinder',   name: 'Cinder',   type: 'fire',  cost: 0, art: '🔥', effects: { damage: 4 }, exhaust: true, token: true },   // Shiv
   { id: 'seedling', name: 'Seedling', type: 'grass', cost: 0, art: '🌱', effects: { heal: 2, draw: 1 }, exhaust: true, token: true },
   { id: 'droplet',  name: 'Droplet',  type: 'water', cost: 0, art: '💧', effects: { damage: 3, tide: 1 }, exhaust: true, token: true },
+  { id: 'icicle',   name: 'Icicle',   type: 'ice',   cost: 0, art: '🔹', effects: { damage: 3 }, icicle: true, exhaust: true, token: true },   // Snow Flurry's (Blade Dance's Shiv)
 ];
 
 /* Junk enemies shuffle into your deck for one fight (a move's `adds`, or a `kind: 'status'` move). */
@@ -735,9 +792,10 @@ export const SIGNATURE_FOR = Object.fromEntries(SIGNATURE_CARDS.map(c => [c.from
 /** Every card you can be offered (the Card index lists these), and a lookup by id of every card there is,
     upgraded ones included: CARDS_BY_ID['ember'], CARDS_BY_ID['ember+']. */
 export const ALL_CARDS = [
-  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS,
+  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS, ...ICE_CARDS,
   ...FIRE_EVO_MID, ...FIRE_EVO_HIGH, ...GRASS_EVO_MID, ...GRASS_EVO_HIGH, ...WATER_EVO_MID, ...WATER_EVO_HIGH,
   ...PSYCHIC_EVO_MID, ...PSYCHIC_EVO_HIGH, ...ELECTRIC_EVO_MID, ...ELECTRIC_EVO_HIGH,
+  ...ICE_EVO_MID, ...ICE_EVO_HIGH,
 ];
 
 /* ---------- PP Up: upgraded cards ----------
@@ -750,13 +808,14 @@ export const canUpgrade = (card) => !card.upgraded && !card.status;
 
 /** The default upgrade, StS-sized: +3 damage (less per hit on multi-hits) and +3 block; else +3 heal; else +1 of
     the card's first status or buff; powers +1 on their number; anything else costs 1 less (or stops exhausting). */
-const UPGRADE_STEPS = [['burn', 2], ['seed', 2], ['static', 2], ['weaken', 1], ['vulnerable', 1], ['sap', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['flex', 2], ['draw', 1]];
+const UPGRADE_STEPS = [['burn', 2], ['seed', 2], ['static', 2], ['frostbite', 2], ['hail', 2], ['weaken', 1], ['vulnerable', 1], ['sap', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['flex', 2], ['draw', 1]];
 const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, strengthEachTurn: 1, thorns: 2, blaze: 3,
   exhaustBlock: 1, exhaustDraw: 1, discardTide: 1, discardBlock: 1, cardDamage: 1, cardBlock: 1,
   rupture: 1, combust: 2, brutality: 1, drought: 1, cinderDamage: 2, exhaustBurn: 1,
   tideEachTurn: 1, drizzle: 1, riptide: 2, retainN: 1, tideSpendBlock: 1, tideSurge: 1,
   healStrength: 1, attackHeal: 1, attackSeed: 1, debuffDamage: 2, weakEachTurn: 1, weakBlock: 2, strengthHeal: 1,
-  staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1, thornStatic: 1, energyBlock: 1, switchStatic: 1 };
+  staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1, thornStatic: 1, energyBlock: 1, switchStatic: 1,
+  frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -780,7 +839,7 @@ const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id
 export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS].map(c => [c.id, c]));
 for (const card of [...ALL_CARDS, ...TOKEN_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
-const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS };
+const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS };
 // Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
 // 2 = your final evolution (high tier).
 const EVO_SETS = {
@@ -789,6 +848,7 @@ const EVO_SETS = {
   water: { 1: WATER_EVO_MID, 2: WATER_EVO_HIGH },
   psychic: { 1: PSYCHIC_EVO_MID, 2: PSYCHIC_EVO_HIGH },
   electric: { 1: ELECTRIC_EVO_MID, 2: ELECTRIC_EVO_HIGH },
+  ice: { 1: ICE_EVO_MID, 2: ICE_EVO_HIGH },
 };
 
 /** The cards a starter of this type can win as rewards: its own type + neutral cards. A Duo Run's (`duo`) also offers
@@ -835,7 +895,7 @@ export function scaledEffects(card, stage = 0) {
  * on your nameplate while it's switched on (battle.js adds up every power you play).
  */
 /** The Power Lens shown when a power card is played, in the starter's colours (purple for any other type). */
-export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨' };
+export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦' };
 
 export const POWERS = {
   blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
@@ -894,6 +954,13 @@ export const POWERS = {
   switchWeak:       { icon: '🎯', text: (n) => `Whenever you switch, apply ${n} Weak.` },
   switchStatic:     { icon: '🔩', text: (n) => `Whenever you switch, Static ${n}.` },
   switchSap:        { icon: '➖', text: (n) => `Whenever you switch, apply ${n} Sap.` },
+  frostEachTurn:    { icon: '🌡️', text: (n) => `At the start of each turn, Frostbite ${n}.` },
+  frostKeep:        { icon: '🏔️', flag: true, text: () => 'Frostbite no longer thaws.' },
+  zeroBlock:        { icon: '🧊', text: (n) => `Whenever you play a 0-cost card, gain ${n} block.` },
+  icicleFrost:      { icon: '🧥', text: (n) => `Whenever you play an Icicle card, Frostbite ${n}.` },
+  hailDraw:         { icon: '🏂', text: (n) => `In Hail, draw ${plural(n, 'more card')} each turn.` },
+  hailBlock:        { icon: '⛄', text: (n) => `At the start of each turn in Hail, gain ${n} block.` },
+  hailFrost:        { icon: '🦣', text: (n) => `Whenever Hail hurts the enemy, Frostbite ${n}.` },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -927,6 +994,7 @@ function sentences(e) {
   if (e.perDebuff)    parts.push(`+${e.perDebuff} for each kind of debuff on the enemy.`);
   if (e.perStatic)    parts.push(`+${e.perStatic} for each Static on the enemy.`);
   if (e.perSwitch)    parts.push(`+${e.perSwitch} for each time you've switched this fight.`);
+  if (e.perFrost)     parts.push(`+${e.perFrost} for each Frostbite on the enemy.`);
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
   if (e.burn)         parts.push(e.burnTimes > 1 ? `Burn ${e.burn}, ${TIMES[e.burnTimes] ?? `${e.burnTimes} times`}.` : `Burn ${e.burn}.`);
   if (e.burnMult)     parts.push(`${MULT[e.burnMult] ?? `Multiply by ${e.burnMult}`} the enemy's Burn.`);
@@ -935,6 +1003,9 @@ function sentences(e) {
   if (e.vulnerable)   parts.push(`Apply ${e.vulnerable} Vulnerable.`);
   if (e.seed)         parts.push(`Leech Seed ${e.seed}.`);
   if (e.static)       parts.push(`Static ${e.static}.`);
+  if (e.frostbite)    parts.push(`Frostbite ${e.frostbite}.`);
+  if (e.frostMult)    parts.push(`${MULT[e.frostMult] ?? `Multiply by ${e.frostMult}`} the enemy's Frostbite.`);
+  if (e.hail)         parts.push(`Hail ${e.hail}.`);
   if (e.staticMult)   parts.push(`${MULT[e.staticMult] ?? `Multiply by ${e.staticMult}`} the enemy's Static.`);
   if (e.sap)          parts.push(`Apply ${e.sap} Sap.`);
   if (e.tempSap)      parts.push(`The enemy's attacks deal ${e.tempSap} less this turn.`);
@@ -977,6 +1048,7 @@ function sentences(e) {
   if (e.exhume)       parts.push('Put a card from your exhaust pile into your hand.');
   if (e.sketch)       parts.push('Choose a card in your draw pile and put it into your hand.');
   if (e.returnCard)   parts.push('Put a card from your discard pile on top of your draw pile.');
+  if (e.returnZero)   parts.push('Put every 0-cost card in your discard pile into your hand.');
   if (e.upgradeAll)   parts.push('PP Up every card in your deck for the rest of this fight.');
   if (e.echo)         parts.push(e.echo > 1 ? `Your next card this turn is played ${e.echo + 1} times.` : 'Your next card this turn is played twice.');
   if (e.payDay)       parts.push(`If this knocks the enemy out, gain ${e.payDay} ₽.`);
@@ -1011,6 +1083,9 @@ function sentences(e) {
   if (e.ifEnemyAttacks) parts.push(`If the enemy intends to attack: ${sentences(e.ifEnemyAttacks).join(' ')}`);
   if (e.ifFull)       parts.push(`If the enemy will be Paralyzed: ${sentences(e.ifFull).join(' ')}`);
   if (e.ifSwitched)   parts.push(`If you've switched this turn: ${sentences(e.ifSwitched).join(' ')}`);
+  if (e.ifFrost)      parts.push(`If the enemy has Frostbite: ${sentences(e.ifFrost).join(' ')}`);
+  if (e.ifHail)       parts.push(`In Hail: ${sentences(e.ifHail).join(' ')}`);
+  if (e.ifWeather)    parts.push(`In any weather: ${sentences(e.ifWeather).join(' ')}`);
   return parts;
 }
 
@@ -1033,6 +1108,8 @@ export function describe(card, stage = 0) {
   }
   if (card.growOnPlay?.damage) parts.push(`Each time you play it, it deals ${card.growOnPlay.damage} more this fight.`);
   if (card.growOnPlay?.discount) parts.push(`Each time you play it, it costs ${card.growOnPlay.discount} less this fight.`);
+  if (card.icicle) parts.push('Icicle.');
+  if (card.freeIn === 'hail') parts.push('Costs 0 in Hail.');
   if (!parts.length && card.status) parts.push(card.exhaust ? 'Does nothing.' : 'Clogs your hand.');
   return parts.join(' ');
 }
@@ -1054,6 +1131,9 @@ export const TERMS = {
   Static: `Builds up on the enemy. At ${STATIC_CAP.fight} (Alpha ${STATIC_CAP.elite}, boss ${STATIC_CAP.boss}) it's Paralyzed. Lasts all fight.`,
   Paralyzed: `It loses its next move and its Static drops to 0. The next takes ${STATIC_CAP.step} more Static.`,
   Switch: 'Your partner comes out, free. Alone, it still counts as a switch.',
+  Frostbite: 'Every hit on the enemy deals +1 per Frostbite. Thaws by 1 each enemy turn.',
+  Icicle: `Each Icicle card you play makes every Icicle card deal +${ICICLE_STEP} this fight.`,
+  Hail: `Weather. At the end of your turn the enemy loses ${HAIL.chip} HP. Your Ice attacks deal +${HAIL.bonus} a hit. Lasts that many turns.`,
   Bait: 'Catch odds +50% each, its attacks +3 each. All fight.',
   Rock: 'A wild one may run off on its turn (no reward). A rare one leaves sooner.',
 };
@@ -1114,6 +1194,9 @@ export function cardTerms(card) {
     uses(/static/i) && term('Static'),
     uses(/static|^ifFull$|^paraEnergy$/i) && term('Paralyzed'),
     uses(/switch/i) && term('Switch'),
+    uses(/^frostbite$|frost/i) && term('Frostbite'),
+    (card.icicle || uses(/icicle/i)) && term('Icicle'),
+    (uses(/hail|weather/i) || card.freeIn === 'hail') && term('Hail'),
     uses(/^tempSap$/) && ['Charmed', 'Its attacks this turn deal less. Gone after it acts.'],
     uses(/^statusDamage$/) && ['Status cards', 'Junk enemies (and some of your moves) put in your deck, for this fight only.'],
     uses(/^upgradeAll$/) && ['PP Up', 'A card\'s upgraded form (its name gets a +).'],

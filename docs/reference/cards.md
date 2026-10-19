@@ -163,6 +163,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `staticBlock`, `energyBlock`, `switchWeak`, `switchStatic`, `switchSap`. Boxes: Static, Paralyzed, Switch. The Card
   index has an Electric tab. A `duo: true` card (Baton Pass) is offered only in a Duo Run
   (`poolForType(type, duo)`). `TYPES.electric` has no triangle match-ups: outside the Safari it's neutral.
+- **Ice** (session 5, 2026-10-19; `docs/duo-design.md` section 5's "Ice's first session"): `ICE_CARDS` / `ICE_EVO_*`
+  (30 + 8 so far), art in `js/card-art-ice.js`, the `icicle` token. New keys: `frostbite`, `perFrost`, `frostMult`,
+  `ifFrost`, `hail`, `ifHail`, `ifWeather`, `returnZero`; card flags `icicle: true` (each one played adds `ICICLE_STEP`
+  to every Icicle card's hits this fight, `b.icicles`) and `freeIn: 'hail'` (costs 0 in Hail, `costOf()`); powers
+  `frostEachTurn`, `frostKeep`, `zeroBlock`, `icicleFrost`, `hailDraw`, `hailBlock`, `hailFrost`. Boxes: Frostbite,
+  Icicle, Hail. `TYPES.ice` is neutral outside the Safari, like Electric.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,

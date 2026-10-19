@@ -40,6 +40,8 @@ const GRASS_DECK = ['vine-whip', 'vine-whip', 'vine-whip', 'vine-whip', 'cotton-
 const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'water-pulse', 'withdraw', 'withdraw', 'withdraw', 'withdraw', 'bubble', 'dive'];
 // Fire's shape (3 attacks, an Iron Wave): with a 4th Thunder Shock instead of Eerie Impulse it trailed ~25 points in the bot
 const ELECTRIC_DECK = ['thunder-shock', 'thunder-shock', 'thunder-shock', 'eerie-impulse', 'magnet-rise', 'magnet-rise', 'magnet-rise', 'magnet-rise', 'spark', 'thunder-wave'];
+// Fire's shape from the start (Electric's lesson): 3 attacks, an Iron Wave, 4 blocks, the Bash and a second signature
+const ICE_DECK = ['powder-snow', 'powder-snow', 'powder-snow', 'frost-armor', 'frost-shield', 'frost-shield', 'frost-shield', 'frost-shield', 'icy-wind', 'ice-shard'];
 const PSYCHIC_DECK = ['psywave', 'psywave', 'psywave', 'psywave', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-confusion', 'psystrike'];
 
 export const STARTERS = [
@@ -431,6 +433,16 @@ export const DUO_STARTERS = [
     ],
     blurb: 'Slips in and out of the fight like an eel, leaving every foe crackling.',
     deck: ELECTRIC_DECK,
+  },
+  {
+    id: 'vanillite', type: 'ice', duoOnly: true,
+    line: [
+      { id: 'vanillite', name: 'Vanillite' },
+      { id: 'vanillish', name: 'Vanillish' },
+      { id: 'vanilluxe', name: 'Vanilluxe' },
+    ],
+    blurb: 'Cold to the core. Frostbite makes every hit bite deeper, and Hail follows wherever it goes.',
+    deck: ICE_DECK,
   },
 ];
 

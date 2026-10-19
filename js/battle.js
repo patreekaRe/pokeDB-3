@@ -21,7 +21,7 @@
 
 import { gymTalk } from './gym.js';
 import { talkOf } from './data/gym.js';
-import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT, STATIC_CAP } from './data/cards.js';
+import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT, STATIC_CAP, ICICLE_STEP, HAIL } from './data/cards.js';
 import { spriteUrl, stageName, STARTERS_BY_ID } from './data/starters.js';
 import { ITEMS_BY_ID, ITEM_SLOTS } from './data/items.js';
 import { heldFires, heldHeal, clearsCard } from './data/held.js';
@@ -277,6 +277,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     switches: 0,       // switches this fight, a card's or the chip's (Volt Tackle); alone, a card's switch still counts
     switchesTurn: 0,   // ...and this turn (Shock Wave, Electro Drift)
     shed: false,       // Shed Shell's free switch is spent this turn
+    icicles: 0,        // Icicle cards played this fight: each makes every Icicle card deal ICICLE_STEP more (Ice)
+    weather: ability?.id === 'snow-warning' ? { kind: 'hail', turns: ability.amount } : null,   // Ice's Hail (Ground's Sandstorm later): one at a time
 
     // the piles of cards
     drawPile: trial ? deck : piles ? piles[run.duo.out].drawPile : innateUp(deck),   // innate cards on top: always in the first hand
@@ -297,6 +299,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
       sap: 0,                         // its attacks deal this much less, all fight
       static: run.relics.includes('light-ball') ? 3 : 0,   // Electric's meter: at staticCap() it's Paralyzed and loses its move
       paras: 0,                       // times it's been Paralyzed this fight: each raises the next cap by 5
+      frostbite: 0,                   // Ice's: every hit on it deals +1 a stack, then it thaws by 1 at the end of its turn
       weak: (aug.startWeak || 0) + (run.relics.includes('sachet') ? 2 : 0),               // turns left dealing WEAK_MULT damage
       vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
       bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
@@ -540,7 +543,7 @@ function beginPlayerTurn() {
   if (trialBroken(b)) return failTrial(b);
   b.turn += 1;
   b.struck = false;   // the next hit hasn't landed yet: the held shield shows again (shieldPreview())
-  if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure'))) abilityBanner();
+  if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure') || hasAbility('snow-warning'))) abilityBanner();
   const p = b.powers;
   // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
   const a = b.aug;
@@ -586,6 +589,8 @@ function beginPlayerTurn() {
   if (p.weakEachTurn) applyDebuff('weaken', p.weakEachTurn);
   if (p.staticEachTurn) applyStatic(p.staticEachTurn);
   if (p.staticBlock && b.enemy.static) gainBlock(b.enemy.static * p.staticBlock);   // Electric Seed
+  if (p.frostEachTurn) applyFrost(p.frostEachTurn);   // Cold Snap
+  if (p.hailBlock && hailing()) gainBlock(p.hailBlock);   // Ice Body
   if (p.tideEachTurn) gainTide(p.tideEachTurn);
   if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
   if (hasRelic('blue-flute')) gainTide(1);
@@ -618,7 +623,7 @@ function turnDraw() {
   return HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
     + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0)
-    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0);
+    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0) + (hailing() ? p.hailDraw || 0 : 0);
 }
 
 /* The opening hand can't be tapped until it has finished sliding in: a tap meant for the intro, or one landing on a
@@ -723,6 +728,25 @@ function applyStatic(n, delay = 0) {
   statFx('enemy', 'down');
 }
 
+/** Frostbite on the enemy (Ice), from a card or a power. */
+function applyFrost(n, delay = 0) {
+  battle.enemy.frostbite += n;
+  pop('enemy-zone', `❄️ Frostbite ${n}`, 'note', delay);
+  playSound('stat-down');
+  statFx('enemy', 'down');
+}
+
+/** Hail is falling (Ice's weather). */
+const hailing = () => battle.weather?.kind === 'hail';
+
+/** A weather for n more turns: the same kind adds its turns, a new kind replaces the old (Ice's Hail, Ground's
+    Sandstorm). */
+function setWeather(kind, n) {
+  const b = battle;
+  b.weather = b.weather?.kind === kind ? { kind, turns: b.weather.turns + n } : { kind, turns: n };
+  if (kind === 'hail') pop('enemy-zone', `🌨️ Hail ${n}`, 'note', 100);
+}
+
 /** You lose HP by your own doing (a card or a power): never below 1. Raging Fury turns it into strength. */
 function loseHp(n) {
   const b = battle;
@@ -824,6 +848,7 @@ function costOf(card) {
   if (a.powersFree && card.power && b.turn === 1) return 0;
   if (a.comboFree && (b.played + 1) % a.comboFree === 0) return 0;
   if (a.avatar) return card.unplayable ? card.cost : Math.max(0, 1 - (card.discount || 0));
+  if (card.freeIn === 'hail' && hailing()) return 0;   // Blizzard
   const e = card.effects;
   return Math.max(0, card.cost - (e.costDownOnHurt || 0) * battle.timesHurt - (e.costDownOnDiscard || 0) * battle.discarded - (card.discount || 0));
 }
@@ -891,6 +916,9 @@ function effectsOf(card, x = 0) {
   if (e.ifEnemyAttacks && ['attack', 'drain'].includes(currentMove().kind) && !paralyzing()) addExtras(e, e.ifEnemyAttacks);
   if (e.ifFull && paralyzing()) addExtras(e, e.ifFull);
   if (e.ifSwitched && b.switchesTurn) addExtras(e, e.ifSwitched);
+  if (e.ifFrost && b.enemy.frostbite > 0) addExtras(e, e.ifFrost);
+  if (e.ifHail && hailing()) addExtras(e, e.ifHail);
+  if (e.ifWeather && b.weather) addExtras(e, e.ifWeather);
   if (e.blockPerStatic) e.block = (e.block || 0) + e.blockPerStatic * b.enemy.static;   // Faraday Cage
   if (e.blockPerSwitch) e.block = (e.block || 0) + e.blockPerSwitch * b.switches;       // Volt Guard
   return e;
@@ -922,6 +950,10 @@ function damageFor(card, e) {
   if (e.perDebuff) amount += e.perDebuff * debuffKinds();
   if (e.perStatic) amount += e.perStatic * b.enemy.static;
   if (e.perSwitch) amount += e.perSwitch * b.switches;
+  if (e.perFrost) amount += e.perFrost * b.enemy.frostbite;
+  amount += b.enemy.frostbite;                                    // Frostbite: every hit, any card's
+  if (card.icicle) amount += ICICLE_STEP * b.icicles;             // Icicle (StS's Claw)
+  if (card.type === 'ice' && hailing()) amount += HAIL.bonus;     // Hail
   if (baseId(card.id) === 'cinder') amount += b.powers.cinderDamage || 0;
   amount += b.strength * (e.strengthMult || 1);
   if (b.powers.blaze && low) amount += b.powers.blaze;
@@ -987,6 +1019,7 @@ async function playCard(uid) {
   b.echoNext = 0;
   if (!await resolveCard(card, x)) return;       // the player left the battle
   b.cardsThisFight += 1;
+  if (cost === 0 && b.powers.zeroBlock) gainBlock(b.powers.zeroBlock);   // Refrigerate
   // Echo (the fight's first card) and Double Down (every n-th): the card does its thing again, free
   const a = b.aug, n = b.cardsThisFight;
   for (let i = 0; i < echoes && b.enemy.hp > 0; i++) {
@@ -1159,6 +1192,10 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     const dealt = hurtEnemy(5);
     pop('enemy-zone', dealt > 0 ? `-${dealt} 🏷️` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150);
   }
+  if (card.icicle) {   // every Icicle card deals more from now on, this one's next play too (Claw)
+    b.icicles += 1;
+    if (b.powers.icicleFrost && b.enemy.hp > 0) applyFrost(b.powers.icicleFrost);   // Snow Cloak
+  }
   if (b.powers.cardDamage) { hurtEnemy(b.powers.cardDamage); pop('enemy-zone', `-${b.powers.cardDamage} ✨`, 'dmg', 150); }
   if (b.powers.cardBlock) gainBlock(b.powers.cardBlock);
   if (b.aug.skillDamage && !isAttack(card) && !card.power && !card.status && b.enemy.hp > 0) {   // Monk: every Skill hits
@@ -1219,6 +1256,10 @@ function applyEffects(e) {
   if (e.vulnerable) applyDebuff('vulnerable', e.vulnerable);
   if (e.seed)       applyDebuff('seed', e.seed);
   if (e.static)     applyStatic(e.static);
+  if (e.frostbite)  applyFrost(e.frostbite);
+  if (e.frostMult && b.enemy.frostbite) { b.enemy.frostbite *= e.frostMult; pop('enemy-zone', `❄️ Frostbite ×${e.frostMult}`, 'note', 150); }   // Sheer Cold
+  if (e.hail)       setWeather('hail', e.hail);
+  if (e.returnZero) returnZeroCost();
   if (e.staticMult && b.enemy.static) { b.enemy.static *= e.staticMult; pop('enemy-zone', `⚡ Static ×${e.staticMult}`, 'note', 150); }   // Static Storm
   if (e.sap)        applyDebuff('sap', e.sap);
   if (e.block)      gainBlock(cardBlock(e.block));
@@ -1318,6 +1359,16 @@ function addCards({ id, n = 1, to = 'hand' }) {
     else b.discard.push(card);
   }
   pop('player-zone', `🃏 +${n} ${card.name}`, card.status ? 'note bad' : 'note good', 120);
+}
+
+/** Glaciate (StS's All for One): every 0-cost card in the discard pile comes back to your hand, as far as it holds. */
+function returnZeroCost() {
+  const b = battle;
+  const back = b.discard.filter(c => c.cost === 0 && !c.status).slice(0, MAX_HAND - b.hand.length);
+  if (!back.length) return;
+  b.discard = b.discard.filter(c => !back.includes(c));
+  for (const card of back) b.hand.push({ uid: nextUid++, card, fresh: true });
+  pop('player-zone', `🧊 +${back.length} back`, 'note good', 150);
 }
 
 /** Mimic (StS's Dual Wield): copies of a card in your hand, for this fight (the discard pile once the hand is full). */
@@ -2002,6 +2053,22 @@ async function endTurn() {
     if (b.enemy.hp <= 0) return finish(true);
   }
 
+  // Weather: Hail chips the enemy through its block, then a turn goes (Ice Age: each chip adds Frostbite)
+  if (b.weather) {
+    const kind = b.weather.kind;
+    b.weather.turns -= 1;
+    if (b.weather.turns <= 0) b.weather = null;
+    enemyLoses(HAIL.chip);
+    hitEffect('enemy-portrait-box');
+    pop('enemy-zone', `-${HAIL.chip} 🌨️`, 'dmg');
+    log(`${b.def.name} is buffeted by the ${kind}! ${HAIL.chip} damage.`);
+    if (b.powers.hailFrost && b.enemy.hp > 0) applyFrost(b.powers.hailFrost, 200);
+    renderAll();
+    await pause(450);
+    if (battle !== b) return;
+    if (b.enemy.hp <= 0) { b.felledBy = kind; return finish(true); }
+  }
+
   // Status cards that hurt while held (Poison), then Ethereal cards fade away (exhausted).
   const hurt = b.hand.reduce((sum, h) => sum + (h.card.effects.endTurnHurt || 0), 0);
   if (hurt) {
@@ -2222,6 +2289,7 @@ async function enemyTurn() {
 
   if (en.weak > 0) en.weak -= 1;                  // like StS, Weak and Vulnerable wear off at the end of the enemy's turn
   if (en.vulnerable > 0) en.vulnerable -= 1;
+  if (en.frostbite > 0 && !b.powers.frostKeep) en.frostbite -= 1;   // Frostbite thaws (Permafrost keeps it)
 
   // Enrage: long fights get more dangerous.
   if (b.turn % ENRAGE_EVERY === 0) {
@@ -2694,6 +2762,7 @@ async function comeOut(b) {
     d.came.push(d.run.out);
     if (hasAbility('torrent')) { gainTide(b.ability.amount); abilityBanner(); }
     if (hasAbility('pressure')) { b.focus += b.ability.amount; abilityBanner(); }
+    if (hasAbility('snow-warning')) { setWeather('hail', b.ability.amount); abilityBanner(); }
   }
 }
 
@@ -2911,6 +2980,8 @@ function renderStatus() {
   if (en.vulnerable) enemyBadges.push(['💔', en.vulnerable, `Vulnerable ${en.vulnerable}: takes 50% more damage from your attacks for ${en.vulnerable} more turn${en.vulnerable > 1 ? 's' : ''}`]);
   if (en.seed)     enemyBadges.push(['🌱', en.seed, `Leech Seed ${en.seed}: at the start of its turn it loses ${en.seed} HP and you heal ${en.seed}${b.powers.seedKeep ? '' : ', then it drops by 1'}`]);
   if (en.static)   enemyBadges.push(['⚡', en.static, `Static ${en.static}: at ${staticCap()} it's Paralyzed and loses its next move${paralyzing() ? ' (full!)' : ''}`, paralyzing() ? 'good' : '']);
+  if (en.frostbite) enemyBadges.push(['❄️', en.frostbite, `Frostbite ${en.frostbite}: every hit on it deals +${en.frostbite}${b.powers.frostKeep ? '' : ', then it thaws by 1 at the end of its turn'}`]);
+  if (b.weather?.kind === 'hail') enemyBadges.push(['🌨️', b.weather.turns, `Hail, ${b.weather.turns} more turn${b.weather.turns > 1 ? 's' : ''}: at the end of your turn it loses ${HAIL.chip} HP, and your Ice attacks deal +${HAIL.bonus} a hit`]);
   if (en.sap)      enemyBadges.push(['🍂', en.sap, `Sap ${en.sap}: its attacks deal ${en.sap} less damage, all fight`]);
   if (en.tempSap)  enemyBadges.push(['💕', en.tempSap, `Charmed: its attacks deal ${en.tempSap} less damage this turn`]);
   if (b.skipEnemy) enemyBadges.push(['🌀', '', 'Eye of the Storm: it skips its next turn']);

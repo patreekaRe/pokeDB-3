@@ -105,16 +105,24 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    githack link with `?duorun&duopool&powerplant&coins=500`, or `?area=powerplant`, `?bossfight=powerplant&starter=pichu`.
    **Waiting on the user**: the playtest; the Quick Powder rename; **`SAFARI_FROM` must move to the day after the branch
    goes live** (2026-10-20 on the branch).
-Prompt for session 5, Ice's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start
-from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (Ice, the Weather note, and both of
-Electric's session tables and bot checks as the pattern) and 6, docs/reference/safari.md's duo section, cards.md and
-card-design.md. Build Ice's first session: write its ~38-card table into the doc first (30 pool cards: 10 common, 14
-uncommon, 6 rare, and all 8 evolution cards), then Frostbite, Icicle and the shared Weather engine (Hail; Ground's
-Sandstorm reuses it), the Snow Warning Ability, Vanillite's line (DUO_STARTERS, back GIFs, SPRITE_FIT, BODY_X, cries),
-the cards with art (js/card-art-ice.js), describe() / cardTerms() lines, the Ice theme colours, the sim mirror and a bot
-check of Ice's pairs against session 4's numbers. The Ice Cave's data comes in Ice's second session (note: the Power
-Plant already borrows the Peak's painters, so the Ice Cave needs another). Push only to duo-types in both repos and
-give me a githack link."
+5. ~~**Ice's first**~~ done 2026-10-19 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Ice's first
+   session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 30 pool cards + 8 evolution cards and the
+   Icicle token with art (`js/card-art-ice.js`), Frostbite, Icicle, the Weather engine (Hail), Snow Warning, Vanillite's
+   line (`DUO_STARTERS`, backs, fits, cries), the sim mirror. The bot gave Icy Wind Weak 2 (without it Ice trailed ~15).
+   Bot (300 a cell): ice+fire 67.0, ice+grass 61.7, ice+water 62.3, ice+electric 70.3; solo Ice 74.0: a strong partner for
+   Grass and Water. Playtest: the githack link with `?duorun&duopool&coins=500` (the Duo key, Electric and Ice lent), or a
+   solo fight `?arena=fight&starter=vanillite&cards=blizzard,glaciate,snow-flurry`. **Waiting on the user**: the playtest,
+   and whether Hail's 3 a turn and Frostbite's +1 a hit feel right.
+Prompt for session 6, Ice's second, **next** (▶ Run in: CLOUD, effort: medium; attach both pokeDB-3 and pokeDB-sim, start
+from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 5 (Ice, its first session's table and bot
+check, and Electric's second session as the pattern) and 6, docs/reference/safari.md's duo section and cards.md. Build
+Ice's second session: write its ~36-card table into the doc first (10 common, 18 uncommon, 8 rare, defence-leaning as
+Electric's second was), then the cards with art, Never-Melt Ice (Ice's held item) and 6 relics (Icy Rock among them:
+weather lasts longer; Ice Stone the boss relic), an Ice Gem and a Drive, the Card index's Ice tab, Swinub's line as a
+look on Vanillite's deck (back GIFs, SPRITE_FIT, BODY_X, cries; DUO_LINES.ice), and the Ice Cave's data (the Ice
+Pokémon moved in from the Peak, date-gated like the Power Plant, painted as another existing area recoloured: the Power
+Plant already borrows the Peak). Then the sim mirror, the relics' ranks and a bot check of Ice's pairs against session
+5's numbers. Push only to duo-types in both repos and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

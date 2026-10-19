@@ -3221,3 +3221,14 @@ Safari area holding the five lines and the Electric wilds, date-gated (`SAFARI_F
 dealt exactly as before), on the Peak's painters recoloured. The Card index's Electric tab. Bot: electric pairs 64.7 /
 43.7 / 36.3, ~7 under session 3's Electric (`elecFirst`), left for the balance pass.
 
+**Duo types, session 5: Ice's first** (2026-10-19, branch `duo-types`, both repos). Its card table went into
+`docs/duo-design.md` first (section 5, "Ice's first session"): 30 pool cards (10 / 14 / 6), 8 evolution cards and an
+Icicle token, art in `js/card-art-ice.js`. New rules in `js/battle.js`: Frostbite (`enemy.frostbite`, +1 a stack on every
+hit, thawing 1 each enemy turn), Icicle (`b.icicles`: each Icicle card played adds 2 to every Icicle card), the shared
+Weather engine (`b.weather`, `setWeather()`; Hail chips 3 at the end of your turn and adds 3 to every Ice hit; Ground's
+Sandstorm will join it), Snow Warning (Hail 2 at the start, or the first time Ice comes out). Vanillite is a
+`DUO_STARTERS` entry with backs, fits and cries; catching any stage adds Ice (`DUO_LINES.ice`). `BASICS` (the Unown
+Tablet) got Electric's and Ice's two basic moves. `tools/ice-probe.mjs` checks the rules in a real fight. pokeDB-sim
+mirrors it all. The first draft trailed (ice+grass 47, solo 47 vs Fire 69); Icy Wind's Weak 2 fixed it: ice+fire 67.0,
+ice+grass 61.7, ice+water 62.3, ice+electric 70.3 (300 each), solo Ice 74.0. Numbers in pokeDB-sim's README.
+
