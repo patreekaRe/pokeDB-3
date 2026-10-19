@@ -4135,8 +4135,10 @@ body.scene-peek #backdrop { display: none; }
 /* the board itself (2026-10-18, the user's ask: an MMO-style table, easy to read): a banner, gold period tabs, board pills,
    a row per trainer with the top three in gold / silver / bronze, your own row pinned, then the count and your name */
 .lb-host { overflow: hidden !important; }
-.lb-mmo {
+.lb-mmo, .lb-top {
   --lb-ink: #e8ecff; --lb-dim: #9aa6d4; --lb-gold: #ffd25a; --lb-gold-lo: #b8861c; --lb-row: #1b2342; --lb-row2: #171e3a; --lb-line: #2c3766;
+}
+.lb-mmo {
   position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; color: var(--lb-ink);
   background: linear-gradient(180deg, #1a2244, #0e1328); font: 0.75rem/1.3 var(--pixel-font); font-synthesis-weight: none;
 }
