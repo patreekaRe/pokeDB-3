@@ -43,7 +43,8 @@ type's starter in its area adds it to your duo pool.
 (and pokeDB-sim's `duo-types`), never pushed to `main` until the user says it goes live. A session starts from
 `duo-types`; a session working alongside another (below) works on its own `duo-types-<part>` branch and merges into
 `duo-types` when done, the later one to finish resolving the merge. Playtest links are githack links on its commit.
-**Two at a time** (the user's ask): 0, 1, 2 and 15 run alone, in order (each changes rules the next builds on).
+**Two at a time** (the user's ask): 2 (real types) can run beside 0 (its rules are settled above and it works with
+today's single starter), on `duo-types-realtypes`; 1 runs after 0, and 15 alone at the end.
 From 3 on, two sessions can run together when they are different types (Electric's first beside Ice's first, or a
 type's second beside the next type's first), never two halves of the same type. Since a duo puts two types in one run,
 the later of the pair re-runs `tests/cards.test.mjs` after merging and fixes any same cost + same text twin across
@@ -57,7 +58,10 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    **Timburr** / Machop, Ground **Trapinch** / Rhyhorn, Flying **Starly** / Pidgey / Pidove, Dark **Deino** / Sandile.
 1. **The duo, the Duo Run and the duo pool** (effort: high) on today's three types (`docs/duo-design.md` sections 1-3),
    sim mirror, bot check of the 3 pairs against the same bot's solo runs.
-2. **Real types in the Safari** (effort: high): the chart, every Safari Pokémon and move retyped, the super-effective hint on cards.
+2. ~~**Real types in the Safari**~~ done 2026-10-19 on `duo-types-realtypes`, merged into `duo-types` (both repos;
+   `docs/roadmap-done.md`, `docs/reference/safari.md`'s Real types). Built on the 18-type chart as the prompt said. The user's answers settle both its opens:
+   **Gen 5** (answer 13), so session 1 first runs `tools/real-types.py --gen5` and the tests; and the x0.5 floor (a double resist is x0.75, as the
+   user picked). Grass's 6-point drop in the Safari is left for the balance pass.
 3-14. **One new type in two sessions** (effort: high for a type's first session, which brings its new mechanics;
    medium for its second, which follows them) (~35 cards each, 70 a type; card rewards split 50/50 between a duo's types): its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,
    `SPRITE_FIT`, cries), its area's data on a recoloured existing area (the doc's section 7) and the catch that adds it
@@ -67,7 +71,8 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
 - **The new areas' art** (the user's pick: data first, art after): each new area's scene, intro film, boss prelude and
   arena, one or two areas a session, after the type sessions or beside the balance pass.
 Prompt for session 1 (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start from branch `duo-types`):
-"Read CLAUDE.md, docs/duo-design.md (approved) and docs/reference/safari.md, cards.md and device-and-screens.md. Build
+"Read CLAUDE.md, docs/duo-design.md (approved) and docs/reference/safari.md, cards.md and device-and-screens.md. First apply
+the doc's answer 13 to the built real types (tools/real-types.py --gen5, then the tests). Then build
 session 1, the duo, the Duo Run and the duo pool on Fire / Grass / Water (the doc's sections 1-3), with pokeDB-sim's
 mirror on its own new duo-types branch, and a bot check of the 3 pairs against solo. Push only to duo-types in both repos
 and give me a githack link."
@@ -991,6 +996,12 @@ uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS 
 5. **Enemy variety** (the biggest gap now): StS's enemy tricks, such as Artifact (blocks your next debuffs), splitting,
    enemies that buff each other, fights with two or three enemies. Every fight is one enemy cycling its moves today.
    Engine work in `js/battle.js` and the sim, then enemies retuned.
+   ▶ Run in: CLOUD (both repos), effort: high, on `main` (suggested 2026-10-19 to run beside the duo types' design doc;
+   it is main-game work and the duo, Safari only, does not need it). Prompt: "Read
+   CLAUDE.md, docs/roadmap.md's 'Enemy variety' item, docs/reference/cards.md and docs/reference/battle-screen-layout.md,
+   and pokeDB-sim's README. Propose 5-6 enemy tricks (Artifact, splitting, enemies buffing each other, fights with two or
+   three enemies) and which enemies get them, pick with me, then build them in js/battle.js with the sim mirror, retune,
+   bot-check at Levels 0/3/5, add a patch-notes line and give me a githack link. Push to main."
 Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` / `cardTerms()` lines and the sim mirror.
 
 **Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
@@ -1025,7 +1036,7 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   If it comes back: Fighting / Dark / Psychic is the real chart's second clean triangle (Fighting > Dark > Psychic >
   Fighting; starters Timburr or Machop, Zorua, Gothita or Abra; Psychic would stop being neutral, so Mewtwo re-checked),
   Ground / Rock / Ice a weaker one; enemies can take all 18 real types cheaply, but playable decks cap near 9-10 types at
-  ~70 cards each (all 18 only with ~35-card decks, Monster Train-style). Build "Enemy variety" first.
+  ~70 cards each (all 18 only with ~35-card decks, Monster Train-style).
 
 - **Suggested 2026-10-19, not picked** (a brainstorm session; each ▶ Run in: CLOUD, both repos where a battle rule changes):
   - **Biome weather as a battle rule**: rain powers Water, sun powers Fire, and so on per biome (data plus one modifier;

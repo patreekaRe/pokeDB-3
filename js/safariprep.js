@@ -35,6 +35,7 @@ const RULES = [
   ['⚾', `Every run starts with ${SAFARI_BALLS} Safari Balls, plus any ball packs you bought. Today's first try is free; a Day Pass (${DAY_PASS} coins) gives replays until the day ends.`],
   ['🔴', `Throw a ball at any wild Pokémon: ${THROW_PP} PP, and it ends your turn. At full HP it's a long shot; the lower its HP, the better.`],
   ['🎯', 'Debuffs on it raise the odds.'],
+  ['🆚', 'Wild Pokémon have their real types and moves, on the real 18-type chart (no immunities). A ▲ on a card means super effective.'],
   ['🍙', 'Bait: better odds, but it hits harder. A card reward after fights, Safari runs only.', 'bait'],
   ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, but it may run off. A card reward after fights, Safari runs only.`, 'rock'],
   ['✦', `A room marked with this star on the map holds a rare Pokémon. It runs off after ${RARE.turns} turns.`],

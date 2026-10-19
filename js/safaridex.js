@@ -25,7 +25,8 @@ import { playCry, playSound } from './audio.js';
 import { calmFx } from './prefs.js';
 import { shinyImage, SPARKLE_MAX, SHINY_ODDS } from './data/shinies.js';
 import { sealedCount } from './data/exchange.js';
-import { shelfApp, typed, typeChip } from './bagdex.js';
+import { shelfApp, typed } from './bagdex.js';
+import { REAL_TYPES, speciesTypes } from './data/real-types.js';
 import { still, sceneImg, progressBar } from './pokedex.js';
 
 const AREA_ICON = { meadow: '🌼', forest: '🌲', wetland: '💧', marsh: '🍄', peak: '🏔️', desert: '🌵' };
@@ -221,7 +222,11 @@ export const safariDexApp = shelfApp({
     if (shot?.pad) pad.style.backgroundImage = `url("${shot.pad}")`;
     const nodes = [sceneImg(shot, 'pdx-scene'), pad, sprite(t.id, 'pdx-mon bdx-art')];
     if (known) nodes.push(el('span', `pdx-role${t.rare ? ' sdx-rare' : ''}`, t.rare ? '✦ Rare' : 'Wild'));
-    if (record().caught.has(t.id)) nodes.push(typeChip(ENEMY_DEFS[t.id].type), el('span', 'pdx-caught gold', 'Caught'));
+    if (record().caught.has(t.id)) {   // its real types, as the Safari's battles use them (js/data/real-types.js)
+      const chips = el('span', 'sdx-typechips');
+      chips.append(...speciesTypes(ENEMY_DEFS[t.id]).map(type => el('span', `index-only type-${type}`, `${REAL_TYPES[type].icon} ${REAL_TYPES[type].label}`)));
+      nodes.push(chips, el('span', 'pdx-caught gold', 'Caught'));
+    }
     const level = safariSparkle(t.id), held = sealedOf(t.id);
     if (level) nodes.push(shinySwitch(t.id, level));
     if (showsShiny(t.id) && !calmFx()) nodes.push(twinkles());

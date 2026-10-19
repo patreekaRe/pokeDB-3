@@ -60,7 +60,8 @@ test('the special balls only shine in their moment', () => {
   assert.ok(catchChance({ ...at, ball: 'timer', turn: 9 }) > catchChance({ ...at, ball: 'timer', turn: 5 }));
   close(catchChance({ ...at, ball: 'timer', turn: 30 }), catchChance({ ...at, ball: 'timer', turn: 9 }));   // capped at x3
   assert.ok(catchChance({ ...at, ball: 'net', type: 'water' }) > plain);
-  assert.ok(catchChance({ ...at, ball: 'net', type: 'grass' }) > plain);
+  assert.ok(catchChance({ ...at, ball: 'net', type: 'grass', types: ['grass', 'bug'] }) > plain);   // Bug, on its real types
+  close(catchChance({ ...at, ball: 'net', type: 'grass', types: ['grass'] }), plain);
   close(catchChance({ ...at, ball: 'net', type: 'fire' }), plain);
   close(catchChance({ ...at, ball: 'luxury' }), plain);
 });

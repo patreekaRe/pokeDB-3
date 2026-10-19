@@ -29,6 +29,7 @@ import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRo
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
+import { realBeats } from './data/real-types.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
@@ -2631,8 +2632,9 @@ function afterFight(node, result) {
     showBadgeNews();   // and the Bag glints till the card is opened
   };
 
-  // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28)
-  const tough = node.type === 'fight' && TYPES[ENEMY_DEFS[node.enemyId]?.type]?.beats === run.starter.type;
+  // a wild Pokémon strong against your type pays an Alpha's prize (the user's call, 2026-09-28); in the Safari, by its real types
+  const wild = ENEMY_DEFS[node.enemyId];
+  const tough = node.type === 'fight' && !!wild && (run.safari ? realBeats(wild, run.starter.type) : TYPES[wild.type]?.beats === run.starter.type);
   const payAs = tough ? 'elite' : node.type === 'ken' ? 'boss' : node.type;
   if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
   const [low, high] = PRIZE_MONEY[payAs];

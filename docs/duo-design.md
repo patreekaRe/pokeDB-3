@@ -76,6 +76,16 @@ says "Finish today's Daily run to unlock".
 
 ## 4. The Safari's real chart (session 2)
 
+**Built 2026-10-19** (session 2, run beside this draft; `docs/reference/safari.md`'s Real types): to the user's session
+prompt, the real **18-type** chart with today's typings (Fairy in). The user then picked Gen 5 (answer 13): `python3
+tools/real-types.py --gen5` rewrites the table to Gen 5's 17 types and typings, no other change, and session 1 runs it
+first. The types live in one generated table
+(`js/data/real-types-table.js`), not a `types` field on each line, and the `N()` wrapper stays for the lines' own game
+type (their signature card's). Psychic chips are shown (the user's answer 14). The capped and floored x0.5-x2,
+Neutral outside, typeless elites and bosses, the plate's chips, the intent's move type, the ▲ / ▼ hint and the tough
+prize are as below. Bot check, solo Daily run, 300 a type, triangle -> real: Fire 89.7 -> 86.7, Grass 85.0 -> 79.0,
+Water 75.0 -> 73.0: Grass dropped most but within noise, so no Grass tweak yet.
+
 - **Safari only** (`run.safari`); the main game keeps its triangle (`TYPES` in `js/data/cards.js`) until this has proven
   itself.
 - **The Gen 5 chart and Gen 5 typings** (no Fairy: every Pokémon here is Gen 1-5 with its Gen 5 sprite, so Clefairy is

@@ -35,6 +35,7 @@ import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS } from './data/enemies.js';
+import { REAL_TYPES, realMultiplier, speciesTypes, moveType } from './data/real-types.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
@@ -870,7 +871,7 @@ function damageFor(card, e) {
   if (b.firstAttack) amount += (hasRelic('dragon-fang') ? 10 : 0) + (b.aug.firstAttack || 0);   // Dragon Fang, First Strike
   amount += b.aug.attackBonus || 0;
 
-  const multiplier = typeless() ? 1 : typeMultiplier(card.type, b.def.type);
+  const multiplier = cardMultiplier(card);
   const boost = augDamage() * (hasRelic('fire-memory') && b.enemy.burn > 0 ? 1.25 : 1)   // Fire Memory (StS's Paper Phrog, for Burn)
     * (hasRelic('razor-fang') && (b.fightAttacks + 1) % 10 === 0 ? 2 : 1);              // Razor Fang (StS's Pen Nib)
 
@@ -1595,7 +1596,7 @@ const looks = (ball) => (ball.id === 'safari' ? { ...ball, sprite: safariSprite(
 function catchOdds(ball) {
   const b = battle, en = b.enemy;
   return catchChance({
-    hpFrac: en.hp / en.maxHp, ball, turn: b.turn, night: timeOfDay() === 'night', type: b.def.type,
+    hpFrac: en.hp / en.maxHp, ball, turn: b.turn, night: timeOfDay() === 'night', type: b.def.type, types: speciesTypes(b.def),
     debuffs: [en.burn, en.seed, en.weak, en.sap].filter(n => n > 0).length, bait: en.bait, rare: b.rare,
   });
 }
@@ -2157,9 +2158,20 @@ function typeMultiplier(attacker, defender) {
 /** Elites and bosses (Team Rocket's Alpha too) ignore the type chart both ways: only wild fights hinge on match-ups (the user's call). */
 const typeless = () => battle.kind === 'elite' || battle.kind === 'boss';
 
-/** A move with its own `type` (Body Slam is Normal) uses that, else the enemy's type. */
+/** A move with its own `type` (Body Slam is Normal) uses that, else the enemy's type. In the Safari, the move's real
+    type on the real chart (js/data/real-types.js). */
 function enemyTypeMultiplier(move) {
-  return typeless() ? 1 : typeMultiplier(move.type ?? battle.def.type, battle.starter.type);
+  const b = battle;
+  if (typeless()) return 1;
+  if (b.safari) return realMultiplier(moveType(move, b.def), [b.starter.type]);
+  return typeMultiplier(move.type ?? b.def.type, b.starter.type);
+}
+
+/** Your card on this enemy: the triangle, or in the Safari the real chart on its real types (Neutral cards x1). */
+function cardMultiplier(card) {
+  const b = battle;
+  if (typeless()) return 1;
+  return b.safari ? realMultiplier(card.type, speciesTypes(b.def), { card: true }) : typeMultiplier(card.type, b.def.type);
 }
 
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
@@ -2441,9 +2453,12 @@ function setupEnemy() {
   }
   box.classList.remove('captured', 'ran');
   closeBallPicker();
-  $('enemy-type').textContent = TYPES[type].icon;
-  $('enemy-type').title = `${TYPES[type].label} type`;
-  $('enemy-type').className = `chip type-${type}`;
+  // the Safari shows a wild's real types (one icon each); everywhere else the game's own
+  const real = b.safari && !typeless() ? speciesTypes(b.def) : null;
+  if (real) $('enemy-zone').dataset.type = real[0];
+  $('enemy-type').textContent = real ? real.map(t => REAL_TYPES[t].icon).join('') : TYPES[type].icon;
+  $('enemy-type').title = real ? `${real.map(t => REAL_TYPES[t].label).join(' / ')} type` : `${TYPES[type].label} type`;
+  $('enemy-type').className = `chip type-${real ? real[0] : type}`;
   box.classList.toggle('max', !!b.phased);
 }
 
@@ -2581,6 +2596,7 @@ function renderIntent() {
     const arrow = effect > 1 ? '▲' : effect < 1 ? '▼' : '';
     value = b.guard ? '✋' : `${attackDamage(move)}${arrow}`;
     detail = b.guard ? 'will hit your Guard' : `${attackDamage(move)} damage${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
+    if (b.safari && !typeless()) detail = `${REAL_TYPES[moveType(move, b.def)].label} move: ${detail}`;   // the real chart: which type is coming
   } else if (move.kind === 'defend') {
     icon = '🛡️'; kind = 'defend'; value = `+${move.amount}`; detail = `+${move.amount} block`;
   } else if (move.kind === 'status') {
@@ -2662,6 +2678,20 @@ function badgeFor([icon, value, title, kind = '']) {
   return node;
 }
 
+/** The Safari's hint on an attack in hand: ▲ and a green type line when it's super effective on this wild Pokémon,
+    ▼ and a grey one when it's resisted (the real chart has too many match-ups to keep in your head). */
+function markEdge(node, card) {
+  const b = battle;
+  if (!b.safari || typeless() || !(card.effects.damage || card.effects.blockDamage)) return;
+  const edge = cardMultiplier(card);
+  if (edge === 1) return;
+  const up = edge > 1, tag = node.querySelector('.card-type');
+  node.classList.add(up ? 'edge-up' : 'edge-down');
+  tag.append(el('span', 'card-edge', up ? ' ▲' : ' ▼'));
+  tag.title = up ? `Super effective on ${b.def.name}: +${Math.round((SUPER_EFFECTIVE - 1) * 100)}% damage`
+    : `Not very effective on ${b.def.name}: -${Math.round((1 - NOT_VERY_EFFECTIVE) * 100)}% damage`;
+}
+
 /* A card still in hand that would look the same keeps its node (its art, its fitted text): rebuilding the whole hand
    on every tap restyled and re-measured every card, a hitch just as the played card took off (2026-10-18). */
 function renderHand() {
@@ -2673,6 +2703,7 @@ function renderHand() {
   const nodes = b.hand.map((entry, i) => {
     const { card } = entry;
     let node = makeCard(asShown(card), { stage: b.stage, cost: costOf(card) });
+    markEdge(node, card);
     const look = node.innerHTML.replace(/(id="|#)ca[0-9a-z]+/g, '$1'), old = shown.get(entry.uid);   // its art's SVG ids are numbered per drawing
     if (old?.handLook === look && !entry.fresh && !(old.classList.contains('deal') && dealing())) {
       forgetCard(node);
@@ -2933,6 +2964,7 @@ function renderFocus() {
   if (!entry) { layer.hidden = true; layer.replaceChildren(); return; }
 
   const big = makeCard(asShown(entry.card), { stage: b.stage, cost: costOf(entry.card) });
+  markEdge(big, entry.card);
   big.classList.add('focus-card');
   big.dataset.focusUid = entry.uid;
   const problem = choosing ? null : whyNotPlayable(entry.card);
