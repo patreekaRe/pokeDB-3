@@ -40,7 +40,14 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   before those keys refuse them, so `publishTrainer()` writes the page again without them on `permission-denied`
   (`NEW_CARD_KEYS`). Rules with them published 2026-10-18. Later that day `shinies` (the Trainer Card's SHINIES,
   `shinyTotal()`) and `ranger` (the Ranger Rank's index, -1 before the Safari opens) joined; `NEW_CARD_KEYS` now holds
-  only those two, and they stay 0 / -1 until the rules are published again. `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
+  only those two, and they stay 0 / -1 until the rules are published again. Later still (the user's list): `gyms` /
+  `gymsOf` (Gym Leaders beaten), `streak` (`stats.bestStreak`), `ken` / `belt` (`kenWinsOf()`, `beltOf()`), `summits`,
+  `starters` / `startersOf` (unlocked, Mewtwo left out), `defeated`, `sdays` (`safariDays()`), `earned`
+  (`stats.coinsEarned`), `fame` (Level 5 wins, Mewtwo's aside), `best` / `sparkle` (the shiny with most Sparkle, the
+  rarer on a tie), `rare` (the rarest Safari catch: a rare spawn, then fewest pages, then latest number), `pin`
+  (`save.pinBadge`, picked by the Trainer Card's Pin button, `pinPicker()`; `pinnable()` refuses the Depths' secret
+  badges) and `hof` (the newest Hall of Fame win as JSON, `hofDoc()` / `readHof()`, at most `HOF_LEN` 1,500, read back
+  keeping only known non-secret starters and non-Psychic cards). `NEW_CARD_KEYS` is every key from `shinies` on. `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
   visits. Written by `publishTrainer()` on every sign-in (`onCloudSignIn`, which fires on each load while signed in)
   and as you leave your base (`leave()` in `js/base-3d.js`). Rules: signed-in `get` only (no listing), the owner writes
   it under a code `codes/` says is theirs, bounded like the boards. Someone else's page is only drawn through
@@ -57,9 +64,12 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   code and the add box on LCDs over the banners, a banner per trainer in their card's colour (their buddy, last seen,
   badges), their page the handheld (the 2026-10-18 tidy-up, the user's pick from a mock): the nameplate's second line
   their Journal rank and last seen (`sub` in `shelfApp()`), partner and card colour, a grid three across (Wins, Dex, Stars, Top
-  Lv, Fave as a sprite so a long name never spills, Pillar, then Safari, Shinies, Ranger; the user's call, 2026-10-18:
+  Lv, Fave as a sprite so a long name never spills, Pillar, then Safari, Shinies, Ranger, Gyms, Streak, Kenmatta (belt,
+  else wins), Summits, Starters, Defeated, Safari days, Coins; Stars' tip counts the Hall of Fame wins; the user's call, 2026-10-18:
   two rows show, the third peeks in and the grid scrolls, so more can join without the page growing; a fixed
-  `--trn-row` height in `css/menus.css`; Ranger drops its trailing "Ranger", as "Senior" under the label), the newest 7 badges and a +N, buddy;
+  `--trn-row` height in `css/menus.css`; Ranger drops its trailing "Ranger", as "Senior" under the label), a showcase row (`showcase()`: best shiny with its ★s, rarest catch, the newest Hall of Fame win as a key whose tap lays
+  out its deck; only what they have), the pinned badge in the screen's top right (`pinnedBadge()`), the newest 7 badges
+  and a +N, buddy; `?mycard` shows your own page as a banner, as a friend sees it (nothing fetched or sent);
   every part has a `title`, so a tap explains it (js/tips.js), Visit (greyed until session 2) and Remove (a
   second tap confirms). One `getDoc` a trainer on each open. A trainer with no page yet shows as `???`, "Not on the
   network yet".

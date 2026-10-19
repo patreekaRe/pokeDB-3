@@ -3137,3 +3137,12 @@ in `firestore.rules`: **the user publishes the rules again**; until then a resul
 the Pokédex, Trainer Card, Ranger board and `?lbsample=safari` on a seeded save, `?base&guests&sparkle=3`, the budget
 check (base, yard, Outfitter within budget); tests pass (364). Playtest: `?safaridex` doesn't light the Pokédex;
 `?sparkle=3` lends every shiny at ★3 (Pokédex, base, cards), `?lbsample=safari` the ✨ rows.
+
+## More on a friend's Trainer Card (2026-10-18, the user's list)
+The Trainers app's grid grew to 17 cells (Gyms, Streak, Kenmatta, Summits, Starters, Defeated, Safari days, Coins
+joined; the Stars tip counts Hall of Fame wins), a showcase row (best shiny with its Sparkle ★s, rarest Safari catch,
+newest Hall of Fame win whose tap lays out its deck) and a pinned badge by the partner, picked on your own Trainer Card
+(`save.pinBadge`). New keys in `CARD_KEYS`, `cardDoc()`, `NEW_CARD_KEYS` and `firestore.rules`; Mewtwo, the Depths'
+secret badges and Psychic cards stay off the page. `?mycard` shows your own page as a friend sees it. Checked in the
+browser pane on a seeded save; tests pass (366). The emulator rules cases (`tools/trainers-rules.mjs`) gained three, not
+run here (no emulator on this PC). **The user publishes the rules.**

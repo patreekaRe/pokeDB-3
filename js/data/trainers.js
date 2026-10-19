@@ -26,9 +26,12 @@ export const ADDS = 'adds';
 export const PLAZA_SHOWN = 30;
 
 export const TRAINER_KEYS = ['code', 'name', 'card', 'buddy', 'base', 'at'];
-export const CARD_KEYS = ['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar', 'shinies', 'ranger'];
+export const CARD_KEYS = ['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar', 'shinies', 'ranger',
+  'gyms', 'gymsOf', 'streak', 'ken', 'belt', 'summits', 'starters', 'startersOf', 'defeated', 'sdays', 'earned', 'fame', 'best', 'sparkle', 'pin', 'rare', 'hof'];
 /** The newest keys (2026-10-18); rules published before them refuse them, so a page is written again without (publishTrainer()). */
-export const NEW_CARD_KEYS = ['shinies', 'ranger'];
+export const NEW_CARD_KEYS = CARD_KEYS.slice(CARD_KEYS.indexOf('shinies'));
+/** The newest Hall of Fame win rides along as JSON: { s starter, g stage, sh shiny, f its Hall of Fame number, d date, k deck }. */
+export const HOF_LEN = 1500;
 const TIERS = ['green', 'bronze', 'silver', 'gold', 'violet'];
 const KEY_MAX = 64;
 const BADGES_MAX = 100;
@@ -77,7 +80,33 @@ export function cardDoc(c = {}) {
     stars: count(c.stars, 99), time: count(c.time), partner: key(c.partner),
     rank: orNone(c.rank, 20), top: orNone(c.top, 20), fave: key(c.fave), pillar: count(c.pillar, 999),
     shinies: count(c.shinies, 9999), ranger: orNone(c.ranger, 20),
+    gyms: count(c.gyms, 99), gymsOf: count(c.gymsOf, 99), streak: count(c.streak, 9999), ken: count(c.ken, 9999), belt: count(c.belt, 9),
+    summits: count(c.summits, 9999), starters: count(c.starters, 999), startersOf: count(c.startersOf, 999),
+    defeated: count(c.defeated), sdays: count(c.sdays, 99999), earned: count(c.earned, 1e9), fame: count(c.fame, 9999),
+    best: key(c.best), sparkle: count(c.sparkle, 5), pin: key(c.pin).slice(0, 32), rare: key(c.rare),
+    hof: typeof c.hof === 'string' && c.hof.length <= HOF_LEN ? c.hof : '',
   };
+}
+
+/** A Hall of Fame win as the page carries it (the newest only), cards dropped off the deck's end to fit HOF_LEN. */
+export function hofDoc(w) {
+  if (!w || typeof w.starter !== 'string') return '';
+  const entry = { s: key(w.starter), g: count(w.stage, 9), sh: !!w.shiny, f: count(w.fame, 9999), d: String(w.date || '').slice(0, 10),
+    k: (Array.isArray(w.deck) ? w.deck : []).filter(id => typeof id === 'string').map(id => id.slice(0, 40)).slice(0, 80) };
+  let json = JSON.stringify(entry);
+  while (json.length > HOF_LEN && entry.k.length) { entry.k.pop(); json = JSON.stringify(entry); }
+  return json.length <= HOF_LEN ? json : '';
+}
+
+/** Someone's Hall of Fame win off their page, untrusted: { starter, stage, shiny, fame, date, deck }, keeping only the
+    ids `knownStarter` / `knownCard` accept; null if it isn't one. */
+export function readHof(json, knownStarter = () => true, knownCard = () => true) {
+  try {
+    const e = typeof json === 'string' && json && json.length <= HOF_LEN ? JSON.parse(json) : null;
+    if (!e || typeof e.s !== 'string' || !knownStarter(e.s)) return null;
+    return { starter: e.s, stage: count(e.g, 9), shiny: e.sh === true, fame: count(e.f, 9999), date: /^\d{4}-\d\d-\d\d$/.test(e.d) ? e.d : '',
+      deck: (Array.isArray(e.k) ? e.k : []).filter(id => typeof id === 'string' && knownCard(id)).slice(0, 80) };
+  } catch (err) { return null; }
 }
 
 /** The doc a trainer writes (`at` is the server's time, added as it's sent). */

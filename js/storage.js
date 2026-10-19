@@ -83,6 +83,7 @@ const freshSave = () => ({
   gymLost: {},                // times each Gym Leader beat you, by id (the Gym Leaders app, js/gymdex.js); their wins over them are `gym`, and `seen.gym` the ones met
   badges: [],                 // BADGES ids earned (js/data/badges.js), oldest first: the Trainer Card's Badge Case
   badgesSeen: [],             // the badges the Trainer Card has shown: one not in here pops in with a shine (js/trainercard.js)
+  pinBadge: null,             // the badge the Trainer Card pins for friends to see on your Trainers page (pinnable() in js/trainercard.js)
   partner: null,              // the Trainer Card's Pokémon, a key from partnerChoices() (js/trainercard.js); null picks the starter with the most wins
   buddy: null,                // who walks with you in the Clearing, the base and the mall, picked at the PC (js/pc.js): a key from buddyChoices(); null is the most-won starter's first form
   missions: null,             // the daily and weekly missions (js/missions.js): each roll's day or week, its missions' counts and what's been paid; rolled when missing

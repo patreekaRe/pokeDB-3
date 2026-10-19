@@ -11,18 +11,23 @@
    ============================================================ */
 
 import { TRAINERS, CODES, PLAZA, ADDS, PLAZA_SHOWN, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend,
-  trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, FRIENDS_MAX, BASE_MAX, NEW_CARD_KEYS } from './data/trainers.js';
+  trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, hofDoc, readHof, FRIENDS_MAX, BASE_MAX, NEW_CARD_KEYS } from './data/trainers.js';
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
 import { trainerName } from './leaderboard.js';
-import { partnerKey, buddyKey, cardTier, badgeArt, shinyTotal, TIERS as CARD_TIERS } from './trainercard.js';
-import { BADGES, BADGES_BY_ID } from './data/badges.js';
+import { partnerKey, buddyKey, cardTier, badgeArt, shinyTotal, pinnable, TIERS as CARD_TIERS } from './trainercard.js';
+import { BADGES, BADGES_BY_ID, safariDays } from './data/badges.js';
+import { GYM_LEADERS, gymWins } from './data/gym.js';
+import { BELTS, beltOf, kenWinsOf } from './data/dojo.js';
+import { SAFARI_ROSTER, SAFARI_NUMBER, safariHomes } from './data/safari.js';
+import { CARDS_BY_ID } from './data/cards.js';
+import { sparkleOf } from './data/shinies.js';
 import { journalRank } from './data/journal.js';
 import { JOURNAL_RANKS } from './data/journal-ranks.js';
 import { dexTally, safariOpen } from './data/pokedex.js';
 import { safariDexCount } from './safaridex.js';
 import { rankOf, RANKS as RANGER_RANKS } from './data/ranger.js';
-import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { shinyImage } from './data/shinies.js';
 import { isStarterUnlocked } from './progress.js';
@@ -58,8 +63,26 @@ function myCard(save) {
     rank: journalRank(save).level - 1, top: Math.max(-1, ...Object.values(save.stats.maxLevelWinByType || {})),
     fave: faveStarter(save.stats.winsBy), pillar: save.tower?.bestEver || 0,
     shinies: safari ? shinyTotal(save) : 0, ranger: safari ? rankOf(save).level - 1 : -1,
+    gyms: GYM_LEADERS.filter(l => gymWins(save, l.id) > 0).length, gymsOf: GYM_LEADERS.length,
+    streak: save.stats.bestStreak || 0, ken: kenWinsOf(save), belt: beltOf(save), summits: save.tower?.summits || 0,
+    starters: OPEN_STARTERS.filter(isStarterUnlocked).length, startersOf: OPEN_STARTERS.length,
+    defeated: save.stats.enemiesDefeated || 0, sdays: safari ? safariDays(save) : 0, earned: save.stats.coinsEarned || 0,
+    fame: fameWins(save).length, best: safari ? bestShiny(save) : '', sparkle: safari ? sparkleOf(save.safariShinies, bestShiny(save)) : 0,
+    pin: pinnable(save.pinBadge, save) ? save.pinBadge : '', rare: safari ? rarestCatch(save) : '', hof: hofDoc(fameWins(save).at(-1)),
   };
 }
+
+/** Starters a page counts: Mewtwo stays off it. */
+const OPEN_STARTERS = STARTERS.filter(s => !s.secret);
+/** The Hall of Fame proper: Level 5 wins, Mewtwo's Depths runs aside. */
+const fameWins = (save) => (save.hallOfFame || []).filter(w => w.fame && w.starter !== 'mewtwo');
+
+/** How rare a Safari Pokémon is: a rare spawn first, then the fewer pages it lives on, then the later in the Safari Pokédex. */
+const rarity = (id) => { const homes = safariHomes(id); return (homes.some(h => h.rare) ? 1e6 : 0) - homes.length * 1e3 + (SAFARI_NUMBER[id] || 0); };
+const rarest = (ids) => [...ids].sort((a, b) => rarity(b) - rarity(a))[0] ?? '';
+/** The shiny with the most Sparkle (the rarer on a tie). */
+const bestShiny = (save) => { const top = Math.max(0, ...SAFARI_ROSTER.map(id => sparkleOf(save.safariShinies, id))); return top ? rarest(SAFARI_ROSTER.filter(id => sparkleOf(save.safariShinies, id) === top)) : ''; };
+const rarestCatch = (save) => rarest((save.safariDex?.caught || []).filter(id => SAFARI_NUMBER[id]));
 
 /** The starter with the most wins ('' before any). */
 const faveStarter = (winsBy = {}) => Object.entries(winsBy).filter(([id, n]) => n > 0 && STARTERS_BY_ID[id]).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '';
@@ -223,18 +246,94 @@ function cardGrid(c, name) {
   const rank = c.ranger >= 0 ? RANGER_RANKS[Math.min(c.ranger, RANGER_RANKS.length - 1)].name : '';
   const ranger = el('b', '', rank ? rank.replace(/^(\S+) Ranger$/, '$1') : '-');   // under its "Ranger" label: "Senior", not "Senior Ranger"
   const fave = c.fave && STARTERS_BY_ID[c.fave] ? sprite(`starter:${c.fave}`) : null;
+  const defeated = el('b', '', c.defeated ? c.defeated.toLocaleString('en') : '-'), earned = el('b', '', c.earned ? c.earned.toLocaleString('en') : '-');
+  const fame = c.fame ? `${c.fame} Level 5 win${c.fame === 1 ? '' : 's'} with ${c.stars} starter${c.stars === 1 ? '' : 's'}, in the Hall of Fame. ` : '';
   box.append(
     cell('Wins', wins, `Runs ${name} has won, at any Trainer Level, in ${playTime(c.time)} of play.`),
     cell('Dex', el('b', '', `${c.dex}/${c.dexOf}`), `Pokémon ${name} has beaten, on every Pokédex page they have found.`),
-    cell('Stars', el('b', '', c.stars ? `⭐${c.stars}` : '-'), `A gold star for each starter ${name} has won a Level 5 run with.`),
+    cell('Stars', el('b', '', c.stars ? `⭐${c.stars}` : '-'), `${fame}A gold star for each starter ${name} has won a Level 5 run with.`),
     cell('Top Lv', el('b', '', c.top >= 0 ? `Lv ${c.top}` : '-'), c.top >= 0 ? `The highest Trainer Level ${name} has won a run on.` : `The highest Trainer Level ${name} has won a run on. None yet.`),
     cell('Fave', fave ? monImg(`starter:${c.fave}`, 'trn-fave') : el('b', '', '-'), fave ? `${name}'s favourite: ${fave.name}, the starter they have won the most runs with.` : `The starter ${name} has won the most runs with. None yet.`),
     cell('Pillar', el('b', '', c.pillar ? `${c.pillar}F` : '-'), c.pillar ? `The highest Sky Pillar floor ${name} has reached.` : `The highest Sky Pillar floor ${name} has reached. Not climbed yet.`),
     cell('Safari', el('b', '', c.safariOf ? `${c.safari}/${c.safariOf}` : '-'), c.safariOf ? `Pokémon ${name} has caught in the Safari Zone.` : `Pokémon ${name} has caught in the Safari Zone. Not open for them yet.`),
     cell('Shinies', el('b', '', c.shinies ? `✨${c.shinies}` : '-'), `Safari Pokémon whose shiny ${name} owns, caught in the wild or pulled at the Shiny Exchange.`),
-    cell('Ranger', ranger, rank ? `${name} is a ${rank}, from tasks claimed on the Safari Outfitter's Ranger Task Board.` : `${name}'s Ranger Rank, once the Safari Zone opens for them.`));
+    cell('Ranger', ranger, rank ? `${name} is a ${rank}, from tasks claimed on the Safari Outfitter's Ranger Task Board.` : `${name}'s Ranger Rank, once the Safari Zone opens for them.`),
+    cell('Gyms', el('b', '', c.gymsOf ? `${c.gyms}/${c.gymsOf}` : '-'), `Gym Leaders ${name} has beaten at least once.`),
+    cell('Streak', el('b', '', c.streak ? `🔥${c.streak}` : '-'), `The most runs ${name} has won in a row, on Trainer Level 2 or higher.`),
+    cell('Kenmatta', el('b', '', c.belt ? BELTS[Math.min(c.belt, BELTS.length - 1)].name.replace(/ Belt$/, '') : c.ken ? `${c.ken} win${c.ken === 1 ? '' : 's'}` : '-'),
+      c.belt ? `${name} holds Chad Master Kenmatta's ${BELTS[Math.min(c.belt, BELTS.length - 1)].name}, and has beaten him ${c.ken} time${c.ken === 1 ? '' : 's'} in runs.` : `Times ${name} has beaten Chad Master Kenmatta in runs. His dojo's stars and wins earn belts.`),
+    cell('Summits', el('b', '', c.summits ? `☁️${c.summits}` : '-'), `Climbs ${name} has taken all the way to the top of the Sky Pillar.`),
+    cell('Starters', el('b', '', c.startersOf ? `${c.starters}/${c.startersOf}` : '-'), `Starters ${name} has unlocked.`),
+    cell('Defeated', defeated, `Wild Pokémon, Alphas and bosses ${name} has knocked out in all.`),
+    cell('Safari days', el('b', '', c.sdays ? `${c.sdays}` : '-'), `Different days ${name} has played the Safari Zone.`),
+    cell('Coins', earned, `PokéCoins ${name} has earned in all, spent or not.`));
   fitText(wins);
+  fitText(defeated);
+  fitText(earned);
   return box;
+}
+
+/** Shown off on the page: their best shiny with its Sparkle, their rarest Safari catch and their newest Hall of Fame win,
+    whose deck a tap lays out. Only those they have; null when none. */
+function showcase(c, name) {
+  const tiles = [];
+  const tile = (label, img, under, tip, tag = 'span') => {
+    const t = el(tag, 'trn-show-tile');
+    if (tip) t.title = tip;
+    t.append(el('small', '', label), img, el('b', '', under));
+    tiles.push(t);
+    return t;
+  };
+  if (c.best && SAFARI_NUMBER[c.best]) {
+    const m = sprite(`mon:${c.best}:shiny`);
+    tile('Best shiny', monImg(`mon:${c.best}:shiny`, 'trn-show-mon'), '★'.repeat(Math.max(1, c.sparkle)),
+      m.masked ? `${name}'s brightest shiny, a Pokémon you haven't met yet.` : `${name}'s brightest shiny: ${m.name}, at Sparkle ★${Math.max(1, c.sparkle)}.`);
+  }
+  if (c.rare && SAFARI_NUMBER[c.rare]) {
+    const m = sprite(`mon:${c.rare}`);
+    tile('Rarest catch', monImg(`mon:${c.rare}`, 'trn-show-mon'), m.masked ? '???' : m.name,
+      m.masked ? `The rarest Pokémon ${name} has caught in the Safari Zone. You haven't met it yet.` : `The rarest Pokémon ${name} has caught in the Safari Zone: ${m.name}.`);
+  }
+  const hof = readHof(c.hof, id => STARTERS_BY_ID[id] && !STARTERS_BY_ID[id].secret, id => { const card = CARDS_BY_ID[id.replace(/\+$/, '')]; return !!card && card.type !== 'psychic'; });
+  let deck = null;
+  if (hof) {
+    const key = `starter:${hof.starter}:${hof.stage}${hof.shiny ? ':shiny' : ''}`, m = sprite(key);
+    const t = tile('Hall of Fame', monImg(key, 'trn-show-mon'), hof.fame ? `No.${hof.fame}` : m.name, '', 'button');
+    t.type = 'button';
+    t.setAttribute('aria-label', `${name}'s newest Hall of Fame win, ${m.name}. Show its deck`);
+    t.setAttribute('aria-expanded', 'false');
+    t.addEventListener('click', () => {
+      const open = !deck.hidden;
+      deck.hidden = open;
+      t.setAttribute('aria-expanded', String(!open));
+      t.classList.toggle('on', !open);
+      playSound(open ? 'cancel' : 'confirm');
+    });
+    deck = el('div', 'trn-show-deck');
+    deck.hidden = true;
+    const counts = new Map();
+    for (const id of hof.deck) counts.set(id, (counts.get(id) || 0) + 1);
+    const list = el('ul', '');
+    for (const [id, n] of counts) list.append(el('li', '', `${CARDS_BY_ID[id.replace(/\+$/, '')].name}${id.endsWith('+') ? '+' : ''}${n > 1 ? ` ×${n}` : ''}`));
+    deck.append(el('p', '', `${m.name}${hof.fame ? `, Hall of Fame No.${hof.fame}` : ''}${hof.date ? ` (${hof.date})` : ''}: ${hof.deck.length} cards.`), list);
+  }
+  if (!tiles.length) return null;
+  const box = el('div', 'pdx-lcd trn-show');
+  const row = el('div', 'trn-show-row');
+  row.append(...tiles);
+  box.append(row, ...(deck ? [deck] : []));
+  return box;
+}
+
+/** The badge they pinned on their own Trainer Card, by the partner on their page's screen. */
+function pinnedBadge(c, name) {
+  const b = BADGES_BY_ID[c.pin];
+  if (!b || b.locked || b.secret) return null;
+  const img = el('img', 'trn-pin');
+  img.src = badgeArt(b.id, true);
+  img.alt = b.name;
+  img.title = `${name}'s pinned badge: ${b.name}. ${b.text}.`;
+  return img;
 }
 
 function badgeRow(c, name) {
@@ -345,6 +444,10 @@ function sampleNotices(n) {
     your list), the Trainer Plaza (trainers on lately), and a banner for every trainer on your list, each opening the
     handheld on their Trainer Card, buddy, last seen, Visit (session 2) and Remove. One getDoc a trainer on your list
     or who added you, and one query each for the notes and the Plaza, each time it opens. */
+/** ?mycard: your own page, as a friend sees it, as a banner in the app (made here: nothing fetched or sent). */
+const MY_CARD = 'mycard';
+const myCardSample = () => new URLSearchParams(location.search).has(MY_CARD);
+
 export function trainersApp() {
   let panel = null, shelf = null, me = null, code = null, docs = new Map(), notes = [], plaza = [], state = 'loading', said = '', removing = null, openAt = null;
 
@@ -412,6 +515,7 @@ export function trainersApp() {
   function groups() {
     const out = [];
     const waiting = adders();
+    if (docs.has(MY_CARD)) { const ink = TIER_INK[docs.get(MY_CARD).card.tier]; out.push({ id: MY_CARD, friend: true, name: docs.get(MY_CARD).name, sub: 'You, as a friend sees you', b1: ink[0], b2: ink[1], cls: 'trn-banner', list: () => [MY_CARD] }); }
     if (waiting.length) out.push({ id: 'added', name: 'Added you', sub: `${waiting.length} trainer${waiting.length === 1 ? '' : 's'} to add back`, b1: '#ffd860', b2: '#c8601a', cls: 'trn-banner trn-added', list: adders });
     if (state === 'ready') out.push({ id: 'plaza', name: 'Trainer Plaza', sub: 'Trainers on lately', b1: '#6ad8e8', b2: '#1a4a8a', cls: 'trn-banner trn-plaza', list: () => plaza.map(e => e.uid) });
     for (const uid of friendsOf(getSave(), me)) {
@@ -468,7 +572,7 @@ export function trainersApp() {
       said = '';
       remount();
     });
-    keys.append(...visits, remove);
+    keys.append(...visits, ...(uid === MY_CARD ? [] : [remove]));
     return keys;
   }
 
@@ -503,7 +607,8 @@ export function trainersApp() {
       screen(g, uid) {
         const tier = docs.get(uid)?.card?.tier ?? blurbOf(uid)?.tier, mon = monImg(partnerOf(uid), 'pdx-mon bdx-art'), m = sprite(partnerOf(uid));
         if (!m.masked) mon.title = `${nameOf(uid)}'s partner, ${m.name}.`;
-        const nodes = [el('span', 'pdx-pad'), mon];
+        const doc = docs.get(uid), pin = doc && pinnedBadge(doc.card, doc.name);
+        const nodes = [el('span', 'pdx-pad'), mon, ...(pin ? [pin] : [])];
         if (tier) {
           const tag = el('span', 'pdx-role trn-role', `${tier[0].toUpperCase()}${tier.slice(1)} card`);
           tag.title = `The card's colour comes from badges: ${CARD_TIERS.map(t => (t.at ? `${t.name} at ${t.at}` : t.name)).join(', ')}. Violet once Eternatus is beaten.`;
@@ -514,7 +619,7 @@ export function trainersApp() {
       lines(g, uid) {
         const doc = docs.get(uid), b = blurbOf(uid), keys = g.friend ? friendKeys(uid) : addKeys(uid, g.id === 'added');
         const walk = sprite(buddyOf(uid));
-        if (doc) return [cardGrid(doc.card, doc.name), badgeRow(doc.card, doc.name), typed('', `Walking with ${walk.name}.`), keys,
+        if (doc) return [cardGrid(doc.card, doc.name), ...[showcase(doc.card, doc.name)].filter(Boolean), badgeRow(doc.card, doc.name), typed('', `Walking with ${walk.name}.`), keys,
           ...(g.friend ? [typed('muted', doc.base ? 'Visit walks round their Secret Base as they last left it.' : 'No Secret Base to visit yet.')] : [])];
         if (b) return [typed('', g.id === 'added' ? `${b.name} added you ${lastSeen(b.at).replace(/^Seen |^Online /, '')}.` : `${b.name}. ${lastSeen(b.at)}.`), blurbFacts(b), typed('', `Walking with ${walk.name}.`), keys];
         return [typed('muted', 'They haven\'t been on since Trainers came in.'), typed('muted', 'They\'ll show up here once they play signed in.'), keys];
@@ -541,6 +646,13 @@ export function trainersApp() {
     const at = panel;
     state = 'loading';
     remount();
+    if (myCardSample()) {
+      const save = getSave();
+      docs = new Map([[MY_CARD, readDoc({ ...trainerDoc({ code: 'AAAAAAAA', name: trainerName(), card: myCard(save), buddy: buddyKey(save), base: save.secretBase }), at: Date.now() })]]);
+      state = 'sample';
+      remount();
+      return;
+    }
     if (!cloudConfigured()) return;
     let s;
     try { s = await cloudSession(); } catch (err) { if (panel === at) { state = 'offline'; remount(); } return; }

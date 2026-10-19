@@ -31,7 +31,7 @@ import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
 import { FRIENDS } from './data/workshop.js';
-import { myCode } from './trainers.js';
+import { myCode, publishTrainer } from './trainers.js';
 import { formatCode } from './data/trainers.js';
 
 // shapes as polygons in a 16x16 box, scaled onto a 36x36 SVG
@@ -298,6 +298,8 @@ export const TIERS = [
   { id: 'gold', name: 'Gold', at: 40 },
 ];
 const earnedIds = (save) => new Set((save.badges || []).filter(id => EARNABLE.some(b => b.id === id)));
+/** A badge the card may pin for friends to see (`save.pinBadge`): earned, and never one of the Depths' secret ones. */
+export const pinnable = (id, save = getSave()) => !!id && earnedIds(save).has(id) && !BADGES.find(b => b.id === id)?.secret;
 /** The card's colour from the badges earned; violet once Eternatus is beaten. */
 export function cardTier(save = getSave()) {
   const earned = earnedIds(save);
@@ -453,6 +455,45 @@ function partnerPicker(body, done) {
   // players mixed the two up (2026-10-11): this one is the card's and the cover's, the one walking about is the PC's
   const note = el('p', 'tc-pick-note', 'Your partner shows on your Pokédex cover and this Trainer Card. The Pokémon that walks with you outside is your walking buddy: choose it at the PC in the Clearing.');
   body.replaceChildren(head, note, auto, ...groups);
+  head.querySelector('h2').tabIndex = -1;
+  body.scrollTop = 0;
+}
+
+/** The badge picker over the card's body: None, then every earned badge you may pin; a tap saves it, puts it on your
+    Trainers page and calls `done`. */
+function pinPicker(body, done) {
+  const save = getSave();
+  const head = el('div', 'tc-head');
+  head.append(el('h2', 'tc-title', 'PIN A BADGE'));
+  const back = el('button', 'tc-pick-back', 'Back');
+  back.type = 'button';
+  back.addEventListener('click', done);
+  head.append(back);
+  const pick = (id) => {
+    updateSave(d => { d.pinBadge = id; });
+    playSound('confirm');
+    publishTrainer();
+    done();
+  };
+  const none = el('button', `tc-pick-auto${pinnable(save.pinBadge, save) ? '' : ' on'}`, 'None');
+  none.type = 'button';
+  none.addEventListener('click', () => pick(null));
+  const grid = el('div', 'tc-pick-grid');
+  grid.append(...EARNABLE.filter(b => pinnable(b.id, save)).map(b => {
+    const btn = el('button', `tc-pick${b.id === save.pinBadge ? ' on' : ''}`);
+    btn.type = 'button';
+    btn.title = b.name;
+    btn.setAttribute('aria-label', `Pin ${b.name}`);
+    const img = el('img', '');
+    img.src = badgeArt(b.id, true);
+    img.alt = '';
+    img.draggable = false;
+    btn.append(img);
+    btn.addEventListener('click', () => pick(b.id));
+    return btn;
+  }));
+  const note = el('p', 'tc-pick-note', 'Your pinned badge shows on your page in other trainers\' Trainers app, beside your partner.');
+  body.replaceChildren(head, note, none, ...(grid.children.length ? [grid] : [el('p', 'tc-pick-note', 'Earn a badge first!')]));
   head.querySelector('h2').tabIndex = -1;
   body.scrollTop = 0;
 }
@@ -617,6 +658,17 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const foot = el('p', 'tc-foot', `${earned.size}/${EARNABLE.length} badges${tier.next ? ` · ${tier.next}` : ''}`);
   const body = into ?? $('trainer-body');
   const label = el('span', 'tc-case-label', 'BADGE CASE');
+  if (myCode() || new URLSearchParams(location.search).has('mycard')) {
+    // signed in, friends see your page: pin one badge for it (the Trainers app shows it by your partner)
+    const pinned = pinnable(save.pinBadge, save) ? save.pinBadge : null;
+    const pin = el('button', 'tc-pin-btn');
+    pin.type = 'button';
+    pin.title = pinned ? 'Your pinned badge, on your Trainers page. Tap to change it' : 'Pin a badge to your Trainers page';
+    if (pinned) { const art = el('img', ''); art.src = badgeArt(pinned, true); art.alt = ''; pin.append(art); }
+    pin.append(el('span', '', pinned ? 'Pinned' : 'Pin a badge'));
+    pin.addEventListener('click', () => { playSound('confirm'); pinPicker(body, redraw); });
+    label.append(pin);
+  }
   if (fresh.length > 1) {
     const all = el('button', 'tc-seen-all', 'Clear all !');
     all.type = 'button';

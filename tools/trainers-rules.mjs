@@ -40,6 +40,11 @@ await no(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB', { card: { ...card, hax
 await ok(setDoc(doc(A, 'trainers/uidA'), page('ABCDEFGH', { card: { ...card, rank: 2, top: 5, fave: 'cyndaquil', pillar: 18 } })), 'the card\'s newer numbers are taken');
 await ok(setDoc(doc(A, 'trainers/uidA'), page('ABCDEFGH', { card: { ...card, rank: -1, top: -1, fave: '', pillar: 0 } })), 'and their "none" values');
 await no(setDoc(doc(A, 'trainers/uidA'), page('ABCDEFGH', { card: { ...card, pillar: 5000 } })), 'a Sky Pillar floor past 999 is refused');
+const extras = { shinies: 3, ranger: 2, gyms: 4, gymsOf: 13, streak: 6, ken: 3, belt: 2, summits: 1, starters: 9, startersOf: 30, defeated: 12345,
+  sdays: 14, earned: 987654, fame: 7, best: 'eevee', sparkle: 4, pin: 'tide', rare: 'lapras', hof: '{"s":"squirtle","g":2,"sh":true,"f":7,"d":"2026-10-17","k":["bubble"]}' };
+await ok(setDoc(doc(A, 'trainers/uidA'), page('ABCDEFGH', { card: { ...card, ...extras } })), 'the card\'s extras are taken');
+await no(setDoc(doc(A, 'trainers/uidA'), page('ABCDEFGH', { card: { ...card, ...extras, sparkle: 6 } })), 'a Sparkle past ★5 is refused');
+await no(setDoc(doc(A, 'trainers/uidA'), page('ABCDEFGH', { card: { ...card, ...extras, hof: 'x'.repeat(1501) } })), 'a Hall of Fame win past 1,500 characters is refused');
 await no(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB', { card: { ...card, wins: -1 } })), 'a negative count is refused');
 await no(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB', { base: 'x'.repeat(600001) })), 'a base past 600,000 is refused');
 await ok(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB')), 'B writes their page');

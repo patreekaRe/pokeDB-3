@@ -1047,6 +1047,18 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .trn-cell small { font-size: 0.75rem; opacity: 0.7; }
 .trn-cell b { font-weight: 400; max-width: 100%; }
 .trn-fave { width: 30px; height: 30px; object-fit: contain; margin: -6px 0 -4px; }
+.trn-pin { position: absolute; top: 6px; right: 8px; width: 34px; height: 34px; object-fit: contain; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35)); }
+.trn-show { display: grid; gap: 8px; padding: 8px; }
+.trn-show-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
+.trn-show-tile { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 6px 4px; border: 2px solid rgba(0, 0, 0, 0.2); border-radius: 8px; background: rgba(255, 255, 255, 0.18); color: inherit; font: 0.75rem/1.2 var(--pixel-font); font-synthesis-weight: none; text-align: center; }
+button.trn-show-tile { cursor: pointer; }
+button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: currentColor; }
+.trn-show-tile small { font-size: 0.75rem; opacity: 0.7; white-space: nowrap; }
+.trn-show-tile b { font-weight: 400; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; }
+.trn-show-mon { width: 44px; height: 44px; object-fit: contain; }
+.trn-show-deck { font: 0.75rem/1.5 var(--pixel-font); font-synthesis-weight: none; }
+.trn-show-deck p { margin: 0 0 4px; }
+.trn-show-deck ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 10px; margin: 0; padding: 0; list-style: none; max-height: 9em; overflow: hidden auto; }
 .trn-keys { display: flex; gap: 8px; }
 .trn-keys .lb-btn { flex: 1; }
 .trn-keys .lb-btn:disabled { opacity: 0.5; cursor: default; translate: none; }
@@ -1455,6 +1467,9 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .tc-new { top: -5px; right: -5px; width: 13px; height: 13px; font-size: 12px; }
 .tc-seen-all { float: right; padding: 3px 7px; border: 0; border-radius: var(--round-xs); font: 0.75rem/1 var(--pixel-font);
   color: #3a1c0c; background: #ffd040; box-shadow: 0 0 0 2px #3a1c0c; cursor: pointer; }
+.tc-pin-btn { float: right; display: inline-flex; align-items: center; gap: 5px; margin: -4px 0 0 8px; padding: 3px 8px; border: 0; border-radius: var(--round-xs);
+  font: 0.75rem/1 var(--pixel-font); color: #fff; background: rgba(0, 0, 0, 0.3); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5); cursor: pointer; text-shadow: none; }
+.tc-pin-btn img { width: 20px; height: 20px; object-fit: contain; }
 /* a new relic, item or move (newFinds in the save) leaves the same trail: every Pokédex / Home key, the app's tile, its
    banner and slot, or the Moves tab and card, till it's been on screen */
 :where(.dex-news) { position: relative; }

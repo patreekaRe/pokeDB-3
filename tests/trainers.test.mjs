@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { CODE_LETTERS, CODE_LEN, FRIENDS_MAX, BASE_MAX, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend,
-  trainerDoc, checkTrainer, cardDoc, lastSeen, TRAINER_KEYS, CARD_KEYS, blurbDoc, addId, addDoc, plazaPick, PLAZA_SHOWN, PLAZA_KEYS, ADD_KEYS } from '../js/data/trainers.js';
+  trainerDoc, checkTrainer, cardDoc, lastSeen, TRAINER_KEYS, CARD_KEYS, NEW_CARD_KEYS, HOF_LEN, hofDoc, readHof, blurbDoc, addId, addDoc, plazaPick, PLAZA_SHOWN, PLAZA_KEYS, ADD_KEYS } from '../js/data/trainers.js';
 
 test('codes have no look-alikes and read either way', () => {
   for (const c of 'O0I1L') assert.ok(!CODE_LETTERS.includes(c));
@@ -106,4 +106,26 @@ test('the card\'s newer numbers: kept in bounds, and "none" on a page from befor
   assert.deepEqual([cardDoc({ top: -1 }).top, cardDoc({ top: 0 }).top, cardDoc({ rank: 99 }).rank], [-1, 0, 20]);
   assert.deepEqual([cardDoc({ shinies: 7, ranger: 3 }).shinies, cardDoc({ shinies: 7, ranger: 3 }).ranger], [7, 3]);
   assert.deepEqual([old.shinies, old.ranger], [0, -1]);
+});
+
+test('the card\'s extras: bounded, and a page from before them reads as nothing to show', () => {
+  const old = cardDoc({ tier: 'gold', wins: 3 });
+  assert.deepEqual([old.gyms, old.gymsOf, old.belt, old.best, old.pin, old.hof], [0, 0, 0, '', '', '']);
+  const c = cardDoc({ gyms: 4, gymsOf: 13, belt: 99, sparkle: 9, earned: 2e9, pin: 'x'.repeat(50), hof: 'y'.repeat(HOF_LEN + 1) });
+  assert.deepEqual([c.gyms, c.gymsOf, c.belt, c.sparkle, c.earned, c.pin.length, c.hof], [4, 13, 9, 5, 1e9, 32, '']);
+  for (const k of ['gyms', 'pin', 'hof', 'shinies']) assert.ok(NEW_CARD_KEYS.includes(k));
+  assert.ok(!NEW_CARD_KEYS.includes('pillar'));
+});
+
+test('the newest Hall of Fame win fits its key, and reads back only known ids', () => {
+  const deck = Array.from({ length: 200 }, (_, i) => `card-number-${i}+`);
+  const json = hofDoc({ starter: 'charmander', stage: 2, shiny: true, fame: 7, date: '2026-10-18', deck });
+  assert.ok(json.length <= HOF_LEN);
+  const w = readHof(json);
+  assert.deepEqual([w.starter, w.stage, w.shiny, w.fame, w.date], ['charmander', 2, true, 7, '2026-10-18']);
+  assert.ok(w.deck.length > 10 && w.deck.length <= 80);
+  assert.equal(readHof(json, id => id !== 'charmander'), null);
+  assert.equal(readHof(hofDoc({ starter: 'bulbasaur', deck: ['a', 'b', 'a'] }), undefined, id => id === 'a').deck.length, 2);
+  assert.equal(readHof('{oops'), null);
+  assert.equal(hofDoc(undefined), '');
 });
