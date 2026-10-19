@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { REAL_TYPES, realFactor, realMultiplier, speciesTypes, moveType, realBeats } from '../js/data/real-types.js';
-import { CHART, SPECIES, MOVES } from '../js/data/real-types-table.js';
+import { CHART, SPECIES, MOVES, GEN } from '../js/data/real-types-table.js';
 import { SAFARI_ROSTER } from '../js/data/safari.js';
 import { ENEMY_DEFS } from '../js/data/enemies.js';
 import { SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE } from '../js/data/cards.js';
@@ -10,14 +10,15 @@ import { pixelIcon } from '../js/icons.js';
 
 const TYPES = Object.keys(REAL_TYPES);
 
-test('the chart has all 18 types, each with a name and a pixel icon', () => {
+test('the chart has all 18 types (17 on Gen 5\'s), each with a name and a pixel icon', () => {
   assert.equal(TYPES.length, 18);
-  assert.deepEqual(Object.keys(CHART).sort(), [...TYPES].sort());
+  assert.deepEqual(Object.keys(CHART).sort(), TYPES.filter(t => GEN > 5 || t !== 'fairy').sort());
   for (const t of TYPES) assert.ok(pixelIcon(REAL_TYPES[t].icon), `${t}'s icon is drawn`);
 });
 
 test('no immunities, a x2 cap and a x0.5 floor', () => {
-  for (const a of TYPES) for (const d of TYPES) for (const d2 of [null, ...TYPES]) {
+  const chart = Object.keys(CHART);
+  for (const a of chart) for (const d of chart) for (const d2 of [null, ...chart]) {
     const f = realFactor(a, d2 && d2 !== d ? [d, d2] : [d]);
     assert.ok(f >= 0.5 && f <= 2, `${a} on ${d}/${d2}: ${f}`);
   }
@@ -31,7 +32,7 @@ test('no immunities, a x2 cap and a x0.5 floor', () => {
 });
 
 test('the battle multiplier is the game\'s own steps, and Neutral cards stay outside the chart', () => {
-  assert.equal(realMultiplier('fire', ['bug', 'steel']), SUPER_EFFECTIVE);
+  assert.equal(realMultiplier('fire', ['bug', 'steel']), SUPER_EFFECTIVE);   // x4, capped
   assert.equal(realMultiplier('water', ['water', 'dragon']), NOT_VERY_EFFECTIVE);
   assert.equal(realMultiplier('normal', ['ghost'], { card: true }), 1);
   assert.equal(realMultiplier('normal', ['rock'], { card: true }), 1);

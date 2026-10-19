@@ -1,11 +1,14 @@
 """Writes js/data/real-types.js: the real 18-type chart and the real types of every Safari Pokemon and of every move
 its def names, from PokeAPI's tables. Run it again after adding Safari Pokemon or moves (it needs node and the network):
 
-    python3 tools/real-types.py
+    python3 tools/real-types.py           today's 18 types (Gen 6 on: Clefairy is Fairy); what the game ships
+    python3 tools/real-types.py --gen5    Black and White's 17 (no Fairy, Steel resisting Ghost and Dark, Clefairy Normal)
 
-Types are today's (Gen 6 on: Clefairy is Fairy), to match the 18-type chart.
+docs/duo-design.md's open choice 13 picks between them.
 """
 import csv, io, json, os, re, subprocess, sys, urllib.request
+
+GEN5 = '--gen5' in sys.argv
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV = 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/{}.csv'
@@ -40,10 +43,29 @@ def main():
     slots = {}
     for r in table('pokemon_types'):
         slots.setdefault(r['pokemon_id'], []).append((int(r['slot']), types[r['type_id']]))
+    move_ids = {r['identifier']: r['id'] for r in table('moves')}
     moves = {r['identifier']: types[r['type_id']] for r in table('moves')}
+    efficacy = {(r['damage_type_id'], r['target_type_id']): int(r['damage_factor']) for r in table('type_efficacy')}
+    if GEN5:
+        # a "past" row holds what was true up to its generation: the earliest one from Gen 5 on is Gen 5's
+        past = {}
+        for r in table('pokemon_types_past'):
+            if int(r['generation_id']) >= 5:
+                past.setdefault(r['pokemon_id'], {}).setdefault(int(r['generation_id']), []).append((int(r['slot']), types[r['type_id']]))
+        for pid, by_gen in past.items():
+            slots[pid] = by_gen[min(by_gen)]
+        for r in sorted(table('type_efficacy_past'), key=lambda r: -int(r['generation_id'])):
+            if int(r['generation_id']) >= 5:
+                efficacy[(r['damage_type_id'], r['target_type_id'])] = int(r['damage_factor'])
+        groups = {r['id']: int(r['generation_id']) for r in table('version_groups')}
+        names = {v: k for k, v in move_ids.items()}
+        for r in sorted(table('move_changelog'), key=lambda r: -int(r['changed_in_version_group_id'])):
+            if r['type_id'] and groups[r['changed_in_version_group_id']] > 5 and r['move_id'] in names and r['type_id'] in types:
+                moves[names[r['move_id']]] = types[r['type_id']]
+        ORDER.remove('fairy')
     chart = {}
-    for r in table('type_efficacy'):
-        a, d, f = types[r['damage_type_id']], types[r['target_type_id']], int(r['damage_factor'])
+    for (ai, di), f in efficacy.items():
+        a, d = types[ai], types[di]
         if a in ORDER and d in ORDER and f != 100:
             chart.setdefault(a, {}).setdefault({200: 'super', 50: 'half', 0: 'none'}[f], []).append(d)
 
@@ -69,6 +91,8 @@ def main():
         return k if re.fullmatch(r'[a-z]+', k) else f"'{k}'"
 
     lines = ['/* Written by tools/real-types.py from PokeAPI\'s tables: run it again after adding Safari Pokémon or moves. */', '',
+             f"/** Which chart and typings: 6 is today's 18 types, 5 Black and White's 17 (no Fairy; the script's --gen5). */",
+             f"export const GEN = {5 if GEN5 else 6};", '',
              '/** The real chart, attacker -> what it hits for x2 (`super`), x0.5 (`half`) and x0 (`none`). */',
              'export const CHART = {']
     for a in ORDER:

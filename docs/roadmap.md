@@ -65,7 +65,8 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    Zorua / Poochyena / Purrloin.
 1. **The duo and the Duo pass** (effort: high) on today's three types, sim mirror, bot check.
 2. ~~**Real types in the Safari**~~ done 2026-10-19 on `duo-types-realtypes`, merged into `duo-types` (both repos;
-   `docs/roadmap-done.md`, `docs/reference/safari.md`'s Real types). Open for the user: the x0.5 floor (a x0.25 would be a
+   `docs/roadmap-done.md`, `docs/reference/safari.md`'s Real types). Built on the 18-type chart as the prompt said; the design doc's open 13 (Gen 5's 17) is
+   `tools/real-types.py --gen5`. Open for the user: the x0.5 floor (a x0.25 would be a
    step the game hasn't got; one line in `realFactor()`), and Grass's 6-point drop in the Safari, left for the balance pass.
 3-14. **One new type in two sessions** (effort: high for a type's first session, which brings its new mechanics;
    medium for its second, which follows them) (~35 cards each, 70 a type; card rewards split 50/50 between a duo's types): its cards with art, `describe()` / `cardTerms()` lines, Ability, starters (GIFs,

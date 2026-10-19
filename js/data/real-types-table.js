@@ -1,5 +1,8 @@
 /* Written by tools/real-types.py from PokeAPI's tables: run it again after adding Safari Pokémon or moves. */
 
+/** Which chart and typings: 6 is today's 18 types, 5 Black and White's 17 (no Fairy; the script's --gen5). */
+export const GEN = 6;
+
 /** The real chart, attacker -> what it hits for x2 (`super`), x0.5 (`half`) and x0 (`none`). */
 export const CHART = {
   normal: { half: 'rock steel', none: 'ghost' },
