@@ -1016,6 +1016,14 @@ uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS 
    bot-check at Levels 0/3/5, add a patch-notes line and give me a githack link. Push to main."
 Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` / `cardTerms()` lines and the sim mirror.
 
+**A duo as two separate decks?** (raised by the user, 2026-10-19, after session 1: "it should be as if you're controlling two
+completely different starters? 10 + 10?"; undecided). Built today: one shared deck, 5 + 5 (answer 6), any card playable
+whoever is out. Options discussed: (a) keep it; (b) one shared deck of 10 + 10 (simple, but a 20-card deck draws its best
+cards half as often, so likely weaker, with no more of a two-starters feel); (c) **two decks**, each partner its own 10 with
+its own draw and discard piles, your hand its cards, a switch bringing out the partner's hand (a high-effort engine session
+plus the sim: which deck a reward joins, the Mart's and Center's picks, the deck viewer; open: does a switch keep each
+hand or deal a new one, and its cost). Claude's view: (c) is the one that feels like two starters; (b) isn't worth it.
+
 **Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
 - **The duo** (built first, Safari only): bring two starters of different types, one out at a time. Switch for 1 PP
   (maybe free once a turn); the one out sets your type for the enemy's hits (the intent shows the move's type, so you
