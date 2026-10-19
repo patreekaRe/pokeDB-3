@@ -166,6 +166,12 @@
 .title-screen.hub-mode:not([hidden]) { animation: none; }
 @media (prefers-reduced-motion: reduce) { .title-screen.hub-on .title-center { animation: none; display: none; } }
 
+/* the Clearing, and the mall or Secret Base over it, cover the character select and the scenery under it whole: shown,
+   they stayed full-screen layers a phone kept in memory (~12 MB each at 3x) and the select's sky painted every frame
+   (2026-10-19); the title's fade out (.away) shows them again as the select comes in */
+body:has(#title-screen.hub-mode:not([hidden]):not(.away)) :is(#start-screen, #backdrop, #scene-bg, #scene-light),
+body:has(> .base3d) :is(#start-screen, #backdrop, #scene-bg, #scene-light) { visibility: hidden; }
+
 /* the walk between the hub and the Secret Base fades through black (curtain() in js/hd2d.js) */
 .hd2d-curtain { position: fixed; inset: 0; z-index: 2000; background: #000; opacity: 0; pointer-events: none; transition: opacity 320ms ease; }
 .hd2d-curtain.on { opacity: 1; pointer-events: auto; }
