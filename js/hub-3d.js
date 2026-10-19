@@ -2459,9 +2459,9 @@ async function standGuest(g, l) {
 
 const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
-  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, refresh: 'And remember: refresh the page often! The game gets updates all the time.',
+  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, refresh: 'And remember: tap the red refresh button up in the corner often! The game gets updates all the time.',
     hello: 'Ah, there you are! Good to see you back. Let me share something from my research...' },
-  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.35, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!',
+  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.35, refresh: 'Oh, and tap the red refresh button up in the corner often, okay? New updates land all the time!',
     hello: 'Oh, hi! Up late too? Perfect timing, I just jotted this one down in my notes...' },
 ];
 const HINTS = [

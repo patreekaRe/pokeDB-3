@@ -3047,3 +3047,8 @@ not 2560 (`GROUND_MAX`, ~57 -> ~35 MB); `KEEP_ROOMS` 2 with the newest town neve
 that many rooms. Lantern Village 215 -> 183 MB, the Secret Base 89 -> 74, Mall 2F 173 -> 154, Britt's gym 128 -> 106, a
 boss fight 79 -> 46. Checked headless: every cut MP3 decodes past its loop (ffmpeg and Chromium), the four new joins as clean
 as the old, each song wraps at its new loop end, no page errors; tests pass.
+
+**The Clearing's refresh key** (2026-10-19, the user's ask): the title corner's Refresh stands alone top right in the
+Clearing as a small round key in the shell colour (a quieter take on the reverted 2026-10-17 key: look only, the same
+`refreshGame()`), the faint "Updates" under it; Oak and Sonia's reminder points at it. Patch 1.26 "Well Met" cut, as NEXT
+reached 12. Checked headless on a phone and a wide screen: the key top right, takes the tap, no page errors; tests pass.
