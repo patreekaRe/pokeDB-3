@@ -1888,10 +1888,20 @@ function horizonRow(scale) {
 
 // a film over the whole screen (a biome's or a place's, a journey's, the crossroads): the scenery under it holds still. Drawn on its own
 // 30 a second timer, it made every other film frame twice as heavy, and the films stuttered on a phone (2026-10-18)
-const filmOver = () => !!document.querySelector('.biome-intro:not(.leaving), #travel-scene:not([hidden]), #crossroads-scene:not([hidden])');
+// (a selector list made querySelector walk the whole page, ~13,000 elements on the map, 25 times a second: 2026-10-19)
+const intros = document.getElementsByClassName('biome-intro');
+const filmOver = () => [...intros].some(e => !e.classList.contains('leaving')) || $('travel-scene')?.hidden === false || $('crossroads-scene')?.hidden === false;
 
-// a 3D place over the scenery (the arena, a walk-in room, the Mart) only hides it, and it drew on under every one (2026-10-18)
-const unseen = () => { const c = getComputedStyle(canvas); return c.display === 'none' || c.visibility === 'hidden'; };
+// a 3D place over the scenery (the arena, a walk-in room, the Mart) only hides it, and it drew on under every one (2026-10-18).
+// Asked four times a second, not every frame: getComputedStyle forced a style pass each time, ~40 ms a second on the map
+let unseenAt = -1e9, unseenWas = false;
+const unseen = () => {
+  const now = performance.now();
+  if (now - unseenAt < 250) return unseenWas;
+  unseenAt = now;
+  const c = getComputedStyle(canvas);
+  return unseenWas = c.display === 'none' || c.visibility === 'hidden';
+};
 
 function frame() {
   if (document.hidden || !$('title-screen').hidden || filmOver() || unseen()) return;

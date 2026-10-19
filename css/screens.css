@@ -5689,7 +5689,7 @@ body:has(.loading-mark.out) #reward-screen.in-room .room-bar { animation: loadin
 /* ---------- the walk-in 3D Poké Mart (js/mart-3d.js, branch pokemart-3d) ---------- */
 /* the shop's tiles stay in the page (their buttons take the two-tap Buy) but the 3D shelves show the wares instead */
 #reward-options.mart-window:is(.m3d, .m3d-wait) { visibility: hidden; pointer-events: none; }
-#reward-options.mart-window:is(.m3d, .m3d-wait) * { visibility: hidden !important; pointer-events: none !important; }
+#reward-options.mart-window:is(.m3d, .m3d-wait) * { visibility: hidden !important; pointer-events: none !important; animation-play-state: paused !important; }
 body:has(#reward-options:is(.m3d, .m3d-wait)) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
 /* the hidden ware grid still takes its height, which pushed the sticky box down under the room bar on a short phone */
 body:has(#reward-options.m3d) #reward-screen .reward-bottom {
