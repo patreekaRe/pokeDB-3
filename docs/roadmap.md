@@ -1130,6 +1130,9 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   stops on leaving, the title's light loop no longer restarts under the Clearing; the Clearing's ~5 MB a mall / base trip
   leak stopped; the covered select screen hidden. Fights don't leak. `tools/budget-check.mjs` now guards all of it
   (CLAUDE.md's testing step 3). Next levers: a room's GIF-frame canvases, the map's full-screen layers.
+  Open (2026-10-19): `--only=trips` passes even with that leak's fix in `sleepGL()` switched off (heap +1.7 MB over four
+  trips), so the budget check doesn't catch it headless any more; a delayed `webglcontextlost` meant to mimic an iPhone
+  didn't either. Parked on branch `claude/budget-late-loss-wip`, not merged. The fix itself stays on `main`.
   Round eight (2026-10-19, a check of the Safari shinies and the Plaza's buddies): the Outfitter drew at full rate under
   the full-screen Shiny Exchange (~840 draws/s headless, now 0 till it closes), and on a phone that slowdown could make the
   mall's keepUp() step its shadows or resolution down for good. The buddies cost ~1.7 MB and no measurable draws (a walking
