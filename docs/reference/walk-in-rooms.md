@@ -60,6 +60,15 @@ from this note if needed. Sludge Pit and Team Rocket have no Leave: walk out by 
 never one `forgetRooms()` lets go (`forgetTowns()` does, on the way out), so a town keeps itself and its last home. The map
 warms only that many of the next step's rooms (`warmEvent3d()` in `js/run.js`, the gym last so it's kept); a third ? room
 reachable is built when it's walked into.
+
+**One side-wall painting** (2026-10-19, the user's ask: the tab still reloading mid-run). `shell()` paints a room's side
+wall once and both walls share its material, unless the painter takes `left` (only `careSide` does); a side wall's glow
+map is dropped, since no side material ever used one. Every other room painted the same wall twice and kept the copy all
+run; the cave's right wall was also painted as a back wall (`caveWall(…, left)` read `left` as "is a side"). Measured
+(`tools/memory-probe.mjs`, `tools/budget-check.mjs`): the towns 10-21 MB less each, Britt's gym 106 -> 97, the dojo
+154 -> 145, a wild ? room ~4.5 less. `tools/run-probe.mjs` counts memory fight after fight on one page (budget-check loads
+each place fresh): over 11 rounds the map levels off near 120 MB (no growth from fight to fight) and each fight peaks
+near 185 MB, the arena awake over what the run keeps (the last two ? rooms, the Center, the Mart, the song playing).
 - **Loading and a second try** (2026-10-18, the user's ask after the Moon Dance showed its pixel room on a phone): the ? rooms,
   the gym, towns and homes (`event3d()`), the Center and the Mart mount through `load3d()` in `js/run.js`. A failed mount
   is tried once more a second later (the mount functions forget a failed try's `visit` / `runId`, so the retry is a first

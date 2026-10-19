@@ -9,6 +9,18 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**▶ PLAYTEST ON THE LIVE SITE. Mid-run reloads, round seven: done 2026-10-19, on `main`, waiting on the user's phone**
+(`docs/reference/walk-in-rooms.md`, "One side-wall painting"). The full `tools/budget-check.mjs` passed before the change;
+a new `tools/run-probe.mjs` (fight after fight on one page) found no growth over a run, the map level near 120 MB and each
+fight peaking near 185 MB. Fixed: every ? room, gym and town painted its side wall twice (towns 10-21 MB less each, the
+gym 9, the dojo 8; budgets recorded lower). On a phone: a long run, towns and gyms included; Settings' Save group lists
+any reload (`js/crumbs.js`) with where it happened. **Next, if it still reloads** (▶ Run in: CLOUD), the next offenders
+measured: a Center or Mart left for the map stays awake (`putAway()` keeps its context for the rooms the map warms, but
+only `js/event-3d.js` warms in its own; ~26 MB of buffers beside the warmed arena), and the song playing (15-35 MB decoded;
+a lower `AudioContext` sample rate would halve it, a sound-quality call for the user). Prompt: "▶ Run in: CLOUD. Read
+walk-in-rooms.md's 'One side-wall painting'. Run tools/run-probe.mjs, then put a Center or Mart left for the map to sleep
+(sleepGL after putAway), re-run it and the budget check, and push. My phone's reload log says: [paste Settings' list]."
+
 **▶ PLAYTEST ON THE LIVE SITE. Safari shinies everywhere: done 2026-10-19, on `main`, waiting on the user** (the three
 sessions are in `docs/roadmap-done.md`). Look at `?sparkle=3` (every Safari shiny lent at ★3: the Safari Pokédex's ✨
 switch, Secret Base residents with `?base&guests&sparkle=3`), `?lbsample=safari` (the ✨ rows) and the Ranger board's

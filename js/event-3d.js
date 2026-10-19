@@ -251,8 +251,11 @@ function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '
     back.receiveShadow = true;
     B.group.add(back);
   }
+  // one painting for both side walls unless the painter tells left from right: every other room painted the same wall
+  // twice, its copy kept for the whole run and on the GPU while you stood in it (2026-10-19). A side wall never glows.
+  const sides = (side.length ? [side(true), side(false)] : [side()]).map(p => (delete p.glow, std({ map: texOf(p), alphaTest: open ? 0.5 : 0, roughness: 0.9 })));
   for (const s of [-1, 1]) {
-    const inside = std({ map: texOf(side(s < 0)), alphaTest: open ? 0.5 : 0, roughness: 0.9 });
+    const inside = sides[s < 0 ? 0 : sides.length - 1];
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.4, TOP, ROWS), s < 0 ? [inside, c, c, c, c, c] : [c, inside, c, c, c, c]);
     m.position.set(s * (COLS / 2 + 0.2), TOP / 2, 0);
     m.receiveShadow = true;
@@ -2115,7 +2118,7 @@ function dais(x, z, C) {
 async function buildGrotto(figs, { biome }) {
   const C = caveOf(biome);
   B.glowing = [];
-  shell({ floor: caveFloor(C), wall: caveWall((COLS + 0.8) * U, C, false), side: (left) => caveWall(ROWS * U, C, left), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06060a' });
+  shell({ floor: caveFloor(C), wall: caveWall((COLS + 0.8) * U, C, false), side: () => caveWall(ROWS * U, C, true), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06060a' });
   B.env = { hemi: [C.crystal[1], C.rock[4], 0.75], sun: [C.beam, 0.55], bloom: 0.65 };
   B.shotTop = 3.2;
   const rnd = seeded(71), cx = tileX(5), cz = tileZ(2);
@@ -11247,7 +11250,7 @@ async function buildCamp(figs, h) {
   const floor = caveFloor(C, [[9, 4.2, 'rgba(255,170,90,0.35)', 3.2], [3.5, 3.5, 'rgba(200,150,255,0.35)', 2.6], [6.5, 1.0, 'rgba(190,110,255,0.5)', 3.4]]);
   riftCracks([floor.getContext('2d'), floor.glow.getContext('2d')], (mid + 0.5) * 16, 16, 9, 3.6 * 16, seeded(62), ['rgba(176,96,240,0.5)', '#f0d4ff'], 0.7, [0.15, Math.PI - 0.15]);
   shell({ floor,
-    wall: riftWall((COLS + 0.8) * U, C, wx(mid + 0.5)), side: (left) => caveWall(ROWS * U, C, left), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06040c' });
+    wall: riftWall((COLS + 0.8) * U, C, wx(mid + 0.5)), side: () => caveWall(ROWS * U, C, true), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06040c' });
   B.env = { hemi: ['#c8b0f0', C.rock[4], 0.85], sun: ['#e8d8ff', 0.6], bloom: 0.8 };
   B.shotTop = 3.7;
   B.talks = new Set();

@@ -23,8 +23,15 @@ const screen = () => page.evaluate(() => document.body.dataset.screen || '');
 const count = async (label) => {
   const p = await page.evaluate(() => window.__probe());
   console.log(`${label.padEnd(26)} ${String(p.totalMB).padStart(6)} MB  heap ${String(p.heapMB).padStart(5)}  awake ${p.contextsAwake} asleep ${p.contextsAsleep} (${p.asleepHeldMB} MB)  textures ${p.textures}  canvases ${JSON.stringify(p.canvasCount)}`);
+  if (label.startsWith('map')) {
+    console.log(`    canvases MB ${JSON.stringify(p.canvasMB)}  GL MB ${JSON.stringify(p.glMB)}  audio ${p.audioMB}  images ${p.imagesMB}  bitmaps ${p.bitmapsMB}`);
+    const now = Object.fromEntries(p.bySite.map(l => { const [mb, , ...k] = l.split(' '); return [k.join(' '), Number(mb)]; }));
+    for (const [k, mb] of Object.entries(now)) if (mb - (seen[k] || 0) >= 1) console.log(`    + ${(mb - (seen[k] || 0)).toFixed(1)} MB ${k}`);
+    seen = now;
+  }
   return p;
 };
+let seen = {};
 
 /** Clicks through whatever stands between the run and the map again, for up to `ms`. */
 async function backToMap(ms = 40000) {

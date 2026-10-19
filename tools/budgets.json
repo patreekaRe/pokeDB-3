@@ -54,32 +54,32 @@
   "hidden": []
  },
  "town-shrine": {
-  "draws": 374,
-  "mb": 185.7,
+  "draws": 376,
+  "mb": 164.9,
   "awake": 1,
   "hidden": []
  },
  "town-wastes": {
-  "draws": 428,
-  "mb": 176,
+  "draws": 435,
+  "mb": 165.2,
   "awake": 1,
   "hidden": []
  },
  "town-ruins": {
-  "draws": 486,
-  "mb": 174.8,
+  "draws": 489,
+  "mb": 155.7,
   "awake": 1,
   "hidden": []
  },
  "town-thornwood": {
-  "draws": 366,
-  "mb": 181.5,
+  "draws": 363,
+  "mb": 169.6,
   "awake": 1,
   "hidden": []
  },
  "town-savanna": {
-  "draws": 364,
-  "mb": 184.7,
+  "draws": 369,
+  "mb": 174.7,
   "awake": 1,
   "hidden": []
  },
@@ -96,20 +96,20 @@
   "hidden": []
  },
  "event-spring": {
-  "draws": 243,
-  "mb": 124.2,
+  "draws": 246,
+  "mb": 124.6,
   "awake": 1,
   "hidden": []
  },
  "gym": {
   "draws": 483,
-  "mb": 106.2,
+  "mb": 97.3,
   "awake": 1,
   "hidden": []
  },
  "dojo": {
   "draws": 232,
-  "mb": 153.5,
+  "mb": 145.2,
   "awake": 1,
   "hidden": []
  },
