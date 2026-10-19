@@ -54,10 +54,10 @@ const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
 const BOSS_PRELUDE_LINES = { clearing: 'The Ancient Tree stirs...', shrine: 'The shrine lanterns answer...', ruins: 'The water round the altar begins to churn...', wastes: 'The crater rumbles...', thornwood: 'The Heart Tree\'s roots begin to writhe...', savanna: 'The air above Sun Rock begins to blaze...', depths: 'The crystals hum with a terrible energy...' };
-const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...' };
+const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...', powerplant: 'The generators begin to roar...' };
 
 /** Relics that boost attacks of one type, by the type of your starter. */
-const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water' };
+const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water', electric: 'bar-magnet' };
 
 /** The current battle, or null when no battle is running. */
 let battle = null;
@@ -155,7 +155,8 @@ const battleTypes = () => battle.duo?.types ?? [battle.starter.type];
     Stone's Overgrow 10) and a climb's augments. A duo's is the one out's (switchOut()). */
 function abilityFor(type, relics, aug) {
   const base = ABILITIES[type] ?? null;
-  const stone = base?.id === 'torrent' && relics.includes('water-stone') ? 2 : base?.id === 'overgrow' && relics.includes('leaf-stone') ? 7 : 0;
+  const stone = base?.id === 'torrent' && relics.includes('water-stone') ? 2 : base?.id === 'overgrow' && relics.includes('leaf-stone') ? 7
+    : base?.id === 'static' && relics.includes('thunder-stone') ? 2 : 0;
   return base && (aug.abilityAdd || aug.abilityMult || stone) ? { ...base, amount: (base.amount + stone + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
 }
 /** Battle speed (Settings, js/settings.js): 2x halves the waits of the enemy's turn and your hits; CSS halves their
@@ -294,7 +295,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
       burn: run.relics.includes('flame-orb') ? 3 : 0,
       seed: (run.relics.includes('gooey-mulch') ? 2 : 0) + (aug.startSeed || 0),   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
       sap: 0,                         // its attacks deal this much less, all fight
-      static: 0,                      // Electric's meter: at staticCap() it's Paralyzed and loses its move
+      static: run.relics.includes('light-ball') ? 3 : 0,   // Electric's meter: at staticCap() it's Paralyzed and loses its move
       paras: 0,                       // times it's been Paralyzed this fight: each raises the next cap by 5
       weak: (aug.startWeak || 0) + (run.relics.includes('sachet') ? 2 : 0),               // turns left dealing WEAK_MULT damage
       vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
@@ -584,6 +585,7 @@ function beginPlayerTurn() {
   if (p.focusEachTurn) { b.focus += p.focusEachTurn; pop('player-zone', `🧘 +${p.focusEachTurn} next attack`, 'note good', 120); }   // Meditate
   if (p.weakEachTurn) applyDebuff('weaken', p.weakEachTurn);
   if (p.staticEachTurn) applyStatic(p.staticEachTurn);
+  if (p.staticBlock && b.enemy.static) gainBlock(b.enemy.static * p.staticBlock);   // Electric Seed
   if (p.tideEachTurn) gainTide(p.tideEachTurn);
   if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
   if (hasRelic('blue-flute')) gainTide(1);
@@ -616,7 +618,7 @@ function turnDraw() {
   return HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
     + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0)
-    + (hasRelic('water-stone') ? 1 : 0);
+    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0);
 }
 
 /* The opening hand can't be tapped until it has finished sliding in: a tap meant for the intro, or one landing on a
@@ -889,6 +891,8 @@ function effectsOf(card, x = 0) {
   if (e.ifEnemyAttacks && ['attack', 'drain'].includes(currentMove().kind) && !paralyzing()) addExtras(e, e.ifEnemyAttacks);
   if (e.ifFull && paralyzing()) addExtras(e, e.ifFull);
   if (e.ifSwitched && b.switchesTurn) addExtras(e, e.ifSwitched);
+  if (e.blockPerStatic) e.block = (e.block || 0) + e.blockPerStatic * b.enemy.static;   // Faraday Cage
+  if (e.blockPerSwitch) e.block = (e.block || 0) + e.blockPerSwitch * b.switches;       // Volt Guard
   return e;
 }
 
@@ -974,6 +978,7 @@ async function playCard(uid) {
   const cost = costOf(card);
   const x = cost === 'X' ? b.energy : 0;
   b.energy -= cost === 'X' ? b.energy : cost;
+  if (hasRelic('zap-plate') && cost !== 'X' && cost >= 3) gainBlock(8);   // Overcharge's payoff
   if (!card.power && (card.exhaust || corrupts(card) || lumCures(card))) burnOut(uid);   // it burns away as it's played
   else flyCard(uid, card);
   if (card.safari && card.from && battleFx() && safariSparkle(card.from) >= 2) shinySparkle($('player-zone'));   // its shiny's Sparkle ★2
@@ -1019,7 +1024,7 @@ async function playCard(uid) {
     switched();
     renderAll();
   }
-  if (!b.hand.length && hasRelic('magnet')) { draw(1); pop('player-zone', '🧿 Magnet', 'note good'); }
+  if (!b.hand.length && hasRelic('magnet')) { draw(1); pop('player-zone', '🧿 Quick Powder', 'note good'); }
   b.busy = false;
   renderAll();
 }
@@ -1214,6 +1219,7 @@ function applyEffects(e) {
   if (e.vulnerable) applyDebuff('vulnerable', e.vulnerable);
   if (e.seed)       applyDebuff('seed', e.seed);
   if (e.static)     applyStatic(e.static);
+  if (e.staticMult && b.enemy.static) { b.enemy.static *= e.staticMult; pop('enemy-zone', `⚡ Static ×${e.staticMult}`, 'note', 150); }   // Static Storm
   if (e.sap)        applyDebuff('sap', e.sap);
   if (e.block)      gainBlock(cardBlock(e.block));
   if (e.blockMult && b.block) gainBlock(b.block * (e.blockMult - 1));
@@ -1600,6 +1606,8 @@ async function itemEffects(e) {
   if (e.weaken)   applyDebuff('weaken', e.weaken);
   if (e.vulnerable) applyDebuff('vulnerable', e.vulnerable);
   if (e.seed)     applyDebuff('seed', e.seed);
+  if (e.static)   applyStatic(e.static);
+  if (e.staticMult) { b.enemy.static *= e.staticMult; pop('enemy-zone', `⚡ Static ${b.enemy.static}!`, 'note'); }   // Shock Drive
   if (e.tide)     gainTide(e.tide);
   if (e.maxHp)    { b.maxHp += e.maxHp; b.hp += e.maxHp; pop('player-zone', `💚 Max HP +${e.maxHp}`, 'heal'); playSound('stat-up'); statFx('player'); }
   if (e.block)    { b.block += e.block; pop('player-zone', `+${e.block} 🛡️`, 'block'); statFx('player'); }
@@ -2009,6 +2017,7 @@ async function endTurn() {
   if (b.flex) { b.strength -= b.flex; b.flex = 0; }
   if (hasRelic('lagging-tail') && b.played <= 3) b.drawNext += 3;   // StS's Pocketwatch
   if (b.powers.strengthBlock && b.strength > 0) gainBlock(b.strength * b.powers.strengthBlock);   // Overgrowth
+  if (b.powers.energyBlock && b.energy > 0) gainBlock(b.powers.energyBlock * b.energy);   // Dynamo
   if (b.aug.patience && b.energy > 0) gainBlock(b.aug.patience * b.energy);   // Patience
   if (b.aug.tideBlock && b.tide > 0) gainBlock(b.aug.tideBlock * b.tide);       // Tidal Armor
   if (b.aug.handHurt && b.hand.length) loseHp(b.aug.handHurt * b.hand.length);  // Pandemonium
@@ -2107,8 +2116,9 @@ async function enemyTurn() {
   // the next Paralysis takes 5 more.
   const stuck = paralyzing();
   if (stuck) {
-    en.static = 0;
+    en.static = hasRelic('electric-memory') ? Math.floor(en.static / 2) : 0;
     en.paras += 1;
+    if (hasRelic('electirizer')) { b.drawNext += 2; pop('player-zone', '📚 +2 cards next turn', 'note good', 300); }
     $('enemy-portrait-box').classList.remove('charging');
     pop('enemy-zone', '⚡ Paralyzed!', 'note good');
     playSound('stat-down');
@@ -2166,6 +2176,7 @@ async function enemyTurn() {
         if (back) { const dealt = hurtEnemy(back); pop('enemy-zone', dealt > 0 ? `-${dealt} 🪞` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 450); }
       }
       if (hasAbility('static')) applyStatic(b.ability.amount, 450);   // Static: each attack on you charges it
+      if (b.powers.thornStatic) applyStatic(b.powers.thornStatic, 500);   // Electromorphosis
       if (move.kind === 'drain') {
         en.hp = Math.min(en.maxHp, en.hp + move.heal);
         pop('enemy-zone', `+${move.heal} HP`, 'heal', 200);
@@ -2695,6 +2706,10 @@ function switched() {
   if (p.switchBlock) gainBlock(p.switchBlock);
   if (p.switchDraw) draw(p.switchDraw);
   if (p.switchStrength) gainStrength(p.switchStrength);
+  if (p.switchWeak) applyDebuff('weaken', p.switchWeak);       // Shock Tactics
+  if (p.switchStatic) applyStatic(p.switchStatic);              // Galvanize
+  if (p.switchSap) applyDebuff('sap', p.switchSap);             // Minus
+  if (hasRelic('eject-button')) gainBlock(4);
 }
 
 /** The partner's chip: its portrait in its type's colour, with ▲ when the coming hit is super effective on it and ▼

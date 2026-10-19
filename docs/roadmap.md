@@ -96,14 +96,25 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    grass 69, water 59). Playtest: the githack link with `?duorun&duopool&coins=500` (the Duo key, Electric lent), or a
    solo fight `?arena=fight&starter=shinx&cards=volt-switch,discharge,electric-terrain`. **Waiting on the user**: the
    playtest, and whether Static's numbers feel right (a wild one Paralyzed at 7).
-Prompt for session 4, Electric's second, **next** (▶ Run in: CLOUD, effort: medium; attach both pokeDB-3 and pokeDB-sim,
-start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md section 5 (Electric, and its first session's
-card table and bot check), docs/reference/safari.md's duo section, cards.md and card-design.md. Build Electric's second
-session: write the other ~36 cards' table into the doc first (10 common, 18 uncommon, 8 rare, defence-leaning: the first
-half is attack-heavy), then the cards with art (js/card-art-electric.js), the other four starter lines (Mareep, Pichu,
-Elekid, Tynamo: back GIFs, SPRITE_FIT, BODY_X, cries, DUO_STARTERS, DUO_LINES), the Power Plant's data on a recoloured
-area (date-gated, the five lines moved in), Magnet + 6 Electric relics + 2 items, the Card index's Electric tab, the sim
-mirror and a bot check of Electric's pairs. Push only to duo-types in both repos and give me a githack link."
+4. ~~**Electric's second**~~ done 2026-10-19 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Electric's
+   second session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 36 more cards (defence-leaning, 74
+   in all) with art, Magnet (the old `magnet` relic renamed Quick Powder) + 6 relics, Electric Gem and Shock Drive, the
+   Card index's Electric tab, Mareep / Pichu / Elekid / Tynamo looks, and **the Power Plant** (a 7th area, date-gated by
+   `SAFARI_FROM`, Peak's painters recoloured). Bot (300 a duo): electric+fire / +grass / +water 64.7 / 43.7 / 36.3, ~7 under
+   session 3's Electric, still between Grass and Water as a partner: left for the balance pass (15). Playtest: the
+   githack link with `?duorun&duopool&powerplant&coins=500`, or `?area=powerplant`, `?bossfight=powerplant&starter=pichu`.
+   **Waiting on the user**: the playtest; the Quick Powder rename; **`SAFARI_FROM` must move to the day after the branch
+   goes live** (2026-10-20 on the branch).
+Prompt for session 5, Ice's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start
+from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (Ice, the Weather note, and both of
+Electric's session tables and bot checks as the pattern) and 6, docs/reference/safari.md's duo section, cards.md and
+card-design.md. Build Ice's first session: write its ~38-card table into the doc first (30 pool cards: 10 common, 14
+uncommon, 6 rare, and all 8 evolution cards), then Frostbite, Icicle and the shared Weather engine (Hail; Ground's
+Sandstorm reuses it), the Snow Warning Ability, Vanillite's line (DUO_STARTERS, back GIFs, SPRITE_FIT, BODY_X, cries),
+the cards with art (js/card-art-ice.js), describe() / cardTerms() lines, the Ice theme colours, the sim mirror and a bot
+check of Ice's pairs against session 4's numbers. The Ice Cave's data comes in Ice's second session (note: the Power
+Plant already borrows the Peak's painters, so the Ice Cave needs another). Push only to duo-types in both repos and
+give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

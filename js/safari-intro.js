@@ -63,6 +63,13 @@ const SKY_MARSH = {
   night: { sky: ['#060c10', '#0a141a', '#0e1c22', '#14242a', '#1a2c32', '#203438'], cloud: ['#2a3432', '#1e2826', '#141c1a'] },
 };
 
+const SKY_PLANT = {
+  day: { sky: ['#2a3048', '#343c58', '#40486a', '#4e587a', '#5e6a8a', '#727e9a'], cloud: ['#c8ccd8', '#a8aec0', '#8890a4'] },
+  dawn: { sky: ['#3a3858', '#4c4866', '#64587a', '#7e6a88', '#9a7e90', '#b49498'], cloud: ['#c8b8c0', '#a090a0', '#786a80'] },
+  dusk: { sky: ['#1e2038', '#2c2c48', '#463c58', '#644a60', '#86605e', '#a87a5a'], cloud: ['#a88070', '#806068', '#584450'] },
+  night: { sky: ['#06080e', '#0a0e18', '#0e1420', '#141a28', '#1a2030', '#202838'], cloud: ['#2a2e3a', '#1e222c', '#14181e'] },
+};
+
 const film = (id, o) => ({ safari: true, title: ['SAFARI', 'ZONE'], scene: safariScene, ...o, art: { id, ...o.art } });
 
 export const SAFARI_INTROS = {
@@ -150,6 +157,26 @@ export const SAFARI_INTROS = {
     beats: { RISE: [200, 4000], POPS: [4300, 5000], TITLE_AT: 5300, END: 9200 },
     sounds: ['gust'],
     art: { move: 'crane', house: 'back', far: peakFar, mid: peakMid, back: peakBack, ground: peakGround, fence: false, trail: [{ at: 0, style: 'dirt' }, { at: 2, style: 'snow', key: 'track' }], birds: '#3a4058', air: ['snow'] },
+  }),
+  // the duo pool's Power Plant: the Peak's film in a storm's steel and hazard yellow, until its own art session
+  powerplant: film('powerplant', {
+    ink: ['#fff6b0', '#5a6078', '#1a1e2a'], skies: SKY_PLANT,
+    land: {
+      range: ['#4a5068', '#3c4258', '#30364a'], snow: ['#f8e070', '#d8c050', '#a89038'],
+      cliff: ['#7a7e8a', '#5e626e', '#464a56', '#2e323c'], pines: ['#4a5a5a', '#2e3a3c'], bark: ['#4a4038', '#2e2822'],
+      hill: ['#7a8074', '#6a7064', '#5a6056'],
+      ground: ['#8e9488', '#848a7e', '#7a8074', '#70766a', '#666c60', '#5c6256'], blade: ['#b0b890', '#80886a', '#4e5640'],
+      snowField: ['#c8ccd0', '#bcc0c6', '#b0b4bc', '#a4a8b2'],
+      tall: ['#8a9270', '#646c54', '#262c22'], fore: ['#8a9270', '#646c54', '#424a3a', '#262c22'],
+      pole: ['#f8d830', '#303038', '#b89818'], rock: ['#c0c4cc', '#a8acb4', '#7c808a', '#54586a'],
+      flowers: ['#f8e048', '#ffffff', '#c8d0e0'], trail: ['#9a9a9e', '#808086', '#64646c', '#5a6050'], track: ['#c8ccd2', '#acb0b8', '#8a8e98', '#9a9ea8'],
+      ...ZONE,
+    },
+    glow: { aura: ['#fffff0', '#fff8a0', '#f8e050'], flake: ['#fff6b0', '#f8e070'], firefly: ['#fff8a0', '#f8d830'] },
+    stages: nearer([null, { snow: 0.25 }, { snow: 0.7 }, { snow: 1 }]),
+    beats: { RISE: [200, 4000], POPS: [4300, 5000], TITLE_AT: 5300, END: 9200 },
+    sounds: ['gust'],
+    art: { move: 'crane', house: 'back', far: peakFar, mid: peakMid, back: peakBack, ground: peakGround, fence: false, trail: [{ at: 0, style: 'dirt' }, { at: 2, style: 'snow', key: 'track' }], birds: '#202430', air: ['snow'] },
   }),
   desert: film('desert', {
     ink: ['#fff4d0', '#c07830', '#4a2408'],

@@ -42,7 +42,8 @@ function lockedCard(card, hideType = false) {
   return node;
 }
 
-const moveTabs = () => ['fire', 'grass', 'water', 'normal', getSave().unlocked.includes('mewtwo') ? 'psychic' : 'mystery'];
+// Electric is the Safari duo pool's (docs/duo-design.md section 5): its moves stay ??? until met, like every tab's
+const moveTabs = () => ['fire', 'grass', 'water', 'electric', 'normal', getSave().unlocked.includes('mewtwo') ? 'psychic' : 'mystery'];
 
 /* ---------- the Collection device's Moves app (js/device.js): type tabs, the filter and sort, then the cards ---------- */
 

@@ -247,6 +247,91 @@ took Fire itself from 61 to 35), Spark's Vulnerable and Thunder Wave's Weak (17 
 then on the duos Thunder Shock 8 (electric+grass 35 -> 48, electric+water 39 -> 45). Rejected, within noise: the Static
 Ability at 3, caps 7 / 10 / 13, Overdrive 10 and Nuzzle with Weak. The shipped numbers' check is in the roadmap's entry.
 
+#### Electric's second session: its other cards (session 4, 2026-10-19)
+
+Written here before the code. The other 36 pool cards (10 common, 18 uncommon, 8 rare), **defence-leaning** since the
+first half is attack-heavy: 25 of the 36 block, Weaken, Sap or stop a move. Electric is then whole: 20 common, 32
+uncommon, 14 rare and 8 evolution cards (74), plus Baton Pass. Each card is on a StS 1 card at x~1.2 (the last column
+and a comment on its line) with a hand-picked upgrade.
+
+**The new rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- `blockPerStatic` / `blockPerSwitch`: +N block per Static on the enemy / per switch this fight (Faraday Cage, Volt Guard).
+- `staticMult`: multiply the enemy's Static (Static Storm, and the Shock Drive item: Burn Drive's Catalyst for Static).
+- Powers: `thornStatic` (whenever the enemy attacks you, Static N: Electromorphosis), `staticBlock` (at the start of
+  each turn, block equal to the enemy's Static: Electric Seed), `energyBlock` (at the end of your turn, N block per PP
+  left: Dynamo), `switchWeak` / `switchStatic` / `switchSap` (whenever you switch, Weak / Static / Sap N: Shock Tactics,
+  Galvanize, Minus, Plus's mirror).
+- `ifEnemyAttacks: { switch: true }` (Volt Retreat: a switch only when the hit is coming), `ifSwitched` with block and draw.
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Cell Battery | C | 1 | Block 8; +1 PP next turn *(up 11)* | Overcharge | Charge Battery |
+| Electroweb | C | 2 | Block 12, Static 4 *(up 15, 5)* | Static | Leg Sweep, Static for its Weak |
+| Ion Deluge | C | 0 | Static 2; if the enemy intends to attack, Static 2 more *(up 3 / 3)* | Static | Go for the Eyes |
+| Electro Ball | C | 1 | Deal 6, Static 2, draw 1 *(up 8, 3)* | Static | Pommel Strike |
+| Volt Absorb | C | 1 | Block 7; if you switched this turn, +5 block *(up 9, +7)* | Volt Switch | Empty Body, the other way round |
+| Thunderclap | C | 1 | Deal 6, block 5. Switch *(up 8, 7)* | Volt Switch | Iron Wave, with a switch |
+| Transistor | C | 1 | Block 7, draw 1; if you switched this turn, draw 1 more *(up 10)* | Volt Switch | Shrug It Off |
+| Live Wire | C | 1 | Deal 6; +1 PP next turn *(up 9)* | Overcharge | Sneaky Strike's refund, next turn |
+| Capacitor | C | 2 | Block 14. Retain *(up 18)* | Overcharge | Protect |
+| Insulate | C | 1 | Block 5, and 5 next turn *(up 7 / 7)* | — | Dodge and Roll |
+| Electromorphosis | U | 1 | Power: whenever the enemy attacks you, Static 2 *(up 3)* | Static | Static Discharge |
+| Faraday Cage | U | 2 | Block 10, +1 per Static on the enemy *(up 13)* | Static | Spirit Shield, on Static |
+| Stun Shock | U | 2 | Static 6, Weak 3. Exhaust *(up 8, 4)* | Static | Shockwave |
+| Thunder Cage | U | 1 | Static 3; the enemy's attacks deal 6 less this turn. Exhaust *(up 4, 8)* | Static | Piercing Wail |
+| Plasma Fists | U | 2 | Deal 11, Static 5 *(up 14, 6)* | Static | Uppercut, Static for both debuffs |
+| Power Cell | U | 2 | Block 10; +2 PP next turn *(up 13)* | Overcharge | Glacier |
+| Surge Protector | U | 3 | Block 24 *(up 30)* | Overcharge | a 3-cost wall for the PP it makes |
+| Dynamo | U | 1 | Power: at the end of your turn, 3 block per PP left *(up 4)* | Overcharge | (Overcharge's own: Battery's other use of spare PP) |
+| Recharge | U | 1 | +2 PP next turn, draw 1 *(up +3 PP)* | Overcharge | Outmaneuver |
+| Polarity Swap | U | 1 | Block 9. Switch *(up 12)* | Volt Switch | Empty Body |
+| Shock Tactics | U | 1 | Power: whenever you switch, apply 1 Weak *(up cost 0)* | Volt Switch | Wave of the Hand, a switch at a time |
+| Electric Relay | U | 1 | Block 6; if you switched this turn, draw 2 *(up 9)* | Volt Switch | Sanctity |
+| Volt Retreat | U | 1 | Block 7; if the enemy intends to attack, switch *(up 10)* | Volt Switch | Fear No Evil |
+| Volt Guard | U | 2 | Block 10, +3 per switch this fight *(up +4)* | Volt Switch | Perfected Strike, as block |
+| Galvanize *(bridge)* | U | 1 | Power: whenever you switch, Static 3 *(up 4)* | Volt Switch/Static | Mental Fortress, Static for block |
+| Wildbolt Storm *(bridge)* | U | X | Static 4, X times *(up 5)* | Overcharge/Static | Malaise |
+| Magnetic Field | U | 2 | Power: at the start of each turn, block 4 *(up 6)* | — | Metallicize |
+| Zap Shield | U | 0 | Block 4, Static 2 *(up 6, 3)* | Static | Deflect, with Static |
+| Static Storm | R | 1 | Double the enemy's Static. Exhaust *(up triple)* | Static | Catalyst |
+| Electric Seed | R | 2 | Power: at the start of each turn, block equal to the enemy's Static *(up cost 1)* | Static | (Static's Metallicize) |
+| Max Lightning | R | 2 | Deal 4, +3 per Static on the enemy. Retain *(up +4)* | Static | Bane's big brother |
+| Hadron Engine | R | 3 | Power: at the start of each turn, +1 PP and block 5 *(up cost 2)* | Overcharge | Fusion and Metallicize in one |
+| Ion Barrier | R | 2 | Block 32. Exhaust *(up 40)* | Overcharge | Impervious |
+| Stoked Sparksurfer *(bridge)* | R | 2 | Deal 10, Static 6. Switch *(up 14, 8)* | Volt Switch/Static | Wallop, Raichu's Z-move |
+| Minus | R | 2 | Power: whenever you switch, apply 1 Sap *(up cost 1)* | Volt Switch | Disarm a switch at a time: Plus's mirror |
+| Booster Energy | R | 0 | Gain 2 PP. Switch. Exhaust *(up 3 PP)* | Volt Switch/Overcharge | Adrenaline |
+
+Electric whole: 20 common (Static 7, Overcharge 5, Volt Switch 5, 3 basics), 32 uncommon, 14 rare, 8 evolution = **74**.
+
+**Relics** (`only: 'electric'`, 6 plus its held item; the user's answer 21): **Magnet** (common: your Electric attacks
+deal +2; the old Unceasing Top relic, id `magnet`, is renamed Quick Powder so the names don't clash), **Light Ball**
+(common: enemies start each battle with 3 Static; Bag of Marbles / Gooey Mulch), **Eject Button** (common: whenever
+you switch, gain 4 block; Wired as a relic), **Zap Plate** (uncommon: whenever you play a card that costs 3 or more, gain
+8 block; Overcharge's payoff), **Electirizer** (uncommon: whenever the enemy is Paralyzed, draw 2 more next turn),
+**Electric Memory** (rare: a Paralysis leaves half its Static, not 0), **Thunder Stone** (boss: draw 1 more each turn,
+and Static charges 4, not 2; Water Stone's shape). **Items**: **Electric Gem** (gain 2 PP, Static 3) and **Shock Drive**
+(double the enemy's Static).
+
+**Starters**: Mareep (Mareep, Flaaffy, Ampharos), Pichu (Pichu, Pikachu, Raichu), Elekid (Elekid, Electabuzz,
+Electivire), Tynamo (Tynamo, Eelektrik, Eelektross), each a `DUO_STARTERS` skin of Shinx's deck (`ELECTRIC_DECK`), as
+the Gen 2 / 3 starters are of Charmander's. Catching any stage adds Electric with that look (`DUO_LINES.electric`).
+
+**The Power Plant** (`powerplant`): Gate, Turbine Hall, Generator Room, the Reactor. Its roster is the five starter
+lines and the Electric wilds the Meadow, Forest, Wetland and Marsh held (Voltorb, Electrike, Blitzle, Plusle, Minun,
+Emolga, Joltik; Rotom, Ampharos, Luxray, Electivire and Eelektross its rare spawns), moved in. Painted as the Peak
+recoloured to a stormy steel night-yellow until its art session. **Date-gated** (`SAFARI_FROM` in `js/data/safari.js`):
+a day before it keeps the six areas and their old rosters, so a launch can't change a day already dealt; from it, 3 of
+the 7. On the branch it's set to 2026-10-20: **move it to the day after the branch goes live**.
+
+**Bot check** (pokeDB-sim, human bot, Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`; 300 a duo cell, 150
+the rest), win %: electric+fire / +grass / +water 64.7 / 43.7 / 36.3, against session 3's Electric (`elecFirst`: these
+36 cards, the relics and items out) 70.3 / 52.7 / 44.3: about 7 points under on each, half the cards' and half the
+relics' (`elecNoCards` +grass / +water 50.3 / 40.0, `elecNoRelics` 48.7 / 37.7). Fire+grass 82.0, fire+water 54.7,
+grass+water 37.3; solo Electric 78.7 (74.7 before), Fire 68.7. With a partner Electric sits between Grass and Water, so
+the numbers are left for the balance pass (session 15). The bot never took 13 of the 36 (most 2-3 cost blocks and
+powers): its card pick divides by cost, as the 2026-09-24 card-pool review found, so a human may rate them higher.
+
 ### Ice: Frostbite, Icicle, Hail
 
 Glassy and punishing. Hits Grass, Ground, Flying, Dragon; fears Fire, Fighting, Rock, Steel.

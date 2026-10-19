@@ -159,7 +159,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   section): `ELECTRIC_CARDS` / `ELECTRIC_EVO_*`, art in `js/card-art-electric.js`. New keys: `static`, `perStatic`,
   `ifFull`, `energyMult`, `energyPer`, `switch`, `ifSwitched`, `perSwitch`, `growOnPlay: { discount }`; powers
   `staticEachTurn`, `paraEnergy`, `attackStatic`, `energyEachTurn`, `keepEnergy`, `switchBlock`, `switchDraw`,
-  `switchStrength`. Boxes: Static, Paralyzed, Switch. A `duo: true` card (Baton Pass) is offered only in a Duo Run
+  `switchStrength`; session 4 (74 cards in all) `blockPerStatic`, `blockPerSwitch`, `staticMult`, powers `thornStatic`,
+  `staticBlock`, `energyBlock`, `switchWeak`, `switchStatic`, `switchSap`. Boxes: Static, Paralyzed, Switch. The Card
+  index has an Electric tab. A `duo: true` card (Baton Pass) is offered only in a Duo Run
   (`poolForType(type, duo)`). `TYPES.electric` has no triangle match-ups: outside the Safari it's neutral.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card

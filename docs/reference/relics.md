@@ -26,7 +26,7 @@ Wing +1 to every strength gain, Gooey Mulch 2 Leech Seed at the start, Enigma Be
 Mushrooms = Snecko Eye (a drawn card is a copy costing 0-3 with `orig`, so `settled()` restores it; `makeCard()` compares against `orig.cost`, so a roll shows green when cheaper, red when dearer), Toxic Plate =
 Champion Belt; Water: Blue Flute +1 Tide a turn, Lustrous Orb (spending Tide leaves half), Eviolite 3 block every turn (Orichalcum never fired: Water nearly always has block),
 Everstone = Calipers (block drops by 10), Slowpoke Tail = Runic Pyramid, Heart Scale = Tough Bandages). Any type:
-Casteliacone (Ice Cream: unspent PP carries over), Magnet (Unceasing Top), Lum Berry (Medical Kit: status cards
+Casteliacone (Ice Cream: unspent PP carries over), Quick Powder (Unceasing Top; named Magnet until 2026-10-19, its id still `magnet`: Electric's held item took the name), Lum Berry (Medical Kit: status cards
 cost 0, exhaust and draw a card, `lumCures()`; in battle they read that way too, 0 PP "Draw 1 card. Exhaust.", via
 `asShown()` in `js/battle.js`, a display-only copy for the hand, risen card, piles and boxes), Strange Souvenir (a free random card of your type on turn 1), Fist Plate
 (Ornamental Fan), Dragon Fang (Akabeko, +10: `battle.firstAttack`), Big Malasada (Meal Ticket: heal 15 entering a Mart,
@@ -52,3 +52,10 @@ too** (StS's Snecko Eye and Runic Pyramid are boss relics), plus Ability upgrade
 Serpent (Magmarizer: Blaze always on; Leaf Stone: Overgrow 10; Water Stone: +1 draw and Torrent 4, both raised in
 `startBattle()`'s `stone`) and Shiny Charm (Black Star: a second Alpha relic). The boss pick's text says "some come with
 a catch". ranks.json recalibrated (150 runs a relic a type).
+
+**Electric's** (2026-10-19, the duo pool's Electric second session; `docs/duo-design.md` section 5): **Magnet**
+(`bar-magnet`, its held item in `TYPE_RELIC`: Electric attacks +2, whoever's out), Light Ball (enemies start with 3
+Static), Eject Button (4 block a switch), Zap Plate (8 block when a 3+ PP card is played), Electirizer (2 more cards next
+turn after a Paralysis), Electric Memory (a Paralysis halves the Static instead of emptying it) and Thunder Stone (boss:
++1 draw, the Static Ability 4; `abilityFor()`'s `stone`). Items: Electric Gem (2 PP, Static 3) and Shock Drive (Static x2).
+The sim measured them on solo Electric (150 runs each) and borrows Water's ranks for the rest (`rankCfg()`).

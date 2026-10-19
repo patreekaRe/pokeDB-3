@@ -70,6 +70,9 @@ export const ITEMS = [
   { id: 'revival-herb', name: 'Revival Herb', icon: '🌿', rarity: 'uncommon', effects: { recall: 1 }, text: 'Choose a card in your discard pile to put into your hand. It costs 0 this turn.' },   // Liquid Memories
   { id: 'wishing-piece', name: 'Wishing Piece', icon: '🌠', rarity: 'uncommon', map: true, effects: { fill: true }, text: 'Fill your Bag\'s empty slots with random items. Works on the map too.' },   // Entropic Brew
   { id: 'water-gem',    name: 'Water Gem',    icon: '🔵', rarity: 'uncommon', only: 'water', effects: { block: 10, draw: 2 },   text: 'Gain 10 block and draw 2 cards.' },
+  // Electric's (docs/duo-design.md section 5: a Gem and a Drive a new type)
+  { id: 'electric-gem', name: 'Electric Gem', icon: '🟡', rarity: 'uncommon', only: 'electric', effects: { energy: 2, static: 3 }, text: 'Gain 2 PP. Static 3.' },
+  { id: 'shock-drive',  name: 'Shock Drive',  icon: '⚡', rarity: 'uncommon', only: 'electric', effects: { staticMult: 2 }, text: 'Double the enemy\'s Static.' },   // Catalyst, Burn Drive's for Static
 ];
 
 export const ITEMS_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));

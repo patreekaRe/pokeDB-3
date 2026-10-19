@@ -74,7 +74,7 @@ import { initGraves } from './graves.js';
 import { $, el, confirmDialog } from './ui.js';
 import './no-loupe.js';
 import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
-import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
+import { SAFARI_AREAS, safariAreaOn } from './data/safari.js';
 import { stageOf } from './map.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { travel, hasTravel } from './travel.js';
@@ -90,7 +90,7 @@ function savedRunCard() {
   const { starter, stage, biome, hp, maxHp } = saved;
   const here = saved.current && saved.map.byId[saved.current];
   // a Safari run is in today's area, not the main game's biome: the same names as its map's signs
-  const area = saved.safari && SAFARI_AREAS_BY_ID[saved.safari.areas?.[biome]];
+  const area = saved.safari && safariAreaOn(saved.safari.areas?.[biome], saved.safari.day);
   const land = area || biomeAt(saved.route, biome);
   return {
     saved, hp, maxHp,

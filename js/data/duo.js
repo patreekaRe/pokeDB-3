@@ -23,7 +23,10 @@ export const DUO_BASE = ['fire', 'grass', 'water'];
 /** A new type's starter lines, type -> { look: [every stage's species id] }: catching any stage adds the type with that
     look. Each type's sessions fill it (Electric's first brought Shinx's line; its second the other four lines). */
 export const DUO_LINES = {
-  electric: { shinx: ['shinx', 'luxio', 'luxray'] },
+  electric: {
+    shinx: ['shinx', 'luxio', 'luxray'], mareep: ['mareep', 'flaaffy', 'ampharos'], pichu: ['pichu', 'pikachu', 'raichu'],
+    elekid: ['elekid', 'electabuzz', 'electivire'], tynamo: ['tynamo', 'eelektrik', 'eelektross'],
+  },
 };
 
 /** The two starters of a duo, lead first. */

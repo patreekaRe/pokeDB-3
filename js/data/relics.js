@@ -19,6 +19,7 @@ export const RELICS = [
   { id: 'charcoal',     name: 'Charcoal',     icon: '⚫', rarity: 'common', only: 'fire',  text: 'Your Fire attacks deal +2 damage.' },
   { id: 'miracle-seed', name: 'Miracle Seed', icon: '🌱', rarity: 'common', only: 'grass', text: 'Your Grass attacks deal +2 damage.' },
   { id: 'mystic-water', name: 'Mystic Water', icon: '💧', rarity: 'common', only: 'water', text: 'Your Water attacks deal +2 damage.' },
+  { id: 'bar-magnet',   name: 'Magnet',       icon: '🧲', rarity: 'common', only: 'electric', sprite: 'magnet', text: 'Your Electric attacks deal +2 damage.' },
 
   { id: 'muscle-band',  name: 'Muscle Band',  icon: '💪', rarity: 'common', text: 'All your attacks deal +2 damage.' },
   { id: 'leftovers',    name: 'Leftovers',    icon: '🍙', rarity: 'uncommon', text: 'Heal 2 HP at the start of each of your turns.' },
@@ -71,7 +72,7 @@ export const RELICS = [
 
   // Any type.
   { id: 'casteliacone',     name: 'Casteliacone',     icon: '🥤', rarity: 'rare',     text: 'PP you don\'t spend is saved for your next turn.' },   // Ice Cream
-  { id: 'magnet',           name: 'Magnet',           icon: '🧿', rarity: 'rare',     text: 'Whenever your hand is empty on your turn, draw 1 card.' },   // Unceasing Top
+  { id: 'magnet',           name: 'Quick Powder',     icon: '🧿', rarity: 'rare', sprite: 'quick-powder', text: 'Whenever your hand is empty on your turn, draw 1 card.' },   // Unceasing Top (was Magnet: Electric's held item took the name, 2026-10-19)
   { id: 'lum-berry',        name: 'Lum Berry',        icon: '🫐', rarity: 'uncommon', text: 'Status cards can be played for 0 PP. They exhaust and draw you a card.' },   // Medical Kit
   { id: 'strange-souvenir', name: 'Strange Souvenir', icon: '🧸', rarity: 'uncommon', text: 'At the start of each battle, add a random card of your type to your hand. It\'s free this turn.' },   // Toolbox
   { id: 'fist-plate',       name: 'Fist Plate',       icon: '🥊', rarity: 'uncommon', text: 'Every 3rd attack you play in a turn gives you 4 block.' },   // Ornamental Fan
@@ -97,6 +98,12 @@ export const RELICS = [
   { id: 'spell-tag',      name: 'Spell Tag',      icon: '🏷️', rarity: 'uncommon', text: 'Every 3rd card that isn\'t an attack you play in a turn deals 5 damage to the enemy.' },   // Letter Opener
   { id: 'helix-fossil',   name: 'Helix Fossil',   icon: '🐚', rarity: 'rare',     text: 'The first time you would lose HP in each battle, you don\'t.' },   // Fossilized Helix
   { id: 'bright-powder',  name: 'Bright Powder',  icon: '✨', rarity: 'rare',     text: 'Every 6th turn of a battle, the enemy\'s attack misses you (Guard).' },   // Incense Burner
+  // Electric's (the Safari's duo pool, docs/duo-design.md section 5: 6 a new type and its held item, the user's answer 21)
+  { id: 'light-ball',      name: 'Light Ball',      icon: '💡', rarity: 'common',   only: 'electric', text: 'Enemies start each battle with 3 Static.' },   // Bag of Marbles, as Static (Gooey Mulch's)
+  { id: 'eject-button',    name: 'Eject Button',    icon: '⏏️', rarity: 'common',   only: 'electric', text: 'Whenever you switch, gain 4 block.' },   // (Volt Switch's own: Wired as a relic)
+  { id: 'zap-plate',       name: 'Zap Plate',       icon: '🟨', rarity: 'uncommon', only: 'electric', text: 'Whenever you play a card that costs 3 PP or more, gain 8 block.' },   // (Overcharge's own)
+  { id: 'electirizer',     name: 'Electirizer',     icon: '🔌', rarity: 'uncommon', only: 'electric', text: 'Whenever the enemy is Paralyzed, draw 2 more cards next turn.' },   // (Static's own)
+  { id: 'electric-memory', name: 'Electric Memory', icon: '💾', rarity: 'rare',     only: 'electric', text: 'When the enemy is Paralyzed, its Static drops by half, not to 0.' },   // (Static's own, Fire Memory's rarity)
   // a Duo Run's (docs/duo-design.md section 1): `duo` keeps it out of every other run
   { id: 'shed-shell',     name: 'Shed Shell',     icon: '🐚', rarity: 'uncommon', duo: true, text: 'Your first switch each turn is free.' },   // (the duo's own: StS has no switching)
   { id: 'sacred-ash',     name: 'Sacred Ash',     icon: '🕯️', rarity: 'rare',     text: 'Once this run, when you would faint, you come back with half your max HP.' },   // Lizard Tail
@@ -128,6 +135,7 @@ export const RELICS = [
   { id: 'magmarizer',   name: 'Magmarizer',   icon: '🌋', boss: true, only: 'fire',  text: 'Blaze is always on, not just below half HP.' },   // Black Blood
   { id: 'leaf-stone',   name: 'Leaf Stone',   icon: '🍃', boss: true, only: 'grass', text: 'Overgrow heals 10 HP after each fight you win, not 3.' },   // Black Blood
   { id: 'water-stone',  name: 'Water Stone',  icon: '💧', boss: true, only: 'water', text: 'Draw 1 extra card each turn. Torrent starts each fight with 4 Tide, not 2.' },   // Ring of the Serpent
+  { id: 'thunder-stone', name: 'Thunder Stone', icon: '⚡', boss: true, only: 'electric', text: 'Draw 1 extra card each turn. Static charges the enemy 4, not 2.' },   // Ring of the Serpent, Water Stone's shape
   { id: 'shiny-charm',  name: 'Shiny Charm',  icon: '🌟', boss: true, text: 'Alphas give 2 relics to choose from, one after the other.' },   // Black Star
 
   // `unique`: never offered anywhere; only won by beating Chad Master Kenmatta in his dojo (the Move Tutor event)
@@ -159,6 +167,7 @@ export function relicTerms(relic) {
     says(/strength/i) && term('Strength'),
     says(/Focus/) && term('Focus'),
     says(/Static/) && term('Static'),
+    says(/Paralyzed/) && term('Paralyzed'),
     says(/\bswitch/i) && term('Switch'),
     says(/Status cards/) && ['Status cards', 'Junk enemies put in your deck, for this fight only.'],
     says(/Sludge/) && ['Sludge', 'Junk: costs 1 PP, does nothing, then exhausts.'],

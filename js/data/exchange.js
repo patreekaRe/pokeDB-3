@@ -29,7 +29,7 @@ export const STARS_FOR_PICK = 10;
 /** Each area's capsule colour and its deep shade (the window's banners, the kiosk's screen and tray). */
 export const EXCHANGE_INK = {
   meadow: ['#8cd060', '#3a7a24'], forest: ['#4aa860', '#163e20'], wetland: ['#4ab0d8', '#164a78'],
-  marsh: ['#9a80c0', '#2e2448'], peak: ['#9ab4d0', '#34466a'], desert: ['#eab860', '#8a5418'],
+  marsh: ['#9a80c0', '#2e2448'], peak: ['#9ab4d0', '#34466a'], desert: ['#eab860', '#8a5418'], powerplant: ['#e8c830', '#5a4a10'],
 };
 
 /** The odds of a gold capsule after `pity` plain ones in a row. */

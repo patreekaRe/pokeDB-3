@@ -325,6 +325,8 @@ const ART = {
     <path d="M6 26C12 19 17 13 23 8M12 19.5v-5M16 15.6h5" fill="none" stroke="#2e7a30" stroke-width="1.8" stroke-linecap="round"/>`,
   water: `<path d="M16 3c4 6 10 11 10 17a10 10 0 0 1-20 0c0-6 6-11 10-17Z" fill="#3c8cf0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M10.6 19.6c0 2.8 1.6 5 3.8 5.8" fill="none" stroke="#bfe4ff" stroke-width="2" stroke-linecap="round"/>`,
+  electric: `<path d="M19 2.5L6.5 18h8l-3 11.5L25.5 13h-8.5Z" fill="#ffd23a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M17.2 5.6l-6.4 8.6" stroke="#fff6c0" stroke-width="1.6" stroke-linecap="round"/>`,
   normal: `<circle cx="16" cy="16" r="12.5" fill="#e4e8f0" stroke="${INK}" stroke-width="2"/>
     <path d="M16 7.4l7.6 13.2H8.4ZM16 24.6L8.4 11.4h15.2Z" fill="#9aa2c8" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`,
   psychic: `<path d="M9 23.5h14l2.4 5H6.6Z" fill="#a8642c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>

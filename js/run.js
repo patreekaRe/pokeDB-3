@@ -76,7 +76,7 @@ import { renderTower, hideTower, guardianIntro, towerFall, barReady, setTowerGra
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
-import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
+import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
@@ -141,7 +141,7 @@ const zone = () => (run?.tower ? `t${run.tower.flight}` : run.biome);
 const reseed = (key) => useStream(run?.safari?.seed ?? run?.tower?.seed ?? null, key);
 
 /** The Safari area a biome of the run is (null outside the Safari Zone). */
-const safariArea = (biome = run.biome) => (run?.safari ? SAFARI_AREAS_BY_ID[run.safari.areas[biome]] : null);
+const safariArea = (biome = run.biome) => (run?.safari ? safariAreaOn(run.safari.areas[biome], run.safari.day) : null);
 
 /** The main game's biome at the run's slot, on the road its crossroads took (a Safari run's or a climb's: the default road's). */
 const mainBiome = (r = run) => biomeAt(r.route, r.biome);
@@ -611,6 +611,10 @@ export function beginSafari(daily = safariDaily(), pair = null) {
   // a Duo Run (js/duoprep.js): a replay with two starters of your own, whoever you picked first out first; it never
   // spends the day's free try (only ?duorun can start one before it)
   const duo = pair && newDuo(pair);
+  // ?powerplant: a Duo Run whose first area is the Power Plant, before its day (a playtest; a Duo Run is never posted)
+  if (duo && new URLSearchParams(location.search).has('powerplant') && !daily.areas.some(a => a.id === 'powerplant')) {
+    daily = { ...daily, areas: [SAFARI_AREAS_BY_ID.powerplant, ...daily.areas.slice(1)] };
+  }
   updateSave(d => { d.safari = { day: daily.day, tries: tries + (duo ? 0 : 1), days: duo ? safariDays(d) : days, pass: d.safari.pass, done: d.safari.done, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
   rangerDay(daily.day);
   beginRun(duo ? STARTERS_BY_ID[duo.ids[0]] : daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 && !duo }, null, null, duo);

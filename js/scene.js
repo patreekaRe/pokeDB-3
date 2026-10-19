@@ -499,9 +499,40 @@ const SAFARI_ART = {
     }),
   },
 };
+/* The Power Plant (the duo pool's Electric area, docs/duo-design.md section 5): the Peak's painters in a storm's steel and
+   hazard yellow until its own art session (the user's answer 22: data first, on a recoloured area). */
+SAFARI_ART.powerplant = {
+  ...SAFARI_ART.peak,
+  paintAs: 'peak',
+  storm: { rain: ['#fff6a0', '#c8d0e0'], fall: 2.4, count: 1.3, sky: [0.7, 10, 14, 30], ground: [0.8, 8, 10, 24] },   // a thunderstorm
+  sun: ['#fffff0', '#fff4a0', '#f8d850'],
+  cloud: ['#c8ccd8', '#a8aec0', '#8890a4', '#6a7088'], clouds: { count: 1.3 },
+  sky: ['#2a3048', '#343c58', '#40486a', '#4e587a', '#5e6a8a', '#727e9a', '#8a96ac'],
+  range: ['#4a5068', '#3c4258', '#30364a'], snow: ['#f8e070', '#d8c050', '#a89038'],
+  cliff: ['#7a7e8a', '#5e626e', '#464a56', '#2e323c'],
+  pines: ['#4a5a5a', '#2e3a3c'], trunk: ['#4a4038', '#2e2822'],
+  ground: ['#8e9488', '#848a7e', '#7a8074', '#70766a', '#666c60', '#5c6256'],
+  snowField: ['#c8ccd0', '#bcc0c6', '#b0b4bc', '#a4a8b2', '#989ca8', '#8c909e'],
+  blade: ['#b0b890', '#80886a', '#4e5640'], patch: '#6a7060',
+  tall: ['#8a9270', '#646c54', '#424a3a', '#262c22'],
+  trail: [
+    { at: 0, style: 'dirt', c: ['#9a9a9e', '#808086', '#64646c', '#5a6050'], edge: 'pole' },
+    { at: 2, style: 'snow', c: ['#c8ccd2', '#acb0b8', '#8a8e98', '#9a9ea8'], edge: 'pole' },   // the plant's concrete floor
+  ],
+  pole: ['#f8d830', '#303038', '#b89818'],   // hazard stripes
+  flowers: [['#f8e048', '#ffffff'], ['#c8d0e0', '#f8e048']],
+  rock: ['#a8acb4', '#7c808a', '#54586a'],
+  bird: '#202430', flake: ['#fff6b0', '#f8e070'],
+  pad: { style: 'stone', top: '#b4b8c0', mid: '#969aa4', low: '#7a7e88', rim: '#2e323c', earth: '#4e525c', moss: '#f8d830' },
+  times: safariTimes({
+    dawn: { sky: ['#3a3858', '#4c4866', '#64587a', '#7e6a88', '#9a7e90', '#b49498', '#c8aca4'] },
+    dusk: { sky: ['#1e2038', '#2c2c48', '#463c58', '#644a60', '#86605e', '#a87a5a', '#c89a5c'] },
+    night: { clouds: { count: 0.8 }, life: ['stars', 'clouds', 'blades', 'safari'] },
+  }),
+};
 for (const [area, art] of Object.entries(SAFARI_ART)) {
   BIOME_ART[area] = {
-    backdrop: 'safari', floor: 'safari', area, kin: { meadow: 'clearing', forest: 'shrine', wetland: 'clearing', marsh: 'shrine', peak: 'clearing', desert: 'wastes' }[area],
+    backdrop: 'safari', floor: 'safari', area: art.paintAs ?? area, kin: { meadow: 'clearing', forest: 'shrine', wetland: 'clearing', marsh: 'shrine', peak: 'clearing', desert: 'wastes' }[art.paintAs ?? area],
     marks: SAFARI_MARKS, ...art,
     times: { day: {}, ...art.times },
     kinds: {
@@ -1637,6 +1668,7 @@ const WEATHER = {
   marsh: 'drizzle',
   peak: 'snow',
   desert: 'sand',
+  powerplant: { dawn: 'drizzle', day: 'drizzle', dusk: 'ash', night: 'drizzle' },
 };
 const WEATHER_LOOK = {
   drizzle: { colours: ['#d8e6fa', '#8aa2c8'], per: 420, glow: true },

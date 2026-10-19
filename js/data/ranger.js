@@ -72,7 +72,7 @@ function build() {
   for (const [n, reward] of SPECIES) add({ id: `species-${n}`, tab: 'research', title: n === total ? 'Gotta catch \'em all' : `${n} different Pokémon`,
     text: n === total ? `Catch every one of the Safari's ${total} Pokémon.` : `Catch ${n} different Pokémon in the Safari Zone.`, goal: n,
     count: (s) => caughtSet(s).size, pic: photo(SAFARI_ROSTER.slice(0, 40)), reward: reward ?? coins(100) });
-  for (const page of SAFARI_DEX_PAGES) for (const [n, reward] of [[10, coins(150)], [25, { balls: ['great', 5] }], [50, coins(400)]]) {
+  for (const page of SAFARI_DEX_PAGES) for (const [n, reward] of [[10, coins(150)], [25, { balls: ['great', 5] }], [50, coins(400)]].filter(([n]) => n <= page.ids.length)) {   // the Power Plant's 23 stop at I
     add({ id: `area-${page.area}-${n}`, tab: 'research', title: `${page.name} survey ${n === 10 ? 'I' : n === 25 ? 'II' : 'III'}`,
       text: `Catch ${n} different Pokémon in the ${page.name}.`, goal: n, count: (s) => countIn(page.ids, s), pic: photo(page.ids), reward });
   }

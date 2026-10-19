@@ -197,6 +197,7 @@ const AREA_LOOK = {
   marsh: ['shield', ['#c8e0b8', '#6a8c68', '#2c4430']],
   peak: ['diamond', ['#f0f8ff', '#a8b8d0', '#4c5870']],
   desert: ['gem', ['#ffe0a0', '#e0a048', '#7a4c18']],
+  powerplant: ['hex', ['#fff4a0', '#e8c020', '#5a4a10']],
 };
 const TYPE_LOOK = {
   fire: [LOOK.fire[1], 'flame'], water: [LOOK.water[1], 'drop'], grass: [LOOK.grass[1], 'leafy'],

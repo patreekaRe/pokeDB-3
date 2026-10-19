@@ -354,7 +354,22 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   `perSwitch`). `switchOut()` is now only the chip's paid switch (`switchCost()`: **Shed Shell**, a `duo: true` relic,
   makes the turn's first free). **Baton Pass** is a `duo: true` Neutral card: `poolForType(type, duo)` and `fitsRun()`
   keep both out of every other run. `?duopool` lends every built type for the page load; `tools/electric-probe.mjs`
-  checks the mechanics in a real fight. The Card index has no Electric tab yet. Duo Runs have no leaderboard tab.
+  checks the mechanics in a real fight. Duo Runs have no leaderboard tab.
+- **Electric's second session** (session 4, 2026-10-19; the card table, relics and the area are `docs/duo-design.md`
+  section 5's "Electric's second session"): 36 more cards (74 in all, defence-leaning), their new keys in
+  `js/battle.js` (`blockPerStatic`, `blockPerSwitch`, `staticMult`, powers `thornStatic`, `staticBlock`, `energyBlock`,
+  `switchWeak` / `switchStatic` / `switchSap` in `switched()`), Magnet (`bar-magnet`; the old `magnet` relic is now Quick
+  Powder) and 6 more relics, Electric Gem and Shock Drive, the Card index's Electric tab (its moves ??? until met), and
+  four more `DUO_STARTERS` looks on Shinx's deck: **Mareep, Pichu, Elekid, Tynamo** (back GIFs, `SPRITE_FIT`, `BODY_X`,
+  cries), each line in `DUO_LINES.electric`. **The Power Plant** (`powerplant`, a 7th area: Gate, Turbine Hall,
+  Generator Room, Reactor): the five lines and the Meadow's, Forest's, Wetland's and Marsh's Electric wilds moved in
+  (`was:` on their `SAFARI_MONS` lines). **Date-gated**: `SAFARI_FROM` in `js/data/safari.js`; `safariAreasOn(day)` gives
+  a day before it the six areas with the old rosters (the same deal as before, checked day by day), and from it 3 of the
+  7; a run reads its areas through `safariAreaOn(id, run.safari.day)`. The Safari Pokédex (`SAFARI_AREAS`) shows today's
+  rosters, so its numbering moved. Painted as the Peak in storm steel and hazard yellow (`SAFARI_ART.powerplant` with
+  `paintAs: 'peak'` in `js/scene.js`; its film in `js/safari-intro.js`; map, badge, Exchange and Pokédex colours) until its
+  art session; no furniture prize for its page yet. Its Ranger survey stops at I (23 Pokémon). `?powerplant` with
+  `?duorun` puts it first in a Duo Run before its day.
 - **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).

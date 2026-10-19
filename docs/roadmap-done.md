@@ -3210,3 +3210,14 @@ entry (never in `STARTERS`) with back GIFs, fits and cries; catching Shinx / Lux
 (`cap=` and `deck=` variants). The first draft trailed by 15-70 points; Fire's deck shape, Vulnerable on Spark, Weak on
 Thunder Wave, caps 7 / 11 / 15 +3 and Thunder Shock 8 fixed it: electric+fire / +grass / +water 69 / 45 / 42 against
 fire+grass 78, fire+water 57, grass+water 44 (300 each); solo electric 78 (150). Numbers in pokeDB-sim's README.
+
+**Duo types, session 4: Electric's second** (2026-10-19, branch `duo-types`, both repos). Its card table went into
+`docs/duo-design.md` first: 36 more cards, defence-leaning (Electric now 20 / 32 / 14 + 8 evolution), with art and nine
+new keys (`blockPerStatic`, `blockPerSwitch`, `staticMult`; powers `thornStatic`, `staticBlock`, `energyBlock`,
+`switchWeak`, `switchStatic`, `switchSap`). Magnet (`bar-magnet`; the Unceasing Top relic, id `magnet`, renamed Quick
+Powder), Light Ball, Eject Button, Zap Plate, Electirizer, Electric Memory, Thunder Stone; Electric Gem and Shock Drive.
+Mareep, Pichu, Elekid and Tynamo as `DUO_STARTERS` looks on Shinx's deck (backs, fits, cries). The Power Plant: a 7th
+Safari area holding the five lines and the Electric wilds, date-gated (`SAFARI_FROM`, `safariAreasOn()`: older days
+dealt exactly as before), on the Peak's painters recoloured. The Card index's Electric tab. Bot: electric pairs 64.7 /
+43.7 / 36.3, ~7 under session 3's Electric (`elecFirst`), left for the balance pass.
+

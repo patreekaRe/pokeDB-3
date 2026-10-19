@@ -28,7 +28,13 @@ const BORROWED = [
   { id: 'marsh',   name: 'Marsh',   normals: ['slowpoke', 'shellos', 'crawdaunt', 'oddish', 'tangela', 'litwick'], rares: ['kecleon', 'watchog'] },
   { id: 'peak',    name: 'Peak',    normals: ['stantler', 'darumaka', 'torkoal', 'houndour', 'sharpedo', 'bouffalant'], rares: ['persian', 'lopunny'] },
   { id: 'desert',  name: 'Desert',  normals: ['cacturne', 'maractus', 'magmar', 'heatmor', 'pansear', 'sentret', 'zangoose'], rares: ['cinccino', 'purugly'] },
+  // the duo pool's areas (docs/duo-design.md section 5): a new type's starter lines and its wilds, all its own
+  { id: 'powerplant', name: 'Power Plant', normals: [], rares: [] },
 ];
+
+/** The day each new area opens (UTC "YYYY-MM-DD"): a day before keeps the areas and rosters it was dealt with, so a launch
+    can't change a day already played. Set it to the day after the branch goes live. */
+export const SAFARI_FROM = { powerplant: '2026-10-20' };
 
 /* Each area's places, floors 1-3, 4-6, 7-10 and the boss's (the map's floor sign; js/scene.js paints them), like a
    main biome's `stages`. */
@@ -39,14 +45,30 @@ const STAGES = {
   marsh: ['Bog', 'Willow Bank', 'Sunken Woods', 'Misty Mire'],
   peak: ['Foothills', 'Pine Slopes', 'Snowfield', 'Summit'],
   desert: ['Dunes', 'Cactus Flats', 'Canyon', 'Oasis'],
+  powerplant: ['Gate', 'Turbine Hall', 'Generator Room', 'Reactor'],
 };
 
-export const SAFARI_AREAS = BORROWED.map(a => {
-  const own = SAFARI_MONS.filter(m => m.area === a.id);
+/** Where a Safari Pokémon lives on a day: its old area (`was`) before its own opened, else its area. */
+const homeOn = (m, day) => (m.was && day && day < SAFARI_FROM[m.area] ? m.was : m.area);
+const opened = (a, day) => !day || !SAFARI_FROM[a.id] || day >= SAFARI_FROM[a.id];
+const build = (a, day) => {
+  const own = SAFARI_MONS.filter(m => homeOn(m, day) === a.id);
   return { ...a, stages: STAGES[a.id], normals: [...a.normals, ...own.filter(m => !m.rare).map(m => m.id)], rares: [...a.rares, ...own.filter(m => m.rare).map(m => m.id)] };
-});
+};
+
+/** Every area with its roster now (the Safari Pokédex's pages). */
+export const SAFARI_AREAS = BORROWED.map(a => build(a, null));
 
 export const SAFARI_AREAS_BY_ID = Object.fromEntries(SAFARI_AREAS.map(a => [a.id, a]));
+
+const DAY_AREAS = new Map();
+/** The areas a day's run can cross, with that day's rosters (SAFARI_FROM). */
+export function safariAreasOn(day) {
+  if (!DAY_AREAS.has(day)) DAY_AREAS.set(day, BORROWED.filter(a => opened(a, day)).map(a => build(a, day)));
+  return DAY_AREAS.get(day);
+}
+/** An area as it was on a day (a run's: `run.safari.day`). */
+export const safariAreaOn = (id, day) => safariAreasOn(day).find(a => a.id === id) ?? SAFARI_AREAS_BY_ID[id];
 
 /** How many areas a day's run crosses. */
 export const SAFARI_DAY_AREAS = 3;
@@ -64,7 +86,7 @@ export const safariStarters = (starters = STARTERS) => starters.filter(s => !s.s
 /** A day's run: its seed, 3 areas (in order) and fixed starter. Same day, same answer, on any device. */
 export function safariDaily(day = safariDay(), starters = STARTERS) {
   const seed = safariSeed(day);
-  const areas = shuffled(SAFARI_AREAS, makeRng(hashString(`${seed}|areas`))).slice(0, SAFARI_DAY_AREAS);
+  const areas = shuffled(safariAreasOn(day), makeRng(hashString(`${seed}|areas`))).slice(0, SAFARI_DAY_AREAS);
   const starter = pickOne(safariStarters(starters), makeRng(hashString(`${seed}|starter`)));
   return { day, seed, areas, starter };
 }

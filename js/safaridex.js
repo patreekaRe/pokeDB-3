@@ -29,11 +29,11 @@ import { shelfApp, typed } from './bagdex.js';
 import { REAL_TYPES, speciesTypes } from './data/real-types.js';
 import { still, sceneImg, progressBar } from './pokedex.js';
 
-const AREA_ICON = { meadow: '🌼', forest: '🌲', wetland: '💧', marsh: '🍄', peak: '🏔️', desert: '🌵' };
+const AREA_ICON = { meadow: '🌼', forest: '🌲', wetland: '💧', marsh: '🍄', peak: '🏔️', desert: '🌵', powerplant: '⚡' };
 // each area's banner and handheld colours, like a biome's
 const AREA_INK = {
   meadow: ['#8cd060', '#3a7a24'], forest: ['#4aa860', '#163e20'], wetland: ['#4ab0d8', '#164a78'],
-  marsh: ['#9a80c0', '#2e2448'], peak: ['#9ab4d0', '#34466a'], desert: ['#eab860', '#8a5418'],
+  marsh: ['#9a80c0', '#2e2448'], peak: ['#9ab4d0', '#34466a'], desert: ['#eab860', '#8a5418'], powerplant: ['#e8c830', '#5a4a10'],
 };
 
 const dexNo = (id) => `No.${String(SAFARI_NUMBER[id]).padStart(3, '0')}`;

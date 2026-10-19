@@ -499,7 +499,7 @@ const PSYCHIC_CARDS = [
 /* Electric (the Safari's duo pool, docs/duo-design.md section 5): Static builds on the enemy until it's Paralyzed and
    loses a move (Vault, as a meter), Overcharge makes PP now and next turn for 3-5 cost bombs and X costs (Defect's Turbo,
    Double Energy, Aggregate), Volt Switch switches you free and pays off on every switch (Watcher's stance dance). Session
-   3 built 30 of its ~66 pool cards and all 8 evolution cards. */
+   3 built 30 of its 66 pool cards and all 8 evolution cards, session 4 the other 36. */
 const ELECTRIC_CARDS = [
   { id: 'thunder-shock',  name: 'Thunder Shock',  type: 'electric', cost: 1, art: '⚡', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike (8: without Burn or Tide, 7 left Electric's pairs 10-15 points under, 2026-10-19's bot check)
   { id: 'magnet-rise',    name: 'Magnet Rise',    type: 'electric', cost: 1, art: '🧲', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend (8, like Flame Wall and Withdraw)
@@ -531,6 +531,43 @@ const ELECTRIC_CARDS = [
   { id: 'gigavolt-havoc', name: 'Gigavolt Havoc', type: 'electric', cost: 5, art: '💥', effects: { damage: 50, nextEnergy: 3 }, rarity: 'rare', upgrade: { effects: { damage: 60 } } },   // Meteor Strike
   { id: 'volt-tackle',    name: 'Volt Tackle',    type: 'electric', cost: 2, art: '🐭', effects: { damage: 12, perSwitch: 5 }, rarity: 'rare', upgrade: { effects: { perSwitch: 7 } } },   // Perfected Strike, per switch
   { id: 'plus',           name: 'Plus',           type: 'electric', cost: 2, art: '➕', effects: { switchStrength: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Demon Form, a switch at a time
+  // session 4's 36 (docs/duo-design.md section 5, "Electric's second session"): defence-leaning, the first half being attack-heavy
+  { id: 'cell-battery',   name: 'Cell Battery',   type: 'electric', cost: 1, art: '🔋', effects: { block: 8, nextEnergy: 1 }, upgrade: { effects: { block: 11 } } },   // Charge Battery
+  { id: 'electroweb',     name: 'Electroweb',     type: 'electric', cost: 2, art: '🕸️', effects: { block: 12, static: 4 }, upgrade: { effects: { block: 15, static: 5 } } },   // Leg Sweep, Static for its Weak
+  { id: 'ion-deluge',     name: 'Ion Deluge',     type: 'electric', cost: 0, art: '🌧️', effects: { static: 2, ifEnemyAttacks: { static: 2 } }, upgrade: { effects: { static: 3, ifEnemyAttacks: { static: 3 } } } },   // Go for the Eyes
+  { id: 'electro-ball',   name: 'Electro Ball',   type: 'electric', cost: 1, art: '🟡', effects: { damage: 6, static: 2, draw: 1 }, upgrade: { effects: { damage: 8, static: 3 } } },   // Pommel Strike
+  { id: 'volt-absorb',    name: 'Volt Absorb',    type: 'electric', cost: 1, art: '🪫', effects: { block: 7, ifSwitched: { block: 5 } }, upgrade: { effects: { block: 9, ifSwitched: { block: 7 } } } },   // Empty Body, the other way round
+  { id: 'thunderclap',    name: 'Thunderclap',    type: 'electric', cost: 1, art: '👏', effects: { damage: 6, block: 5, switch: true }, upgrade: { effects: { damage: 8, block: 7 } } },   // Iron Wave, with a switch
+  { id: 'transistor',     name: 'Transistor',     type: 'electric', cost: 1, art: '📻', effects: { block: 7, draw: 1, ifSwitched: { draw: 1 } }, upgrade: { effects: { block: 10 } } },   // Shrug It Off
+  { id: 'live-wire',      name: 'Live Wire',      type: 'electric', cost: 1, art: '〽️', effects: { damage: 6, nextEnergy: 1 }, upgrade: { effects: { damage: 9 } } },   // Sneaky Strike's refund, next turn
+  { id: 'capacitor',      name: 'Capacitor',      type: 'electric', cost: 2, art: '🧃', effects: { block: 14 }, retain: true, upgrade: { effects: { block: 18 } } },   // Protect
+  { id: 'insulate',       name: 'Insulate',       type: 'electric', cost: 1, art: '🧤', effects: { block: 5, blockNext: 5 }, upgrade: { effects: { block: 7, blockNext: 7 } } },   // Dodge and Roll
+  { id: 'electromorphosis', name: 'Electromorphosis', type: 'electric', cost: 1, art: '🪼', effects: { thornStatic: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { thornStatic: 3 } } },   // Static Discharge
+  { id: 'faraday-cage',   name: 'Faraday Cage',   type: 'electric', cost: 2, art: '🥅', effects: { block: 10, blockPerStatic: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 13 } } },   // Spirit Shield, on Static
+  { id: 'stun-shock',     name: 'Stun Shock',     type: 'electric', cost: 2, art: '😵', effects: { static: 6, weaken: 3 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { static: 8, weaken: 4 } } },   // Shockwave
+  { id: 'thunder-cage',   name: 'Thunder Cage',   type: 'electric', cost: 1, art: '🪤', effects: { static: 3, tempSap: 6 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { static: 4, tempSap: 8 } } },   // Piercing Wail
+  { id: 'plasma-fists',   name: 'Plasma Fists',   type: 'electric', cost: 2, art: '🥊', effects: { damage: 11, static: 5 }, rarity: 'uncommon', upgrade: { effects: { damage: 14, static: 6 } } },   // Uppercut, Static for both debuffs
+  { id: 'power-cell',     name: 'Power Cell',     type: 'electric', cost: 2, art: '🔋', effects: { block: 10, nextEnergy: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 13 } } },   // Glacier
+  { id: 'surge-protector', name: 'Surge Protector', type: 'electric', cost: 3, art: '🔌', effects: { block: 24 }, rarity: 'uncommon', upgrade: { effects: { block: 30 } } },   // a 3-cost wall for the PP Overcharge makes
+  { id: 'dynamo',         name: 'Dynamo',         type: 'electric', cost: 1, art: '🌀', effects: { energyBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { energyBlock: 4 } } },   // (Overcharge's own: spare PP as block)
+  { id: 'recharge',       name: 'Recharge',       type: 'electric', cost: 1, art: '♻️', effects: { nextEnergy: 2, draw: 1 }, rarity: 'uncommon', upgrade: { effects: { nextEnergy: 3 } } },   // Outmaneuver
+  { id: 'polarity-swap',  name: 'Polarity Swap',  type: 'electric', cost: 1, art: '🧲', effects: { block: 9, switch: true }, rarity: 'uncommon', upgrade: { effects: { block: 12 } } },   // Empty Body
+  { id: 'shock-tactics',  name: 'Shock Tactics',  type: 'electric', cost: 1, art: '🎯', effects: { switchWeak: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Wave of the Hand, a switch at a time
+  { id: 'electric-relay', name: 'Electric Relay', type: 'electric', cost: 1, art: '📶', effects: { block: 6, ifSwitched: { draw: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // Sanctity
+  { id: 'volt-retreat',   name: 'Volt Retreat',   type: 'electric', cost: 1, art: '🏃', effects: { block: 7, ifEnemyAttacks: { switch: true } }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Fear No Evil
+  { id: 'volt-guard',     name: 'Volt Guard',     type: 'electric', cost: 2, art: '🛡️', effects: { block: 10, blockPerSwitch: 3 }, rarity: 'uncommon', upgrade: { effects: { blockPerSwitch: 4 } } },   // Perfected Strike, as block
+  { id: 'galvanize',      name: 'Galvanize',      type: 'electric', cost: 1, art: '🔩', effects: { switchStatic: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { switchStatic: 4 } } },   // Mental Fortress, Static for block: a Volt Switch / Static bridge
+  { id: 'wildbolt-storm', name: 'Wildbolt Storm', type: 'electric', cost: 'X', art: '🌪️', effects: { perX: { static: 4 } }, rarity: 'uncommon', upgrade: { effects: { perX: { static: 5 } } } },   // Malaise: an Overcharge / Static bridge
+  { id: 'magnetic-field', name: 'Magnetic Field', type: 'electric', cost: 2, art: '🧭', effects: { blockEachTurn: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { blockEachTurn: 6 } } },   // Metallicize
+  { id: 'zap-shield',     name: 'Zap Shield',     type: 'electric', cost: 0, art: '🔰', effects: { block: 4, static: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 6, static: 3 } } },   // Deflect, with Static
+  { id: 'static-storm',   name: 'Static Storm',   type: 'electric', cost: 1, art: '⛈️', effects: { staticMult: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { staticMult: 3 } } },   // Catalyst
+  { id: 'electric-seed',  name: 'Electric Seed',  type: 'electric', cost: 2, art: '🌰', effects: { staticBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Static's Metallicize)
+  { id: 'max-lightning',  name: 'Max Lightning',  type: 'electric', cost: 2, art: '🌟', effects: { damage: 4, perStatic: 3 }, retain: true, rarity: 'rare', upgrade: { effects: { perStatic: 4 } } },   // Bane's big brother
+  { id: 'hadron-engine',  name: 'Hadron Engine',  type: 'electric', cost: 3, art: '🏭', effects: { energyEachTurn: 1, blockEachTurn: 5 }, power: true, rarity: 'rare', upgrade: { cost: 2 } },   // Fusion and Metallicize in one
+  { id: 'ion-barrier',    name: 'Ion Barrier',    type: 'electric', cost: 2, art: '🔷', effects: { block: 32 }, exhaust: true, rarity: 'rare', upgrade: { effects: { block: 40 } } },   // Impervious
+  { id: 'stoked-sparksurfer', name: 'Stoked Sparksurfer', type: 'electric', cost: 2, art: '🏄', effects: { damage: 10, static: 6, switch: true }, rarity: 'rare', upgrade: { effects: { damage: 14, static: 8 } } },   // Wallop, Raichu's Z-move: a Volt Switch / Static bridge
+  { id: 'minus',          name: 'Minus',          type: 'electric', cost: 2, art: '➖', effects: { switchSap: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Disarm, a switch at a time: Plus's mirror
+  { id: 'booster-energy', name: 'Booster Energy', type: 'electric', cost: 0, art: '🧪', effects: { energy: 2, switch: true }, exhaust: true, rarity: 'rare', upgrade: { effects: { energy: 3 } } },   // Adrenaline: a Volt Switch / Overcharge bridge
 ];
 
 /* ============================================================
@@ -719,7 +756,7 @@ const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, streng
   rupture: 1, combust: 2, brutality: 1, drought: 1, cinderDamage: 2, exhaustBurn: 1,
   tideEachTurn: 1, drizzle: 1, riptide: 2, retainN: 1, tideSpendBlock: 1, tideSurge: 1,
   healStrength: 1, attackHeal: 1, attackSeed: 1, debuffDamage: 2, weakEachTurn: 1, weakBlock: 2, strengthHeal: 1,
-  staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1 };
+  staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1, thornStatic: 1, energyBlock: 1, switchStatic: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -851,6 +888,12 @@ export const POWERS = {
   switchBlock:      { icon: '🔗', text: (n) => `Whenever you switch, gain ${n} block.` },
   switchDraw:       { icon: '⚙️', text: (n) => `Whenever you switch, draw ${plural(n, 'card')}.` },
   switchStrength:   { icon: '➕', text: (n) => `Whenever you switch, your hits deal +${n} all fight.` },
+  thornStatic:      { icon: '🪼', text: (n) => `Whenever the enemy attacks you, Static ${n}.` },
+  staticBlock:      { icon: '🌰', text: (n) => `At the start of each turn, gain block equal to the enemy's Static${n > 1 ? ` x${n}` : ''}.` },
+  energyBlock:      { icon: '🌀', text: (n) => `At the end of your turn, gain ${n} block for each energy left.` },
+  switchWeak:       { icon: '🎯', text: (n) => `Whenever you switch, apply ${n} Weak.` },
+  switchStatic:     { icon: '🔩', text: (n) => `Whenever you switch, Static ${n}.` },
+  switchSap:        { icon: '➖', text: (n) => `Whenever you switch, apply ${n} Sap.` },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -892,6 +935,7 @@ function sentences(e) {
   if (e.vulnerable)   parts.push(`Apply ${e.vulnerable} Vulnerable.`);
   if (e.seed)         parts.push(`Leech Seed ${e.seed}.`);
   if (e.static)       parts.push(`Static ${e.static}.`);
+  if (e.staticMult)   parts.push(`${MULT[e.staticMult] ?? `Multiply by ${e.staticMult}`} the enemy's Static.`);
   if (e.sap)          parts.push(`Apply ${e.sap} Sap.`);
   if (e.tempSap)      parts.push(`The enemy's attacks deal ${e.tempSap} less this turn.`);
   if (e.skipEnemy)    parts.push('The enemy skips its next turn.');
@@ -899,6 +943,8 @@ function sentences(e) {
   if (e.block && !e.blockDamage) parts.push(`Gain ${e.block} block.`);
   if (e.blockMult)    parts.push(`${MULT[e.blockMult] ?? `Multiply by ${e.blockMult}`} your block.`);
   if (e.blockPerTide) parts.push(e.perTide ? `Gain ${e.blockPerTide} block per Tide spent.` : `Gain ${e.blockPerTide} block per Tide, then spend all your Tide.`);
+  if (e.blockPerStatic) parts.push(`+${e.blockPerStatic} block for each Static on the enemy.`);
+  if (e.blockPerSwitch) parts.push(`+${e.blockPerSwitch} block for each time you've switched this fight.`);
   if (e.blockPerCard) parts.push(`Gain ${e.blockPerCard} block for each card in your hand.`);
   if (e.blockNext)    parts.push(`Next turn, gain ${e.blockNext} block.`);
   if (e.blur)         parts.push('Your block doesn\'t wear off at the start of your next turn.');
@@ -1060,7 +1106,7 @@ export function cardTerms(card) {
     uses(/tide|^drizzle$/i) && term('Tide'),
     uses(/burn|^drought$/i) && term('Burn'),
     uses(/seed/i) && term('Leech Seed'),
-    uses(/^sap$/) && term('Sap'),
+    uses(/^sap$|^switchSap$/) && term('Sap'),
     uses(/weak/i) && term('Weak'),
     uses(/vulnerable/i) && term('Vulnerable'),
     uses(/strength|^flex$/i) && term('Strength'),

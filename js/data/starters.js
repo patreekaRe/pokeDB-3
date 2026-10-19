@@ -391,6 +391,47 @@ export const DUO_STARTERS = [
     blurb: 'Quick and shocking. Builds Static until the enemy is Paralyzed, and switches out in a flash.',
     deck: ELECTRIC_DECK,
   },
+  // Shinx's deck under other looks, as the Gen 2 / 3 starters are Charmander's (session 4)
+  {
+    id: 'mareep', type: 'electric', duoOnly: true, skinOf: 'shinx',
+    line: [
+      { id: 'mareep', name: 'Mareep' },
+      { id: 'flaaffy', name: 'Flaaffy' },
+      { id: 'ampharos', name: 'Ampharos' },
+    ],
+    blurb: 'Woolly and bright. Its fleece stores static for the enemy, and its tail lights the way.',
+    deck: ELECTRIC_DECK,
+  },
+  {
+    id: 'pichu', type: 'electric', duoOnly: true, skinOf: 'shinx',
+    line: [
+      { id: 'pichu', name: 'Pichu' },
+      { id: 'pikachu', name: 'Pikachu' },
+      { id: 'raichu', name: 'Raichu' },
+    ],
+    blurb: 'Small but sparky. Builds Static fast, then tags out before the shock bites back.',
+    deck: ELECTRIC_DECK,
+  },
+  {
+    id: 'elekid', type: 'electric', duoOnly: true, skinOf: 'shinx',
+    line: [
+      { id: 'elekid', name: 'Elekid' },
+      { id: 'electabuzz', name: 'Electabuzz' },
+      { id: 'electivire', name: 'Electivire' },
+    ],
+    blurb: 'Arms whirling, it charges up between punches and lets the PP pile up for a big one.',
+    deck: ELECTRIC_DECK,
+  },
+  {
+    id: 'tynamo', type: 'electric', duoOnly: true, skinOf: 'shinx',
+    line: [
+      { id: 'tynamo', name: 'Tynamo' },
+      { id: 'eelektrik', name: 'Eelektrik' },
+      { id: 'eelektross', name: 'Eelektross' },
+    ],
+    blurb: 'Slips in and out of the fight like an eel, leaving every foe crackling.',
+    deck: ELECTRIC_DECK,
+  },
 ];
 
 export const STARTERS_BY_ID = Object.fromEntries([...STARTERS, ...DUO_STARTERS].map(s => [s.id, s]));
