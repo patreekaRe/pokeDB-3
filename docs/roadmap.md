@@ -1062,6 +1062,10 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **The Ranger Task Board draws the eye** (2026-10-19, branch `claude/ranger-board-visibility-q9ogwn`, on `main` too;
+  archive): its plaque and "!" had sat behind the eave. Now lowered, lanterns either side, the notes your own tasks, and
+  a glow, sparkles and "!" while a task waits or till it's first opened. Playtest `?mall=outfitter&safari&coins=3000` on
+  the phone and say if it calls loudly enough (or too loudly). ▶ Run in: PLAYTEST ON THE LIVE SITE.
 - **Publish `firestore.rules` again** (2026-10-18, on `main`): one paste into the Firebase console (Firestore Database >
   Rules > Publish) covers the graves, the leaderboard's ✨ and every newer Trainer Card key (Shinies, Ranger, Gyms,
   Streak, Kenmatta, Summits, Starters, Defeated, Safari days, Coins, best shiny, rarest catch, Hall of Fame, pinned
@@ -1093,6 +1097,10 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   Open (2026-10-19): `--only=trips` passes even with that leak's fix in `sleepGL()` switched off (heap +1.7 MB over four
   trips), so the budget check doesn't catch it headless any more; a delayed `webglcontextlost` meant to mimic an iPhone
   didn't either. Parked on branch `claude/budget-late-loss-wip`, not merged. The fix itself stays on `main`.
+  Open (2026-10-19, found with the Ranger board): the budget check never gets into a mall shop. Headless Chromium's
+  ImageDecoder never finishes a keeper's GIF, so `goPlace()` hangs and every shop's row measures the hall (all six record
+  332 draws). `&gifjs` gets in (the Outfitter: 252). Fix: `&gifjs` on the mall shops' `PLACES` URLs in
+  `tools/budget-check.mjs`, then rerun those with `--update`. ▶ Run in: CLOUD.
   Round eight (2026-10-19, a check of the Safari shinies and the Plaza's buddies): the Outfitter drew at full rate under
   the full-screen Shiny Exchange (~840 draws/s headless, now 0 till it closes), and on a phone that slowdown could make the
   mall's keepUp() step its shadows or resolution down for good. The buddies cost ~1.7 MB and no measurable draws (a walking

@@ -47,6 +47,7 @@ export const NEXT = [
   ['hub', 'Your Trainers\' buddies in the Plaza wear bigger, clearer name tags, and once one has had its say, its trainer\'s Trainer Card opens.'],
   ['dex', 'Your Trainers page shows friends your Pokédex colour: their page opens in the shell they wear.'],
   ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again.'],
+  ['mall', 'The Safari Outfitter\'s Ranger Task Board is lit by lanterns, shows your own tasks, and glows and sparkles when one waits to be claimed.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

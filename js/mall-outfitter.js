@@ -12,6 +12,7 @@ import { safariDaily, SAFARI_DEX_PAGES, SAFARI_ROSTER } from './data/safari.js';
 import { EXCHANGE_INK } from './data/exchange.js';
 import { shinyImage, sparkleOf } from './data/shinies.js';
 import { ENEMY_DEFS } from './data/enemies.js';
+import { TABS, tasksOn, progressOf, readyTasks } from './data/ranger.js';
 import { getSave, exchangeCaught } from './storage.js';
 import { cornerEntries } from './shop.js';
 import { fine, texOf, words, star, mergeStatic, newsArt } from './hub-3d.js';
@@ -417,31 +418,87 @@ function priceArt(e, b) {
 }
 
 /** The Ranger Task Board on the wall over the jeep (2026-10-16; js/ranger.js opens it): a cork board in a bamboo frame
-    under a green plaque, paper notes pinned in rows with a Polaroid and a few lines each, the Safari Zone's map pinned
-    at the right. */
-function taskBoardArt() {
+    under a green plaque, paper notes pinned in rows, the Safari Zone's map pinned at the right. The notes are the
+    player's own tasks (2026-10-19, the user's phone shot: a dull picture, nothing on it said to tap it): those waiting to
+    be claimed first, gold with a red pin and a CLAIM stamp, then the nearest to done, each under its tab's colour with
+    its real progress. Repainted as the board closes. */
+function taskBoardArt(save) {
   const W = 120, H = 66, f = fine(W, H, 6), { g, rr, lin } = f;
   rr(0, 0, W, H, 3, L.cane[2]);
   g.fillStyle = 'rgba(90,60,20,0.35)'; for (let x = 5; x < W; x += 5) g.fillRect(x, 0, 0.4, H);
   rr(3, 3, W - 6, H - 6, 2, lin(0, 0, 0, H, ['#c8955a', '#b8844a']));
   g.fillStyle = 'rgba(0,0,0,0.08)'; for (let i = 0; i < 400; i++) g.fillRect((i * 37) % (W - 8) + 4, (i * 53) % (H - 8) + 4, 0.6, 0.6);
   mapArt(g, W - 36, 16, 29, 42);
-  const pins = ['#d84838', '#3a74e0', '#f8c838', '#58a848'];
-  for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) {
-    const x = 7 + c * 19.5, y = 16 + r * 22, tilt = (((r * 4 + c) * 37) % 7 - 3) * 0.02;
+  const pins = ['#3a74e0', '#f8c838', '#58a848', '#e870b0'];
+  boardNotes(save).forEach(({ task, tab, p }, i) => {
+    const r = i >> 2, c = i % 4, x = 7 + c * 19.5, y = 16 + r * 22, tilt = ((i * 37) % 7 - 3) * 0.02;
+    const ready = p.done && !p.claimed, ink = TAB_INK[tab];
     g.save(); g.translate(x + 8, y + 9); g.rotate(tilt); g.translate(-x - 8, -y - 9);
     rr(x + 0.5, y + 0.8, 17, 19, 0.6, 'rgba(0,0,0,0.25)');
-    rr(x, y, 17, 19, 0.6, '#fbf5e4');
-    rr(x + 1.5, y + 2, 6.5, 7, 0.3, '#ffffff'); rr(x + 2.2, y + 2.6, 5.1, 5, 0.2, (r + c) % 3 ? '#cfe8f4' : '#e8f0d8');
-    g.fillStyle = 'rgba(80,60,40,0.55)'; for (const ly of [3.5, 6, 8.5]) g.fillRect(x + 9, y + ly, 6.5 - (ly === 8.5 ? 2 : 0), 0.8);
-    for (let k = 0; k < 6; k++) { g.fillStyle = k < (r * 4 + c) % 7 ? '#58a848' : 'rgba(80,60,40,0.25)'; g.beginPath(); g.arc(x + 2.5 + k * 2.4, y + 13.5, 0.8, 0, Math.PI * 2); g.fill(); }
-    rr(x + 1.5, y + 15.6, 14, 2, 0.4, 'rgba(46,84,38,0.2)');
-    g.fillStyle = pins[(r * 4 + c) % 4]; g.beginPath(); g.arc(x + 8.5, y + 0.6, 1.3, 0, Math.PI * 2); g.fill();
+    rr(x, y, 17, 19, 0.6, ready ? '#ffe27a' : p.claimed ? '#e4dccb' : '#fbf5e4');
+    rr(x, y, 17, 3, [0.6, 0.6, 0, 0], ink);
+    rr(x + 1.5, y + 4.2, 6.5, 6.5, 0.3, '#ffffff');
+    if (task.ball) flatBall(g, x + 4.75, y + 7.45, 2.3, BALL_INK[task.ball] ?? ink);
+    else {
+      rr(x + 2.1, y + 4.8, 5.3, 5.3, 0.2, '#cfe8f4');
+      g.fillStyle = '#8ac068'; g.beginPath(); g.ellipse(x + 4.75, y + 10.1, 3, 1.6, 0, Math.PI, 0); g.fill();
+      g.fillStyle = 'rgba(40,40,60,0.7)'; g.beginPath(); g.arc(x + 4.75, y + 7.6, 1.3, 0, Math.PI * 2); g.fill();
+    }
+    g.fillStyle = 'rgba(80,60,40,0.55)'; for (const ly of [5.4, 7.6, 9.8]) g.fillRect(x + 9, y + ly, ly > 9 ? 4.5 : 6.5, 0.8);
+    const lit = Math.floor(6 * p.n / p.goal);
+    for (let k = 0; k < 6; k++) { g.fillStyle = k < lit ? '#58a848' : 'rgba(80,60,40,0.25)'; g.beginPath(); g.arc(x + 2.5 + k * 2.4, y + 13.3, 0.8, 0, Math.PI * 2); g.fill(); }
+    if (ready) {
+      g.save(); g.translate(x + 8.5, y + 16.2); g.rotate(-0.16);
+      rr(-7, -2.1, 14, 4.2, 0.8, '#d83a2a');
+      words(g, 'CLAIM!', 0, 0.2, 3.4, '#ffffff');
+      g.restore();
+    } else rr(x + 1.5, y + 15.4, 14, 2, 0.4, `${ink}40`);
+    g.fillStyle = ready ? '#e02818' : pins[i % 4]; g.beginPath(); g.arc(x + 8.5, y + 0.6, ready ? 1.7 : 1.3, 0, Math.PI * 2); g.fill();
     g.restore();
+  });
+  const PW = 92, PH = 13.5, px = W / 2 - PW / 2;
+  rr(px - 0.4, -0.6, PW + 0.8, PH + 1.2, 3, L.dark);
+  rr(px, 0, PW, PH, 2.6, lin(0, 0, 0, PH, ['#f0c860', '#b8861c']));
+  rr(px + 1.2, 1.2, PW - 2.4, PH - 2.4, 2, lin(0, 1.2, 0, PH - 1.2, ['#6a9a3e', '#3e6228']));
+  for (const bx of [px + 7, px + PW - 7]) flatBall(g, bx, PH / 2, 3.4, '#58a848');
+  g.font = '900 6.6px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = 'rgba(20,40,10,0.5)'; g.fillText('RANGER TASK BOARD', W / 2 + 0.3, PH / 2 + 0.5, PW - 26);
+  g.fillStyle = '#fff6d8'; g.fillText('RANGER TASK BOARD', W / 2, PH / 2 + 0.2, PW - 26);
+  return f.c;
+}
+
+const TAB_INK = { expeditions: '#3a74e0', research: '#4a9a3a', balls: '#d84838', feats: '#d89a18' };
+const BALL_INK = { ...INK, safari: '#58a848', premier: '#f4f4f4' };
+
+/** The board's eight notes: the tasks waiting to be claimed, then the nearest to done, a tab's first before any tab's
+    second, so a new board shows every colour; claimed ones fill it only once nothing else is left. */
+function boardNotes(save) {
+  const all = TABS.flatMap(t => tasksOn(t.id).map((task, k) => ({ task, tab: t.id, k, p: progressOf(task, save) })));
+  const score = (e) => (e.p.claimed ? -9 : e.p.done ? 9 : e.p.n / e.p.goal);
+  return all.sort((a, b) => score(b) - score(a) || a.k - b.k).slice(0, 8);
+}
+
+/** A soft warm light, for the glow behind the board and round its lanterns: `round` a disc, else a rounded box. */
+function glowArt(round) {
+  const W = round ? 32 : 68, H = round ? 32 : 44, f = fine(W, H, 4), { g } = f;
+  for (let i = 0; i < 14; i++) {
+    const t = i / 14;
+    g.fillStyle = `rgba(255,${190 + i * 4},${110 + i * 8},0.075)`; g.beginPath();
+    if (round) g.arc(W / 2, H / 2, W / 2 * (1 - t), 0, Math.PI * 2);
+    else g.roundRect(t * 10, t * 10, W - t * 20, H - t * 20, 10 - t * 6);
+    g.fill();
   }
-  rr(W / 2 - 30, -1, 60, 12, 2.4, L.dark);
-  rr(W / 2 - 28.8, 0.2, 57.6, 9.6, 1.8, lin(0, 0, 0, 10, ['#6a8a3e', '#3e6228']));
-  words(g, 'RANGER TASK BOARD', W / 2, 5.4, 5, '#fbf3dc');
+  return f.c;
+}
+
+/** A twinkle round the board: a four-pointed white star in a gold glow. */
+function sparkleArt() {
+  const f = fine(16, 16, 6), { g } = f, r = g.createRadialGradient(8, 8, 0, 8, 8, 8);
+  r.addColorStop(0, 'rgba(255,230,140,0.9)'); r.addColorStop(1, 'rgba(255,200,80,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 16, 16);
+  g.fillStyle = '#fffbe8'; g.beginPath(); g.moveTo(8, 0.5);
+  g.quadraticCurveTo(8.8, 7.2, 15.5, 8); g.quadraticCurveTo(8.8, 8.8, 8, 15.5); g.quadraticCurveTo(7.2, 8.8, 0.5, 8); g.quadraticCurveTo(7.2, 7.2, 8, 0.5);
+  g.fill();
   return f.c;
 }
 
@@ -930,26 +987,71 @@ export function buildOutfitter(THREE, size) {
     });
   }
 
-  // the Ranger Task Board in the left bay, over the jeep (js/ranger.js opens it), a "!" bobbing over it while a task
-  // waits to be claimed
+  // the Ranger Task Board in the left bay, over the jeep (js/ranger.js opens it). Kept under the eave's line, so its
+  // plaque reads (2026-10-19, the user's phone shot: the eave hid the plaque and the "!", and nothing said to tap it),
+  // a lantern either side and a warm glow behind it; while a task waits to be claimed, or till the board is first
+  // opened, the glow breathes, sparkles twinkle round its frame and a "!" bobs on its corner
+  const rangerSpot = { id: 'ranger-board', kind: 'game', name: 'Ranger Task Board', open: true, step: { x: 3, y: 2 } };
   {
-    const BW = 5.2, BH = BW * 66 / 120, y0 = 1.95;
-    const board = new THREE.Mesh(new THREE.PlaneGeometry(BW, BH), new THREE.MeshBasicMaterial({ map: texOf(taskBoardArt()), toneMapped: false }));
-    board.position.set(tileX(3), y0 + BH / 2, wallZ + 0.05);
-    const pip = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.55), new THREE.MeshBasicMaterial({ map: texOf(newsArt()), transparent: true, depthWrite: false, toneMapped: false }));
-    pip.position.set(tileX(3) + BW / 2 - 0.3, y0 + BH + 0.15, wallZ + 0.12);
-    pip.raycast = () => {};
-    const spot = { id: 'ranger-board', kind: 'game', name: 'Ranger Task Board', open: true, step: { x: 3, y: 2 } };
+    const BW = 5.2, BH = BW * 66 / 120, y0 = 1.5, bx = tileX(3), spot = rangerSpot;
+    const map = texOf(taskBoardArt(getSave()));
+    const board = new THREE.Mesh(new THREE.PlaneGeometry(BW, BH), new THREE.MeshBasicMaterial({ map, toneMapped: false }));
+    board.position.set(bx, y0 + BH / 2, wallZ + 0.06);
+    const halo = new THREE.Mesh(new THREE.PlaneGeometry(BW + 1.6, BH + 1.2), new THREE.MeshBasicMaterial({ map: texOf(glowArt(false)), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+    halo.position.set(bx, y0 + BH / 2, wallZ + 0.03);
+    const pip = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.65), new THREE.MeshBasicMaterial({ map: texOf(newsArt()), transparent: true, depthWrite: false, toneMapped: false }));
+    const pipY = y0 + BH - 0.3;
+    pip.position.set(bx + BW / 2 - 0.25, pipY, wallZ + 0.6);
+    const twinkle = new THREE.MeshBasicMaterial({ map: texOf(sparkleArt()), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+    const sparks = [[-BW / 2 - 0.05, BH / 2 - 0.5], [BW / 2 + 0.1, -BH / 2 + 0.7], [-BW / 2 + 1.2, -BH / 2 + 0.05], [0.9, BH / 2 - 0.05]].map(([x, y]) => {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.42), twinkle);
+      m.position.set(bx + x, y0 + BH / 2 + y, wallZ + 0.2);
+      return m;
+    });
+    // a lantern either side on an iron arm out from the wall, its glass lit and a glow round it
+    const lamps = new THREE.Group(), iron = std({ color: '#2e2a26', roughness: 0.6 });
+    const glass = std({ color: '#ffe2a0', emissive: new THREE.Color('#ffb040'), emissiveIntensity: 1.2, roughness: 0.4 });
+    const lampGlow = new THREE.MeshBasicMaterial({ map: texOf(glowArt(true)), transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+    const glows = [];
+    for (const s of [-1, 1]) {
+      const lx = bx + s * (BW / 2 + 0.3), ly = 3.55, lz = wallZ + 0.5;
+      put(lamps, new THREE.BoxGeometry(0.05, 0.05, 0.5), iron, lx, ly + 0.5, wallZ + 0.25, false);
+      put(lamps, new THREE.CylinderGeometry(0.012, 0.012, 0.16, 6), iron, lx, ly + 0.42, lz, false);
+      put(lamps, new THREE.ConeGeometry(0.17, 0.14, 6), iron, lx, ly + 0.27, lz, false);
+      put(lamps, new THREE.CylinderGeometry(0.11, 0.11, 0.3, 6), glass, lx, ly + 0.05, lz, false);
+      put(lamps, new THREE.CylinderGeometry(0.14, 0.12, 0.06, 6), iron, lx, ly - 0.12, lz, false);
+      const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1), lampGlow);
+      glow.position.set(lx, ly + 0.05, lz + 0.15);
+      glows.push(glow);
+      lamps.add(glow);
+    }
+    mergeStatic(lamps, (o) => glows.includes(o));
+    for (const o of [halo, pip, ...sparks, ...glows]) o.raycast = () => {};
     spot.line = spot.name;
     spot.game = { name: spot.name, line: 'The Ranger Task Board: tasks for the Safari Zone, and rewards to claim.', direct: true,
       open: (done) => import('./ranger.js').then(m => m.openRangerBoard(done)) };
     spots.push(spot);
     board.userData.front = spot;
-    group.add(board, pip);
-    const syncPip = () => import('./ranger.js').then(m => { pip.visible = m.rangerReady() > 0; });
-    syncPip();
-    redraws.push(syncPip);
-    ticks.push((now) => { pip.position.y = y0 + BH + 0.15 + (calm ? 0 : Math.abs(Math.sin(now / 320)) * 0.12); });
+    lamps.traverse(o => { o.userData.front = spot; });
+    group.add(halo, board, pip, lamps, ...sparks);
+    let wants = false;
+    const sync = (paint = true) => {
+      const save = getSave();
+      wants = readyTasks(save).length > 0 || (!save.ranger?.seen && !save.ranger?.claimed?.length);
+      pip.visible = wants;
+      for (const m of sparks) m.visible = wants && !calm;
+      halo.material.opacity = wants ? 0.85 : 0.5;
+      if (paint) { map.image = taskBoardArt(save); map.needsUpdate = true; }
+    };
+    sync(false);
+    redraws.push(sync);
+    ticks.push((now) => {
+      if (calm) return;
+      pip.position.y = pipY + Math.abs(Math.sin(now / 320)) * 0.12;
+      halo.material.opacity = wants ? 0.6 + Math.sin(now / 520) * 0.3 : 0.5;
+      lampGlow.opacity = 0.75 + Math.sin(now / 110) * 0.05 + Math.sin(now / 47) * 0.03;
+      if (wants) sparks.forEach((m, i) => { const k = Math.max(0, Math.sin(now / 380 - i * 1.7)); m.scale.setScalar(0.2 + k); m.rotation.z = now / 900 + i; });
+    });
   }
 
   // the jeep in the left bay, under the board, turned a little to show its side and its door's SAFARI ZONE
@@ -985,6 +1087,7 @@ export function buildOutfitter(THREE, size) {
     const decal = put(jeep, new THREE.PlaneGeometry(1.2, 0.4), std({ map: texOf(decalArt()), transparent: true, alphaTest: 0.2, roughness: 0.7 }), -0.25, 0.62, 0.68, false);
     decal.position.z = 0.677;
     mergeStatic(jeep, () => false, true);
+    jeep.traverse(o => { o.userData.front = rangerSpot; });
     group.add(jeep);
     block(1, 0, 5, 1);
   }

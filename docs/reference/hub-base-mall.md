@@ -442,8 +442,7 @@ count every catch ever made. Claimed ids are `save.ranger.claimed`.
   red count of ready tasks, then the notes: pinned, a little crooked, a Polaroid of the Pokémon (a silhouette till one is
   caught) or the ball, a paw-print trail and the reward. Ready first, then nearest to done, claimed last. A ready note
   wiggles (not under `calmFx()`); CLAIM slams a green RANGER ✓ stamp onto it and a toast says the reward and any rank up.
-- **Where**: on the Outfitter's back wall over the jeep (`taskBoardArt()` in `js/mall-outfitter.js`, the left bay, a "!"
-  bobbing over it while `rangerReady()`), the Safari lobby's **Tasks** key (`#sp-tasks`, a red count on it), and a line
+- **Where**: on the Outfitter's back wall over the jeep (`taskBoardArt()` in `js/mall-outfitter.js`, the left bay), the Safari lobby's **Tasks** key (`#sp-tasks`, a red count on it), and a line
   in a Safari run's result window when tasks wait.
 - **Expeditions** (2026-10-16, the board's first tab): three goals a week, one a tier (easy / medium / hard paying
   `TIER_PAY` 200 / 350 / 600 PokéCoins) from `EXPEDITIONS`, rolled by `expeditionTasks(week)` from the week's seed (its
@@ -459,6 +458,14 @@ count every catch ever made. Claimed ids are `save.ranger.claimed`.
   `checkBadges()` as a claim is paid and named in the claim's toast.
 - **The Clearing's Safari gate** wears a "!" (`safariMark` in `js/hub-3d.js`, rebuilt with the places) while
   `readyTasks()` has any, and its line says so.
+- **Drawing the eye** (2026-10-19, the user's phone shot: a dull picture, nothing said to tap it): the thatched eave hides
+  the back wall above about 4.45 (and the jeep below about 1.6), so the board sits at 1.5 to 4.36 and its "!" on its
+  top-right corner, forward of the wall; both had been hidden. A brass-edged plaque, a lantern either side (`glowArt()`),
+  a warm glow behind it, and its eight notes the player's own (`boardNotes()`: ready ones gold with a red pin and a CLAIM
+  stamp, then nearest to done, each under its tab's colour, `TAB_INK`), repainted as the board closes. While a task
+  waits, or till the board's first opened (`save.ranger.seen`, set in `openBoard()`; a save with a claim counts as seen),
+  the glow breathes, four sparkles twinkle (`sparkleArt()`, none under `calmFx()`) and the "!" bobs. The jeep and the
+  lanterns open it too.
 - **Shiny tasks** (2026-10-19, Ranger Feats): wild shinies caught (1, 3, 10; `log.shiny` from `rangerInfo()`'s
   `shiny`, counted from that day, never a `?wildshiny` one), a shiny rare spawn (`log.shinyRare`), shinies owned (10,
   50, 150; the Exchange's count) and one at ★5. Their photo is your brightest shiny (`{ mon, shiny }`, `.rb-photo.shiny`),

@@ -214,6 +214,7 @@ function close() {
 function openBoard(kind, done) {
   B = BOARDS[kind];
   dlg = dlgs[kind];
+  if (kind === 'ranger' && !getSave().ranger?.seen) updateSave(d => { d.ranger = { ...d.ranger, seen: true }; });   // the Outfitter's board stops calling for a first look
   if (!dlg) build(kind);
   onDone = done;
   tab = tabs[kind];

@@ -3146,3 +3146,9 @@ newest Hall of Fame win whose tap lays out its deck) and a pinned badge by the p
 secret badges and Psychic cards stay off the page. `?mycard` shows your own page as a friend sees it. Checked in the
 browser pane on a seeded save; tests pass (366). The emulator rules cases (`tools/trainers-rules.mjs`) gained three, not
 run here (no emulator on this PC). **The user publishes the rules.**
+
+**The Ranger Task Board draws the eye** (2026-10-19, the user's phone shot: "needs to be more attractive or at least draw
+the player"). The eave had hidden its plaque and its "!" (both sat above the wall's visible band). Lowered under it, a
+brass-edged plaque, a lantern either side, a warm glow, and its notes the player's own tasks (ready ones gold with a CLAIM
+stamp); while a task waits or till it's first opened (`save.ranger.seen`) the glow breathes, sparkles twinkle and the "!"
+bobs. The jeep opens it too. +6 draws in the Outfitter (246 -> 252 headless). Detail in `docs/reference/hub-base-mall.md`.
