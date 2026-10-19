@@ -956,6 +956,20 @@ uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS 
    Engine work in `js/battle.js` and the sim, then enemies retuned.
 Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` / `cardTerms()` lines and the sim mirror.
 
+- **Suggested 2026-10-19, not picked** (a brainstorm session; each ▶ Run in: CLOUD, both repos where a battle rule changes):
+  - **Biome weather as a battle rule**: rain powers Water, sun powers Fire, and so on per biome (data plus one modifier;
+    mirrored in `sim/engine.js`, bot-checked per type).
+  - **Enemy Abilities**: the one-per-type Abilities (`ABILITIES` in `js/data/relics.js`) on elites, e.g. a Grass elite's
+    hits leech, a Water boss heals each turn. Pairs with "Enemy variety" above.
+  - **Boss phases**: at half HP an area boss changes moveset (like Eternamax, but for every boss).
+  - **Run history**: the last ~20 runs (starter, deck, relics, where it ended, the seed) in a Pokédex app; also a balance aid.
+  - **Challenge codes**: a seed plus switches ("no relics", "Water cards only") shared through the Trainers app, built on
+    `js/rng.js` and the Custom runs idea above; counts for nothing.
+  - **A weekly mutator run**: the main game on one seed for everyone for a week, with a rule twist and a Friends board.
+  - **Colour-blind mode**: a shape or letter on every type colour (cards, intents, the type chart).
+  - **A guided first fight**, if `?onboard` doesn't already teach Block, energy and intents.
+  - **Tests on every push**: a GitHub Action running `node --test` (later a short `budget-check`) on pushes to `main`,
+    since nothing reviews a push before the live site gets it.
 - Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a
   win, Endless mode after Eternatus, Custom runs (switches that count for nothing), Unown letters hidden in the Depths.
 
