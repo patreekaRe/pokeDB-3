@@ -48,7 +48,7 @@ export const NEXT = [
   ['dex', 'Your Trainers page shows friends your Pokédex colour: their page opens in the shell they wear.'],
   ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again, a room that won\'t load just after an update offers a reload, and towns, gyms and ? rooms use less memory, and you can walk over the Garden pond like the other ponds.'],
   ['mall', 'The Safari Outfitter\'s Ranger Task Board is lit by lanterns, shows your own tasks, and glows and sparkles when one waits to be claimed.'],
-  ['mall', 'GARDEN CATALOGUE floats over Smeargle once you have a backyard, and GRAND CATALOGUE over Gardevoir, so you know to tap them.'],
+  ['mall', 'A Garden catalogue tag floats over Smeargle once you have a backyard, and a Grand catalogue tag over Gardevoir, so you know to tap them.'],
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
 ];
 

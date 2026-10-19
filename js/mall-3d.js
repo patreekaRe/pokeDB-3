@@ -829,52 +829,35 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
   if (P.keeper) talk(pickLine(P.keeper.hello), 4200);
 }
 
-let signFont;
-/** The words floating over a shopkeeper whose tap opens a catalogue: Bungee letters in the store's gold with a soft glow,
-    on a board facing the camera, bobbing a little in the frame loop. `show(text)` repaints it, '' hides it. */
+/** The words over a shopkeeper whose tap opens a catalogue, a tag in the price tags' style pinned over its head on
+    screen (2026-10-19: painted into the 3D they came out small, blurred and lost behind the CASHIER sign). `show(text)`
+    sets them, '' hides them; `tick()` keeps the tag over the keeper. */
 function keeperSign(k) {
-  const c = document.createElement('canvas');
-  c.width = 640; c.height = 120;
-  c.fine = true;
-  const map = texOf(c);
-  const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, fog: false });
-  const w = 2.4, mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, w * c.height / c.width), m);
-  const board = k.mon.board;
+  const at = new THREE.Vector3(), board = k.mon.board;
   board.geometry.computeBoundingBox();
-  const y = board.geometry.boundingBox.max.y + 0.32;
-  mesh.rotation.x = -PITCH;
-  mesh.renderOrder = 3;
-  mesh.raycast = () => {};
-  k.mon.group.add(mesh);
-  let text = null;
-  const paint = () => {
-    const d = c.getContext('2d');
-    d.clearRect(0, 0, c.width, c.height);
-    if (!text) return;
-    let px = 76;
-    do d.font = `${px -= 2}px Bungee, "Arial Black", sans-serif`; while (px > 30 && d.measureText(text).width > c.width - 40);
-    d.textAlign = 'center'; d.textBaseline = 'middle'; d.lineJoin = 'round';
-    const cx = c.width / 2, cy = c.height / 2;
-    d.shadowColor = 'rgba(255, 220, 140, 0.9)'; d.shadowBlur = 18;
-    d.lineWidth = 12; d.strokeStyle = 'rgba(240, 190, 80, 0.5)';
-    d.strokeText(text, cx, cy);
-    d.shadowBlur = 0;
-    d.lineWidth = 7; d.strokeStyle = d.fillStyle = '#3a2408';
-    for (let i = 4; i > 0; i -= 2) { d.strokeText(text, cx, cy + i); d.fillText(text, cx, cy + i); }
-    d.strokeStyle = '#5a3a10';
-    d.strokeText(text, cx, cy);
-    const grad = d.createLinearGradient(0, cy - px * 0.42, 0, cy + px * 0.42);
-    grad.addColorStop(0, '#fffbe8'); grad.addColorStop(0.55, '#fff2c0'); grad.addColorStop(1, '#f0c860');
-    d.fillStyle = grad;
-    d.fillText(text, cx, cy);
-    map.needsUpdate = true;
-  };
-  signFont ??= new FontFace('Bungee', 'url(https://fonts.gstatic.com/s/bungee/v17/N0bU2SZBIuF2PU_0DXR1.woff2)').load()
-    .then((f) => document.fonts.add(f));
-  signFont.then(paint, () => {});
+  const top = board.geometry.boundingBox.max.y;
+  let el = null, text = '';
   return {
-    show(t) { if (t === text) return; text = t; mesh.visible = !!t; paint(); },
-    tick(now) { mesh.position.y = y + (calm ? 0 : Math.sin(now / 700) * 0.05); },
+    show(t) { text = t; if (el) el.hidden = !t; },
+    tick(hud, now) {
+      if (!el?.isConnected) {
+        el = document.createElement('span');
+        el.className = 'mall-sign';
+        el.style.setProperty('--ink', k.ink);
+        el.append(smoothIcon(k.signIcon, 'mall-sign-icon'), document.createElement('b'));
+        hud.view.after(el);
+      }
+      el.lastChild.textContent = text;
+      if (!text) { el.hidden = true; return; }
+      const g = k.mon.group.position;
+      at.set(g.x, g.y + top + 0.12, g.z).project(hud.camera);
+      const r = hud.view.getBoundingClientRect(), o = hud.stage.getBoundingClientRect();
+      el.hidden = Math.abs(at.x) > 1 || Math.abs(at.y) > 1;
+      const bob = calm ? 0 : Math.sin(now / 600) * 3;
+      const half = el.offsetWidth / 2 + 6, x = Math.min(Math.max((at.x + 1) / 2 * r.width, half), r.width - half);   // kept on screen
+      el.style.translate = `${(r.left - o.left + x).toFixed(1)}px ${(r.top - o.top + (1 - at.y) / 2 * r.height + bob).toFixed(1)}px`;
+    },
+    drop() { el?.remove(); el = null; },
   };
 }
 
@@ -1498,9 +1481,9 @@ function frame(now) {
     k.board.scale.x = walker.x > P.keeper.x + 0.3 ? -1 : 1;
     const left = (P.keeper.hopUntil || 0) - now;
     k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
-    P.keeper.label?.tick(now);
   }
   P.tick?.(now, dt, hud);
+  for (const pl of Object.values(places)) if (pl.keeper?.label) { if (pl === P) pl.keeper.label.tick(hud, now); else pl.keeper.label.show(''); }
   if (P.id === 'hall') for (const t of dressed) t(now, dt);
   places.gc?.crowd?.tick(now, dt, P.id === 'gc');
   places.hall?.crowd?.tick(now, dt, P.id === 'hall');

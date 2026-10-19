@@ -375,6 +375,18 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 }
 .mall-tag[hidden] { display: none; }
 .mall-tag-coin { width: 15px; height: 15px; flex: none; }
+/* a catalogue's name over its shopkeeper (keeperSign() in js/mall-3d.js): a bigger tag, its point down at the keeper */
+.mall-sign {
+  position: absolute; left: 0; top: 0; z-index: 1; display: flex; align-items: center; gap: 6px; padding: 7px 12px 7px 8px;
+  transform: translate(-50%, calc(-100% - 9px)); border: 2px solid var(--ink); border-radius: 999px; background: #fffaf0;
+  color: #4a3424; font: 14px/1 var(--pixel-font); white-space: nowrap; box-shadow: 0 3px 0 #0004; pointer-events: none;
+}
+.mall-sign::after {
+  content: ''; position: absolute; left: 50%; bottom: -8px; width: 10px; height: 10px; translate: -50% 0; rotate: 45deg;
+  background: #fffaf0; border: solid var(--ink); border-width: 0 2px 2px 0;
+}
+.mall-sign[hidden], .mall3d:has(.mall-shop:not([hidden])) .mall-sign { display: none; }
+.mall-sign-icon { width: 18px; height: 18px; flex: none; color: var(--ink); }
 
 /* ---------- the Clearing's PC (js/pc.js): full screen, the PC by the plaza grown big ---------- */
 .pc-screen {
