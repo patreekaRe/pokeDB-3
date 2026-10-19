@@ -239,7 +239,7 @@ The first section began as the note on playtesting the live site and grew into t
   every 9 s and the faint "Updates" under it brightening and swelling on the same beat (`updatesPulse`, off under calm
   effects and reduced motion; `.title-screen.hub-mode .title-refresh` in `css/hub.css`); the Signs title keeps
   the white arrow under the speaker. The 2026-10-17 key that also brought you back where you stood was reverted for its
-  bugs; this one is only the look. Sprites
+  bugs; this one is only the look. The speaker (`#title-sound-btn`) became the same 28px key just left of it (2026-10-18, the user's ask: the big speaker top left was too much; its pop-out opens under it, right-aligned). Sprites
   `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
   A new feature worth a hint gets a `HINTS` line. **Talked to in the Gym Leaders' slide-in** (2026-10-15, the user's pick
   of two): `showCard()` hands the place to `profTalk()`, which calls `gymTalk()` (`js/gym.js`) with a leader-shaped
