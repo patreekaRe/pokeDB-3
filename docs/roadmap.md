@@ -57,8 +57,19 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    finished), the Gen 5 chart capped at x1.3 / x0.75, and per type its archetypes, Ability, area and **3-stage starters
    only** (the user's call): Electric **Shinx** / Mareep / Pichu / Elekid / Tynamo, Ice **Vanillite** / Swinub, Fighting
    **Timburr** / Machop, Ground **Trapinch** / Rhyhorn, Flying **Starly** / Pidgey / Pidove, Dark **Deino** / Sandile.
-1. **The duo, the Duo Run and the duo pool** (effort: high) on today's three types (`docs/duo-design.md` sections 1-3),
-   sim mirror, bot check of the 3 pairs against the same bot's solo runs.
+1. ~~**The duo, the Duo Run and the duo pool**~~ done 2026-10-19 on `duo-types` (both repos; `docs/roadmap-done.md`,
+   `docs/reference/safari.md`'s "The duo and the Duo Run"). Answer 13 applied first (Gen 5 types). **Waiting on the
+   user**: (a) **the duo's starting deck**: the bot found duos ~20 points under solo (fire+grass / fire+water /
+   grass+water 67 / 56 / 59 vs solo fire / grass / water 86 / 78 / 76), and it's the 5 + 5 halves of answer 6 (each
+   type loses its second signature; Water Pulse has no Tide). Halves of **1 basic attack, 2 basic blocks and both solo
+   signatures** (Ember, Flame Wall x2, Scorch, Will-O-Wisp / Vine Whip, Block x2, Seed Bomb, Absorb / Water Gun,
+   Withdraw x2, Bubble, Dive) measured 83 / 73 / 79, level with solo: a one-line `DUO_DECK` change if the user says yes.
+   (b) **switching at 1 PP rarely pays**: the bot gains ~3 points from dodging a super-effective hit and loses 8 by
+   switching for STAB, so the free-switch cards (Volt Switch, Baton Pass, Shed Shell) matter; a cheaper switch is the
+   other lever. (c) **cross-type twins**: a duo now meets two types' pools, and 12 pairs read alike across types (Ember /
+   Vine Whip / Water Gun "Deal 7", Scorch / Seed Bomb, Solar Beam / Firestorm, Withdraw / Flame Wall...). The test keys
+   on type (a duo plays them differently: STAB, the chart), so they stay unless the user wants them renamed.
+   Playtest: the commit's githack link with `?duorun&coins=500`, the Safari lobby's Duo key.
 2. ~~**Real types in the Safari**~~ done 2026-10-19 on `duo-types-realtypes`, merged into `duo-types` (both repos;
    `docs/roadmap-done.md`, `docs/reference/safari.md`'s Real types). Built on the 18-type chart as the prompt said. The user's answers settle both its opens:
    **Gen 5** (answer 13), so session 1 first runs `tools/real-types.py --gen5` and the tests; and the x0.5 floor (a double resist is x0.75, as the
@@ -71,12 +82,12 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
 15. **The balance pass** (effort: high) over all 36 pairs, then patch notes and a githack link.
 - **The new areas' art** (the user's pick: data first, art after): each new area's scene, intro film, boss prelude and
   arena, one or two areas a session, after the type sessions or beside the balance pass.
-Prompt for session 1 (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start from branch `duo-types`):
-"Read CLAUDE.md, docs/duo-design.md (approved) and docs/reference/safari.md, cards.md and device-and-screens.md. First apply
-the doc's answer 13 to the built real types (tools/real-types.py --gen5, then the tests). Then build
-session 1, the duo, the Duo Run and the duo pool on Fire / Grass / Water (the doc's sections 1-3), with pokeDB-sim's
-mirror on its own new duo-types branch, and a bot check of the 3 pairs against solo. Push only to duo-types in both repos
-and give me a githack link."
+Prompt for session 3, Electric's first (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim, start from
+branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md (approved), the roadmap's duo entry (the user's calls on
+session 1's three findings) and docs/reference/safari.md's duo section, cards.md and card-design.md. Build Electric's
+first session (the doc's section 5 and 7): write its card table into the doc first, then Static, Overcharge and Volt
+Switch, the Static Ability, the starting deck and ~35 cards with art, describe() / cardTerms() lines, the free switch,
+and the sim mirror with a bot check of Electric's pairs. Push only to duo-types in both repos and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

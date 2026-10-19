@@ -1054,7 +1054,8 @@ function showMon() {
   const mon = $('run-mon');
   mon.dataset.state = recalled ? 'in' : 'out';
   mon.setAttribute('aria-pressed', String(recalled));
-  mon.setAttribute('aria-label', recalled ? `Send out ${stageName(run.starter, run.stage)}` : `Recall ${stageName(run.starter, run.stage)}`);
+  const name = stageName(outStarter(run), run.stage);
+  mon.setAttribute('aria-label', recalled ? `Send out ${name}` : `Recall ${name}`);
   mon.title = recalled ? 'Tap to send it out' : 'Tap to recall it into its Poké Ball';
 }
 
@@ -1067,7 +1068,7 @@ function toggleMon() {
   if (recalled) playSound('ball-throw');
   else {
     playSound('ball-open');
-    setTimeout(() => playCry(run.starter.line[run.stage]?.id ?? run.starter.line[0].id), 250 * wait);
+    setTimeout(() => { const mon = outStarter(run); playCry(mon.line[run.stage]?.id ?? mon.line[0].id); }, 250 * wait);
   }
   setTimeout(showMon, 900 * wait);
 }

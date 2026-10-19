@@ -3178,3 +3178,14 @@ Run, the duo pool, the Safari's real chart, and per new type three archetypes, a
 The roadmap's starting ideas had four clashes (Paralysis is a status card, Combo is Fire's keyword, Tailwind a neutral
 card, Hail and Sandstorm one idea), fixed there. The user answered its 22 choices as click-through cards (its section 8),
 asked what a bar each of HP would cost before keeping one bar, and asked for 3-stage starters only.
+
+**Duo types, session 1: the duo, the Duo Run and the duo pool** (2026-10-19, branch `duo-types`, both repos). First the
+Safari's real types moved to Gen 5 (answer 13: `tools/real-types.py --gen5`; Gen 6's Fairy moves count as Normal). Then
+`docs/duo-design.md` sections 1-3 on Fire / Grass / Water: `js/data/duo.js` (the pure rules), the battle's switch (the
+bench chip and its Go pill, the recall, STAB, the one out's Ability), the run's 5 + 5 deck, a slot per type in card
+rewards, both pools everywhere else, the Safari lobby's Duo key (`js/duoprep.js`), `save.duoPool` and `save.safari.done`;
+`tests/duo.test.mjs`, `tools/duo-probe.mjs`, `?duorun`. pokeDB-sim mirrors it (`cfg.duo`). Bot check (human bot, Safari
+days): solo fire / grass / water 85.7 / 78.0 / 76.3 (300); duos with the design's two switch rules 56.0 / 52.0 / 52.3 (300),
+dodge-only (the sim's default now) 66.7 / 56.0 / 59.3 (150); the lead's solo deck 92.7 / 82.7 / 67.3 and two-signature
+halves 83.3 / 72.7 / 78.7 (150): the 5 + 5 deck is the gap, put to the user (the roadmap). Detail in
+`docs/reference/safari.md`'s "The duo and the Duo Run" and pokeDB-sim's README.
