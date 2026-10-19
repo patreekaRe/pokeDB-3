@@ -63,6 +63,7 @@ import { biomeIntro, placeIntro } from './biome-intro.js';
 import { bootDevice } from './device-boot.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { wellEnding } from './well.js';
+import { creditsEnding } from './credits.js';
 import { recordWin, recordLoss, draftLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene, conquered } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
@@ -5476,6 +5477,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   const shards = sealOn() ? shardsPlaced(getSave()) : RING.length;
   const well = won && mewtwoRun && { stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), shards,
     bind: !sealOn() ? 'plain' : shards >= RING.length ? 'full' : 'part' };
+  if (well) creditsEnding(well.bind, shards);
   if (well?.bind === 'full' && !peeking) updateSave(d => { d.depthsBound = true; });
   const gate = strikeGate(won, atLastBoss);
   const fresh = announceUnlocks();   // a lost run can still have earned one (and an old save's goals are granted here too)

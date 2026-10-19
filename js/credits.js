@@ -8,10 +8,15 @@ import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
 import { ENEMY_DEFS, BIOMES } from './data/enemies.js';
 import { PATCHES } from './data/patchnotes.js';
 import { sealOn } from './data/towns.js';
-import { playSound } from './audio.js';
+import { playSound, playCry } from './audio.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SECONDS = 38;   // the roll's length at its own pace
+
+/* How the Well ended (js/well.js's `bind`), set by endRun() before the win scene: 'full' is the true ending, 'part' a
+   closed Well that ends on Eternatus's eye opening, 'plain' the ending from before the shards counted. */
+let ending = { bind: 'plain', shards: 5 };
+export const creditsEnding = (bind, shards) => { ending = { bind, shards }; };
 
 /** The roll: [heading, ...lines], or a row of sprites ({ cast }). */
 function sections(entry) {
@@ -66,7 +71,9 @@ export async function rollCredits(scene, entry) {
   const layer = el('div', 'hof-credits scene-keep');
   const roll = rollOf(entry);
   const end = el('div', 'credits-end');
-  end.append(el('h2', '', 'THE END'), el('p', '', 'Thanks for playing!'), el('p', 'credits-tap', '▼'));
+  const { bind, shards } = ending;
+  if (bind === 'full') end.append(el('p', 'credits-true', 'TRUE ENDING'));
+  end.append(el('h2', '', bind === 'part' ? 'THE END...?' : 'THE END'), el('p', '', 'Thanks for playing!'), el('p', 'credits-tap', '▼'));
   layer.append(roll, end);
   scene.append(layer);
   await sleep(50);
@@ -87,7 +94,10 @@ export async function rollCredits(scene, entry) {
   await tapped(layer);
   // after the credits: the dark, a crystal's chime, and Mewtwo's last word (the camp's once the shards count, else the gate's)
   const coda = el('div', 'credits-coda');
-  coda.append(el('small', '', 'MEWTWO'), el('p', '', `...I will be at the ${sealOn() ? 'camp' : 'gate'}. When you want to fight together again.`));
+  const word = bind === 'full'
+    ? 'Tell Lantern Village, Cinder Springs, Driftwood Landing, Highbough and Sunwell Bazaar: the Well sleeps for good. I will be at the camp, when you want to fight together again.'
+    : `...I will be at the ${sealOn() ? 'camp' : 'gate'}. When you want to fight together again.`;
+  coda.append(el('small', '', 'MEWTWO'), el('p', '', word));
   layer.append(coda);
   layer.classList.add('coda');
   await sleep(still() ? 0 : 1100);
@@ -95,7 +105,23 @@ export async function rollCredits(scene, entry) {
   coda.classList.add('in');
   await sleep(still() ? 0 : 700);
   await tapped(layer);
+  if (bind === 'part') await stirs(layer, coda, shards);
   layer.classList.add('out');
   await sleep(still() ? 0 : 500);
   layer.remove();
+}
+
+/** A Well only closed, not bound: in the dark, Eternatus's eye opens with its slowed cry, and the way to bind it. */
+async function stirs(layer, coda, shards) {
+  coda.classList.remove('in');
+  await sleep(still() ? 0 : 900);
+  const eye = el('div', 'credits-eye');
+  eye.append(el('div', 'credits-eye-lid'), el('p', '', 'The Well will wake again.'),
+    el('small', '', `Mend all five Waystones to bind it for good. ${shards} of 5 mended.`));
+  layer.append(eye);
+  await sleep(50);
+  eye.classList.add('in');
+  playSound('gate-hum');
+  await Promise.race([playCry('eternatus', { rate: 0.7, echo: true }), sleep(2600)]);
+  await tapped(layer);
 }

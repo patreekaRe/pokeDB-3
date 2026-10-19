@@ -48,6 +48,7 @@ export const NEXT = [
   ['dex', 'Your Trainers page shows friends your Pokédex colour: their page opens in the shell they wear.'],
   ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again.'],
   ['mall', 'The Safari Outfitter\'s Ranger Task Board is lit by lanterns, shows your own tasks, and glows and sparkles when one waits to be claimed.'],
+  ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

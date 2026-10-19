@@ -106,7 +106,7 @@ export async function wellEnding({ stage = 0, shiny = false, bind = 'plain', sha
   await sleep(still() ? 0 : 700);
   cancelAnimationFrame(raf);
   removeEventListener('resize', layout);
-  await epilogue(scene);
+  await epilogue(scene, bind);
   return () => {
     scene.hidden = true;
     scene.className = 'well-scene';
@@ -286,19 +286,21 @@ const HOMES = [
   { town: 'bazaar', who: ['machew', 'jerome'], line: ['In Sunwell Bazaar, Machew calls it a tale worthy of his blade.', 'Jerome says it\'s still not as big as GTA 6.'] },
 ];
 
-const SLIDES = [
-  { paint: lanternNight, line: 'The Waystones burn on, all across the land.' },
+/** The stills: a bound Well (all five Waystones) ends under their star, a closed one on Eternatus still drifting free. */
+const slides = (bind) => [
+  { paint: lanternNight, line: bind === 'full' ? 'All five Waystones burn on, all across the land.' : 'The Waystones burn on, all across the land.' },
   { paint: clearingPC, line: ['Back home in the Clearing, word spreads fast.', 'Linc hasn\'t taken off his Pikachu suit since.'], cast: () => [{ src: 'assets/trainers/gym/nietos.png', x: 34, y: 82, h: 34, cls: 'wave' }] },
   ...HOMES.map(home => ({ paint: (c, w, h) => leaderHome(c, w, h, home), line: home.line, cast: () => homeCast(home) })),
   { paint: leaderStage, line: 'Every leader you beat heard what you did below.', cast: leaderRow },   // then all of them together (the user's call, 2026-10-18)
   { paint: depthsCamp, line: 'The miners\' camp falls quiet. Nothing stirs under the gate.' },
-  { paint: titleSky, line: 'And something old sleeps beneath it all.', cast: () => [{ src: ENEMY_DEFS.eternatus.image, x: 50, y: 40, h: 11, cls: 'drift' }] },
+  bind === 'full' ? { paint: boundWell, line: ['Far below, the Well sleeps under the star of the five Waystones.', 'Bound for good.'] }
+    : { paint: titleSky, line: 'And something old sleeps beneath it all.', cast: () => [{ src: ENEMY_DEFS.eternatus.image, x: 50, y: 40, h: 11, cls: 'drift' }] },
 ];
 
-async function epilogue(scene) {
+async function epilogue(scene, bind) {
   const slide = $('well-slide'), art = $('well-slide-art'), cast = $('well-slide-cast');
   slide.hidden = false;
-  for (const s of SLIDES) {
+  for (const s of slides(bind)) {
     const p = innerWidth < 720 ? 3 : 4, w = Math.ceil(innerWidth / p), h = Math.ceil(innerHeight / p);
     art.width = w; art.height = h;
     const c = art.getContext('2d');
@@ -627,6 +629,36 @@ function depthsCamp(c, w, h) {
     halo(c, x, y, 4, i % 2 ? '#b080f0' : '#80d8f0', 0.5);
     c.fillStyle = '#e8f0ff'; c.fillRect(Math.round(x), Math.round(y), 1, 1);
   }
+}
+
+/** The bound Well: crystal spires round a pit gone still and white, the five Waystones' star laid on it in their colours. */
+function boundWell(c, w, h) {
+  c.fillStyle = grad(c, 0, h, ['#04060e', '#0a1228', '#14223e', '#1a2c4a']);
+  c.fillRect(0, 0, w, h);
+  const cx = w / 2, cy = h * 0.66, r = Math.min(w * 0.3, h * 0.24);
+  halo(c, cx, cy, r * 2.6, '#a8c8f8', 0.35);
+  for (let i = 0; i < 14; i++) {   // crystal spires up the cavern walls, either side of the Well
+    const side = i % 2 ? 1 : -1, x = cx + side * (r * 1.3 + hash(i * 3.1) * w * 0.32), base = h * (0.78 + hash(i * 1.9) * 0.12);
+    const tall = h * (0.18 + hash(i * 5.3) * 0.3), half = 3 + hash(i * 7.7) * 6;
+    c.fillStyle = i % 3 ? '#5a78b8' : '#8a70c8';
+    c.beginPath(); c.moveTo(x - half, base); c.lineTo(x, base - tall); c.lineTo(x + half, base); c.fill();
+    c.fillStyle = 'rgba(232,240,255,0.5)';
+    c.beginPath(); c.moveTo(x, base); c.lineTo(x, base - tall); c.lineTo(x + half, base); c.fill();
+  }
+  c.fillStyle = '#0e1830'; c.fillRect(0, h * 0.84, w, h * 0.16);
+  c.fillStyle = '#e8f0ff';   // the Well's mouth, sealed in white crystal
+  c.beginPath(); c.ellipse(cx, cy, r * 1.1, r * 0.38, 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#b8d0f4';
+  c.beginPath(); c.ellipse(cx, cy + r * 0.06, r * 0.9, r * 0.28, 0, 0, Math.PI * 2); c.fill();
+  const pt = (k) => { const a = (-90 + k * 72) * Math.PI / 180; return [cx + Math.cos(a) * r * 0.8, cy + Math.sin(a) * r * 0.28]; };
+  c.lineWidth = Math.max(1, Math.round(r / 40));
+  for (let k = 0; k < 5; k++) {
+    const [x1, y1] = pt(k), [x2, y2] = pt(k + 2);
+    c.strokeStyle = RING[k].glow;
+    c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+  }
+  RING.forEach((town, k) => { const [x, y] = pt(k); halo(c, x, y, r * 0.2, town.glow, 0.8); disc(c, town.glow, x, y, Math.max(1.5, r * 0.04)); });
+  stars(c, w, h, Math.round(w * h / 160), 0.55);   // the Well's light, settled into motes
 }
 
 /** The title's sky by day: clouds over far hills, Eternatus drifting small across it. */

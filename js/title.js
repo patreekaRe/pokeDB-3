@@ -94,7 +94,8 @@ export const eternatusGuest = () => { guest = true; flight = [ETERNATUS]; };   /
     deals from the same round. */
 export function dealFlyer() {
   if (!flight.length) {
-    const round = [...(guest || getSave().feats.includes(ETERNATUS) ? [...FLYERS, ETERNATUS] : FLYERS), ...(SEASON_FLYERS[season()] || [])];
+    const loose = guest || (getSave().feats.includes(ETERNATUS) && !getSave().depthsBound);   // bound under the Well, it flies no more
+    const round = [...(loose ? [...FLYERS, ETERNATUS] : FLYERS), ...(SEASON_FLYERS[season()] || [])];
     flight = round.map(id => [Math.random(), id]).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
     if (flight[0] === lastFlyer) flight.push(flight.shift());
   }

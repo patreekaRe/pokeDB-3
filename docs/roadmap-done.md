@@ -2997,6 +2997,12 @@ Eternatus curled dim, Mewtwo's talk; with all five Waystones lit the five towns'
 Depths** badge, `save.depthsBound`), with fewer it only closes it; then five painted epilogue stills, the trimmed Champion
 of the Depths scene, the credits and Mewtwo's last word after them (`js/credits.js`). Playtest `?bossfight=depths&hp=0.001&shards=5` (or `=1`).
 
+**The true ending** (2026-10-18, the user's ask after a friend won with no shards): the two endings now part at the end.
+All five: the first still says "All five Waystones", the last is the Well sealed white under the star (`boundWell()`),
+the credits read TRUE ENDING over THE END, Mewtwo's last word names the five towns, and Eternatus no longer crosses the
+title's sky (`save.depthsBound`). Fewer: THE END...?, then Eternatus's red eye opens in the dark with its slowed cry,
+"The Well will wake again", and how many Waystones are mended (`stirs()`; `creditsEnding()` set by `endRun()`).
+
 ## Smoother transitions: the films and the first fight (2026-10-18, the user's ask)
 Measured headless (Chromium, rAF frame times and long-animation-frame attribution, `--disable-accelerated-2d-canvas`
 so the game's own drawing counts; 3D frame rates there are SwiftShader's, so only main-thread stalls were trusted).

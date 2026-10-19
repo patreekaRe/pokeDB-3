@@ -120,6 +120,12 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   none, two rows past seven, the Nietos as baby Linc alone, `linc.png` cut from their sprite), the empty camp, Eternatus drifting over the title's sky), painted on their own 2D canvas.
   The Well plays `energy-well` (the fanfare gives way to it); the Champion scene and the credits play `credits` (the user's songs, 2026-10-18). After the credits'
   THE END, a black screen, a chime and Mewtwo's last word (the camp's, or the gate's before the shards count).
+  **The true ending** (2026-10-18, the user's ask): `endRun()` hands the bind to `creditsEnding()` in `js/credits.js`.
+  `'full'`: the first still says "All five Waystones", the last is `boundWell()` (the Well sealed white under the star, in
+  place of Eternatus over the title's sky), TRUE ENDING over THE END, and Mewtwo's last word names the five towns; once
+  `save.depthsBound`, Eternatus leaves the title's flyers (`dealFlyer()` in `js/title.js`; a `?bossfight=depths` peek
+  still lends it). `'part'`: THE END...?, and after Mewtwo's word `stirs()`: Eternatus's red eye opening in the dark
+  (`.credits-eye`), its slowed cry, "The Well will wake again" and the Waystones mended out of five.
   **The ending** (part D, 2026-10-03, the user's picks): a Mewtwo win is the **Champion of the Depths**: `winScene()` in
   `js/halloffame.js` plays its own version (`.hof-scene.depths`: a violet cavern with crystal clusters and stalactites, a
   crystal pedestal trimmed in gold, the party in violet / crystal / gold, `celebrate()`'s `psychic` palette), then

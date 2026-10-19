@@ -1062,6 +1062,10 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **The true ending** (2026-10-18, on `main`; archive): all five Waystones gets a TRUE ENDING (the sealed Well's still,
+  Mewtwo thanking the towns, Eternatus gone from the title sky); fewer ends on THE END...? and Eternatus's eye opening.
+  Playtest `?bossfight=depths&hp=0.001&shards=5` and `&shards=2` and say if the two feel different enough.
+  ▶ Run in: PLAYTEST ON THE LIVE SITE.
 - **The Ranger Task Board draws the eye** (2026-10-19, branch `claude/ranger-board-visibility-q9ogwn`, on `main` too;
   archive): its plaque and "!" had sat behind the eave. Now lowered, lanterns either side, the notes your own tasks, and
   a glow, sparkles and "!" while a task waits or till it's first opened. Playtest `?mall=outfitter&safari&coins=3000` on

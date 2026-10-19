@@ -2299,6 +2299,23 @@ body.battle-intro { pointer-events: none; }
 .credits-coda.in { opacity: 1; }
 .credits-coda small { font: 0.75rem/1 var(--pixel-font); color: #c890ff; letter-spacing: 0.1em; }
 .credits-coda p { margin: 0; max-width: 26em; font-size: 1rem; line-height: 1.6; color: #f0e8ff; }
+.credits-true { font: 0.85rem/1 var(--pixel-font); color: #e8f0ff; letter-spacing: 0.2em; text-shadow: 0 0 10px #8ab8f0, 2px 2px 0 #1a2c4a; }
+/* a Well only closed: Eternatus's eye opening in the dark */
+.credits-eye {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  padding: 0 24px; opacity: 0; transition: opacity 0.8s; pointer-events: none;
+}
+.credits-eye.in { opacity: 1; }
+.credits-eye-lid {
+  position: relative; width: 132px; height: 40px; margin-bottom: 18px; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, #ffd0a0 0 12%, #ff3048 34%, #7a0c24 78%);
+  box-shadow: 0 0 24px 6px rgba(255, 48, 72, 0.55); transform: scaleY(0.04); transition: transform 1.8s 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.credits-eye-lid::after { content: ''; position: absolute; left: 50%; top: 8%; width: 8px; height: 84%; margin-left: -4px; border-radius: 50%; background: #1c0410; }
+.credits-eye.in .credits-eye-lid { transform: scaleY(1); }
+.credits-eye p { margin: 0; font: 1rem/1.4 var(--pixel-font); color: #ff6070; text-align: center; }
+.credits-eye small { max-width: 26em; font-size: 0.8rem; line-height: 1.5; color: #e8c8d0; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .credits-eye-lid { transition: none; } }
 
 /* the Energy Well, after Eternatus (js/well.js): one low-res canvas, Eternatus curled at the bottom, the Waystones' star */
 .well-scene { position: fixed; inset: 0; z-index: 949; overflow: hidden; background: #000; }
