@@ -132,7 +132,7 @@ function pick(starter, quiet = false) {
   renderStrip();
   show(starter);
   if (changed && !quiet) playSound('stick', 'confirm');
-  if (changed && isStarterUnlocked(starter)) playCry(starter.line[0].id);
+  if (changed && !quiet && isStarterUnlocked(starter)) playCry(starter.line[0].id);   // the boot sets the select up behind the title, quietly
 }
 
 function renderTabs() {
