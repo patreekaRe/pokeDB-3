@@ -30,6 +30,7 @@
 .card.type-psychic { --c1: #d49aff; --c2: #7138a8; }
 .card.type-electric { --c1: #ffe066; --c2: #b88a00; }
 .card.type-ice { --c1: #a8ecff; --c2: #2a8cb8; }
+.card.type-fighting { --c1: #f49a70; --c2: #a03420; }
 /* status cards (enemies' junk) are a dull grey; an upgraded card's name is green, like StS's */
 .card.status      { --c1: #8c8c94; --c2: #505058; }
 .card.upgraded .card-name { color: #b8ff9c; text-shadow: 0 0 0.7cqw #06481a, 0 0 0.7cqw #06481a, 0 0 0.7cqw #06481a, 0 0.6cqw 1.2cqw rgba(0, 0, 0, 0.5); }
@@ -257,6 +258,9 @@
   from { opacity: 0; transform: translateY(80px) rotate(8deg) scale(0.8); }
   to   { opacity: 1; transform: none; }
 }
+
+/* Fighting's Follow-up: a card whose Follow-up would happen if played now glows orange (a pick's gold ring wins) */
+.card.in-hand.follow-ready .card-face { --ring: 0 0 0 0.8cqw #fff3e0, 0 0 0 2.2cqw #ff9a50, 0 0 5cqw 1cqw rgba(255, 140, 60, 0.55); }
 
 /* ---------- picking a card: the first tap lifts it out of the hand, the second plays it (an item blows up at the bottom middle) ---------- */
 .card.in-hand.selected { transform: translateY(-10px); z-index: 2; }

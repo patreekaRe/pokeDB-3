@@ -385,7 +385,15 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   `skinOf: 'vanillite'` look; `DUO_LINES.ice.swinub`) and **the Ice Cave** (`icecave`, an 8th area: every Ice-typed
   Safari Pokémon moved in with `was:`, date-gated by `SAFARI_FROM` like the Power Plant, painted as the Wetland
   recoloured to a frozen lake: `SAFARI_ART.icecave`, `paintAs: 'wetland'`). Playtest a Duo Run in it with `&icecave`.
-- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric and Ice), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+- **Fighting's first session** (session 7, 2026-10-19; rules and card table in `docs/duo-design.md` section 5's
+  "Fighting's first session"): **Timburr** (`DUO_STARTERS`, `FIGHTING_DECK`; back GIFs, `SPRITE_FIT`, `BODY_X`, cries),
+  `DUO_LINES.fighting` (catching Timburr, Gurdurr or Conkeldurr adds Fighting; they still live in the Peak until Dojo
+  Mountain). In `js/battle.js`: **Follow-up** (`b.lastKind`, set at the end of `resolveCard()`; `followsUp()`), **Counter**
+  (`gainCounter()`, `b.counter` and the 🥊 badge, cleared in `beginPlayerTurn()`; `enemyTurn()` hits back after each attack
+  and records `attackedNow` / `lostNow`, which become `attackedLast` / `lostLast` at your turn's start), **Bide** (⏳,
+  released in `beginPlayerTurn()`), **Sore** and the **Guts** Ability (`statusHeld()`: +3 on attacks while a status card
+  is in your hand, the 💢 badge and the lit Ability pill). `tools/fighting-probe.mjs` checks them in a real fight.
+- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice and Fighting), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 

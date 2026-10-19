@@ -173,6 +173,14 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `blockPerFrost`, `blockPerIcicle`, `thaw` (Shatter); powers `thornFrost`, `frostBlock`, `hailChipBlock`, `hailIcicle`,
   `icicleEachTurn`, `retainZero` (Cold Storage: 0-cost cards kept at turn end), `hailKeep` (Endless Winter). Never-Melt
   Ice is Ice's `TYPE_RELIC`.
+- **Fighting** (session 7, 2026-10-19; `docs/duo-design.md` section 5's "Fighting's first session"): `FIGHTING_CARDS` /
+  `FIGHTING_EVO_*` (30 + 8 so far), art in `js/card-art-fighting.js`, and **Sore** (a status card: Unplayable. Ethereal).
+  New keys: `ifAfterAttack` / `ifAfterSkill` (**Follow-up**: `b.lastKind`, the last card played this turn, an attack or a
+  skill; a power or status card is neither; a card whose Follow-up would happen now glows, `.follow-ready`), `counter`
+  (`b.counter`, gone at your turn's start; each enemy attack takes that much back), `ifAttacked` and `perLost` (the last
+  enemy turn: `b.attackedLast`, `b.lostLast`), `bide` (`b.bide`), `perStatusHeld`; an extra's `hits` alone reads "It hits
+  once more."; powers `mixBlock`, `counterEachTurn`, `hurtStrength`, `statusDraw` (in `draw()`), `statusStrength` (in
+  `exhaustCard()`), `followAlways`. Boxes: Follow-up, Counter, Status cards. `TYPES.fighting` is neutral outside the Safari.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,

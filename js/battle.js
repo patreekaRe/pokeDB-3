@@ -278,6 +278,11 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     switchesTurn: 0,   // ...and this turn (Shock Wave, Electro Drift)
     shed: false,       // Shed Shell's free switch is spent this turn
     icicles: run.relics.includes('icicle-plate') ? 2 : 0,   // Icicle cards played this fight: each makes every Icicle card deal ICICLE_STEP more (Ice)
+    lastKind: null,    // the kind of the last card played this turn, 'attack' or 'skill' (a power or status card: null): Fighting's Follow-up
+    counter: 0,        // until your next turn, each enemy attack takes this much back (Fighting's Counter)
+    attackedNow: false, lostNow: 0,     // this enemy turn: it attacked you, and the HP its attacks took...
+    attackedLast: false, lostLast: 0,   // ...and the last one's, which Revenge and Counter read on your turn
+    bide: null,        // Bide: { turns, stored }, the HP enemy attacks take until it lets go, twice over
     weather: ability?.id === 'snow-warning' ? { kind: 'hail', turns: ability.amount + (run.relics.includes('icy-rock') ? ICY_ROCK : 0) } : null,   // Ice's Hail (Ground's Sandstorm later): one at a time
 
     // the piles of cards
@@ -562,6 +567,10 @@ function beginPlayerTurn() {
   b.turnEnergy = b.energy;
   b.nextEnergy = 0;
   b.played = b.attacks = b.discarded = b.switchesTurn = 0;
+  b.lastKind = null;
+  b.counter = 0;
+  b.attackedLast = b.attackedNow; b.lostLast = b.lostNow;
+  b.attackedNow = false; b.lostNow = 0;
   b.shed = false;
   b.hurtThisTurn = false;
   b.healedThisTurn = false;
@@ -593,6 +602,15 @@ function beginPlayerTurn() {
   if (p.hailBlock && hailing()) gainBlock(p.hailBlock);   // Ice Body
   if (p.frostBlock && b.enemy.frostbite) gainBlock(b.enemy.frostbite * p.frostBlock);   // Ice Core
   if (p.icicleEachTurn) addCards({ id: 'icicle', n: p.icicleEachTurn });   // Ice Crown
+  if (p.counterEachTurn) gainCounter(p.counterEachTurn);   // Counterstance
+  if (b.bide && --b.bide.turns <= 0) {   // Bide lets go: twice the HP the enemy's attacks took meanwhile
+    const back = b.bide.stored * 2;
+    b.bide = null;
+    const dealt = back ? hurtEnemy(back) : 0;
+    if (back) hitEffect('enemy-portrait-box');
+    pop('enemy-zone', back ? (dealt > 0 ? `-${dealt} ⏳` : 'Blocked') : '⏳ Nothing stored', back && dealt > 0 ? 'dmg' : 'note', 150);
+    log(`Bide unleashed ${back} damage!`);
+  }
   if (p.tideEachTurn) gainTide(p.tideEachTurn);
   if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
   if (hasRelic('blue-flute')) gainTide(1);
@@ -738,6 +756,22 @@ function applyFrost(n, delay = 0) {
   statFx('enemy', 'down');
 }
 
+/** Counter on you (Fighting): until your next turn, each enemy attack takes this much back. */
+function gainCounter(n) {
+  battle.counter += n;
+  pop('player-zone', `🥊 Counter ${n}`, 'block', 100);
+  statFx('player');
+}
+
+/** The kind a played card counts as for Follow-up: an attack or a skill (a power or a status card is neither). */
+const kindOf = (card) => (isAttack(card) ? 'attack' : card.power || card.status ? null : 'skill');
+
+/** A Follow-up that would happen now (Iron Fist: any). */
+const followsUp = (kind) => !!battle.powers.followAlways || battle.lastKind === kind;
+
+/** Status cards in your hand: Fighting's Guts and Reversal count them. */
+const statusHeld = () => battle.hand.filter(h => h.card.status).length;
+
 /** Hail is falling (Ice's weather). */
 const hailing = () => battle.weather?.kind === 'hail';
 /** Icy Rock: the turns a weather gains when it starts. */
@@ -882,6 +916,7 @@ function draw(count) {
     const card = (hasRelic('max-mushrooms') || b.aug.chaos) && typeof top.cost === 'number' && !top.unplayable
       ? { ...top, cost: randIndex(4), orig: top } : top;
     b.hand.push({ uid: nextUid++, card, fresh: true });
+    if (top.status && b.powers.statusDraw) count += b.powers.statusDraw;   // Steadfast (StS's Evolve)
     if (top.status && b.powers.statusDamage && b.enemy.hp > 0) {   // Burning Spirit (StS's Fire Breathing)
       const dealt = hurtEnemy(b.powers.statusDamage);
       pop('enemy-zone', dealt > 0 ? `-${dealt} 👹` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 120);
@@ -923,6 +958,9 @@ function effectsOf(card, x = 0) {
   if (e.ifFrost && b.enemy.frostbite > 0) addExtras(e, e.ifFrost);
   if (e.ifHail && hailing()) addExtras(e, e.ifHail);
   if (e.ifWeather && b.weather) addExtras(e, e.ifWeather);
+  if (e.ifAfterAttack && followsUp('attack')) addExtras(e, e.ifAfterAttack);
+  if (e.ifAfterSkill && followsUp('skill')) addExtras(e, e.ifAfterSkill);
+  if (e.ifAttacked && b.attackedLast) addExtras(e, e.ifAttacked);
   if (e.blockPerStatic) e.block = (e.block || 0) + e.blockPerStatic * b.enemy.static;   // Faraday Cage
   if (e.blockPerSwitch) e.block = (e.block || 0) + e.blockPerSwitch * b.switches;       // Volt Guard
   if (e.blockPerFrost) e.block = (e.block || 0) + e.blockPerFrost * b.enemy.frostbite;   // Hoarfrost
@@ -960,6 +998,9 @@ function damageFor(card, e) {
   amount += b.enemy.frostbite;                                    // Frostbite: every hit, any card's
   if (card.icicle) amount += ICICLE_STEP * b.icicles;             // Icicle (StS's Claw)
   if (card.type === 'ice' && hailing()) amount += HAIL.bonus;     // Hail
+  if (e.perLost) amount += e.perLost * b.lostLast;                // Counter
+  if (e.perStatusHeld) amount += e.perStatusHeld * statusHeld();  // Reversal
+  if (hasAbility('guts') && statusHeld()) amount += b.ability.amount;
   if (baseId(card.id) === 'cinder') amount += b.powers.cinderDamage || 0;
   amount += b.strength * (e.strengthMult || 1);
   if (b.powers.blaze && low) amount += b.powers.blaze;
@@ -1198,6 +1239,9 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     const dealt = hurtEnemy(5);
     pop('enemy-zone', dealt > 0 ? `-${dealt} 🏷️` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150);
   }
+  const kind = kindOf(card);   // Follow-up's: the next card reads this one (Fighting Spirit pays on a change)
+  if (b.powers.mixBlock && kind && b.lastKind && kind !== b.lastKind) gainBlock(b.powers.mixBlock);
+  b.lastKind = kind;
   if (card.icicle) {   // every Icicle card deals more from now on, this one's next play too (Claw)
     b.icicles += 1;
     if (b.powers.icicleFrost && b.enemy.hp > 0) applyFrost(b.powers.icicleFrost);   // Snow Cloak
@@ -1266,6 +1310,8 @@ function applyEffects(e) {
   if (e.frostMult && b.enemy.frostbite) { b.enemy.frostbite *= e.frostMult; pop('enemy-zone', `❄️ Frostbite ×${e.frostMult}`, 'note', 150); }   // Sheer Cold
   if (e.thaw && b.enemy.frostbite) { b.enemy.frostbite = 0; pop('enemy-zone', '❄️ Shattered', 'note', 150); }   // Shatter, after its hit
   if (e.hail)       setWeather('hail', e.hail);
+  if (e.counter)    gainCounter(e.counter);
+  if (e.bide)       { b.bide = { turns: e.bide, stored: b.bide?.stored || 0 }; pop('player-zone', '⏳ Biding', 'note good', 150); }
   if (e.returnZero) returnZeroCost();
   if (e.staticMult && b.enemy.static) { b.enemy.static *= e.staticMult; pop('enemy-zone', `⚡ Static ×${e.staticMult}`, 'note', 150); }   // Static Storm
   if (e.sap)        applyDebuff('sap', e.sap);
@@ -1498,6 +1544,7 @@ function exhaustCard(card) {
   if (b.powers.exhaustBlock) gainBlock(b.powers.exhaustBlock);
   if (b.powers.exhaustDraw) draw(b.powers.exhaustDraw);
   if (b.powers.exhaustBurn) burnEnemy(b.powers.exhaustBurn, 150);
+  if (card.status && b.powers.statusStrength) gainStrength(b.powers.statusStrength, `😠 +${b.powers.statusStrength} strength`);   // Defiant
   if (hasRelic('eject-pack')) draw(1);
   if (hasRelic('smoke-poke-tail')) { const dealt = hurtEnemy(4); pop('enemy-zone', dealt > 0 ? `-${dealt} 💨` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 200); }
   if (hasRelic('dawn-stone')) addTypeCard();
@@ -2252,10 +2299,15 @@ async function enemyTurn() {
           hurtEnemy(b.powers.thorns);
           pop('enemy-zone', `-${b.powers.thorns} 🔮`, 'dmg', 400);
         }
+        if (through > 0 && b.powers.hurtStrength) gainStrength(b.powers.hurtStrength, `💥 +${b.powers.hurtStrength} strength`);   // Anger Point
+        b.lostNow += through;
+        if (b.bide) b.bide.stored += through;
         const back = (b.aug.thorns || 0) + (b.aug.seedThorns && en.seed > 0 ? b.aug.seedThorns : 0) + Math.floor(damage * (b.aug.reflect || 0));
         if (back) { const dealt = hurtEnemy(back); pop('enemy-zone', dealt > 0 ? `-${dealt} 🪞` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 450); }
       }
       if (hasAbility('static')) applyStatic(b.ability.amount, 450);   // Static: each attack on you charges it
+      b.attackedNow = true;
+      if (b.counter) { const dealt = hurtEnemy(b.counter); pop('enemy-zone', dealt > 0 ? `-${dealt} 🥊` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 480); }   // Counter
       if (b.powers.thornStatic) applyStatic(b.powers.thornStatic, 500);   // Electromorphosis
       if (b.powers.thornFrost) applyFrost(b.powers.thornFrost, 500);      // Ice Scales
       if (move.kind === 'drain') {
@@ -2558,8 +2610,8 @@ function checkBlaze() {
 function showAbilityState() {
   const b = battle, el = $('player-ability');
   if (!b.ability) return;
-  const blaze = b.ability.id === 'blaze';
-  const state = !blaze ? '' : b.hp > 0 && (b.hp < b.maxHp / 2 || b.aug.blazeAlways) ? 'on' : 'off';
+  const blaze = b.ability.id === 'blaze', guts = b.ability.id === 'guts';   // Guts is lit while a status card is in your hand
+  const state = blaze ? (b.hp > 0 && (b.hp < b.maxHp / 2 || b.aug.blazeAlways) ? 'on' : 'off') : guts ? (statusHeld() ? 'on' : 'off') : '';
   if (el.dataset.state === state && el.title) return;
   el.dataset.state = state;
   el.title = `Ability: ${b.ability.name}. ${b.ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ` Active now: +${b.ability.amount} damage!` : ''}`;
@@ -3021,6 +3073,9 @@ function renderStatus() {
   if (b.tide)       playerBadges.push(['🌊', b.tide, `Tide ${b.tide}: lasts all fight; a move that says "per Tide" spends it all for a bigger hit`, 'good']);
   if (b.blockNext)  playerBadges.push(['🛡️', `+${b.blockNext}`, `+${b.blockNext} block at the start of your next turn`, 'block']);
   if (b.blur)       playerBadges.push(['🔰', '', 'Your block stays at the start of your next turn', 'block']);
+  if (b.counter)    playerBadges.push(['🥊', b.counter, `Counter ${b.counter}: until your next turn, each enemy attack takes ${b.counter} back`, 'good']);
+  if (b.bide)       playerBadges.push(['⏳', b.bide.stored, `Bide: ${b.bide.stored} HP stored so far; in ${b.bide.turns} turn${b.bide.turns > 1 ? 's' : ''} it deals twice that`, 'good']);
+  if (hasAbility('guts') && statusHeld()) playerBadges.push(['💢', '', `Guts: your attacks deal +${b.ability.amount} while a status card is in your hand`, 'good']);
   for (const [key, power] of Object.entries(POWERS)) {
     if (b.powers[key]) playerBadges.push([power.icon, power.flag ? '' : b.powers[key], power.text(b.powers[key]), 'good']);
   }
@@ -3081,6 +3136,8 @@ function renderHand() {
       });
     }
     node.classList.add('in-hand');
+    const e = card.effects;
+    node.classList.toggle('follow-ready', !b.busy && ((!!e.ifAfterAttack && followsUp('attack')) || (!!e.ifAfterSkill && followsUp('skill'))));   // Follow-up: it would pay now
     if (choosing) node.classList.toggle('choosable', choosing.only(entry));
     else if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     else if (b.busy) node.classList.add('waiting');

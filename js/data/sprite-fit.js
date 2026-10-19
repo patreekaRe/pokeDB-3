@@ -584,6 +584,7 @@ export const SPRITE_FIT = {
   'glalie-front': [2, 4, 0, 4],
   'beartic-front': [4, 0, 2, 0],
   'cryogonal-front': [8, 9, 2, 10],
+  'timburr-back': [40, 0, 16, 3],
   'timburr-front': [27, 0, 1, 1],
   'swablu-front': [4, 8, 1, 1],
   'abomasnow-front': [11, 0, 4, 6],
@@ -672,6 +673,7 @@ export const SPRITE_FIT = {
   'skarmory-front': [3, 0, 0, 2],
   'makuhita-front': [10, 0, 8, 7],
   'lairon-front': [1, 0, 3, 0],
+  'gurdurr-back': [13, 0, 1, 0],
   'gurdurr-front': [12, 0, 0, 2],
   'nosepass-front': [0, 0, 1, 4],
   'glaceon-front': [2, 0, 3, 5],
@@ -755,6 +757,7 @@ export const SPRITE_FIT = {
   'boldore-front': [2, 1, 1, 1],
   'aggron-front': [5, 0, 3, 1],
   'hariyama-front': [3, 0, 2, 10],
+  'conkeldurr-back': [1, 1, 7, 4],
   'conkeldurr-front': [4, 2, 11, 8],
   'medicham-front': [8, 0, 0, 5],
   'altaria-front': [3, 0, 0, 1],
@@ -971,6 +974,8 @@ export const BODY_X = {
   'piloswine-back': -2,
   'mamoswine-front': 6,
   'mamoswine-back': -4,
+  'timburr-back': -6,
+  'gurdurr-back': 4,
 };
 
 /** GIF pixels to add to a sprite's pose-box centring so its body, not its box, stands in the middle. */

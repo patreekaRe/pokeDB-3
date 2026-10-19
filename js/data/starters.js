@@ -42,6 +42,8 @@ const WATER_DECK = ['water-gun', 'water-gun', 'water-gun', 'water-pulse', 'withd
 const ELECTRIC_DECK = ['thunder-shock', 'thunder-shock', 'thunder-shock', 'eerie-impulse', 'magnet-rise', 'magnet-rise', 'magnet-rise', 'magnet-rise', 'spark', 'thunder-wave'];
 // Fire's shape from the start (Electric's lesson): 3 attacks, an Iron Wave, 4 blocks, the Bash and a second signature
 const ICE_DECK = ['powder-snow', 'powder-snow', 'powder-snow', 'frost-armor', 'frost-shield', 'frost-shield', 'frost-shield', 'frost-shield', 'icy-wind', 'ice-shard'];
+// Fire's shape from the start: 3 attacks, an Iron Wave (Vital Throw), 4 blocks, the Bash and a second signature
+const FIGHTING_DECK = ['rock-smash', 'rock-smash', 'rock-smash', 'vital-throw', 'mat-block', 'mat-block', 'mat-block', 'mat-block', 'low-kick', 'mach-punch'];
 const PSYCHIC_DECK = ['psywave', 'psywave', 'psywave', 'psywave', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-confusion', 'psystrike'];
 
 export const STARTERS = [
@@ -454,6 +456,16 @@ export const DUO_STARTERS = [
     ],
     blurb: 'Snout down in the snow, it plods on through any blizzard and tusks its way through the rest.',
     deck: ICE_DECK,
+  },
+  {
+    id: 'timburr', type: 'fighting', duoOnly: true,
+    line: [
+      { id: 'timburr', name: 'Timburr' },
+      { id: 'gurdurr', name: 'Gurdurr' },
+      { id: 'conkeldurr', name: 'Conkeldurr' },
+    ],
+    blurb: 'Hauls a log into every fight. Chains jabs into throws, hits back when it\'s hit, and fights harder when it hurts.',
+    deck: FIGHTING_DECK,
   },
 ];
 

@@ -147,6 +147,7 @@ export const TYPES = {
   psychic: { label: 'Psychic', icon: '🔮', beats: null,    losesTo: null    },
   electric: { label: 'Electric', icon: '⚡', beats: null,   losesTo: null    },   // the Safari's duo pool: there the real chart decides (js/data/real-types.js)
   ice:      { label: 'Ice',      icon: '❄️', beats: null,   losesTo: null    },
+  fighting: { label: 'Fighting', icon: '🥊', beats: null,   losesTo: null    },
 };
 
 /* Every card is modelled on a Slay the Spire 1 card (named in its comment), at StS's numbers
@@ -650,6 +651,44 @@ const ICE_CARDS = [
   { id: 'absolute-zero',  name: 'Absolute Zero',  type: 'ice', cost: 2, art: '🌡️', effects: { damage: 12, ifHail: { frostbite: 6 } }, rarity: 'rare', upgrade: { effects: { damage: 16, ifHail: { frostbite: 8 } } } },   // Bludgeon's little brother: a Hail / Frostbite bridge
 ];
 
+/* Fighting (the Safari's duo pool, docs/duo-design.md section 5): Follow-up pays when the last card you played this
+   turn was an attack / a skill (Watcher's Follow-Up, Sash Whip, Crush Joints), Counter hits back each enemy attack until
+   your next turn and its payoffs read the hits you took last enemy turn (Flame Barrier, Caltrops), Guts adds Sore status
+   cards and pays per status card held or exhausted (Wild Strike, Power Through, Evolve). Session 7 built 30 of its ~66
+   pool cards and all 8 evolution cards. */
+const FIGHTING_CARDS = [
+  { id: 'rock-smash',     name: 'Rock Smash',     type: 'fighting', cost: 1, art: '🪨', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike (8, like Thunder Shock)
+  { id: 'mat-block',      name: 'Mat Block',      type: 'fighting', cost: 1, art: '🥋', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
+  { id: 'low-kick',       name: 'Low Kick',       type: 'fighting', cost: 2, art: '🦵', effects: { damage: 10, vulnerable: 2, weaken: 2 }, upgrade: { effects: { damage: 12, vulnerable: 3, weaken: 3 } } },   // Bash (+ Weak 2, as Icy Wind: without it Fighting trailed ~25 points, 2026-10-19)
+  { id: 'vital-throw',    name: 'Vital Throw',    type: 'fighting', cost: 1, art: '🤼', effects: { block: 10, counter: 4 }, upgrade: { effects: { block: 13, counter: 6 } } },   // Iron Wave, Counter for its hit (Flame Barrier's shape; Frost Armor's block)
+  { id: 'mach-punch',     name: 'Mach Punch',     type: 'fighting', cost: 0, art: '👊', effects: { damage: 4, ifAfterAttack: { draw: 1 } }, upgrade: { effects: { damage: 6 } } },   // Follow-Up, at 0 with a draw for its PP
+  { id: 'double-kick',    name: 'Double Kick',    type: 'fighting', cost: 1, art: '🦶', effects: { damage: 4, hits: 2, ifAfterSkill: { hits: 1 } }, upgrade: { effects: { damage: 5 } } },   // Twin Strike + Sash Whip's condition
+  { id: 'karate-chop',    name: 'Karate Chop',    type: 'fighting', cost: 1, art: '🤚', effects: { damage: 9, ifAfterSkill: { vulnerable: 1 } }, upgrade: { effects: { damage: 11, ifAfterSkill: { vulnerable: 2 } } } },   // Crush Joints
+  { id: 'revenge',        name: 'Revenge',        type: 'fighting', cost: 1, art: '😤', effects: { damage: 6, ifAttacked: { bonus: 6 } }, upgrade: { effects: { damage: 8, ifAttacked: { bonus: 8 } } } },   // (Counter's Bane: a condition doubles it)
+  { id: 'close-combat',   name: 'Close Combat',   type: 'fighting', cost: 1, art: '💢', effects: { damage: 14, addCard: { id: 'sore' } }, upgrade: { effects: { damage: 18 } } },   // Wild Strike
+  { id: 'no-retreat',     name: 'No Retreat',     type: 'fighting', cost: 1, art: '🚧', effects: { block: 12, addCard: { id: 'sore' } }, upgrade: { effects: { block: 15 } } },   // Power Through (one Sore: it fades)
+  { id: 'sky-uppercut',   name: 'Sky Uppercut',   type: 'fighting', cost: 2, art: '🌠', effects: { damage: 14, ifAfterAttack: { vulnerable: 2 } }, rarity: 'uncommon', upgrade: { effects: { damage: 18, ifAfterAttack: { vulnerable: 3 } } } },   // Uppercut
+  { id: 'arm-thrust',     name: 'Arm Thrust',     type: 'fighting', cost: 1, art: '🖐️', effects: { damage: 3, hits: 2, ifAfterAttack: { hits: 2 } }, rarity: 'uncommon', upgrade: { effects: { damage: 4 } } },   // Flurry of Blows, in a chain
+  { id: 'force-palm',     name: 'Force Palm',     type: 'fighting', cost: 1, art: '✋', effects: { damage: 7, ifAfterSkill: { energy: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 10 } } },   // Follow-Up
+  { id: 'parry',          name: 'Parry',          type: 'fighting', cost: 1, art: '🤺', effects: { block: 7, ifAfterAttack: { draw: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Sash Whip's other half: a skill after an attack
+  { id: 'fighting-spirit', name: 'Fighting Spirit', type: 'fighting', cost: 1, art: '🔥', effects: { mixBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { mixBlock: 4 } } },   // Mental Fortress
+  { id: 'storm-throw',    name: 'Storm Throw',    type: 'fighting', cost: 1, art: '🌀', effects: { damage: 8, ifAfterSkill: { counter: 5 } }, rarity: 'uncommon', upgrade: { effects: { damage: 10, ifAfterSkill: { counter: 7 } } } },   // a Follow-up / Counter bridge: Crush Joints, Counter for its Vulnerable
+  { id: 'counter',        name: 'Counter',        type: 'fighting', cost: 1, art: '↩️', effects: { damage: 5, perLost: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 8 } } },   // (Counter's Perfected Strike, per HP lost)
+  { id: 'detect',         name: 'Detect',         type: 'fighting', cost: 0, art: '👁️', effects: { counter: 8 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { counter: 12 } } },   // Flame Barrier's thorns, free and once
+  { id: 'circle-throw',   name: 'Circle Throw',   type: 'fighting', cost: 2, art: '🔄', effects: { block: 12, counter: 6 }, rarity: 'uncommon', upgrade: { effects: { block: 15, counter: 8 } } },   // Flame Barrier
+  { id: 'counterstance',  name: 'Counterstance',  type: 'fighting', cost: 1, art: '🧘', effects: { counterEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { counterEachTurn: 5 } } },   // Caltrops
+  { id: 'superpower',     name: 'Superpower',     type: 'fighting', cost: 2, art: '💪', effects: { damage: 24, addCard: { id: 'sore', n: 2, to: 'draw' } }, rarity: 'uncommon', upgrade: { effects: { damage: 30 } } },   // Reckless Charge, Bludgeon-sized
+  { id: 'reversal',       name: 'Reversal',       type: 'fighting', cost: 1, art: '🔃', effects: { damage: 6, perStatusHeld: 6 }, rarity: 'uncommon', upgrade: { effects: { damage: 9, perStatusHeld: 8 } } },   // Perfected Strike, on status cards
+  { id: 'steadfast',      name: 'Steadfast',      type: 'fighting', cost: 1, art: '🗿', effects: { statusDraw: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Evolve
+  { id: 'coaching',       name: 'Coaching',       type: 'fighting', cost: 1, art: '📣', effects: { strength: 2, addCard: { id: 'sore' } }, rarity: 'uncommon', upgrade: { effects: { strength: 3 } } },   // Spot Weakness, paid with a Sore
+  { id: 'iron-fist',      name: 'Iron Fist',      type: 'fighting', cost: 2, art: '🦾', effects: { followAlways: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Follow-up's Barricade)
+  { id: 'high-jump-kick', name: 'High Jump Kick', type: 'fighting', cost: 2, art: '🦘', effects: { damage: 20, ifAfterSkill: { bonus: 14 } }, rarity: 'rare', upgrade: { effects: { damage: 26, ifAfterSkill: { bonus: 16 } } } },   // Bludgeon, at 2 after a skill
+  { id: 'bide',           name: 'Bide',           type: 'fighting', cost: 1, art: '⏳', effects: { bide: 2 }, rarity: 'rare', upgrade: { cost: 0 } },   // (Counter's own: a delayed hit)
+  { id: 'anger-point',    name: 'Anger Point',    type: 'fighting', cost: 2, art: '💥', effects: { hurtStrength: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // a Counter / Guts bridge: Rupture, on the enemy's hits
+  { id: 'meteor-assault', name: 'Meteor Assault', type: 'fighting', cost: 2, art: '☄️', effects: { damage: 26, addCard: { id: 'sore', n: 2 } }, rarity: 'rare', upgrade: { effects: { damage: 34 } } },   // Bludgeon, at 2 with two Sores
+  { id: 'defiant',        name: 'Defiant',        type: 'fighting', cost: 1, art: '😠', effects: { statusStrength: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // Dark Embrace, as strength
+];
+
 /* ============================================================
    EVOLUTION CARDS  -  powerful, signature moves you don't win from
    normal fights. There are two TIERS per type, one per evolution:
@@ -744,6 +783,19 @@ const ICE_EVO_HIGH = [
   { id: 'subzero-slammer', name: 'Subzero Slammer', type: 'ice', cost: 3, art: '💥', effects: { damage: 34, weaken: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42, weaken: 3 } } },
 ];
 
+const FIGHTING_EVO_MID = [
+  { id: 'power-up-punch', name: 'Power-Up Punch', type: 'fighting', cost: 1, art: '🥊', effects: { damage: 8, ifAfterAttack: { strength: 2 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11, ifAfterAttack: { strength: 3 } } } },   // Follow-up
+  { id: 'wide-guard',     name: 'Wide Guard',     type: 'fighting', cost: 1, art: '🧱', effects: { block: 10, counter: 5 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { block: 13, counter: 7 } } },   // Counter
+  { id: 'submission',     name: 'Submission',     type: 'fighting', cost: 1, art: '🤼', effects: { damage: 16, addCard: { id: 'sore' } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 21 } } },   // Guts
+  { id: 'cross-chop',     name: 'Cross Chop',     type: 'fighting', cost: 2, art: '❌', effects: { damage: 18, draw: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 23 } } },
+];
+const FIGHTING_EVO_HIGH = [
+  { id: 'triple-kick',    name: 'Triple Kick',    type: 'fighting', cost: 1, art: '🦶', effects: { damage: 6, hits: 3, ifAfterAttack: { energy: 1 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 8 } } },   // Follow-up
+  { id: 'seismic-toss',   name: 'Seismic Toss',   type: 'fighting', cost: 1, art: '🌍', effects: { block: 12, counter: 12 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { block: 16, counter: 16 } } },   // Counter
+  { id: 'dynamic-punch',  name: 'Dynamic Punch',  type: 'fighting', cost: 2, art: '💫', effects: { damage: 24, perStatusHeld: 4 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 30, perStatusHeld: 6 } } },   // Guts
+  { id: 'flying-press',   name: 'Flying Press',   type: 'fighting', cost: 3, art: '🛬', effects: { damage: 34, vulnerable: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42, vulnerable: 3 } } },
+];
+
 /* Fight-only cards made by other cards (`addCard`): never offered, not in the Card index, never in your run deck. */
 const TOKEN_CARDS = [
   { id: 'cinder',   name: 'Cinder',   type: 'fire',  cost: 0, art: '🔥', effects: { damage: 4 }, exhaust: true, token: true },   // Shiv
@@ -758,6 +810,7 @@ const STATUS_CARDS = [
   { id: 'paralysis', name: 'Paralysis', type: 'normal', cost: 0, art: '⚡', effects: {}, status: true, unplayable: true },                   // Wound
   { id: 'poison',    name: 'Poison',    type: 'normal', cost: 0, art: '☠️', effects: { endTurnHurt: 2 }, status: true, unplayable: true },   // Burn
   { id: 'sludge',    name: 'Sludge',    type: 'normal', cost: 1, art: '🟣', effects: {}, status: true, exhaust: true },                       // Slimed
+  { id: 'sore',      name: 'Sore',      type: 'normal', cost: 0, art: '🩹', effects: {}, status: true, unplayable: true, ethereal: true },   // Fighting's Guts moves make these (Reckless Charge's Dazed)
 ];
 
 /* The Safari Zone's cards (docs/reference/safari.md): never offered outside a Safari run, never in ALL_CARDS (so not in
@@ -829,10 +882,10 @@ export const SIGNATURE_FOR = Object.fromEntries(SIGNATURE_CARDS.map(c => [c.from
 /** Every card you can be offered (the Card index lists these), and a lookup by id of every card there is,
     upgraded ones included: CARDS_BY_ID['ember'], CARDS_BY_ID['ember+']. */
 export const ALL_CARDS = [
-  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS, ...ICE_CARDS,
+  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS, ...ICE_CARDS, ...FIGHTING_CARDS,
   ...FIRE_EVO_MID, ...FIRE_EVO_HIGH, ...GRASS_EVO_MID, ...GRASS_EVO_HIGH, ...WATER_EVO_MID, ...WATER_EVO_HIGH,
   ...PSYCHIC_EVO_MID, ...PSYCHIC_EVO_HIGH, ...ELECTRIC_EVO_MID, ...ELECTRIC_EVO_HIGH,
-  ...ICE_EVO_MID, ...ICE_EVO_HIGH,
+  ...ICE_EVO_MID, ...ICE_EVO_HIGH, ...FIGHTING_EVO_MID, ...FIGHTING_EVO_HIGH,
 ];
 
 /* ---------- PP Up: upgraded cards ----------
@@ -845,14 +898,15 @@ export const canUpgrade = (card) => !card.upgraded && !card.status;
 
 /** The default upgrade, StS-sized: +3 damage (less per hit on multi-hits) and +3 block; else +3 heal; else +1 of
     the card's first status or buff; powers +1 on their number; anything else costs 1 less (or stops exhausting). */
-const UPGRADE_STEPS = [['burn', 2], ['seed', 2], ['static', 2], ['frostbite', 2], ['hail', 2], ['weaken', 1], ['vulnerable', 1], ['sap', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['flex', 2], ['draw', 1]];
+const UPGRADE_STEPS = [['burn', 2], ['seed', 2], ['static', 2], ['frostbite', 2], ['hail', 2], ['counter', 2], ['weaken', 1], ['vulnerable', 1], ['sap', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['flex', 2], ['draw', 1]];
 const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, strengthEachTurn: 1, thorns: 2, blaze: 3,
   exhaustBlock: 1, exhaustDraw: 1, discardTide: 1, discardBlock: 1, cardDamage: 1, cardBlock: 1,
   rupture: 1, combust: 2, brutality: 1, drought: 1, cinderDamage: 2, exhaustBurn: 1,
   tideEachTurn: 1, drizzle: 1, riptide: 2, retainN: 1, tideSpendBlock: 1, tideSurge: 1,
   healStrength: 1, attackHeal: 1, attackSeed: 1, debuffDamage: 2, weakEachTurn: 1, weakBlock: 2, strengthHeal: 1,
   staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1, thornStatic: 1, energyBlock: 1, switchStatic: 1,
-  frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1, thornFrost: 1, hailChipBlock: 2 };
+  frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1, thornFrost: 1, hailChipBlock: 2,
+  mixBlock: 1, counterEachTurn: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -876,7 +930,7 @@ const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id
 export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS].map(c => [c.id, c]));
 for (const card of [...ALL_CARDS, ...TOKEN_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
-const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS };
+const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS, fighting: FIGHTING_CARDS };
 // Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
 // 2 = your final evolution (high tier).
 const EVO_SETS = {
@@ -886,6 +940,7 @@ const EVO_SETS = {
   psychic: { 1: PSYCHIC_EVO_MID, 2: PSYCHIC_EVO_HIGH },
   electric: { 1: ELECTRIC_EVO_MID, 2: ELECTRIC_EVO_HIGH },
   ice: { 1: ICE_EVO_MID, 2: ICE_EVO_HIGH },
+  fighting: { 1: FIGHTING_EVO_MID, 2: FIGHTING_EVO_HIGH },
 };
 
 /** The cards a starter of this type can win as rewards: its own type + neutral cards. A Duo Run's (`duo`) also offers
@@ -932,7 +987,7 @@ export function scaledEffects(card, stage = 0) {
  * on your nameplate while it's switched on (battle.js adds up every power you play).
  */
 /** The Power Lens shown when a power card is played, in the starter's colours (purple for any other type). */
-export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦' };
+export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦', fighting: '🟫' };
 
 export const POWERS = {
   blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
@@ -1005,6 +1060,12 @@ export const POWERS = {
   icicleEachTurn:   { icon: '👑', text: (n) => `At the start of each turn, add ${n > 1 ? `${n} Icicles` : 'an Icicle'} to your hand.` },
   retainZero:       { icon: '🗄️', flag: true, text: () => 'Your 0-cost cards stay in your hand at the end of your turn.' },
   hailKeep:         { icon: '☃️', flag: true, text: () => 'Hail no longer runs out.' },
+  mixBlock:         { icon: '🔥', text: (n) => `Whenever you play an attack after a skill, or a skill after an attack, gain ${n} block.` },
+  counterEachTurn:  { icon: '🧘', text: (n) => `At the start of each turn, Counter ${n}.` },
+  hurtStrength:     { icon: '💥', text: (n) => `Whenever an enemy attack takes your HP, gain ${n} strength.` },
+  statusDraw:       { icon: '🗿', text: (n) => `Whenever you draw a status card, draw ${plural(n, 'card')}.` },
+  statusStrength:   { icon: '😠', text: (n) => `Whenever a status card is exhausted, gain ${n} strength.` },
+  followAlways:     { icon: '🦾', flag: true, text: () => 'Every Follow-up happens, whatever you played before it.' },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -1040,6 +1101,9 @@ function sentences(e) {
   if (e.perSwitch)    parts.push(`+${e.perSwitch} for each time you've switched this fight.`);
   if (e.perFrost)     parts.push(`+${e.perFrost} for each Frostbite on the enemy.`);
   if (e.thaw)         parts.push('Then remove all its Frostbite.');
+  if (e.perLost)      parts.push(`+${e.perLost} for each HP you lost last enemy turn.`);
+  if (e.perStatusHeld) parts.push(`+${e.perStatusHeld} for each status card in your hand.`);
+  if (e.hits && !e.damage && !e.blockDamage) parts.push(e.hits > 1 ? `It hits ${e.hits} more times.` : 'It hits once more.');
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
   if (e.burn)         parts.push(e.burnTimes > 1 ? `Burn ${e.burn}, ${TIMES[e.burnTimes] ?? `${e.burnTimes} times`}.` : `Burn ${e.burn}.`);
   if (e.burnMult)     parts.push(`${MULT[e.burnMult] ?? `Multiply by ${e.burnMult}`} the enemy's Burn.`);
@@ -1051,12 +1115,14 @@ function sentences(e) {
   if (e.frostbite)    parts.push(`Frostbite ${e.frostbite}.`);
   if (e.frostMult)    parts.push(`${MULT[e.frostMult] ?? `Multiply by ${e.frostMult}`} the enemy's Frostbite.`);
   if (e.hail)         parts.push(`Hail ${e.hail}.`);
+  if (e.bide)         parts.push(`Store the HP you lose over the next ${e.bide} enemy turns, then deal twice that.`);
   if (e.staticMult)   parts.push(`${MULT[e.staticMult] ?? `Multiply by ${e.staticMult}`} the enemy's Static.`);
   if (e.sap)          parts.push(`Apply ${e.sap} Sap.`);
   if (e.tempSap)      parts.push(`The enemy's attacks deal ${e.tempSap} less this turn.`);
   if (e.skipEnemy)    parts.push('The enemy skips its next turn.');
   if (e.guard)        parts.push('Block the enemy\'s next attack completely.');
   if (e.block && !e.blockDamage) parts.push(`Gain ${e.block} block.`);
+  if (e.counter)      parts.push(`Counter ${e.counter}.`);
   if (e.blockMult)    parts.push(`${MULT[e.blockMult] ?? `Multiply by ${e.blockMult}`} your block.`);
   if (e.blockPerTide) parts.push(e.perTide ? `Gain ${e.blockPerTide} block per Tide spent.` : `Gain ${e.blockPerTide} block per Tide, then spend all your Tide.`);
   if (e.blockPerStatic) parts.push(`+${e.blockPerStatic} block for each Static on the enemy.`);
@@ -1133,6 +1199,9 @@ function sentences(e) {
   if (e.ifFrost)      parts.push(`If the enemy has Frostbite: ${sentences(e.ifFrost).join(' ')}`);
   if (e.ifHail)       parts.push(`In Hail: ${sentences(e.ifHail).join(' ')}`);
   if (e.ifWeather)    parts.push(`In any weather: ${sentences(e.ifWeather).join(' ')}`);
+  if (e.ifAfterAttack) parts.push(`Follow-up (attack): ${sentences(e.ifAfterAttack).join(' ')}`);
+  if (e.ifAfterSkill) parts.push(`Follow-up (skill): ${sentences(e.ifAfterSkill).join(' ')}`);
+  if (e.ifAttacked)   parts.push(`If the enemy attacked you last turn: ${sentences(e.ifAttacked).join(' ')}`);
   return parts;
 }
 
@@ -1180,6 +1249,8 @@ export const TERMS = {
   Switch: 'Your partner comes out, free. Alone, it still counts as a switch.',
   Frostbite: 'Every hit on the enemy deals +1 per Frostbite. Thaws by 1 each enemy turn.',
   Icicle: `Each Icicle card you play makes every Icicle card deal +${ICICLE_STEP} this fight.`,
+  'Follow-up': 'A bonus if your last card this turn was an attack (or a skill, as it says).',
+  Counter: 'Until your next turn, each enemy attack takes that much back.',
   Hail: `Weather. At the end of your turn the enemy loses ${HAIL.chip} HP. Your Ice attacks deal +${HAIL.bonus} a hit. Lasts that many turns.`,
   Bait: 'Catch odds +50% each, its attacks +3 each. All fight.',
   Rock: 'A wild one may run off on its turn (no reward). A rare one leaves sooner.',
@@ -1244,6 +1315,9 @@ export function cardTerms(card) {
     uses(/^frostbite$|frost/i) && term('Frostbite'),
     (card.icicle || uses(/icicle/i)) && term('Icicle'),
     (uses(/hail|weather/i) || card.freeIn === 'hail') && term('Hail'),
+    uses(/^ifAfter|^followAlways$|^mixBlock$/) && term('Follow-up'),
+    uses(/^counter/) && term('Counter'),
+    uses(/^perStatusHeld$|^statusDraw$|^statusStrength$/) && ['Status cards', 'Junk in your deck for this fight: Sore, and what enemies add.'],
     uses(/^tempSap$/) && ['Charmed', 'Its attacks this turn deal less. Gone after it acts.'],
     uses(/^statusDamage$/) && ['Status cards', 'Junk enemies (and some of your moves) put in your deck, for this fight only.'],
     uses(/^upgradeAll$/) && ['PP Up', 'A card\'s upgraded form (its name gets a +).'],

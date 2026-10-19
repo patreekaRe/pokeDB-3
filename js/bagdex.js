@@ -53,7 +53,7 @@ const GROUPS = {
 };
 
 const RARITY = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare' };
-const STARTER_OF = { fire: 'charmander', grass: 'bulbasaur', water: 'squirtle', psychic: 'mewtwo', electric: 'shinx', ice: 'vanillite' };
+const STARTER_OF = { fire: 'charmander', grass: 'bulbasaur', water: 'squirtle', psychic: 'mewtwo', electric: 'shinx', ice: 'vanillite', fighting: 'timburr' };
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- item sprites trimmed to what's drawn: their PNGs carry uneven empty margins, so they sat small and off-centre ---------- */

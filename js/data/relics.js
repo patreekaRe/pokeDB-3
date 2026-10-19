@@ -180,6 +180,9 @@ export function relicTerms(relic) {
     says(/Frostbite/) && term('Frostbite'),
     says(/Hail|weather/) && term('Hail'),
     says(/Icicle/) && term('Icicle'),
+    says(/Counter/) && term('Counter'),
+    says(/Follow-up/) && term('Follow-up'),
+    says(/status card/) && ['Status cards', 'Junk in your deck for this fight: Sore, and what enemies add.'],
     says(/Status cards/) && ['Status cards', 'Junk enemies put in your deck, for this fight only.'],
     says(/Sludge/) && ['Sludge', 'Junk: costs 1 PP, does nothing, then exhausts.'],
   ].filter(Boolean);
@@ -195,4 +198,5 @@ export const ABILITIES = {
   psychic: { id: 'pressure', name: 'Pressure', icon: '🔮', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Focus: your next attack deals +2 damage.' },
   electric: { id: 'static', name: 'Static', icon: '⚡', sprite: 'ability-capsule', amount: 2, text: 'Each time the enemy attacks you, it gains 2 Static.' },
   ice: { id: 'snow-warning', name: 'Snow Warning', icon: '🌨️', sprite: 'ability-capsule', amount: 2, text: 'Start each fight in Hail for 2 turns.' },
+  fighting: { id: 'guts', name: 'Guts', icon: '💢', sprite: 'ability-capsule', amount: 3, text: 'While a status card is in your hand, your attacks deal +3 damage.' },
 };

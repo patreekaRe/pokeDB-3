@@ -545,6 +545,92 @@ The only type that hits Normal, the Safari's most common. Fears Flying and Psych
 Starting deck: Rock Smash x4 (deal 7), Mat Block x4 (block 7), **Low Kick** (2: deal 10, Vulnerable 2; Bash), Mach
 Punch.
 
+#### Fighting's first session: its cards (session 7, 2026-10-19)
+
+Written here before the code, as Electric's and Ice's were. 30 cards in the pools (10 common, 14 uncommon, 6 rare) and
+all 8 evolution cards, so a run with Fighting is whole; session 8 adds the other ~36, the relics, items, Machop's look and
+Dojo Mountain. Each card is on a StS 1 card at x~1.2 (its model in the last column and in a comment on its line) with a
+hand-picked upgrade. The deck is Fire's shape from the start (3 attacks, an Iron Wave, 4 blocks, the Bash and a second
+signature), Electric's lesson.
+
+**The rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- **Follow-up** (`ifAfterAttack` / `ifAfterSkill`, extras like `ifHail`): the bonus happens if the last card you played
+  this turn, before this one, was an attack / a skill (`b.lastKind`; a power or a status card is neither, and a turn's
+  first card has none). Iron Fist (`followAlways`) makes every Follow-up happen. A card in your hand whose Follow-up
+  would happen now glows.
+- **Counter** (`counter: N` on you, `b.counter`, a 🥊 badge): until your next turn, each enemy attack deals N back (through
+  its block, like Rocky Helmet; guarded or not). It's gone at the start of your turn. What the payoffs read is the
+  **last enemy turn**: `b.attackedLast` (it attacked you, guarded or not) and `b.lostLast` (the HP its attacks took).
+  `ifAttacked` extras, `perLost` (+N per HP lost then). **Bide** (`bide: 2`, `b.bide`, a ⏳ badge): the HP you lose over
+  the next 2 enemy turns (what their attacks take) is stored; at the start of your turn after the second, it deals twice
+  that, through the enemy's block.
+- **Guts**: big moves add **Sore** (a status card: Unplayable. Ethereal; `addCard` to your hand or draw pile). Payoffs per
+  status card in your hand (`perStatusHeld`, any status card: the Safari's Paralysis, Confusion and Poison too), or
+  when one is drawn (Steadfast's `statusDraw`) or exhausted (Defiant's `statusStrength`, a faded Ethereal one too).
+- **Guts** (the Ability, `ABILITIES.fighting`): while Fighting is out and a status card is in your hand, your attacks deal +3.
+- Powers: `mixBlock` (Fighting Spirit: an attack after a skill or a skill after an attack), `counterEachTurn`,
+  `hurtStrength` (Anger Point: whenever an enemy attack takes your HP), `statusDraw`, `statusStrength`, `followAlways`.
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Rock Smash | C | 1 | Deal 8 *(up 11)* | — | Strike |
+| Mat Block | C | 1 | Block 8 *(up 11)* | — | Defend |
+| Low Kick | C | 2 | Deal 10, Vulnerable 2, Weak 2 *(up 12, 3, 3)* | — | Bash (+ Weak, as Icy Wind) |
+| Vital Throw | C | 1 | Block 10, Counter 4 *(up 13, 6)* | Counter | Iron Wave, Counter for its hit (Flame Barrier's shape) |
+| Mach Punch | C | 0 | Deal 4; Follow-up (attack): draw 1 *(up 6)* | Follow-up | Follow-Up, at 0 with a draw for its PP |
+| Double Kick | C | 1 | Deal 4 twice; Follow-up (skill): a third time *(up 5)* | Follow-up | Twin Strike + Sash Whip's condition |
+| Karate Chop | C | 1 | Deal 9; Follow-up (skill): Vulnerable 1 *(up 11, 2)* | Follow-up | Crush Joints |
+| Revenge | C | 1 | Deal 6; if the enemy attacked you last turn, +6 *(up 8, +8)* | Counter | (Counter's Bane: a condition doubles it) |
+| Close Combat | C | 1 | Deal 14, add a Sore to your hand *(up 18)* | Guts | Wild Strike |
+| No Retreat | C | 1 | Block 12, add a Sore to your hand *(up 15)* | Guts | Power Through (one Sore: it fades) |
+| Sky Uppercut | U | 2 | Deal 14; Follow-up (attack): Vulnerable 2 *(up 18, 3)* | Follow-up | Uppercut |
+| Arm Thrust | U | 1 | Deal 3 twice; Follow-up (attack): 2 more hits *(up 4)* | Follow-up | Flurry of Blows, in a chain |
+| Force Palm | U | 1 | Deal 7; Follow-up (skill): +1 PP *(up 10)* | Follow-up | Follow-Up |
+| Parry | U | 1 | Block 7; Follow-up (attack): draw 2 *(up 10)* | Follow-up | Sash Whip's other half: a skill after an attack |
+| Fighting Spirit | U | 1 | Power: an attack after a skill or a skill after an attack, block 3 *(up 4)* | Follow-up | Mental Fortress |
+| Storm Throw *(bridge)* | U | 1 | Deal 8; Follow-up (skill): Counter 5 *(up 10, 7)* | Follow-up/Counter | Crush Joints, Counter for its Vulnerable |
+| Counter | U | 1 | Deal 5, +2 per HP you lost last enemy turn *(up 8)* | Counter | (Counter's Perfected Strike, per HP lost) |
+| Detect | U | 0 | Counter 8. Exhaust *(up 12)* | Counter | Flame Barrier's thorns, free and once |
+| Circle Throw | U | 2 | Block 12, Counter 6 *(up 15, 8)* | Counter | Flame Barrier |
+| Counterstance | U | 1 | Power: at the start of each turn, Counter 3 *(up 5)* | Counter | Caltrops |
+| Superpower | U | 2 | Deal 24, shuffle 2 Sores into your draw pile *(up 30)* | Guts | Reckless Charge, Bludgeon-sized |
+| Reversal | U | 1 | Deal 6, +6 per status card in your hand *(up 9, +8)* | Guts | Perfected Strike, on status cards |
+| Steadfast | U | 1 | Power: whenever you draw a status card, draw 1 *(up cost 0)* | Guts | Evolve |
+| Coaching | U | 1 | Gain 2 strength, add a Sore to your hand *(up 3)* | Guts | Spot Weakness, paid with a Sore |
+| Iron Fist | R | 2 | Power: every Follow-up happens, whatever you played before *(up cost 1)* | Follow-up | (Follow-up's Barricade) |
+| High Jump Kick | R | 2 | Deal 20; Follow-up (skill): +14 *(up 26, +16)* | Follow-up | Bludgeon, at 2 after a skill |
+| Bide | R | 1 | Store the HP you lose over the next 2 enemy turns, then deal twice that *(up cost 0)* | Counter | (Counter's own: a delayed hit) |
+| Anger Point *(bridge)* | R | 2 | Power: whenever an enemy attack takes your HP, gain 1 strength *(up cost 1)* | Counter/Guts | Rupture, on the enemy's hits |
+| Meteor Assault | R | 2 | Deal 26, add 2 Sores to your hand *(up 34)* | Guts | Bludgeon, at 2 with two Sores |
+| Defiant | R | 1 | Power: whenever a status card is exhausted, gain 1 strength *(up cost 0)* | Guts | Dark Embrace, as strength |
+
+Evolution cards (evo-only, 1 copy; one per archetype and one general a tier):
+
+| Card | Tier | Cost | Effect | Arch |
+|---|---|---|---|---|
+| Power-Up Punch | 1st | 1 | Deal 8; Follow-up (attack): gain 2 strength | Follow-up |
+| Wide Guard | 1st | 1 | Block 10, Counter 5 | Counter |
+| Submission | 1st | 1 | Deal 16, add a Sore to your hand | Guts |
+| Cross Chop | 1st | 2 | Deal 18, draw 1 | — |
+| Triple Kick | final | 1 | Deal 6 three times; Follow-up (attack): +1 PP | Follow-up |
+| Seismic Toss | final | 1 | Block 12, Counter 12 | Counter |
+| Dynamic Punch | final | 2 | Deal 24, +4 per status card in your hand | Guts |
+| Flying Press | final | 3 | Deal 34, Vulnerable 2 | — |
+
+Fighting so far: 10 common, 14 uncommon, 6 rare, 8 evolution = **38**, plus the Sore status card.
+
+**Starting deck**: Rock Smash x3, **Vital Throw**, Mat Block x4, Low Kick, Mach Punch.
+
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`; solo the
+main game at Level 0), win %. The first draft (Low Kick 10 + Vulnerable 2, Vital Throw block 8), 150 a cell: solo
+Fighting 43.3 against solo Fire 68.0; fighting+fire 62.0, +grass 42.0, +water 48.7, +electric 45.3, +ice 52.0. Screened
+on solo / +fire / +grass: Low Kick + Weak 1 63 / 65 / 43, + Weak 2 77 / 62 / 39, Vital Throw block 10 52 / 63 / 45, Guts
+at 5 43 / 60 / 34, Close Combat for Mach Punch in the deck 42 / 49 / 31, **Low Kick + Weak 2 and Vital Throw 10** 76 / 70
+/ 62. Shipped with both, 300 a cell: **solo Fighting 79.3; fighting+fire 67.0, +grass 57.7, +water 49.3, +electric
+64.3, +ice 73.0** (Ice's: ice+fire / +grass / +water / +electric 66.7 / 62.0 / 56.3 / 67.0; Electric's with Fire / Grass /
+Water 64.7 / 43.7 / 36.3; fire+grass 80, fire+water 56, grass+water 50). Fighting sits with Ice, a good partner for
+Electric; its Water pair trails like every Water pair, for the balance pass (session 15).
+
 ### Ground: Dig, Fault, Sandstorm
 
 Heavy and patient. Hits Fire, Electric, Poison, Rock, Steel; fears Water, Grass, Ice.

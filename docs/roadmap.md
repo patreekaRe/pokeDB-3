@@ -123,16 +123,27 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?area=icecave`, `?bossfight=icecave&starter=swinub`, `?arena=fight&starter=swinub&cards=shatter,ice-crown,igloo`.
    **Waiting on the user**: the playtest (the art helper rated Cold Shoulder's picture the weakest); **`SAFARI_FROM`
    (both areas) must move to the day after the branch goes live**.
-Prompt for session 7, Fighting's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
-start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (Fighting, the clash check,
-and Ice's two session tables and bot checks as the pattern) and 6, docs/reference/safari.md's duo section, cards.md and
-card-design.md. Build Fighting's first session: write its ~38-card table into the doc first (30 pool cards: 10 common,
-14 uncommon, 6 rare, and all 8 evolution cards), then Follow-up, Counter and Guts (the Sore status card), the Guts
-Ability, Timburr's line (DUO_STARTERS, back GIFs, SPRITE_FIT, BODY_X, cries), the cards with art (a js/card-art-fighting.js),
-describe() / cardTerms() lines, the Fighting theme colours, the sim mirror and a bot check of Fighting's pairs against
-the other five types' numbers. Dojo Mountain's data comes in Fighting's second session (the Power Plant borrows the
-Peak's painters and the Ice Cave the Wetland's, so it needs another). Push only to duo-types in both repos and give me a
-githack link."
+7. ~~**Fighting's first**~~ done 2026-10-19 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Fighting's
+   first session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 30 pool cards + 8 evolution cards and
+   the Sore status card with art (`js/card-art-fighting.js`), Follow-up (a bonus after an attack / a skill; the card glows
+   when it would pay), Counter and the last enemy turn's hits (Revenge, Counter, Bide), Guts (Sore, Reversal, Steadfast,
+   Defiant), the Guts Ability (+3 on attacks while a status card is in your hand), Timburr's line (`DUO_STARTERS`, backs,
+   fits, cries), the sim mirror. The bot gave Low Kick Weak 2 and Vital Throw block 10 (without them solo Fighting 43 vs
+   Fire 68). Bot (300 a cell): fighting+fire / +grass / +water / +electric / +ice 67.0 / 57.7 / 49.3 / 64.3 / 73.0; solo
+   Fighting 79.3. Playtest: the githack link with `?duorun&duopool&coins=500` (the Duo key, Electric, Ice and Fighting
+   lent), or a solo fight `?arena=fight&starter=timburr&cards=close-combat,reversal,counter,bide`. **Waiting on the user**:
+   the playtest, and whether Guts at +3 and Counter's numbers feel right.
+Prompt for session 8, Fighting's second, **next** (▶ Run in: CLOUD, effort: medium; attach both pokeDB-3 and pokeDB-sim,
+start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (Fighting, its first session's
+table and bot check, and Ice's second session as the pattern) and 6, docs/reference/safari.md's duo section, cards.md and
+card-design.md. Build Fighting's second session: write its other ~36 cards into the doc first (10 common, 18 uncommon, 8
+rare, defence-leaning like Electric's and Ice's seconds), then the cards with art (js/card-art-fighting.js), Fighting's
+held item (the doc says Black Belt, but `black-belt` is already the strength relic: pick another item or a new id) + 6
+`only: 'fighting'` relics, a Fighting Gem and a Drive, the Card index's Fighting tab, Machop's look (DUO_STARTERS, backs,
+fits, cries, DUO_LINES), and Dojo Mountain: a 9th Safari area with every Fighting-typed Safari Pokémon moved in (`was:`),
+date-gated by SAFARI_FROM like the Power Plant and the Ice Cave, painted as another area recoloured (the Peak and the
+Wetland are taken: the Forest or the Desert). The sim mirror, relic ranks and a bot check against session 7's Fighting (a
+`fightFirst` variant). Push only to duo-types in both repos and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

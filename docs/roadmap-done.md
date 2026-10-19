@@ -3242,3 +3242,13 @@ painters recoloured to a frozen lake. The Card index's Ice tab. Black Ice took F
 Zorua's, Banette's and Sharpedo's signatures. `tools/ice-probe.mjs` covers the new rules. Bot: ice pairs 66.7 / 62.0 /
 56.3 / 67.0, level with session 5's Ice (`iceFirst`), left for the balance pass.
 
+**Duo types, session 7: Fighting's first** (2026-10-19, branch `duo-types`, both repos). Its card table went into
+`docs/duo-design.md` first (section 5, "Fighting's first session"): 30 pool cards (10 / 14 / 6), 8 evolution cards and
+the Sore status card (Unplayable. Ethereal), art in `js/card-art-fighting.js`. New rules in `js/battle.js`: Follow-up
+(`ifAfterAttack` / `ifAfterSkill` on `b.lastKind`, the hand's glow), Counter (`b.counter`, hitting back each enemy attack
+until your turn) and the last enemy turn (`attackedLast`, `lostLast`: Revenge, Counter), Bide, `perStatusHeld`, powers
+Fighting Spirit, Counterstance, Anger Point, Steadfast, Defiant, Iron Fist, and the Guts Ability (+3 on attacks while a
+status card is in your hand). Timburr is a `DUO_STARTERS` entry with backs, fits and cries; catching any stage adds
+Fighting (`DUO_LINES.fighting`). `tools/fighting-probe.mjs` checks the rules in a real fight; pokeDB-sim mirrors it all.
+The first draft trailed (solo 43 vs Fire 68); Low Kick's Weak 2 and Vital Throw's block 10 fixed it: fighting+fire 67.0,
++grass 57.7, +water 49.3, +electric 64.3, +ice 73.0 (300 each), solo 79.3. Numbers in pokeDB-sim's README.
