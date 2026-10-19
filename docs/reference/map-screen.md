@@ -241,5 +241,9 @@ pixel face instead (`.map-node.ken`, `.ken-face`: a 26x26 crop of Alder's sprite
 
 A Safari rare spawn's room has a gold ✦ over it (`.map-rare`, added in `js/map.js`; see `docs/reference/safari.md`): 22px,
 with a soft glow that swells as it slowly bobs and twinkles (`rareTwinkle`), still under reduced motion.
+**The floating icons are buttons** (2026-10-18, the user's ask: "make it so that we can click on those floating icons and
+it'll tell us what it is"): the rare star, a town material's badge and a Waystone Shard are each their own `.map-float` button beside their room (`floater()` in `js/map.js`), not inside the room's button (a
+disabled room swallowed the tap). A tap shows a bubble saying what it is (`mapTip()`, `.map-tip`: the material's name and count), flipped below its icon at
+the map's visible top, gone on the next tap or after 4 s.
 
 **Home key** (2026-10-07): on this screen the top bar's Pokédex (`#brand-btn`) shows as `.home-key` (a round shell-coloured key with a house, `css/screens.css`) instead of the pixel handheld; it opens the device home, where Main menu lives. No Main menu button on the map itself (the user asked; one more tap away is safer than a mis-tap ending the screen).

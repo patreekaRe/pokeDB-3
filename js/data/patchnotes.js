@@ -46,7 +46,7 @@ export const NEXT = [
   ['mall', 'The Shiny Exchange kiosk in the Safari Outfitter: pull capsules of every Safari Pokémon\'s shiny, with gold capsules and Lucky Stars; one you haven\'t caught stays sealed till you catch it.'],
   ['fixes', 'The Clearing, every gateway town and every 3D fight and room run lighter on phones, a Secret Base jukebox stops when you leave, played cards fly smoothly in battle instead of stuttering, and the Ranger Task Board and Trainer\'s Journal show all four tabs on a phone, a tap no longer sometimes plays its click twice, and the Safari Outfitter rests its 3D behind the Shiny Exchange, and a reload no longer plays a stray cry.'],
   ['look', 'A slow 3D room shows your Pokémon hopping by a Poké Ball while it loads, and tries again rather than falling back to the flat room.'],
-  ['runs', 'Materials you find on a run pop up on screen and fly into your things, and a Waystone Shard gets its own reward screen.'],
+  ['runs', 'Materials you find on a run pop up on screen, a Waystone Shard gets its own reward screen, and a map room\'s material shows as a bright badge: tap it, a rare star or a shard to see what it is.'],
   ['dex', 'The Pokédex\'s Game Corner app sells starters, perks and shinies only: Poké Balls are at the Safari Outfitter, or the Safari Zone window\'s Buy key.'],
   ['hub', 'Tap a material at Kurt\'s Workshop to see where it drops: which biome, its fights and sparkling rooms, and friends\' letters. The Satchel app says the same.'],
   ['dex', 'Your Trainers\' lost runs stand as graves on your map where they fell: tap one for their recap, Pay respects or Avenge them. Their buddies roam the Trainer Plaza.'],

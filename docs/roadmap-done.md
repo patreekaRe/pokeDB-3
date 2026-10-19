@@ -3117,3 +3117,7 @@ Clearing as a small round key in the shell colour (a quieter take on the reverte
 **Kenmatta's page in the Gym Leaders app** (2026-10-18, the user's ask): a last banner, Kenmatta's Dojo (his kombat arena
 painted on it), with his profile, wins and losses against him (`save.kenLost`, new), belt, stars and a belt track on his
 sheet. Notes in `docs/reference/gym-leaders.md`. Checked in the browser pane, met and unmet; tests pass.
+
+**The map's floating icons, seen and explained** (2026-10-18, the user's ask): a town material's pale ✧ above its room became
+a glowing blue ✦ badge on the room's corner, and a tap on it, the rare star or a Waystone Shard says what it is. A
+material over a Center is meant (Centers are one of its rooms). Notes in `docs/reference/map-screen.md` and `towns.md`.
