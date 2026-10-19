@@ -348,8 +348,22 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   SHINY EXCHANGE plate (`kioskSignArt()`), and a capsule in the tray at its foot (spheres in the lodge's own scene, its
   top in the screen's area colour, turning slowly, still under `calmFx()`). 10 meshes, 2 casting shadows. A tap is a
   `game` spot (`direct`) opening `openShinyExchange()` in `js/exchange.js`.
-  - **The rules** (`js/data/exchange.js`, pure, `tests/exchange.test.mjs`): each area is a machine of the Pokémon you've
-    caught there (`machineOf()`, `safariDex.caught`): its wilds are plain capsules, its rare spawns gold ones. Coins only
+  - **Sealed capsules** (2026-10-19, session 2b; the user's catch: a machine of only what you'd caught held one shiny at
+    first, so a pull was a sure buy): `machineOf()` is the area's whole Safari Pokédex page, caught or not, so a shiny's
+    odds are the same for everyone. `NEW_ODDS` is a floor: that often a capsule is one you neither own nor hold sealed
+    (while the machine has both), else any of the machine at random. One not caught (`exchangeCaught()`) comes out
+    `sealed`: no gain, 1 Lucky Star (`CAPSULE_STARS.sealed`), saved as `save.exchange.sealed` (id -> how many). The
+    reveal ends on its shadow (SEALED, its name once seen in the Safari, else ???; no flash); the grid shows SEALED ×N
+    with a smoked capsule in the corner (a Sealed chip when the area has any), the banners and home card count them. A
+    Safari catch of it (`afterFight()` in `js/run.js`, never on a peeked run) opens them all (`openSealed()`), after a
+    wild shiny's own gain: the box says each, the signature card shows the last Sparkle, and `openSealedReveal()` runs
+    as the first reward step, the Exchange's reveal alone in its own dialog (SEALED CAPSULE, the smoked glass clearing
+    to the area's colour as it lands, the shadow on the screen, a tap opens it). Saved in `collect()` with the coins
+    (`openSealedCapsules()`), so a refresh replays it. One caught with its capsules still shut (the tab closed on the
+    rewards; `staleSealed()`) opens with the same reveal the next time the window opens. The Lucky Star pick stays
+    caught-only, and its button waits for a catch.
+  - **The rules** (`js/data/exchange.js`, pure, `tests/exchange.test.mjs`; the machine as sealed capsules above
+    changed it): each area is a machine of the Pokémon you've caught there (`machineOf()`, `safariDex.caught`): its wilds are plain capsules, its rare spawns gold ones. Coins only
     pull (the user's call): `PULL_COST` 150, ten for `TEN_COST` 1,500, and a pull of ten always holds a gold one (its
     last capsule turns gold if none has) while the area has a rare caught. Gold odds `goldOdds(pity)`: 8% + 4% for each
     plain capsule since the last gold one (`save.exchange.pity`, one count for every machine). A capsule holds a shiny
