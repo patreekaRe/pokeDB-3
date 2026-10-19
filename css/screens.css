@@ -3606,40 +3606,67 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
   line-height: 1;
   filter: drop-shadow(0 0 6px rgba(255, 244, 180, 0.8)) drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.35));
 }
-/* a material found on a run (js/satchel-pop.js): it rises over the screen with its name, then flies into the Bag; it
-   never takes a tap */
+/* a material or key item found on a run (js/satchel-pop.js): a small device window, half an achievement's, with what
+   was found big on its stage, then it flies into the Bag; it never takes a tap */
 .satchel-pop {
   position: fixed;
   left: 50%;
-  top: 22%;
+  top: 18%;
   translate: -50% 0;
   z-index: 950;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px 40px;
-  width: max-content;
-  max-width: calc(100vw - 32px);
-  padding-bottom: 28px;
+  width: min(200px, calc(100vw - 32px));
+  padding: 8px 8px 10px;
+  border-radius: 18px;
+  color: #1f3a14;
+  text-align: center;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), inset 6px 0 0 rgba(255, 255, 255, 0.08), 0 16px 48px rgba(0, 0, 0, 0.6);
   pointer-events: none;
+  animation: unlockIn 0.45s ease-out both;
 }
-.satchel-find { --size: 56px; position: relative; width: var(--size); height: var(--size); margin-bottom: 30px; animation: itemRise 0.6s cubic-bezier(0.25, 0.8, 0.35, 1) calc(var(--i) * 0.12s) backwards; }
+.satchel-pop.many { width: min(280px, calc(100vw - 32px)); }
 .satchel-pop-note {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  translate: -50% 0;
-  color: #f8d030;
+  margin: 0 0 8px;
+  padding: 6px 8px 5px;
+  background: repeating-linear-gradient(90deg, #f0b828 0 12px, #f8c848 12px 24px);
+  border: 3px solid var(--shell-rim);
+  border-radius: var(--round-sm);
+  color: #3a2408;
   font-family: var(--pixel-font); font-synthesis-weight: none;
   font-size: 0.75rem;
   white-space: nowrap;
-  text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  animation: unlockFlash 0.9s steps(2) 2;
 }
+.satchel-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  height: 104px;
+  margin: 0 4px;
+  border: 4px solid #2a2a30;
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px var(--shell-rim), inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  background:
+    radial-gradient(circle at 50% 50%, #fff6d0 0 30%, transparent 31%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.22) 1px, transparent 1.5px) 0 0 / 10px 10px,
+    linear-gradient(150deg, #5cbcff, #1d58b8);
+}
+.satchel-find { --size: 72px; position: relative; flex: none; width: var(--size); height: var(--size); animation: itemRise 0.6s cubic-bezier(0.25, 0.8, 0.35, 1) calc(var(--i) * 0.12s) backwards; }
+.satchel-pop.many .satchel-find { --size: 56px; }
+.satchel-names {
+  margin: 10px 4px 4px;
+  padding: 6px 8px;
+  border: 3px solid #2a2a30; border-radius: 6px 6px 6px 14px;
+  background: radial-gradient(circle, rgba(31, 58, 20, 0.1) 1px, transparent 1.5px) 0 0 / 8px 8px, #a8c884;
+  box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 4px #e4e4ea, 0 0 0 6px var(--shell-rim);
+}
+.satchel-name { margin: 0; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.8rem; line-height: 1.6; }
+.satchel-pop.taken { transition: opacity 0.3s 0.4s; opacity: 0; }
 .satchel-pop.taken .satchel-find { animation: relicToBag 0.7s ease-in forwards; }
-.satchel-pop.taken .satchel-pop-note { transition: opacity 0.3s; opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
-  .satchel-find, .satchel-pop.taken .satchel-find { animation: none; }
-  .satchel-pop.taken { transition: opacity 0.2s; opacity: 0; }
+  .satchel-pop, .satchel-pop-note, .satchel-find, .satchel-pop.taken .satchel-find { animation: none; }
+  .satchel-pop.taken { transition: opacity 0.2s; }
 }
 /* an event's gift floats in the middle of the scene, over the props */
 .float-gift { position: fixed; left: 50%; top: 42%; translate: -50% -50%; z-index: 3; padding: 0; }

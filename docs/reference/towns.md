@@ -137,7 +137,7 @@ drops from a fight and takes a biome's first sparkle. Each gift is keyed in `run
 at once (`glean()`, `creditRoom()`'s way), so a refresh can't give it twice. All rolls go through `js/rng.js`. About 10 a
 biome a pass, so a gather step is a run or two (`tests/quests.test.mjs` checks it).
 **Found materials pop up** (2026-10-18, the user's ask: "i didnt know when i got materials"): `popFinds()` in
-`js/satchel-pop.js` floats each one's icon and name over the screen, then flies it to the Bag on screen; it takes no tap.
+`js/satchel-pop.js` shows them in a small device window over the screen (`.satchel-pop`, 200px, half the achievement window; the user's ask, 2026-10-18: bare icons were lost over the card choices), then flies them to the Bag on screen; it takes no tap. A fight's Waystone Shard pops too (`{ key }` in `finds`).
 A find rides its line: `tell(line, find)` / `noteLater()` in `js/rewards.js` pop it as the line is told, and a fight's
 drop is `pendingCoins.finds`, popped with the reward news. A Berry Tree's berries pop at once (`pocketBerries()`).
 **A Waystone Shard gets its own reward screen**, first after the Alpha (`offerKeyItem()` in `js/run.js`, the found

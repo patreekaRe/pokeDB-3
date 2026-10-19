@@ -2668,12 +2668,12 @@ function afterFight(node, result) {
     coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs]) + luxury), money: prize, dex: dexNews, safari: safariStep,
     beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${shinyCatch ? 'Shiny ' : ''}${foe} was caught!` : null,
     shiny: Boolean(shinyCatch || opened.length),   // the catch box's gold
-    finds: drop ? [drop] : [],   // popped up as the news is told
+    finds: [shard && { key: shard.id }, drop].filter(Boolean),   // popped up as the news is told
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
-    if (!run.pendingCoins.told) { dexNews.forEach(line => tell(line)); if (drop) popLater([drop]); }   // no reward screen said it
+    if (!run.pendingCoins.told) { dexNews.forEach(line => tell(line)); popLater(run.pendingCoins.finds); }   // no reward screen said it
     // counted here, not as the fight ends: a refresh on a reward screen replays the fight
     missionTally(result.tally);
     mission(['fight', 'fight-type', 'fight-special']);
