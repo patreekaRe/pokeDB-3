@@ -63,6 +63,8 @@ def main():
             if r['type_id'] and groups[r['changed_in_version_group_id']] > 5 and r['move_id'] in names and r['type_id'] in types:
                 moves[names[r['move_id']]] = types[r['type_id']]
         ORDER.remove('fairy')
+        # Moonblast, Fairy Wind... came with Fairy in Gen 6; Gen 5 had no Fairy, and its Fairy moves (Charm) were Normal
+        moves = {k: 'normal' if t == 'fairy' else t for k, t in moves.items()}
     chart = {}
     for (ai, di), f in efficacy.items():
         a, d = types[ai], types[di]

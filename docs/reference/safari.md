@@ -269,8 +269,10 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   triangle. The floor at x0.5 is this session's call (a x0.25 would be a step the game doesn't have): one line in
   `realFactor()` to change.
 - **Data**: `js/data/real-types-table.js` (`CHART`, `SPECIES` grouped by types, `MOVES` grouped by type), written by
-  `tools/real-types.py` from PokeAPI's CSVs (today's types, Fairy included, to match the 18-type chart, as the user's
-  session prompt asked; `--gen5` writes Black and White's 17 instead, `GEN` 5, for `docs/duo-design.md`'s open choice 13); it maps our ids
+  `tools/real-types.py --gen5` from PokeAPI's CSVs: **Gen 5's 17 types and typings since 2026-10-19** (the user's answer
+  13 in `docs/duo-design.md`: no Fairy, so Clefairy is Normal, Marill Water, Steel resists Ghost and Dark; Gen 6's Fairy
+  moves, Moonblast and Fairy Wind, count as Normal, like Charm was; built first on today's 18, which the script still writes
+  without the flag); it maps our ids
   and a few old move names (`Faint Attack`, `Hi Jump Kick`, and the Abilities `Forecast` / `Stench` used as moves). **A new
   Safari Pokémon or move needs the script run again**; `tests/realtypes.test.mjs` fails until it is. Helpers in
   `js/data/real-types.js`: `REAL_TYPES` (names and icons; `js/icons.js` draws all 18, ❄️ ⛰️ 🪶 🪨 added for them),

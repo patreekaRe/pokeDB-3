@@ -1,7 +1,7 @@
 /* Written by tools/real-types.py from PokeAPI's tables: run it again after adding Safari Pokémon or moves. */
 
 /** Which chart and typings: 6 is today's 18 types, 5 Black and White's 17 (no Fairy; the script's --gen5). */
-export const GEN = 6;
+export const GEN = 5;
 
 /** The real chart, attacker -> what it hits for x2 (`super`), x0.5 (`half`) and x0 (`none`). */
 export const CHART = {
@@ -11,32 +11,30 @@ export const CHART = {
   grass: { super: 'water ground rock', half: 'fire grass poison flying bug dragon steel' },
   electric: { super: 'water flying', half: 'grass electric dragon', none: 'ground' },
   ice: { super: 'grass ground flying dragon', half: 'fire water ice steel' },
-  fighting: { super: 'normal ice rock dark steel', half: 'poison flying psychic bug fairy', none: 'ghost' },
-  poison: { super: 'grass fairy', half: 'poison ground rock ghost', none: 'steel' },
+  fighting: { super: 'normal ice rock dark steel', half: 'poison flying psychic bug', none: 'ghost' },
+  poison: { super: 'grass', half: 'poison ground rock ghost', none: 'steel' },
   ground: { super: 'fire electric poison rock steel', half: 'grass bug', none: 'flying' },
   flying: { super: 'grass fighting bug', half: 'electric rock steel' },
   psychic: { super: 'fighting poison', half: 'psychic steel', none: 'dark' },
-  bug: { super: 'grass psychic dark', half: 'fire fighting poison flying ghost steel fairy' },
+  bug: { super: 'grass psychic dark', half: 'fire fighting poison flying ghost steel' },
   rock: { super: 'fire ice flying bug', half: 'fighting ground steel' },
-  ghost: { super: 'psychic ghost', half: 'dark', none: 'normal' },
-  dragon: { super: 'dragon', half: 'steel', none: 'fairy' },
-  dark: { super: 'psychic ghost', half: 'fighting dark fairy' },
-  steel: { super: 'ice rock fairy', half: 'fire water electric steel' },
-  fairy: { super: 'fighting dragon dark', half: 'fire poison steel' },
+  ghost: { super: 'psychic ghost', half: 'dark steel', none: 'normal' },
+  dragon: { super: 'dragon', half: 'steel' },
+  dark: { super: 'psychic ghost', half: 'fighting dark steel' },
+  steel: { super: 'ice rock', half: 'fire water electric steel' },
 };
 
 /** Every Safari Pokémon's real types, grouped by them (a dual type's first type first). */
 export const SPECIES = {
-  normal: 'aipom ambipom audino bidoof blissey bouffalant buneary castform chansey cinccino delcatty dunsparce eevee furret glameow happiny herdier kecleon lickitung lillipup linoone lopunny loudred meowth minccino munchlax patrat persian porygon porygon2 purugly rattata sentret skitty slakoth spinda stantler tauros teddiursa vigoroth watchog whismur zangoose zigzagoon',
+  normal: 'aipom ambipom audino azurill bidoof blissey bouffalant buneary castform chansey cinccino clefairy cleffa delcatty dunsparce eevee furret glameow granbull happiny herdier igglybuff jigglypuff kecleon lickitung lillipup linoone lopunny loudred meowth minccino munchlax patrat persian porygon porygon2 purugly rattata sentret skitty slakoth snubbull spinda stantler tauros teddiursa togepi vigoroth watchog whismur wigglytuff zangoose zigzagoon',
   'normal water': 'bibarel',
   'normal grass': 'deerling sawsbuck',
-  'normal flying': 'braviary chatot dodrio doduo farfetchd fearow hoothoot noctowl pidgeot pidgeotto pidgey pidove rufflet spearow staraptor staravia starly swablu swellow taillow tranquill unfezant',
+  'normal flying': 'braviary chatot dodrio doduo farfetchd fearow hoothoot noctowl pidgeot pidgeotto pidgey pidove rufflet spearow staraptor staravia starly swablu swellow taillow togekiss togetic tranquill unfezant',
   'normal psychic': 'girafarig',
-  'normal fairy': 'azurill igglybuff jigglypuff wigglytuff',
   fire: 'arcanine darmanitan darumaka flareon growlithe heatmor magby magmar magmortar ninetales pansear ponyta rapidash simisear slugma torkoal vulpix',
   'fire ground': 'camerupt numel',
   'fire rock': 'magcargo',
-  water: 'alomomola basculin buizel clamperl corphish feebas finneon floatzel goldeen golduck gorebyss huntail kingler krabby lumineon luvdisc magikarp milotic octillery panpour politoed poliwag poliwhirl psyduck remoraid seaking seel shellder shellos simipour staryu vaporeon wailmer wailord',
+  water: 'alomomola azumarill basculin buizel clamperl corphish feebas finneon floatzel goldeen golduck gorebyss huntail kingler krabby lumineon luvdisc magikarp marill milotic octillery panpour politoed poliwag poliwhirl psyduck remoraid seaking seel shellder shellos simipour staryu vaporeon wailmer wailord',
   'water electric': 'chinchou',
   'water ice': 'cloyster dewgong lapras',
   'water fighting': 'poliwrath',
@@ -47,8 +45,7 @@ export const SPECIES = {
   'water rock': 'carracosta corsola relicanth tirtouga',
   'water ghost': 'frillish jellicent',
   'water dark': 'carvanha crawdaunt sharpedo',
-  'water fairy': 'azumarill marill',
-  grass: 'bellossom cacnea carnivine cherrim cherubi leafeon lilligant maractus pansage petilil seedot shroomish simisage sunflora sunkern tangela tangrowth',
+  grass: 'bellossom cacnea carnivine cherrim cherubi cottonee leafeon lilligant maractus pansage petilil seedot shroomish simisage sunflora sunkern tangela tangrowth whimsicott',
   'grass ice': 'abomasnow snover',
   'grass fighting': 'breloom',
   'grass poison': 'amoonguss bellsprout foongus gloom oddish roselia victreebel vileplume weepinbell',
@@ -56,7 +53,6 @@ export const SPECIES = {
   'grass psychic': 'exeggcute exeggutor',
   'grass dark': 'cacturne nuzleaf shiftry',
   'grass steel': 'ferroseed ferrothorn',
-  'grass fairy': 'cottonee whimsicott',
   electric: 'ampharos blitzle eelektrik eelektross electabuzz electivire electrike electrode elekid flaaffy jolteon luxio luxray manectric mareep minun pachirisu pichu pikachu plusle raichu shinx tynamo voltorb zebstrika',
   'electric flying': 'emolga',
   'electric ghost': 'rotom',
@@ -83,10 +79,9 @@ export const SPECIES = {
   'ground ghost': 'golett',
   'ground dragon': 'flygon vibrava',
   'ground dark': 'krokorok krookodile sandile',
-  psychic: 'abra alakazam beheeyem chimecho chingling drowzee duosion elgyem espeon gothita gothitelle gothorita grumpig hypno kadabra munna musharna reuniclus solosis spoink unown wobbuffet wynaut',
+  psychic: 'abra alakazam beheeyem chimecho chingling drowzee duosion elgyem espeon gardevoir gothita gothitelle gothorita grumpig hypno kadabra kirlia mimejr mrmime munna musharna ralts reuniclus solosis spoink unown wobbuffet wynaut',
   'psychic fighting': 'gallade',
   'psychic flying': 'natu sigilyph swoobat woobat xatu',
-  'psychic fairy': 'gardevoir kirlia mimejr mrmime ralts',
   bug: 'accelgor burmy cascoon caterpie illumise karrablast kricketot kricketune metapod pineco pinsir shelmet silcoon volbeat wurmple',
   'bug fire': 'larvesta volcarona',
   'bug water': 'surskit',
@@ -123,18 +118,15 @@ export const SPECIES = {
   'dark flying': 'honchkrow mandibuzz murkrow vullaby',
   'dark dragon': 'deino hydreigon zweilous',
   'dark steel': 'bisharp pawniard',
-  steel: 'klang klink klinklang',
+  steel: 'klang klink klinklang mawile',
   'steel flying': 'skarmory',
   'steel psychic': 'beldum bronzor metagross metang',
   'steel rock': 'aggron aron lairon',
-  'steel fairy': 'mawile',
-  fairy: 'clefairy cleffa granbull snubbull togepi',
-  'fairy flying': 'togekiss togetic',
 };
 
 /** The real type of every move a Safari Pokémon uses, grouped by type, `|` between names. */
 export const MOVES = {
-  normal: 'Acupressure|Attract|Belly Drum|Bide|Bind|Block|Body Slam|Camouflage|Comet Punch|Constrict|Conversion|Conversion 2|Copycat|Covet|Crush Claw|Defense Curl|Disable|Dizzy Punch|Double Hit|Double Slap|Double Team|Double-Edge|Egg Bomb|Endure|Explosion|Extreme Speed|Facade|Fake Out|Flail|Flash|Focus Energy|Forecast|Fury Attack|Fury Swipes|Giga Impact|Glare|Growl|Growth|Harden|Head Charge|Headbutt|Heal Bell|Helping Hand|Hidden Power|Horn Attack|Horn Drill|Howl|Hyper Beam|Hyper Fang|Hyper Voice|Last Resort|Leer|Lovely Kiss|Mean Look|Mega Punch|Minimize|Morning Sun|Odor Sleuth|Pain Split|Pay Day|Perish Song|Pound|Present|Protect|Psych Up|Quick Attack|Rage|Rapid Spin|Razor Wind|Recover|Return|Roar|Safeguard|Scary Face|Scratch|Sing|Slack Off|Slam|Slash|Smokescreen|Soft-Boiled|Spit Up|Splash|Stockpile|Stomp|Supersonic|Swagger|Swallow|Sweet Scent|Swift|Swords Dance|Tackle|Tail Slap|Tail Whip|Take Down|Thrash|Tidy Up|Tri Attack|Uproar|Vice Grip|Weather Ball|Wish|Work Up|Wrap|Wring Out|Yawn',
+  normal: 'Acupressure|Attract|Belly Drum|Bide|Bind|Block|Body Slam|Camouflage|Charm|Comet Punch|Constrict|Conversion|Conversion 2|Copycat|Covet|Crush Claw|Defense Curl|Disable|Disarming Voice|Dizzy Punch|Double Hit|Double Slap|Double Team|Double-Edge|Draining Kiss|Egg Bomb|Endure|Explosion|Extreme Speed|Facade|Fairy Wind|Fake Out|Flail|Flash|Focus Energy|Forecast|Fury Attack|Fury Swipes|Giga Impact|Glare|Growl|Growth|Harden|Head Charge|Headbutt|Heal Bell|Helping Hand|Hidden Power|Horn Attack|Horn Drill|Howl|Hyper Beam|Hyper Fang|Hyper Voice|Last Resort|Leer|Lovely Kiss|Mean Look|Mega Punch|Minimize|Moonblast|Moonlight|Morning Sun|Odor Sleuth|Pain Split|Pay Day|Perish Song|Pound|Present|Protect|Psych Up|Quick Attack|Rage|Rapid Spin|Razor Wind|Recover|Return|Roar|Safeguard|Scary Face|Scratch|Sing|Slack Off|Slam|Slash|Smokescreen|Soft-Boiled|Spit Up|Splash|Stockpile|Stomp|Supersonic|Swagger|Swallow|Sweet Kiss|Sweet Scent|Swift|Swords Dance|Tackle|Tail Slap|Tail Whip|Take Down|Thrash|Tidy Up|Tri Attack|Uproar|Vice Grip|Weather Ball|Wish|Work Up|Wrap|Wring Out|Yawn',
   fire: 'Ember|Fiery Dance|Fire Blast|Fire Fang|Fire Punch|Fire Spin|Flame Burst|Flame Charge|Flame Wheel|Flamethrower|Flare Blitz|Incinerate|Inferno|Lava Plume|Mystical Fire|Sunny Day|Will-O-Wisp',
   water: 'Aqua Jet|Aqua Ring|Aqua Tail|Brine|Bubble|Bubble Beam|Clamp|Crabhammer|Dive|Hydro Pump|Muddy Water|Octazooka|Rain Dance|Scald|Surf|Water Gun|Water Pulse|Water Sport|Water Spout|Waterfall|Whirlpool|Withdraw',
   grass: 'Absorb|Aromatherapy|Bullet Seed|Cotton Guard|Cotton Spore|Energy Ball|Giga Drain|Horn Leech|Ingrain|Leaf Blade|Leaf Storm|Magical Leaf|Mega Drain|Needle Arm|Petal Blizzard|Petal Dance|Power Whip|Razor Leaf|Seed Bomb|Solar Beam|Spore|Stun Spore|Synthesis|Vine Whip|Wood Hammer',
@@ -151,5 +143,4 @@ export const MOVES = {
   dragon: 'Dragon Breath|Dragon Claw|Dragon Dance|Dragon Pulse|Dragon Rage|Dragon Rush|Dragon Tail|Outrage|Twister',
   dark: 'Bite|Crunch|Dark Pulse|Faint Attack|Fake Tears|Feint Attack|Foul Play|Hone Claws|Knock Off|Nasty Plot|Night Daze|Night Slash|Pursuit|Snatch|Sucker Punch|Thief|Torment',
   steel: 'Bullet Punch|Gear Grind|Gyro Ball|Heavy Slam|Iron Defense|Iron Head|Iron Tail|Metal Claw|Meteor Mash|Shift Gear|Steel Wing',
-  fairy: 'Charm|Disarming Voice|Draining Kiss|Fairy Wind|Moonblast|Moonlight|Sweet Kiss',
 };
