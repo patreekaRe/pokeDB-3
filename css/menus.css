@@ -995,6 +995,9 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .gdx-step-pic { display: grid; place-items: center; width: 40px; height: 40px; }
 .gdx-step-pic img { width: 100%; height: 100%; object-fit: contain; }
 .gdx-step:not(.got) .gdx-step-pic img { filter: grayscale(1) opacity(0.6); }
+.gdx-belt { position: relative; width: 36px; height: 10px; border-radius: 3px; background: var(--belt); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 2px 0 rgba(0, 0, 0, 0.2); }
+.gdx-belt::after { content: ''; position: absolute; left: 50%; top: -3px; width: 10px; height: 16px; translate: -50% 0; border-radius: 3px; background: var(--knot); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35); }
+.gdx-step:not(.got) .gdx-belt { filter: grayscale(1) opacity(0.6); }
 .gdx-poster { padding: 2px; border: 2px solid #fff; background: linear-gradient(180deg, #fff4dc, #e8d4a8); image-rendering: pixelated; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3); }
 .gdx-step b { font: 0.75rem/1.25 var(--pixel-font); font-synthesis-weight: none; font-weight: 400; }
 .gdx-step small { font-size: 0.75rem; opacity: 0.8; }

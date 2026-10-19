@@ -186,6 +186,30 @@ body:has(> .base3d) :is(#start-screen, #backdrop, #scene-bg, #scene-light) { vis
 .title-screen.hub-mode .title-signpost, .title-screen.hub-mode .title-areas { display: none; }
 /* the cloud save's Sign in moved into the Clearing's PC (js/pc.js), so the corner's PC goes (2026-10-09, the user's call) */
 .title-screen.hub-mode #title-account { display: none; }
+/* the Clearing's Refresh, top right (the user's ask, 2026-10-19): a quieter take on the round red key of 2026-10-17, in
+   the Pokédex's shell colour like the map's Home key, two sizes smaller and a little see-through, its arrow turning once
+   every 9 s instead of the title's glow; the Signs title keeps its white arrow under the speaker */
+.title-screen.hub-mode .title-refresh {
+  position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right));
+  margin: 0; padding: 2px; gap: 3px;
+}
+.title-screen.hub-mode .title-refresh .ta-pc {
+  display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: 16px;
+  background: radial-gradient(circle at 35% 30%, var(--shell-hi), var(--shell) 60%, var(--shell-lo));
+  box-shadow: inset 0 0 0 2px var(--shell-rim), inset 0 2px 0 rgba(255, 255, 255, 0.2), 0 2px 0 var(--shell-deep);
+  filter: none; opacity: 0.8; transition: opacity 0.15s, translate 0.06s, box-shadow 0.06s;
+}
+.title-screen.hub-mode .title-refresh .refresh-ico { fill: #fff; stroke: none; filter: drop-shadow(0 1px 0 var(--shell-deep)); animation: refreshTurn 9s ease-in-out 3s infinite; }
+@keyframes refreshTurn { 0%, 90% { rotate: 0deg; } 100% { rotate: 360deg; } }
+.title-screen.hub-mode .title-refresh:is(:hover, :focus-visible) .ta-pc { opacity: 1; animation: none; }
+.title-screen.hub-mode .title-refresh:active .ta-pc { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 0 0 var(--shell-deep); }
+.title-screen.hub-mode .title-refresh.spinning .refresh-ico { animation: taSpin 0.7s linear infinite; }
+/* "Updates" brightens and swells a moment as the arrow turns, on the same 9 s beat (the user's ask, 2026-10-19) */
+.title-screen.hub-mode .title-refresh .ta-update { font-size: 12px; opacity: 0.55; animation: updatesPulse 9s ease-in-out 3s infinite; }
+@keyframes updatesPulse { 0%, 86%, 100% { opacity: 0.55; scale: 1; } 93% { opacity: 1; scale: 1.15; } }
+.title-screen.hub-mode .title-refresh.spinning .ta-update { animation: none; opacity: 1; }
+html.calm-fx .title-screen.hub-mode .title-refresh .ta-update { animation: none; }
+@media (prefers-reduced-motion: reduce) { .title-screen.hub-mode .title-refresh:not(.spinning) .refresh-ico, .title-screen.hub-mode .title-refresh .ta-update { animation: none; } }
 
 /* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: the Clearing's Pokédex bar along the bottom
    (2026-10-13, the user's ask), the place's name and the coins on its LCDs, and over it a front's line pops up a moment. */

@@ -230,8 +230,14 @@ The first section began as the note on playtesting the live site and grew into t
   just right of the PC, the user's ask the same day; it first stood two right of the Waystone, and Halloween's ghost
   that spawned there moved to that old spot). Professor Oak stands there except at night, Professor Sonia
   at night (`PROFS`, `profNow()`; both boards are built and `setTime()` shows one). Each tap reads the next of `HINTS`
-  (features a player might miss); every fifth tap ends on that professor's reminder to refresh the page for updates
-  (`hintsHeard`; every tap until 2026-10-15, the user's ask). Sprites
+  (features a player might miss); every fifth tap ends on that professor's reminder to tap the refresh key for updates
+  (`hintsHeard`; every tap until 2026-10-15, the user's ask). **The refresh key** (2026-10-19, the user's ask): in the
+  Clearing the title corner's Refresh (`#title-refresh`, `refreshGame()` in `js/title.js`) stands alone top right as a
+  small round key in the shell colour, 28px (made a tad smaller the same day), 80% opaque, its arrow turning once
+  every 9 s and the faint "Updates" under it brightening and swelling on the same beat (`updatesPulse`, off under calm
+  effects and reduced motion; `.title-screen.hub-mode .title-refresh` in `css/hub.css`); the Signs title keeps
+  the white arrow under the speaker. The 2026-10-17 key that also brought you back where you stood was reverted for its
+  bugs; this one is only the look. Sprites
   `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
   A new feature worth a hint gets a `HINTS` line. **Talked to in the Gym Leaders' slide-in** (2026-10-15, the user's pick
   of two): `showCard()` hands the place to `profTalk()`, which calls `gymTalk()` (`js/gym.js`) with a leader-shaped
