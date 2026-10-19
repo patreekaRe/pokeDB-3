@@ -95,7 +95,7 @@ const freshSave = () => ({
   safariDex: { seen: [], caught: [], done: [], complete: false },   // Safari Pokémon met and caught, on any try (the Safari Pokédex), the areas whose reward was paid, and Rayquaza's full dex
   ranger: { claimed: [], log: {} },   // the Safari Outfitter's Ranger Task Board (js/data/ranger.js): tasks claimed, and the catches it counts that the Pokédex doesn't (balls, night, first turns, unhurt, best run, bosses, wins, days in a row)
   journal: { claimed: [] },   // the Trainer's Journal at the Clearing's PC (js/data/journal.js): tasks claimed; its progress is counted from the rest of the save
-  balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Game Corner (js/data/balls.js): stock per ball id, the Master Ball if owned, the week the Master Ball was thrown and its throws (`masterThrows`, missing in an old save: masterThrows())
+  balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Safari Outfitter (js/data/balls.js): stock per ball id, the Master Ball if owned, the week the Master Ball was thrown and its throws (`masterThrows`, missing in an old save: masterThrows())
   losses: [],                 // lost runs, a short line each (js/halloffame.js recordLoss()): where it fell and to what, newest LOSS_KEEP
   hallOfFame: [],             // every Trainer Level 5 win, oldest first (js/halloffame.js); old saves start empty   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
   stats: {

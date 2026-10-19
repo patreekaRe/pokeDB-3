@@ -41,7 +41,7 @@ export const CATCH_PRIZE = 0.5;
 export const LUXURY_COINS = 10;
 
 /**
- * The balls. `stock`: a consumable bought in packs at the Game Corner (save.balls[id]); the Master Ball is bought once and gives one throw a UTC week; the Safari Ball is free, SAFARI_BALLS a run.
+ * The balls. `stock`: a consumable bought in packs at the Safari Outfitter (save.balls[id]); the Master Ball is bought once and gives one throw a UTC week; the Safari Ball is free, SAFARI_BALLS a run.
  * `mult(ctx)` is the ball's multiplier for a throw: ctx = { night, turn, type } (the wild Pokémon's type).
  */
 export const BALLS = [

@@ -1095,8 +1095,8 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
         **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
      d) ~~**The east front**: the Safari Outfitter~~ done 2026-10-15, made a grand safari lodge the same day
         (`docs/roadmap-done.md`). **Next**: the user playtests it (`?mall=outfitter&safari&coins=3000`) and says what to
-        change. Poké Balls are still also sold in the Pokédex's Game Corner app and the Safari prep window's Buy key: say
-        if they should move to the Outfitter only. ▶ Run in: CLOUD.
+        change. Poké Balls left the Pokédex's Game Corner app 2026-10-19 (the user's ask); the Safari prep window's Buy
+        key still sells them (`ballsApp` in `js/shop.js`): say if that should go too. ▶ Run in: CLOUD.
 - **Ranger Task Board and Trainer's Journal**: built and rebalanced 2026-10-16, with the Trainer furniture set and the gold
   shell, and its cases sparkling with news when you come home (`docs/roadmap-done.md`). **Next, if wanted**: a reward per Ranger rank, more tasks, seasonal Expeditions.
   Waiting on the user's playtest (`?base` to see the set once claimed). ▶ Run in: CLOUD.
