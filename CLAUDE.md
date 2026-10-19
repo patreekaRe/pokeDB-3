@@ -240,7 +240,12 @@ There's no automated test suite. Before committing:
 2. Actually play the affected flow in the browser — pick a starter, fight,
    reach the screen/dialog you changed, and interact with it — rather than
    just reading the code.
-3. If it's a balance change (card damage, achievement difficulty, drop
+3. **The phone's budgets** (a cloud session, 2026-10-19, the user's ask: the reload and lag fixes kept by a check): any
+   change to a 3D place, a screen's animations or what the game keeps in memory runs
+   `NODE_PATH=$(npm root -g) node tools/budget-check.mjs` (`--only=name,...` for the places touched; the full run takes
+   several minutes) before pushing. Over budget is a bug to fix, not to record; a change meant to cost more reruns it with
+   `--update` and says so in its commit. Its header says what it counts.
+4. If it's a balance change (card damage, achievement difficulty, drop
    rates), use the headless-bot harness in `../pokeDB-sim/` (a sibling
    folder, never committed to this repo; its README says how to run it).
    Reuse it rather than rebuilding it. This machine has no Node or Python,
@@ -261,7 +266,7 @@ There's no automated test suite. Before committing:
    (Choice Scarf) must rank with the boss relics, or old-vs-new relic pool
    comparisons swing 20–40 points from pick bias alone. Absolute win rates
    differ between bot versions; only compare runs of the same bot.
-4. After pushing, GitHub Pages can take several minutes (occasionally
+5. After pushing, GitHub Pages can take several minutes (occasionally
    10+) to actually serve the new files — `raw.githubusercontent.com/.../main/<path>`
    reflects the pushed source immediately and is the fastest way to confirm
    a push landed, before blaming the CDN for a stale live check.

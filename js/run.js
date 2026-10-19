@@ -31,8 +31,9 @@ import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, sta
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny } from './storage.js';
-import { SHINY_ODDS, markShinies, shinyGain, shinyLine } from './data/shinies.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
+import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
+import { openSealed } from './data/exchange.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
@@ -2639,10 +2640,15 @@ function afterFight(node, result) {
   // a shiny caught: its Sparkle is raised as the rewards are collected, like the coins, so a refresh can't raise it twice
   const shinyCatch = result.caught && result.shiny && isSafari() ? shinyGain(getSave().safariShinies, node.enemyId) : null;
   const lentShiny = peeking || wildShinyFlag();
+  // the Shiny Exchange's sealed capsules of it open on the catch, after a wild shiny's own gain; saved in collect() too
+  const opened = result.caught && isSafari() && !peeking && getSave().exchange?.sealed?.[node.enemyId]
+    ? (() => { const s = { ...getSave().safariShinies }; if (shinyCatch && !lentShiny) addShiny(s, node.enemyId); return openSealed(s, { ...getSave().exchange.sealed }, node.enemyId); })()
+    : [];
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
     if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
     if (shinyCatch) dexNews.unshift(shinyLine(ENEMY_DEFS[node.enemyId].name, shinyCatch) + (lentShiny ? ' (A playtest: nothing is saved.)' : ''));
+    if (opened.length) dexNews.splice(shinyCatch ? 1 : 0, 0, ...opened.map(g => `🔓 Sealed capsule opened! ${shinyLine(ENEMY_DEFS[node.enemyId].name, g).replace(/^✨ /, '')}`));
     // a Ranger task this catch finishes, said now (it's logged as the rewards are collected)
     if (!peeking && isSafari()) for (const t of finishedBy(getSave(), rangerInfo(node, result))) dexNews.push(`📋 Ranger task done: ${t.title}! Claim it on the board at the Safari Outfitter.`);
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
@@ -2658,7 +2664,7 @@ function afterFight(node, result) {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
     coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs]) + luxury), money: prize, dex: dexNews, safari: safariStep,
     beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${shinyCatch ? 'Shiny ' : ''}${foe} was caught!` : null,
-    shiny: Boolean(shinyCatch),   // the catch box's gold
+    shiny: Boolean(shinyCatch || opened.length),   // the catch box's gold
     finds: drop ? [drop] : [],   // popped up as the news is told
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
@@ -2679,6 +2685,7 @@ function afterFight(node, result) {
     if (result.caught) mission('catch');
     if (result.caught && isSafari() && !peeking) rangerCatch(rangerInfo(node, result));
     if (shinyCatch && !lentShiny) gainShiny(node.enemyId);
+    if (opened.length) openSealedCapsules(node.enemyId);
     if (isSafari() && node.type === 'boss' && !peeking) rangerTick('bosses');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     glean(gleanKey(node, 'drop'), drop);
@@ -2695,7 +2702,8 @@ function afterFight(node, result) {
   };
 
   const steps = [];   // screens to show one after another
-  if (node.type === 'fight') steps.push(next => (result.caught ? offerSignature(node.enemyId, next, shinyCatch?.level) : offerCard('fight', next)));
+  const sparkle = opened.at(-1)?.level ?? shinyCatch?.level;   // the signature card at the Sparkle it's getting
+  if (node.type === 'fight') steps.push(next => (result.caught ? offerSignature(node.enemyId, next, sparkle) : offerCard('fight', next)));
   if (node.type === 'elite') {
     run.tally.elites += 1;
     steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
@@ -2753,6 +2761,7 @@ function afterFight(node, result) {
     }
   } else steps.unshift(next => unlockWindow(unlocked, next));
   if (shard) steps.unshift(next => offerKeyItem(shard, next));   // first, where the news says it was floating over the Alpha
+  if (opened.length) steps.unshift(next => import('./exchange.js').then(m => m.openSealedReveal(node.enemyId, opened, next)));   // right on the catch
 
   // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
   if (run.relics.includes('dusk-stone')) {

@@ -47,6 +47,7 @@ function draw(stage) {
   animate(s, (t) => {
     if (document.getElementById('start-screen').hidden) return halt(s);
     if (!document.getElementById('title-screen').hidden) return;   // the title covers it: painting unseen only warms the phone
+    if (canvas.checkVisibility && !canvas.checkVisibility({ visibilityProperty: true })) return;   // so do the mall and the Secret Base
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(back, 0, 0);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

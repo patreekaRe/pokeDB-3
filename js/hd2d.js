@@ -63,7 +63,12 @@ export function sleepGL(renderer) {
   unhook(renderer);
   letGo(renderer);
   try { renderer.forceContextLoss(); } catch { /* already gone */ }
+  // three.js skips a lost context only once its 'webglcontextlost' event has come, a task later: a frame drawn before
+  // then (the Clearing's, under the mall's curtain) hooked a new build's dispose listeners onto everything, which no
+  // sleep took off again, ~5 MB more on every trip to the mall or the base (2026-10-19)
+  if (!muted.has(renderer)) { muted.set(renderer, renderer.render); renderer.render = () => {}; }
 }
+const muted = new WeakMap();   // a sleeping renderer -> its own render()
 
 /* A lost context frees nothing in Safari. WebKit's loseContext() only cuts its objects loose: the GPU context behind it,
    with every texture, render target, shader and screen-sized buffer it made, lives on until the context is restored or
@@ -171,6 +176,7 @@ export function wakeGL(renderer) {
 export function wakeBeside(renderer) {
   if (!renderer || !asleep.has(renderer)) return Promise.resolve();
   asleep.delete(renderer);
+  if (muted.has(renderer)) { renderer.render = muted.get(renderer); muted.delete(renderer); }
   regrow(renderer);
   return new Promise(done => {
     const timer = setTimeout(done, 2000);
