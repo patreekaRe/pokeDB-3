@@ -1183,6 +1183,20 @@ with the draw, every status an enemy adds cycles your deck); (3) maybe Overgrowt
 as a whole: no blanket nerf yet; Fire already reaches floor 100 in 0% of bot climbs, Grass 7%. If healing is still too
 strong after (1)-(2), give the tower its own heal pressure (a `healMult` past floor ~50) rather than cut every heal card.
 Check with the sim's tower climbs on Grass before/after (▶ CLOUD, both repos, effort: high). **Waiting on the user's call.**
+Measured the same day (pokeDB-sim's combo lab, the friend's 12-card deck): peak strength ~430 against the dummy, ~30-60 with
+Growth Spurt+ exhausting (cost 0); against Level 5's last bosses the combo won 73% -> 59% with the fix; Overgrowth alone took
+a thin deck from 0% to 58% there (13% with Overgrowth+ at x1, likely too far). Leech Seed decks win 0-3% against those
+bosses (half the heal changed nothing); they only run away in very long fights, i.e. the tower's top floors.
+**The whole-game sweep** (the combo fuzzer, 2000 random late-run decks a type, all ten types; numbers in pokeDB-sim's
+README): the same shape recurs: a power that turns a growing number into block every turn. Overgrowth (strength), **Ice
+Core** (Frostbite; the biggest single-card lift of the sweep, +13), **Electric Seed + Electric Memory** (Static, +8 as a
+pair). Dark is the strongest type against the dummy (best decks last ~58 turns): **Magician** (Steal 1 every turn, below 0:
+a Disarm a turn, StS never gives one) with **Dark Memory** (+8). Psychic: **Safeguard** (Protect, non-exhausting since the
+balance pass for Mewtwo's mode's sake) with Amnesia. Weakest: Fighting (no deck beat the dummy) and Fire. Healing relics
+(Leftovers, Shell Bell) are not outliers anywhere; the energy boss relics top every type, as in StS. Claude's lean for a
+pass: (1) Growth Spurt+ keeps Exhaust; (2) the block-each-turn powers give half (Overgrowth+, Ice Core, Electric Seed at
+x1 of half the stack, or a cap); (3) Magician steals every 2nd turn, or Dark Memory only on cards; (4) Lum Berry loses its
+draw; (5) Fighting and Fire get a lift; then whole-run bot checks (L0/3/5, the Safari pairs) and a 10-flight climb.
 
 **A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
