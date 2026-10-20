@@ -359,7 +359,7 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   for everyone, so the Duo app shows it ahead; `beginSafari()` swaps it in for a duo, and each try still rolls a fresh
   seed for its maps. `?powerplant` and the like still put their area first. Pinned by `tests/duo.test.mjs`.
 - **New duo starters on the map** (2026-10-20): on a Safari map (not a peek), a wild room whose Pokémon is a stage of a
-  duo line you haven't caught (`duoGains()`) shows its type's badge on the room's top-left (`map-duo`, `duoNew` in
+  duo line you haven't caught (`duoGains()`) shows its type's badge on the room's top-left (14px, `.map-duo`) (`map-duo`, `duoNew` in
   `tracking()` in `js/run.js`), unnamed like every room; a tap says a new duo starter lives there.
 - **The duo pool**: `save.duoPool` holds the types caught beyond Fire / Grass / Water (type -> starter ids as looks);
   the base three are every owned starter of the type. `duoNews()` in `js/run.js` (from `creditSafari()`) adds a type

@@ -439,17 +439,18 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .player-zone.duo.holding::after { opacity: 1; animation: holdFill 0.45s linear forwards; }
 @property --hold { syntax: '<number>'; inherits: false; initial-value: 0; }
 @keyframes holdFill { from { --hold: 0; } to { --hold: 100; } }
-.switch-go-name, .switch-go-price, .switch-go-edge { display: block; }
-.switch-go-price, .switch-go-edge { font-size: 0.75rem; }
+.switch-go-name, .switch-go-price { display: block; }
+.switch-go-price { font-size: 0.75rem; }
 .switch-go-edge.up { color: #b8201a; }
 .switch-go-edge.down { color: #1d58b8; }
+/* small on purpose (the user's call, 2026-10-20): beside the plate, the enemy and its intent stay in view */
 .switch-go {
-  position: absolute; right: 0; bottom: calc(100% + 40px); z-index: 6;
-  padding: 7px 12px;
-  border: 3px solid #303038; border-radius: var(--round-sm);
+  position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 6;
+  padding: 3px 8px; line-height: 1.25; text-align: left;
+  border: 2px solid #303038; border-radius: var(--round-sm);
   background: #ffd84a; color: #303038;
-  font-family: var(--pixel-font); font-size: 0.8rem; white-space: nowrap;
-  box-shadow: 0 3px 0 #a07a10, 0 0 10px rgba(255, 216, 74, 0.6);
+  font-family: var(--pixel-font); font-size: 0.75rem; white-space: nowrap;
+  box-shadow: 0 2px 0 #a07a10, 0 0 6px rgba(255, 216, 74, 0.5);
   cursor: pointer;
 }
 .switch-go[hidden] { display: none; }
@@ -1709,7 +1710,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   50% { translate: 0 -2px; scale: 1.18; filter: drop-shadow(0 0 7px rgba(170, 240, 255, 1)) drop-shadow(0 0 1px #0c2440); }
 }
 /* a town's Waystone Shard on its Alpha's top-right corner, like a material's badge (2026-10-18: it floated above, between rooms): a crystal in the town's colour (--gem), turning as it bobs */
-.map-duo { margin-top: 0; width: 22px; height: 22px; padding: 0; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 8px 2px rgba(255, 255, 255, 0.8); animation: sparkleGlint 2.2s ease-in-out infinite; }
+.map-duo { margin-top: 0; width: 14px; height: 14px; padding: 0; border-radius: 50%; box-shadow: 0 0 0 1.5px #fff, 0 0 4px 1px rgba(255, 255, 255, 0.7); animation: sparkleGlint 2.2s ease-in-out infinite; }
 .map-duo .type-badge { width: 100%; height: 100%; }
 .map-shard { margin-top: 0; animation-name: shardBob; animation-duration: 2.6s; filter: drop-shadow(0 0 4px var(--gem)) drop-shadow(0 0 1px #fff); }
 .map-shard-gem { display: inline-block; width: 14px; height: 22px; clip-path: polygon(50% 0, 100% 38%, 50% 100%, 0 38%);

@@ -3211,12 +3211,12 @@ function renderBench() {
   const hits = move && (move.kind === 'attack' || move.kind === 'drain') && !paralyzing();
   const edge = hits ? enemyTypeMultiplier(move, mate.type) : 1;
   const cost = switchCost();
-  const head = el('strong', 'switch-go-name', `⇄ Go, ${name}!`);
-  const price = el('small', 'switch-go-price', `${cost ? `${cost} PP` : 'Free'} · ends your turn`);
-  const parts = [head, price];
-  if (edge !== 1) parts.push(el('small', `switch-go-edge ${edge > 1 ? 'up' : 'down'}`, `${edge > 1 ? '▲' : '▼'} ${move.name} ${edge > 1 ? 'is super effective on it' : 'is resisted by it'}`));
-  go.replaceChildren(...parts);
-  go.title = `Switch to ${name} (${TYPES[mate.type].label}). It ends your turn.`;
+  const price = el('small', 'switch-go-price', `${cost ? `${cost} PP` : 'Free'} · ends turn`);
+  if (edge !== 1) price.append(' ', el('b', `switch-go-edge ${edge > 1 ? 'up' : 'down'}`, `${edge > 1 ? '▲' : '▼'} ${move.name}`));
+  go.replaceChildren(el('strong', 'switch-go-name', `⇄ ${name}`), price);
+  const coming = edge !== 1 ? ` ${move.name} would be ${edge > 1 ? 'super effective on it' : 'resisted by it'}.` : '';
+  go.title = `Switch to ${name} (${TYPES[mate.type].label}). It ends your turn.${coming}`;
+  go.setAttribute('aria-label', go.title);
   go.disabled = !!whyNotSwitch();
 }
 
