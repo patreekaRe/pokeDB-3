@@ -33,7 +33,7 @@ import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems, syncDecks } from './data/duo.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
-import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
+import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog, rareMark } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS } from './data/enemies.js';
 import { REAL_TYPES, realMultiplier, speciesTypes, moveType } from './data/real-types.js';
@@ -2795,7 +2795,8 @@ function setupEnemy() {
 
   const type = typeless() ? 'normal' : b.def.type;   // elites and bosses ignore the chart, so show them as Neutral
   $('enemy-zone').dataset.type = type;
-  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.rare || b.shiny ? '✨ ' : '') + b.def.name;
+  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.shiny ? '✨ ' : '') + b.def.name;
+  if (b.rare) $('enemy-name').prepend(rareMark('inline'), ' ');   // rustling grass, not a shiny's ✨ (the user mixed them up, 2026-10-20)
   $('enemy-plate').classList.toggle('rare', b.rare);
   $('enemy-plate').classList.toggle('shiny', b.shiny);
   $('enemy-shiny').hidden = !b.shiny;

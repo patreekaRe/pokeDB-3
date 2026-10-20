@@ -64,10 +64,11 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 - `markRares()` in `js/data/safari.js`, from `startBiome()` after the wilds are dealt, on the biome's seed: each wild room
   has `RARE.odds` (12%) to hold one of its area's `rares` instead (Chansey, Kecleon and the `rare` lines of `safari-mons.js`
   are Safari-only, the rest are the main game's elite species as plain wilds), with `node.rare` saved on the map.
-- The map shows a gold ✦ over its room (`.map-rare`, its title says so; centred right above the room since 2026-10-02, the user couldn't tell which room it marked from the corner; 22px with a soft glow that swells as
-  it bobs and twinkles, `rareTwinkle`, eased and slow, never flashing, the user's "more obvious but not too obvious"; the
-  prep window's rare-spawn rule shows the same star, `.map-rare.inline`); in battle the name gets a ✨, the nameplate a gold
-  rim (`#enemy-plate.rare`) and a 💨 badge counts the turns left. It runs off at the start of its turn once `turn >=
+- The map shows rustling grass on its room's top-right corner (`rareMark()` in `js/ui.js`, a pixel tuft that shakes in a
+  gold-rimmed badge, `.map-grass`, placed like a material's badge; the user's ask, 2026-10-20: the gold ✦ centred above the
+  room, there since 2026-10-02, read as a shiny and hung between rooms). The prep window's rare-spawn rule and the Duo
+  Run's areas show the same badge (`.rare-mark.inline`); in battle the name gets it too, the nameplate a grass-green
+  rim (`#enemy-plate.rare`; a shiny keeps ✨ and gold) and a 💨 badge counts the turns left. It runs off at the start of its turn once `turn >=
   RARE.turns - rock` (4 of your turns): `runAway()` -> `onEnd({ escaped: true })`, and the map says "ran away. Nothing
   won." Its catch odds are halved (`RARE.mult`).
 

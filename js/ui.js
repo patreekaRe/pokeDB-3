@@ -26,6 +26,20 @@ export function el(tag, className = '', text = '') {
   return node;
 }
 
+/* A Safari rare spawn's mark: a tuft of rustling grass, like the games' shaking grass (it was a gold ✦ until 2026-10-20,
+   which read as a shiny). L light blade, D dark, W the rustle's ticks. */
+const RARE_GRASS = ['W....L.....W', 'W.L..L...L.W', '..L.LD..L...', '...LD.L.L...', '.L.LD.LDL.L.', '.LDLDLLDLDL.', '..DLDLDDLD..', '..DDDDDDDD..'];
+const RARE_INK = { L: '#5ac838', D: '#2a7a20', W: '#fff' };
+const RARE_SVG = `<svg viewBox="0 0 12 8" shape-rendering="crispEdges" aria-hidden="true">${RARE_GRASS.flatMap((row, y) =>
+  [...row].map((c, x) => (c === '.' ? '' : `<rect x="${x}" y="${y}" width="1" height="1" fill="${RARE_INK[c]}"/>`))).join('')}</svg>`;
+
+/** The rare-spawn badge (the map, the Safari's rules, the Duo Run's areas, a rare's nameplate in battle). */
+export function rareMark(className = '') {
+  const node = el('span', `rare-mark ${className}`.trim());
+  node.innerHTML = RARE_SVG;
+  return node;
+}
+
 /** A wheel of soft rays, painted once on a canvas at one pixel to a CSS pixel (`n` across), solid to `solid` of its
     radius and faded out by `fade`. Rays were CSS gradients under a mask on a turning layer: on an iPhone each is a
     masked layer redrawn at three pixels to one every frame, and over a 3D place Safari's GPU process gave out (the

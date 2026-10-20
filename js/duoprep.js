@@ -14,7 +14,7 @@ import { DUO_BASE, DUO_LINES, duoPool, duoOpen } from './data/duo.js';
 import { getSave } from './storage.js';
 import { isStarterUnlocked } from './progress.js';
 import { playSound } from './audio.js';
-import { $, el } from './ui.js';
+import { $, el, rareMark } from './ui.js';
 
 /** ?duorun opens the Duo Run for the page load without finishing the day's Daily run (a playtest; nothing saved). */
 export const duoLent = () => new URLSearchParams(location.search).has('duorun');
@@ -74,7 +74,7 @@ function road(daily) {
       img.src = ENEMY_DEFS[id].image;
       img.alt = '';
       img.title = 'A rare spawn';
-      mons.append(img, el('span', 'map-rare inline', '✦'));
+      mons.append(img, rareMark('inline'));
     }
     const head = el('p', 'duo-area-head');
     head.append(el('span', 'sp-area-no', `${i + 1}`), el('b', '', area.name));

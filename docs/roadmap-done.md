@@ -3281,3 +3281,9 @@ Vulnerable 2 lifted only solo, so it shipped as written. Numbers in pokeDB-sim's
 The user was caught off guard that Alphas aren't catchable (Claude's call in phase 2); their call: keep the rule, explain
 it. In a Safari Alpha or boss fight Throw now shows greyed, its tap logging "Alphas are too strong to catch. Knock it out!"
 (`battle.uncatchable`, `NO_CATCH` in `js/battle.js`). Checked headless at 390x844 on `?bossfight=meadow`.
+
+### Safari: rare spawns marked with rustling grass (2026-10-20, cloud)
+The user's ask: the rare spawn's gold ✦ floated between rooms and, with the ✨ on its name in battle, read as a shiny. Now
+a shaking pixel grass tuft in a gold-rimmed badge on the room's top-right corner like a material's (`rareMark()` in
+`js/ui.js`, `.map-grass`), the same badge in the Safari rules, the Duo Run's areas and on its name in battle, its plate
+rimmed grass green (a shiny keeps ✨ and gold). Checked headless at 390x844: badge on the corner, the battle mark, no errors.
