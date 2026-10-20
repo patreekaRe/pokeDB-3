@@ -3276,3 +3276,8 @@ and Vibrava's and Flygon's cries; catching any stage adds Ground (`DUO_LINES.gro
 rules in a real fight, and `tools/duo-probe.mjs --pair=ground,fire` the Duo Run; pokeDB-sim mirrors it all. Bot (300):
 solo 71.3; with Fire / Grass / Water / Electric / Ice / Fighting 66.0 / 55.6 / 51.6 / 50.3 / 57.4 / 55.4. Bulldoze +
 Vulnerable 2 lifted only solo, so it shipped as written. Numbers in pokeDB-sim's README.
+
+### Safari: say why an Alpha or boss can't be caught (2026-10-20, cloud)
+The user was caught off guard that Alphas aren't catchable (Claude's call in phase 2); their call: keep the rule, explain
+it. In a Safari Alpha or boss fight Throw now shows greyed, its tap logging "Alphas are too strong to catch. Knock it out!"
+(`battle.uncatchable`, `NO_CATCH` in `js/battle.js`). Checked headless at 390x844 on `?bossfight=meadow`.
