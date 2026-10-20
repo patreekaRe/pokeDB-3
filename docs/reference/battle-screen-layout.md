@@ -316,3 +316,12 @@ starts calm.
 Before adding a
 generic class name, grep `css/` and `js/` for it.
 
+
+**A duo's switch** (2026-10-20, the user's calls from their phone): hold your Pokémon (`#player-zone`, `holdStart()` /
+`holdEnd()` in `js/battle.js`, 450 ms; a conic ring fills round it, `.player-zone.duo.holding::after`) and the Go pill
+comes up just over your plate, small (the user's call, 2026-10-20: not a centred window, so the enemy and its intent stay
+in view): "⇄ Bulbasaur", then "1 PP · ends turn" and, when it matters, "▲ Ice Punch" / "▼ Ice Punch" in red / blue; the
+full sentence is its title. A tap gives "Hold your Pokémon to switch partners." Through a duo fight's first two turns, "hold to swap" fades in and out over your Pokémon (`#swap-hint`, the hand
+hint's look; gone after the first hold), centred on its pose's middle (`centreSwapHint()`, by `SPRITE_FIT`). A tap anywhere else puts the pill away. The bench portrait
+on the plate's corner (and `HEAD_FIT`) came and went the same day: the Pokémon moved too much to read at that size. The
+plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.

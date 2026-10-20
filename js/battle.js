@@ -45,6 +45,7 @@ import { safariSprite, workshopOf } from './data/workshop.js';
 import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows, safariBallsLeft } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 import { flyTrail, burnAway } from './cardfx.js';
+import { typeText } from './type-badge.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
@@ -68,11 +69,16 @@ export function initBattle() {
   $('end-turn-btn').addEventListener('click', askEndTurn);
   $('throw-btn').addEventListener('click', toggleBallPicker);
   $('mulligan-btn').addEventListener('click', mulligan);
-  $('player-bench').addEventListener('click', tapBench);
+  // a duo switches by holding the one out (the user's call, 2026-10-20, like the Sealed Gate's card): it brings up the Go
+  // pill; a long press must not open the image's callout or select it
+  const zone = $('player-zone');
+  zone.addEventListener('pointerdown', holdStart);
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) zone.addEventListener(ev, holdEnd);
+  zone.addEventListener('contextmenu', (e) => { if (battle?.duo) e.preventDefault(); });
   $('switch-go').addEventListener('click', switchOut);
   // a duo's armed switch is put away by a tap anywhere else, like the ball picker
   document.addEventListener('pointerdown', (e) => {
-    if (battle?.duo?.armed && !e.target.closest('#player-bench, #switch-go')) { battle.duo.armed = false; renderBench(); }
+    if (battle?.duo?.armed && !e.target.closest('#player-zone, #switch-go')) { battle.duo.armed = false; renderBench(); }
   });
   // the ball picker floats over the battle like a menu: a tap anywhere else closes it
   document.addEventListener('pointerdown', (e) => {
@@ -658,7 +664,8 @@ function beginPlayerTurn() {
   draw(turnDraw() + b.drawNext + wind);
   if (!p.tailwindKeep) b.tailwind -= wind;   // Delta Stream
   b.drawNext = 0;
-  if (b.turn === 1 && hasAbility('keen-eye')) keenEye();
+  if ((b.turn === 1 || b.keenNext) && hasAbility('keen-eye')) keenEye();
+  b.keenNext = false;
   if (b.turn === 1 && hasAbility('intimidate')) intimidate();
   if (b.turn === 1 && hasRelic('razor-claw')) taunt();
   if (b.turn === 1 && hasRelic('dread-plate')) steal(1);
@@ -675,6 +682,8 @@ function beginPlayerTurn() {
   b.busy = false;
   if (b.turn === 1 && !b.safari) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
   else if (b.turn === HINT_TURNS + 1) hideHandHint();
+  $('swap-hint').hidden = !b.duo || b.turn > HINT_TURNS || b.duo.held;   // a duo's "hold to swap", the hand hint's way
+  if (!$('swap-hint').hidden) centreSwapHint();
   renderAll();
 }
 
@@ -2953,6 +2962,7 @@ function checkTaunts() {
 /** Things that don't change during a battle (sprites, names). */
 function setupBattleScreen() {
   hideHandHint();
+  $('swap-hint').hidden = true;
   dressPlayer();
   resetIntro();
   setupEnemy();
@@ -2964,7 +2974,7 @@ function dressPlayer() {
   const b = battle;
   $('player-name').textContent = stageName(b.starter, b.stage);
   const type = b.starter.type;
-  $('player-type').textContent = TYPES[type].icon;
+  $('player-type').replaceChildren(typeText(type, TYPES[type].icon, ''));
   $('player-type').title = `${TYPES[type].label} type`;
   $('player-type').className = `chip type-${type}`;
   $('player-ability').hidden = !b.ability;
@@ -3019,7 +3029,7 @@ function setupEnemy() {
   // the Safari shows a wild's real types (one icon each); everywhere else the game's own
   const real = b.safari && !typeless() ? speciesTypes(b.def) : null;
   if (real) $('enemy-zone').dataset.type = real[0];
-  $('enemy-type').textContent = real ? real.map(t => REAL_TYPES[t].icon).join('') : TYPES[type].icon;
+  $('enemy-type').replaceChildren(...(real ?? [type]).map(t => typeText(t, (REAL_TYPES[t] ?? TYPES[t]).icon, '')));
   $('enemy-type').title = real ? `${real.map(t => REAL_TYPES[t].label).join(' / ')} type` : `${TYPES[type].label} type`;
   $('enemy-type').className = `chip type-${real ? real[0] : type}`;
   box.classList.toggle('max', !!b.phased);
@@ -3070,19 +3080,55 @@ function whyNotSwitch() {
   return '';
 }
 
-/** The partner's chip on your nameplate: a first tap arms the switch (its "Go" pill), a second puts it away. */
-function tapBench() {
+/** "hold to swap" over the middle of your Pokémon's body (the user's call, 2026-10-20), wherever its sprite stands. */
+function centreSwapHint() {
+  const img = $('player-sprite');
+  if (!img.naturalHeight) { img.addEventListener('load', centreSwapHint, { once: true }); return; }
+  const zone = $('player-zone').getBoundingClientRect(), r = img.getBoundingClientRect();
+  const W = img.naturalWidth, H = img.naturalHeight, [top, bottom] = spriteFit(img.src);
+  const k = Math.min(r.width / W, r.height / H);   // object-fit: contain, stood on the box's bottom
+  const poseMid = r.bottom - H * k + (top + (H - top - bottom) / 2) * k;   // the pose's middle, not the GIF frame's
+  $('player-zone').style.setProperty('--hint-y', `${poseMid - zone.top}px`);
+}
+
+const HOLD_MS = 450;   // how long a press on your Pokémon takes to bring up the switch
+let holdTimer = 0;
+/** A press on the one out starts the hold: a ring fills round it, and at HOLD_MS the switch's Go pill comes up. */
+function holdStart(e) {
   const b = battle;
-  if (!b?.duo) return;
-  if (b.duo.armed) { b.duo.armed = false; renderBench(); return; }
+  if (!b?.duo || b.over || e.button > 0) return;
+  clearTimeout(holdTimer);
+  $('player-zone').classList.add('holding');
+  holdTimer = setTimeout(() => {
+    holdTimer = 0;
+    $('player-zone').classList.remove('holding');
+    armSwitch();
+  }, HOLD_MS);
+}
+/** Let go too soon: the ring empties, and a tap says how it works. */
+function holdEnd(e) {
+  if (!holdTimer) return;
+  clearTimeout(holdTimer);
+  holdTimer = 0;
+  $('player-zone').classList.remove('holding');
+  if (e.type === 'pointerup' && battle?.duo && !battle.duo.armed) log('Hold your Pokémon to switch partners.');
+}
+
+/** The hold's end: the Go pill comes up over your plate, or why you can't switch now. */
+function armSwitch() {
+  const b = battle;
+  if (!b?.duo || b.duo.armed) return;
   const problem = whyNotSwitch();
   if (problem) { log(problem === 'Not now.' ? 'You can switch on your turn.' : problem); playSound('no-pp'); return; }
   playSound('confirm');
-  b.duo.armed = true;
+  vibrate(20);
+  b.duo.armed = b.duo.held = true;
+  $('swap-hint').hidden = true;
   renderBench();
 }
 
-/** The chip's switch: it costs PP (Shed Shell's first a turn is free) and never ends the turn. */
+/** The held switch: it costs PP (Shed Shell's first a turn is free) and ends your turn, as switching does in the games
+    (the user's call, 2026-10-20); the partner comes out to take the enemy's move. A card's switch (Volt Switch) doesn't. */
 async function switchOut() {
   const b = battle;
   if (!b?.duo?.armed) return;
@@ -3093,17 +3139,18 @@ async function switchOut() {
   if (!cost) b.shed = true;
   b.energy -= cost;
   b.busy = true;
-  await comeOut(b);
+  await comeOut(b, { ending: true });
   if (battle !== b) return;
   switched();
   b.busy = false;
   renderAll();
+  endTurn();
 }
 
 /** "Come back! Go!": the one out is recalled in a red light, the partner comes out of its ball. It changes only who's
     out: the defending type, STAB and the Ability. Block, powers, Tide and the enemy's debuffs all stay. The chip's
     switch (switchOut()) and a card's (Volt Switch) both come here. */
-async function comeOut(b) {
+async function comeOut(b, { ending = false } = {}) {   // ending: the switch ends the turn, so no hand is drawn to be thrown away
   const d = b.duo, from = b.starter, motion = battleFx();
   selectedUid = null;
   if (d.piles) swapPiles(b, 1 - d.run.out);
@@ -3135,11 +3182,11 @@ async function comeOut(b) {
   await Promise.all([Promise.race([playCry(to.line[b.stage].id), sleep(CRY_WAIT_MAX)]), pause(motion ? 600 : 0)]);
   if (battle !== b) return;
   sprite.classList.remove('released');
-  if (d.piles && !d.drew[d.run.out]) {   // its first time out this turn: it draws its own hand (rule 1)
+  if (d.piles && !d.drew[d.run.out] && !ending) {   // its first time out this turn: it draws its own hand (rule 1)
     d.drew[d.run.out] = true;
     draw(turnDraw());
   }
-  if (hasAbility('keen-eye')) keenEye();   // Flying's: each time it comes out, once a turn
+  if (hasAbility('keen-eye')) { if (ending) b.keenNext = true; else keenEye(); }   // Flying's: each time it comes out, once a turn; out at a turn's end, at the next one's start
   if (hasAbility('intimidate')) intimidate();   // Dark's: the same
   if (!d.came.includes(d.run.out)) {   // a fight-start Ability fires the first time each partner comes out, so switching can't farm it
     d.came.push(d.run.out);
@@ -3168,33 +3215,25 @@ function switched() {
   if (hasRelic('eject-button')) gainBlock(4);
 }
 
-/** The partner's chip: its portrait in its type's colour, with ▲ when the coming hit is super effective on it and ▼
-    when it's resisted (the intent's own marks are for the one out), and the armed switch's Go pill. */
+/** The armed switch's Go pill over your plate: who comes out, its price, that it ends the turn, and how the enemy's coming
+    hit would land on it (▲ super effective, ▼ resisted; the intent's own marks are for the one out). */
 function renderBench() {
-  const b = battle, chip = $('player-bench'), go = $('switch-go');
-  chip.hidden = !b?.duo;
+  const b = battle, go = $('switch-go');
+  $('player-zone').classList.toggle('duo', !!b?.duo);
+  if (!b?.duo || b.over) $('swap-hint').hidden = true;
   go.hidden = !b?.duo?.armed;
-  if (!b?.duo) return;
+  if (!b?.duo?.armed) return;
   const mate = STARTERS_BY_ID[b.duo.run.ids[1 - b.duo.run.out]], name = stageName(mate, b.stage);
   const move = !b.over && currentMove();
   const hits = move && (move.kind === 'attack' || move.kind === 'drain') && !paralyzing();
   const edge = hits ? enemyTypeMultiplier(move, mate.type) : 1;
-  const mark = edge > 1 ? '▲' : edge < 1 ? '▼' : '';
-  const face = el('img', 'bench-face pixel');
-  face.src = spriteUrl(mate, 'front', b.stage);
-  face.alt = '';
-  chip.dataset.type = mate.type;
-  chip.classList.toggle('armed', b.duo.armed);
-  // its own piles: the hand it holds this turn, else its draw pile (it draws a hand the first time it comes out)
-  const own = b.duo.piles?.[1 - b.duo.run.out], held = own && b.duo.drew[1 - b.duo.run.out];
-  const cards = own ? el('b', 'bench-cards', held ? `✋${own.hand.length}` : `📚${own.drawPile.length}`) : null;
-  chip.replaceChildren(face, ...(mark ? [el('b', `bench-mark ${edge > 1 ? 'up' : 'down'}`, mark)] : []), ...(cards ? [cards] : []));
-  const coming = hits ? ` ${move.name} would be ${edge > 1 ? 'super effective' : edge < 1 ? 'not very effective' : 'neutral'} on it.` : '';
-  const piles = own ? held ? ` Its hand: ${own.hand.length} cards.` : ` It draws its own hand when it comes out (${own.drawPile.length} in its draw pile).` : '';
-  const cost = switchCost(), price = cost ? `${cost} PP` : 'free (Shed Shell)';
-  chip.title = `${name} (${TYPES[mate.type].label}) is on the bench. Tap to switch for ${price}.${piles}${coming}`;
-  chip.setAttribute('aria-label', chip.title);
-  go.textContent = `⇄ Go, ${name}! ${cost ? `${cost} PP` : 'Free'}`;
+  const cost = switchCost();
+  const price = el('small', 'switch-go-price', `${cost ? `${cost} PP` : 'Free'} · ends turn`);
+  if (edge !== 1) price.append(' ', el('b', `switch-go-edge ${edge > 1 ? 'up' : 'down'}`, `${edge > 1 ? '▲' : '▼'} ${move.name}`));
+  go.replaceChildren(el('strong', 'switch-go-name', `⇄ ${name}`), price);
+  const coming = edge !== 1 ? ` ${move.name} would be ${edge > 1 ? 'super effective on it' : 'resisted by it'}.` : '';
+  go.title = `Switch to ${name} (${TYPES[mate.type].label}). It ends your turn.${coming}`;
+  go.setAttribute('aria-label', go.title);
   go.disabled = !!whyNotSwitch();
 }
 

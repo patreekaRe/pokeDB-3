@@ -22,6 +22,7 @@ import { RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { MAX_LEVEL, LEVELS } from './data/difficulty.js';
 import { paintSummit } from './tower-art.js';
+import { typeText } from './type-badge.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const CRY_WAIT_MAX = 1500;
@@ -147,7 +148,7 @@ export function dateOf(day) {
   const [y, m, d] = day.split('-').map(Number);
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
-const chip = (entry) => el('span', `index-only type-${entry.type}`, `${typeOf(entry).icon} ${typeOf(entry).label}`);
+const chip = (entry) => { const c = el('span', `index-only type-${entry.type}`); c.append(typeText(entry.type, typeOf(entry).icon, typeOf(entry).label)); return c; };
 
 /** The plate under the pedestal (and atop an entry in the Collection window): number, name, type, date. */
 function plate(entry) {

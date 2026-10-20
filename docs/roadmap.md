@@ -230,6 +230,43 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?arena=fight&starter=sandile&cards=turnabout,retribution,ill-gotten-gains,costume-change,phantom-mask&relics=dark-memory`.
    **Waiting on the user**: the playtest (the Moves app now has 11 type tabs on a phone); whether Night Alley should look
    like night at every hour (as built) or follow the clock like the other areas.
+**Done 2026-10-20 (branch `claude/new-starters-lists-tkfrt4`, off `duo-types`): the duo starter unlock window.** A catch
+that adds a duo starter now opens the unlock window (`duoNews(windows)` in `js/run.js`, the `feat` form of
+`unlockWindow`: "🔓 New duo starter!", its sprite and cry, whether it opened a type or is a new look), not a line in the
+catch box. **Then 14 more duo starter lines as looks** (the user: "add as many as you think can be starter skins";
+enemies allowed): Magnemite; Poliwag, Ralts; Gible, Geodude, Nidoran♂, Nidoran♀; Togepi, Zubat, Hoppip, Dratini, Bagon;
+Larvitar, Seedot (`DUO_LINES`, `DUO_STARTERS`, PokeAPI backs and shinies, 33 cries at -13 LUFS, `SPRITE_FIT` / `BODY_X`).
+Not moved into their type areas (`docs/duo-design.md` section 3). The user misread earlier: two-stage lines aren't
+wanted, so nothing to decide there. **Merged into `main` 2026-10-20** (it had split off before the go-live, so the live site showed the old Duo app). pokeDB-sim's switch merged into its `main` the same day. The balance pass (session 15) ran before the turn-ending switch; a ~150-a-pair re-check under it is worth one session (▶ CLOUD, effort: high). **Waiting on the user**: a playtest.
+Also fixed (2026-10-20, the user's phone): the Duo app wouldn't scroll (`.cdev-dex`'s `overflow: hidden` beat the app
+panel's `overflow: auto`; `.cdev-app.sp-duo-app` now scrolls).
+**The Duo app's new layout** (2026-10-20, the user's asks from their phone): the window stays up with the picked pair at
+the gate, updating as you pick; the pool comes first; today's road folds per area (number, name, Safari Dex count); the
+type emoji are round badges (`js/type-badge.js`); the portraits centre their sprite. Detail: `docs/reference/safari.md`'s
+"The Duo key". **Waiting on the user**: the look on a phone (the badges' glyphs were drawn blind, no screenshot).
+Then each area's row shows its main types and a green ▲ / red ▼ count in view, folded or not (the user's pick from the
+categorized mock's road; only that part, the rest stays); a tap on either explains it under the row (`faresLine()`).
+Then (same day): each road row is one line (a round number, the name, ▲ ▼, the count; the types inside the fold), and the
+roster grew: Poliwag out, Ice / Fighting / Dark filled to 8 / 10 / 9 with two-stage lines and single Pokémon that power up
+with a legendary's aura (`docs/duo-design.md` section 3). 47 duo looks in all. **Waiting on the user**: a playtest of the
+auras (80 new GIFs, ~8 MB, loaded only for the two starters in a run).
+Then the Duo Run's own three areas (`duoRoad()`) and the map's badge on rooms holding a duo starter not caught yet
+(`docs/reference/safari.md`).
+Then every duo type to 10 looks (60 in all; `docs/duo-design.md` section 3), the type badges everywhere a type was an emoji
+(`typeText()` in `js/type-badge.js`: card faces, the battle's plates, the Pokédex and Stats chips, the Hall of Fame, the
+map's match marks, the crossroads), and the duo's swap button on the plate's top-left corner (`#player-plate .bench-chip`).
+Then the switch reworked (the user's calls, same day): the bench portrait is gone (the Pokémon moved too much to read);
+you **hold your Pokémon** to bring up the Go pill, and **a switch ends your turn** as in the games (1 PP still; a card's
+switch stays free and mid-turn). pokeDB-sim mirrors it (same branch name there); its bot now only switches last, keeping
+the PP back when the coming hit is ▲ on the one out and not the partner. Bot check (150 a pair, 8 pairs): mean 65.2 -> 74.1,
+switches a run ~44 -> under 1 (the old bot's hand-fetching churn cost it; pokeDB-sim's README). Session 15 measures with it.
+Then "hold to swap" fades over your Pokémon through a duo fight's first two turns.
+**Waiting on the user** (2026-10-20, from their phone): the Ice Cave's intro film showed black behind its title and snow,
+and the map card's Pokémon came out of its ball small and choppy. Not reproduced headless (the film draws fully, day or
+night, every area; a Duo Run's map holds ~131 MB, as the start screen does; run-map within budget). The phone was on low
+battery with 7 tabs open, so likely Safari dropping a canvas under memory pressure. If it repeats in a fresh tab, note the
+area and time, and add a guard that repaints a lost film canvas.
+
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
 set is built (the helpers' brief, budgets, the check) is its "Building a set" section. Done so far: every kind
@@ -1135,6 +1172,18 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Sky Pillar F100 combo: targeted nerfs, not "nerf everything"** (2026-10-20, a friend's Turtwig climb reached floor 100
+in 366 turns, with a ~12-card deck: Leech Seed, "double strength" (Growth Spurt), "a power giving block by strength"
+(Overgrowth), Lum Berry; augments Pollinate, Risky Climb, Early Bird, Light Pack, Momentum, Sudden Death +4). About 3.7
+turns a fight at floor 100 means the deck snowballs exponentially, faster than the tower's compounding (x1.12 HP a
+flight). Claude's lean, in order: (1) **Growth Spurt+ keeps Exhaust** (upgrade to cost 0 instead): Limit Break+ is safe in
+StS because strength never turns into block, but here Overgrowth, Horn Leech and Hoard turn it into block and healing too,
+and a thin deck replays the doubling every other turn; (2) **Lum Berry loses its draw** (StS's Medical Kit doesn't draw;
+with the draw, every status an enemy adds cycles your deck); (3) maybe Overgrowth+ at x1 (cost 0) instead of x2. Healing
+as a whole: no blanket nerf yet; Fire already reaches floor 100 in 0% of bot climbs, Grass 7%. If healing is still too
+strong after (1)-(2), give the tower its own heal pressure (a `healMult` past floor ~50) rather than cut every heal card.
+Check with the sim's tower climbs on Grass before/after (▶ CLOUD, both repos, effort: high). **Waiting on the user's call.**
+
 **A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
 catching, ~33% longer) over more floors per area (more fights, not more Pokémon). It needs a bot check of the day's win rate
@@ -1148,6 +1197,11 @@ the new-type areas (Power Plant, Ice Cave, Dojo Mountain, ...), so every Duo Run
 own difficulty step (~x6.3 / +29 / boss +40) set by the bot: duos already win less than solo (electric+fire / +grass /
 +water 64.7 / 43.7 / 36.3 against solo ~71), so area 4 may need to be gentler, or come with an extra card reward. Build it
 on `duo-types` (the Duo Run isn't on `main`). **The user's call: wait until the duo types are finished**, then build it.
+The user asked again on 2026-10-20 ("didn't we agree to have 4 biomes for duo run? And aren't the biomes completely
+different from the daily seeded run?"). Not built: today a Duo Run replays the day's three areas on a fresh seed. Open,
+for the user: 4 areas, and whether all four are the Duo Run's own rather than the Daily's.
+**Settled the same day** (the user: "I think we keep it 3 biomes but always different than the daily seed"): built,
+`duoRoad()`; 3 areas, never the Daily's. The 4th area is off.
 
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6
@@ -1177,6 +1231,11 @@ for its looks. The mock (https://claude.ai/artifact/YQMMJCScQXDoPqKtXfqmQq) has 
 then three groups: **Starter types** (Fire / Water / Grass), **Caught in the Safari**, **Still to find** (locked, with
 where to catch one). Each type is a card with its Ability and a scrolling row of every owned look (legendaries tagged),
 then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict before building.
+
+**The Safari lobby's area rows with the Duo app's silhouettes** (2026-10-20, the user: "I might want a mix of those
+1/2/3 biome names with number caught mixed with the sprites too"; **not decided for the Daily lobby**). The Duo app now
+has that mix (collapsible rows with name, count, types and Pokémon; below). Open: whether the Daily lobby's LCD rows
+should fold out the same way (`render()` in `js/safariprep.js` could reuse `road()` from `js/duoprep.js`).
 
 **Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
 - **The duo** (built first, Safari only): bring two starters of different types, one out at a time. Switch for 1 PP
