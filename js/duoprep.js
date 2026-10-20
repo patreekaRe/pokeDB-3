@@ -127,14 +127,7 @@ function portrait(type, pool) {
     row.append(prev, el('span', '', `${looks.indexOf(look.id) + 1}/${looks.length}`), next);
     card.append(row);
   }
-  if (!have) card.append(el('small', 'duo-hint', hintFor(type)));
   return card;
-}
-
-/** Where a type not caught yet comes from: "Catch Shinx in the Power Plant". */
-function hintFor(type) {
-  const first = Object.keys(DUO_LINES[type] || {})[0];
-  return first ? `Catch ${STARTERS_BY_ID[first]?.line[0].name ?? first} in the Safari` : 'Coming soon';
 }
 
 function render() {

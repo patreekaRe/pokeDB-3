@@ -3372,3 +3372,7 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Duo Run picker: locked types show only ??? (2026-10-20, cloud)
+The user's call: a type not caught yet shows its ??? name and no "Catch X in the Safari" hint, so players find out
+themselves (`hintFor()` gone from `js/duoprep.js`).
