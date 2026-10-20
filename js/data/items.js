@@ -85,6 +85,9 @@ export const ITEMS = [
   // Flying's (no Flying Drive exists: Swift Wing takes its place)
   { id: 'flying-gem',   name: 'Flying Gem',   icon: '🔷', rarity: 'uncommon', only: 'flying', effects: { block: 8, evasion: 2 }, text: 'Gain 8 block. Evasion 2.' },
   { id: 'swift-wing',   name: 'Swift Wing',   icon: '🪽', rarity: 'uncommon', only: 'flying', effects: { tailwind: 3, draw: 2 }, text: 'Tailwind 3. Draw 2 cards.' },   // Tools of the Trade's timer, with a draw
+  // Dark's (no Dark Drive exists: Smoke Ball takes its place)
+  { id: 'dark-gem',     name: 'Dark Gem',     icon: '⚫', rarity: 'uncommon', only: 'dark', effects: { block: 8, steal: 2 }, text: 'Gain 8 block. Steal 2.' },
+  { id: 'smoke-ball',   name: 'Smoke Ball',   icon: '💨', rarity: 'uncommon', only: 'dark', effects: { disguise: 1, draw: 2 }, text: 'Disguise. Draw 2 cards.' },   // Backflip, in disguise
 ];
 
 export const ITEMS_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));

@@ -546,6 +546,17 @@ export const DUO_STARTERS = [
     blurb: 'Bites first and finds out what it bit later. Steals what you were saving, punishes every swing, and fights in disguise.',
     deck: DARK_DECK,
   },
+  // Deino's deck under another look, as Pidgey is Starly's (session 14)
+  {
+    id: 'sandile', type: 'dark', duoOnly: true, skinOf: 'deino',
+    line: [
+      { id: 'sandile', name: 'Sandile' },
+      { id: 'krokorok', name: 'Krokorok' },
+      { id: 'krookodile', name: 'Krookodile' },
+    ],
+    blurb: 'Lies buried in the sand with only its eyes showing. Waits for a foe to swing, then snaps up whatever it dropped.',
+    deck: DARK_DECK,
+  },
 ];
 
 export const STARTERS_BY_ID = Object.fromEntries([...STARTERS, ...DUO_STARTERS].map(s => [s.id, s]));

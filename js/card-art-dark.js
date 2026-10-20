@@ -250,4 +250,172 @@ export const DARK = {
     ${[0, 45, 90, 135, 180, 225, 270, 315].map(a => `<rect x="21" y="2" width="6" height="7" rx="1" fill="#6a5a8c" ${line(1.6)} transform="rotate(${a} 24 24)"/>`).join('')}
     <circle cx="24" cy="24" r="6" fill="${SHADOW}" ${line(1.8)}/>
     ${glare(24, 24, 7, EYE)}`,
+
+  // session 14's 36: the defensive half
+  pilfer: `<defs>${goldG}</defs>
+    ${guard(18, 24, 13)}
+    ${coin(38, 14, 5)}
+    ${grab(24, 30, 0.8, -30)}`,
+
+  hoard: `<defs>${goldG}</defs>
+    ${sack(18, 30, 1.15)}
+    ${coin(34, 38, 5)}${coin(38, 30, 5)}${coin(34, 22, 5)}
+    ${arrow(38, 4, true)}`,
+
+  shakedown: `<defs>${goldG}</defs>
+    ${guard(24, 18, 12)}
+    <path d="M8 10l-3 3M8 18l-4 1M40 10l3 3M40 18l4 1" ${line(2)}/>
+    ${coin(14, 40, 4)}${coin(24, 42, 4)}${coin(34, 40, 4)}`,
+
+  'brace-for-it': `${guard(18, 24, 15)}
+    ${claws(36, 10, 12, 120, 3, 4, '#ffffff', EYE)}
+    <path d="M30 26l6 2M30 32l6 0" ${line(2)}/>`,
+
+  lurk: `${smoke([[24, 28, 14], [10, 34, 8], [38, 34, 8]], '#2a2238', '#3e3450')}
+    ${glare(24, 24, 14)}
+    ${guard(38, 38, 6)}`,
+
+  cower: `${guard(30, 26, 14, '#6a5a8c')}
+    ${deino(14, 32, 0.75)}
+    ${[[8, 12], [14, 8]].map(([x, y]) => `<path d="M${x} ${y}q2 3 0 4q-2 -1 0 -4Z" fill="#a8d8ff" ${line(1.2)}/>`).join('')}`,
+
+  veil: `${guard(24, 26, 13, '#6a5a8c')}
+    <path d="M6 10Q24 0 42 10L40 40Q32 30 24 34Q16 30 8 40Z" fill="#d8c8ff" opacity="0.55" ${line(1.8)}/>`,
+
+  decoy: `<path d="M24 6C18 6 16 12 18 16C12 20 12 36 16 40H32C36 36 36 20 30 16C32 12 30 6 24 6Z" fill="#c84060" ${line(2.2)}/>
+    <circle cx="24" cy="12" r="4.4" fill="${SKIN}" ${line(1.6)}/>
+    ${mask(24, 26, 0.48, '#ffffff')}
+    ${sparkle(40, 10, 2.6)}`,
+
+  'night-shroud': `<defs>${nightG}</defs>
+    <path d="M24 4C12 10 8 24 10 42H38C40 24 36 10 24 4Z" fill="url(#$n)" ${line(2.2)}/>
+    ${crescent(24, 22, 6)}
+    ${sparkle(14, 34, 2.2)}${sparkle(34, 32, 2)}`,
+
+  snarl: `${jaws(24, 30, 0.9, 3)}
+    ${glare(24, 12, 16)}
+    <path d="M14 6l4 3M34 6l-4 3" ${line(2.2)}/>`,
+
+  'sticky-hold': `<defs>${goldG}</defs>
+    ${coin(24, 30, 9)}
+    <path d="M10 8H38V14C38 18 34 16 32 20C30 24 28 18 26 22C24 26 22 18 20 22C18 25 14 16 10 18Z" fill="#ffb830" ${line(2)}/>
+    <path d="M14 12H34" stroke="#fff4b0" stroke-width="1.6" stroke-linecap="round"/>`,
+
+  siphon: `${guard(14, 26, 10)}
+    ${tube('M40 8C40 20 30 28 22 26', 3.4, '#c84060', '#ff8aa0')}
+    ${[[34, 20], [28, 25]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.8" fill="#ff8aa0" ${line(1.2)}/>`).join('')}
+    ${arrow(40, 40, false, EYE)}`,
+
+  'knock-away': `<defs>${goldG}</defs>
+    ${guard(16, 26, 12)}
+    ${punch(30, 30, 0.9, -20)}
+    ${coin(40, 12, 5)}${speed(36, [10, 16], 6)}`,
+
+  extort: `<path d="M10 6H32L38 12V42H10Z" fill="#fffaf0" ${line(2)}/>
+    <path d="M15 14H28M15 20H32M15 26H26" stroke="#9a8aa8" stroke-width="1.6" stroke-linecap="round"/>
+    <text x="30" y="38" text-anchor="middle" font-size="12" font-weight="700" fill="${EYE}" stroke="${INK}" stroke-width="0.8" font-family="sans-serif">₽</text>
+    ${grab(2, 34, 0.6, -20)}`,
+
+  vendetta: `${tube('M10 38L34 14', 3.4, '#e8ecf4', '#ffffff')}
+    <path d="M30 10L38 18M36 8L40 12" ${line(2.6)}/>
+    ${glare(30, 36, 10)}`,
+
+  'night-watch': `<defs>${nightG}</defs>
+    <rect x="4" y="4" width="40" height="40" rx="6" fill="url(#$n)" ${line(2)}/>
+    <path d="M14 32L40 16V40Z" fill="${MOON}" opacity="0.6"/>
+    <rect x="6" y="28" width="12" height="7" rx="2" fill="#6a5a8c" ${line(1.8)} transform="rotate(-30 12 31)"/>
+    ${glare(34, 30, 8)}`,
+
+  turnabout: `${guard(18, 26, 12)}
+    ${tube('M36 8C46 20 40 38 26 38', 3, '#ffffff', EYE)}
+    <path d="M30 34L26 38L31 41" fill="none" ${line(2.2)}/>`,
+
+  'spite-guard': `${guard(24, 24, 15, '#5a4a7c')}
+    ${[[9, 14, -1], [39, 14, 1], [10, 30, -1], [38, 30, 1]].map(([x, y, d]) => `<path d="M${x} ${y - 3}L${x + d * 6} ${y}L${x} ${y + 3}Z" fill="#e8ecf4" ${line(1.4)}/>`).join('')}
+    ${glare(24, 20, 10)}`,
+
+  goad: `${deino(16, 30, 0.9)}
+    <path d="M30 18H40C42 18 42 21 40 21H32" fill="${SKIN}" ${line(1.8)}/>
+    <path d="M30 18C26 18 26 28 30 28H36C38 28 38 24 36 24" fill="${SKIN}" ${line(1.8)}/>
+    <text x="38" y="12" text-anchor="middle" font-size="10" font-weight="700" fill="${EYE}" stroke="${INK}" stroke-width="0.7" font-family="sans-serif">!</text>`,
+
+  'costume-change': `<path d="M24 6V10M8 20L24 10L40 20H8Z" fill="none" ${line(2.2)}/>
+    <path d="M10 20H38L36 42H12Z" fill="${VOID}" ${line(2.2)}/>
+    ${mask(24, 28, 0.5, '#d8c8ff')}
+    ${sparkle(42, 34, 2.4)}`,
+
+  'hall-of-mirrors': `${[[10, -8], [24, 0], [38, 8]].map(([x, r]) => `<g transform="rotate(${r} ${x} 24)"><rect x="${x - 7}" y="10" width="14" height="28" rx="6" fill="#d8e8ff" ${line(2)}/>${mask(x, 22, 0.32, VOID)}</g>`).join('')}`,
+
+  'shadow-cloak': `<path d="M24 6C16 6 14 12 14 16L6 42H42L34 16C34 12 32 6 24 6Z" fill="${SHADOW}" ${line(2.2)}/>
+    <path d="M14 16C18 20 30 20 34 16" fill="none" stroke="#c84060" stroke-width="2" stroke-linecap="round"/>
+    ${glare(24, 13, 7, GLOW)}`,
+
+  reflection: `<ellipse cx="24" cy="22" rx="14" ry="18" fill="#d8e8ff" ${line(2.2)}/>
+    <path d="M24 4A14 18 0 0 1 24 40Z" fill="${NIGHT}"/>
+    <ellipse cx="24" cy="22" rx="14" ry="18" fill="none" ${line(2.2)}/>
+    ${crescent(18, 20, 5)}
+    <path d="M20 40V45H28V40" fill="#8a7ab0" ${line(1.8)}/>`,
+
+  'veiled-strike': `${smoke([[14, 30, 9], [8, 22, 6], [20, 38, 6]])}
+    ${claws(18, 22, 24, 20, 3, 5, '#ffffff', GLOW)}
+    ${mask(14, 14, 0.42)}`,
+
+  ambush: `<path d="M24 4V44M4 24H44M10 10L38 38M38 10L10 38" stroke="#d8c8ff" stroke-width="1.2"/>
+    ${[8, 14, 20].map(r => `<circle cx="24" cy="24" r="${r}" fill="none" stroke="#d8c8ff" stroke-width="1.2"/>`).join('')}
+    ${glare(24, 24, 10)}`,
+
+  'vanishing-act': `<defs>${goldG}</defs>
+    ${smoke([[16, 36, 8], [28, 38, 7], [38, 34, 6]], '#8a7ab0', '#b0a0d8')}
+    <path d="M14 26H34M18 26V10H30V26" fill="${SHADOW}" ${line(2.2)}/>
+    <path d="M18 22H30" stroke="#c84060" stroke-width="2.4"/>
+    ${coin(40, 12, 4)}${sparkle(8, 12, 2.6)}`,
+
+  'play-dead': `${deino(24, 26, 1.15)}
+    <path d="M17 24l3 3M20 24l-3 3M28 24l3 3M31 24l-3 3" ${line(1.6)}/>
+    ${mask(38, 10, 0.4)}
+    <path d="M6 40H42" ${line(2)}/>`,
+
+  'lick-wounds': `<path d="M14 18C14 32 20 40 24 40C28 40 34 32 34 18Z" fill="#ff8aa0" ${line(2.2)}/>
+    <path d="M24 22V36" stroke="#c84060" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M36 6V14M32 10H40" stroke="#5ae07a" stroke-width="3" stroke-linecap="round"/><path d="M36 6V14M32 10H40" fill="none" ${line(1)}/>
+    ${sparkle(10, 10, 2.4)}`,
+
+  magician: `<defs>${goldG}</defs>
+    <path d="M10 40L32 14" ${line(5)}/><path d="M10 40L32 14" stroke="${SHADOW}" stroke-width="3" stroke-linecap="round"/>
+    <path d="M28 18.6L32 14" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    ${coin(38, 30, 5)}${sparkle(36, 8, 3.4)}${sparkle(42, 18, 2.2)}${sparkle(24, 10, 2)}`,
+
+  'ill-gotten-gains': `<defs>${goldG}</defs>
+    ${guard(30, 22, 13, '#6a5a8c')}
+    ${coin(10, 40, 5)}${coin(10, 33, 5)}${coin(10, 26, 5)}${coin(18, 40, 5)}
+    ${arrow(30, 12, true)}`,
+
+  retribution: `${tube('M8 40L36 10', 3, '#e8ecf4', '#ffffff')}${tube('M40 40L12 10', 3, '#e8ecf4', '#ffffff')}
+    <path d="M10 34l6 6M38 34l-6 6" ${line(2.6)}/>
+    ${guard(24, 26, 8, EYE)}`,
+
+  pressure: `<defs>${voidG}</defs>
+    <circle cx="24" cy="24" r="18" fill="url(#$v)" ${line(2)}/>
+    ${glare(24, 20, 14)}
+    ${arrow(14, 42, false, GLOW)}${arrow(34, 42, false, GLOW)}`,
+
+  'shadow-fortress': `<defs>${nightG}</defs>
+    ${crescent(36, 10, 5)}
+    <path d="M6 42V22H12V18H16V22H20V14H28V22H32V18H36V22H42V42Z" fill="url(#$n)" ${line(2.2)}/>
+    <path d="M20 42V34C20 30 28 30 28 34V42" fill="${SHADOW}" ${line(1.8)}/>
+    ${mask(24, 24, 0.36, '#d8c8ff')}`,
+
+  'phantom-mask': `${mask(24, 24, 1.15, '#f4f0ff')}
+    ${glare(24, 22, 15, GLOW)}
+    ${smoke([[8, 40, 5], [40, 40, 5]], '#5a4c70', '#7a6c90')}`,
+
+  'parting-shot': `${deino(34, 28, 0.85)}
+    ${smoke([[10, 30, 7], [16, 22, 5], [8, 40, 5]])}
+    ${speed(20, [26, 32, 38], 8)}
+    ${arrow(10, 14, false, EYE)}`,
+
+  'smoke-and-mirrors': `${smoke([[12, 32, 9], [24, 38, 8], [36, 34, 8]], '#8a7ab0', '#b0a0d8')}
+    <rect x="17" y="6" width="14" height="22" rx="6" fill="#d8e8ff" ${line(2)}/>
+    ${mask(24, 16, 0.34, VOID)}
+    ${sparkle(8, 12, 2.4)}${sparkle(40, 14, 2.4)}`,
 };

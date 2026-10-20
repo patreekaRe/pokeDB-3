@@ -234,8 +234,13 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Illusion); powers `mirrorStrength` (Pickpocket, in `enemyStrength()`, which the buff moves, Enrage and Analytic now go
   through), `punishDamage` (Unnerve), `punishDraw` (Prankster, at the turn's start), `mirage` (Mirage). Boxes: Steal,
   Punish, Illusion, Disguise. The **Intimidate** Ability (`intimidate()`: Weak 1 at the fight's start and as Dark comes out,
-  once a turn, `b.intimTurn`). Fighting's card `intimidate` is named **Stare Down** now, its id kept. Dark has no held item
-  yet (`TYPE_RELIC`): Black Glasses comes with its second session.
+  once a turn, `b.intimTurn`). Fighting's card `intimidate` is named **Stare Down** now, its id kept.
+  Session 14 (2026-10-20, "Dark's second session") brought the other 36 (74 in all), defence-leaning: new keys
+  `blockPerStrength` (the card's own Steal counted, `stealGain()`), `blockPerIllusion` and `blockIntent` (block equal to
+  its coming attack, on a Punish), folded into the card's block in `effectsOf()`; powers `stealBlock` (in `steal()`),
+  `punishBlock` (in `resolveCard()`), `intentBlock` / `intentWeak` / `stealEachTurn` (a turn's start, after the draw),
+  `disguiseBlock` / `disguiseWeak` (in `disguise()`, Mirage's too), `illusionBlock` (in `resolveCard()`). Black Glasses is
+  Dark's `TYPE_RELIC`.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,

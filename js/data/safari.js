@@ -34,11 +34,12 @@ const BORROWED = [
   { id: 'dojomountain', name: 'Dojo Mountain', normals: [], rares: [] },
   { id: 'quarry',   name: 'Quarry',   normals: [], rares: [] },
   { id: 'windycliffs', name: 'Windy Cliffs', normals: [], rares: [] },
+  { id: 'nightalley', name: 'Night Alley', normals: [], rares: [] },
 ];
 
 /** The day each new area opens (UTC "YYYY-MM-DD"): a day before keeps the areas and rosters it was dealt with, so a launch
     can't change a day already played. Set it to the day after the branch goes live. */
-export const SAFARI_FROM = { powerplant: '2026-10-20', icecave: '2026-10-20', dojomountain: '2026-10-20', quarry: '2026-10-20', windycliffs: '2026-10-20' };
+export const SAFARI_FROM = { powerplant: '2026-10-20', icecave: '2026-10-20', dojomountain: '2026-10-20', quarry: '2026-10-20', windycliffs: '2026-10-20', nightalley: '2026-10-20' };
 
 /* Each area's places, floors 1-3, 4-6, 7-10 and the boss's (the map's floor sign; js/scene.js paints them), like a
    main biome's `stages`. */
@@ -54,6 +55,7 @@ const STAGES = {
   dojomountain: ['Trailhead', 'Training Steps', 'Waterfall Dojo', 'Summit Ring'],
   quarry: ['Dig Site', 'Mudflats', 'Sinkhole', 'Fault Line'],
   windycliffs: ['Cliff Path', 'Nesting Ledges', 'Rope Bridge', 'Eyrie'],
+  nightalley: ['Back Streets', 'Night Market', 'Rooftops', 'Moonlit Square'],
 };
 
 /** Where a Safari Pokémon lives on a day: its old area (`was`) before its own opened, else its area. */

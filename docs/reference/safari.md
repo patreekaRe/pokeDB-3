@@ -446,7 +446,17 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   Marsh until Night Alley). In `js/battle.js`: **Steal** (`steal()`), **Punish** (`punishing()`, `taunt()`), **Illusion**
   (`illusive()`, `partnerType()`), **Disguise** (`b.disguised`, `guardType()`) and **Intimidate** (`intimidate()`,
   `b.intimTurn`). `tools/dark-probe.mjs` checks them in a real fight; `tools/duo-probe.mjs --pair=dark,fire` a whole duo.
-- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting, Ground, Flying and Dark; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` / `&windycliffs` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+- **Dark's second session** (session 14, 2026-10-20; `docs/duo-design.md` section 5's "Dark's second session"): 36 more
+  cards (defence-leaning), Black Glasses + 6 relics (Dread Plate, Reveal Glass, Colbur Berry, Razor Claw, Dark Memory, the
+  boss Darkinium Z in `abilityFor()`), Dark Gem and Smoke Ball, the Card index's Dark tab, **Sandile** (`skinOf: 'deino'`;
+  `DUO_LINES.dark.sandile`; back GIFs, `SPRITE_FIT`, `BODY_X`, Krokorok's and Krookodile's cries) and **Night Alley**
+  (`nightalley`, a 12th area: 23 Pokémon, the Dark-first ones, the Sandile line, the Dark birds and the skunks, moved in
+  with `was:`; Carvanha, Nuzleaf, Shiftry, Drapion, Spiritomb and Tyranitar stay with their first type, Sneasel, Weavile,
+  Scraggy and Scrafty with the new area that already took them; date-gated by `SAFARI_FROM`; painted as the Marsh recoloured
+  to a town at night: `SAFARI_ART.nightalley`, `paintAs: 'marsh'`, night at any hour, drizzle at dusk and night; its rares
+  the ones already rare: Absol, Umbreon, Zorua, Zoroark, Bisharp, Hydreigon, Mandibuzz). Playtest a Duo Run in it with
+  `&nightalley`.
+- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting, Ground, Flying and Dark; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` / `&windycliffs` / `&nightalley` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 

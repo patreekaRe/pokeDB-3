@@ -426,6 +426,7 @@ export const SPRITE_FIT = {
   'cubone-front': [4, 0, 5, 4],
   'trapinch-back': [1, 0, 0, 2],
   'trapinch-front': [1, 0, 1, 0],
+  'sandile-back': [7, 0, 3, 1],
   'sandile-front': [9, 4, 2, 3],
   'hippopotas-front': [1, 0, 2, 0],
   'skorupi-front': [2, 0, 4, 9],
@@ -603,6 +604,7 @@ export const SPRITE_FIT = {
   'marowak-front': [5, 4, 1, 2],
   'vibrava-back': [19, 1, 1, 3],
   'vibrava-front': [16, 0, 0, 0],
+  'krokorok-back': [1, 0, 0, 0],
   'krokorok-front': [3, 0, 0, 3],
   'hippowdon-front': [0, 1, 0, 2],
   'solrock-front': [1, 1, 9, 14],
@@ -695,6 +697,7 @@ export const SPRITE_FIT = {
   'armaldo-front': [2, 0, 3, 8],
   'durant-front': [0, 0, 3, 1],
   'scolipede-front': [6, 0, 11, 7],
+  'krookodile-back': [3, 0, 3, 3],
   'krookodile-front': [2, 0, 18, 3],
   'donphan-front': [3, 4, 4, 5],
   'cranidos-front': [4, 1, 6, 1],
@@ -1024,6 +1027,10 @@ export const BODY_X = {
   'pidove-front': -4,
   'tranquill-front': -4,
   'unfezant-front': -7,
+  'sandile-back': 7,
+  'krokorok-back': 10,
+  'krookodile-back': 9,
+  'krokorok-front': -6,
 };
 
 /** GIF pixels to add to a sprite's pose-box centring so its body, not its box, stands in the middle. */

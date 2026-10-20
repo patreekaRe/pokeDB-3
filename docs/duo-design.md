@@ -1239,6 +1239,87 @@ So **Steal always takes strength** and **Lash Out applies Weak 1**. Confirmed (3
 +water / +electric / +ice / +fighting / +ground / +flying **75.0 / 76.0 / 62.3 / 77.7 / 77.3 / 77.7 / 77.3 / 89.3**: level
 with Flying's first session (solo 78.7, pairs 67-82); +flying runs high (Flying is whole), for the balance pass (session 15).
 
+#### Dark's second session: its other cards (session 14, 2026-10-20)
+
+Written here before the code, as Flying's second was. The other 36 pool cards (10 common, 18 uncommon, 8 rare),
+**defence-leaning**: 35 of the 36 block, Weaken, Steal, heal or Disguise (the first half's 30 are mostly hits). Dark is
+then whole: 20 common, 32 uncommon, 14 rare and 8 evolution cards (74). Each card is on a StS 1 card at x~1.2 (the last
+column and a comment on its line) with a hand-picked upgrade.
+
+**The new rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- `blockPerStrength` (+N block per strength you have, what the card's own Steal takes counted: Hoard, Ill-Gotten Gains),
+  `blockPerIllusion` (+N per other Illusion card played this turn: Night Shroud) and `blockIntent` (block equal to the
+  damage the enemy's coming attack would deal you, Ruination's `perIntent` as block: Turnabout, Retribution), folded into
+  the card's block in `effectsOf()`.
+- Powers: `stealBlock` (whenever you Steal, block N: Sticky Hold), `punishBlock` (whenever a Punish happens, block N:
+  Vendetta, Unnerve's twin), `intentBlock` / `intentWeak` (at the start of each turn, if the enemy intends to attack, block
+  N / Weak N: Night Watch, Pressure; Prankster's test), `stealEachTurn` (at the start of each turn, Steal N: Magician),
+  `disguiseBlock` / `disguiseWeak` (whenever you Disguise, block N / Weak N: Costume Change, Phantom Mask; Mirage's
+  Disguise counts), `illusionBlock` (whenever you play an Illusion card, block N: Hall of Mirrors).
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Pilfer | C | 1 | Block 6, Steal 1 *(up 9)* | Steal | Defend, with Disarm's theft |
+| Hoard | C | 1 | Block 5, +2 per strength you have *(up 7, +3)* | Steal | (Steal's Spirit Shield) |
+| Shakedown | C | 1 | Block 7; if it has strength or block, Weak 1 *(up 10)* | Steal | Defend, on its buffs |
+| Brace for It | C | 1 | Block 6. Punish: block 5 *(up 9, 6)* | Punish | Defend, doubled on its intent |
+| Lurk | C | 1 | Block 6. Punish: Weak 2 *(up 9)* | Punish | Defend with Leg Sweep's Weak on its intent |
+| Cower | C | 0 | Block 3. Punish: block 4 *(up 4, 6)* | Punish | Deflect, on its intent |
+| Veil | C | 1 | Block 5; if you're Disguised, +5 *(up 7, +6)* | Illusion | Defend, in disguise |
+| Decoy | C | 0 | Block 3, Disguise. Illusion *(up 5)* | Illusion | Deflect, in disguise |
+| Night Shroud | C | 1 | Block 5, +3 per other Illusion card played this turn *(up 7, +4)* | Illusion | (Illusion's Spirit Shield) |
+| Snarl | C | 2 | Block 12, Weak 2 *(up 15)* | — | Leg Sweep |
+| Sticky Hold | U | 1 | Power: whenever you Steal, block 3 *(up 4)* | Steal | (Steal's Feel No Pain) |
+| Siphon | U | 1 | Block 6, Steal 2 *(up 9)* | Steal | Disarm, with a Defend |
+| Knock Away | U | 2 | Block 12, Steal 1 *(up 15)* | Steal | Defend+, with Disarm-lite |
+| Extort | U | 1 | Weak 1; if it has strength or block, Steal 2 *(up Weak 2)* | Steal | Disarm, on its buffs |
+| Vendetta | U | 1 | Power: whenever a Punish happens, block 4 *(up 6)* | Punish | (Unnerve's defensive twin) |
+| Night Watch | U | 1 | Power: at the start of each turn, if it intends to attack, block 4 *(up 6)* | Punish | Metallicize, on its intent |
+| Turnabout | U | 1 | Block 5. Punish: + block equal to its attack *(up 8)* | Punish | (Punish's own: its hit turned to block) |
+| Spite Guard | U | 2 | Block 11. Punish: Weak 2 *(up 14)* | Punish | Leg Sweep, on its intent |
+| Goad | U | 1 | Block 8. Its intent becomes its next attack *(up 11)* | Punish | Defend with Taunt |
+| Costume Change | U | 1 | Power: whenever you Disguise, block 3 *(up 4)* | Illusion | (Disguise's Feel No Pain) |
+| Hall of Mirrors | U | 1 | Power: whenever you play an Illusion card, block 2 *(up 3)* | Illusion | (Illusion's After Image) |
+| Shadow Cloak | U | 2 | Block 12, Disguise *(up 15)* | Illusion | Defend+, in disguise |
+| Reflection | U | 1 | Block 7, draw 1. Illusion *(up 10)* | Illusion | Shrug It Off, an Illusion |
+| Veiled Strike | U | 1 | Deal 6, Disguise. Illusion *(up 9)* | Illusion | Iron Wave, its block a disguise |
+| Ambush *(bridge)* | U | 1 | Block 7. Punish: Steal 2 *(up 10)* | Steal/Punish | Defend, stealing on its intent |
+| Vanishing Act *(bridge)* | U | 1 | Block 5, Steal 1, Disguise *(up 8)* | Steal/Illusion | Disarm-lite with a Defend, in disguise |
+| Play Dead *(bridge)* | U | 1 | Block 7. Illusion. Punish: Disguise *(up 10)* | Punish/Illusion | Defend, in disguise on its intent |
+| Lick Wounds | U | 1 | Block 8, heal 3 *(up 11)* | — | Defend with Bandage Up |
+| Magician | R | 2 | Power: at the start of each turn, Steal 1 *(up cost 1)* | Steal | (Steal's own: Disarm every turn) |
+| Ill-Gotten Gains | R | 1 | Steal 2, then block 4 per strength you have *(up 5)* | Steal | (Steal's own: Body Slam's block) |
+| Retribution | R | 2 | Block 10. Punish: + block equal to its attack, Weak 1 *(up 14)* | Punish | Impervious, on its intent |
+| Pressure | R | 2 | Power: at the start of each turn, if it intends to attack, Weak 1 *(up cost 1)* | Punish | (Punish's own: Leg Sweep kept up) |
+| Shadow Fortress | R | 2 | Block 16, Disguise *(up 20)* | Illusion | Impervious-lite, in disguise |
+| Phantom Mask | R | 1 | Power: whenever you Disguise, Weak 1 *(up cost 0)* | Illusion | (Disguise's own: Weak kept up) |
+| Parting Shot | R | 0 | Weak 2, Steal 1, draw 1. Exhaust *(up Weak 3)* | Steal | Disarm with Neutralize's Weak |
+| Smoke and Mirrors *(bridge)* | R | 0 | Block 4, Disguise. Punish: Weak 2 *(up 7)* | Punish/Illusion | Deflect, in disguise, with Leg Sweep on its intent |
+
+Dark whole: 20 common (Steal 6 with the Bash, Punish 5, Illusion 6, the 2 basics and Snarl), 32 uncommon, 14 rare,
+8 evolution = **74**.
+
+**Relics** (`only: 'dark'`, 6 plus its held item, answer 21): **Black Glasses** (`black-glasses`, common: your Dark
+attacks deal +2), **Dread Plate** (common: at the start of each battle, Steal 1; Sky Plate's shape), **Reveal Glass**
+(common: whenever you Disguise, gain 3 block; Pretty Wing's shape), **Colbur Berry** (uncommon: whenever a Punish happens,
+gain 3 block; Coba Berry's shape), **Razor Claw** (uncommon: each battle starts with the enemy Taunted, its first move an
+attack; Punish's own), **Dark Memory** (rare: whenever you Steal, steal 1 more), **Darkinium Z** (boss: draw 1 more each
+turn, and Intimidate applies 2 Weak; Water Stone's shape: Dark's stone, the Dusk Stone, is already a boss relic for every
+type). **Items**: **Dark Gem** (gain 8 block, Steal 2) and **Smoke Ball** (Disguise, draw 2; there's no Dark Drive).
+
+**Starters**: Sandile (Sandile, Krokorok, Krookodile), a `DUO_STARTERS` skin of Deino's deck (`DARK_DECK`), as Pidgey is
+of Starly's. Catching any stage adds Dark with that look (`DUO_LINES.dark`).
+
+**Night Alley** (`nightalley`): the Back Streets, the Night Market, the Rooftops, the Moonlit Square (the boss). Its roster
+(23): the Dark-first Safari Pokémon (Poochyena, Mightyena, Purrloin, Liepard, Zorua, Zoroark, Pawniard, Bisharp, Absol,
+Umbreon, Houndoom, the Deino line), the Sandile line (left out of the Quarry for it), the Dark birds (Murkrow, Honchkrow,
+Vullaby, Mandibuzz) and the alley skunks (Stunky, Skuntank), moved in from the Forest, the Marsh, the Peak and the Desert.
+The other Dark-typed ones stay with their first type (Carvanha, Nuzleaf, Shiftry, Drapion, Spiritomb, Tyranitar), and
+the ones another new area already took stay there (Sneasel and Weavile in the Ice Cave, Scraggy and Scrafty on Dojo
+Mountain). Its rare spawns are the ones already rare (Absol, Umbreon, Zorua, Zoroark, Bisharp, Hydreigon, Mandibuzz).
+Painted as the **Marsh recoloured** to a town at night (slate roofs for its trees, lamplit cobbles, a violet sky, a big
+moon) until its art session. **Date-gated** like the others (`SAFARI_FROM`, 2026-10-20 on the branch).
+
 ### The clash check
 
 | Starting idea (roadmap) | Clash found | Now |

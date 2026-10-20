@@ -404,6 +404,7 @@ const PALETTES = {
   dojomountain: { ground: 'grass', blobs: [['mountain', 7, 12, 34], ['boulder', 4, 5, 14], ['trees', 4, 6, 16]] },   // the duo pool's Dojo Mountain: crags, boulders and pines, until its art session
   quarry:   { ground: 'sand',  blobs: [['mountain', 6, 12, 30], ['boulder', 6, 5, 16], ['pool', 2, 8, 14]] },   // the duo pool's Quarry: cut walls, spoil heaps and mud pools, until its art session
   windycliffs: { ground: 'grass', blobs: [['mountain', 6, 12, 32], ['water', 3, 10, 30], ['trees', 3, 5, 12]] },   // the duo pool's Windy Cliffs: headlands, the sea below, scrub, until its art session
+  nightalley: { ground: 'paving', blobs: [['boulder', 6, 5, 16], ['pool', 4, 6, 14], ['trees', 3, 5, 12]] },   // the duo pool's Night Alley: cobbles, crates, puddles, a few street trees, until its art session
 };
 
 // base, light, dark, edge (the 1px line where it meets other terrain)

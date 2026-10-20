@@ -21,7 +21,7 @@ export const STAB = 1.2;
 export const DUO_BASE = ['fire', 'grass', 'water'];
 
 /** A new type's starter lines, type -> { look: [every stage's species id] }: catching any stage adds the type with that
-    look. Each type's sessions fill it (Electric's first brought Shinx's line; its second the other four lines; Ice's first Vanillite's; Fighting's first Timburr's, its second Machop's; Ground's first Trapinch's, its second Rhyhorn's; Flying's first Starly's, its second Pidgey's and Pidove's; Dark's first Deino's). */
+    look. Each type's sessions fill it (Electric's first brought Shinx's line; its second the other four lines; Ice's first Vanillite's; Fighting's first Timburr's, its second Machop's; Ground's first Trapinch's, its second Rhyhorn's; Flying's first Starly's, its second Pidgey's and Pidove's; Dark's first Deino's, its second Sandile's). */
 export const DUO_LINES = {
   electric: {
     shinx: ['shinx', 'luxio', 'luxray'], mareep: ['mareep', 'flaaffy', 'ampharos'], pichu: ['pichu', 'pikachu', 'raichu'],
@@ -31,7 +31,7 @@ export const DUO_LINES = {
   fighting: { timburr: ['timburr', 'gurdurr', 'conkeldurr'], machop: ['machop', 'machoke', 'machamp'] },
   ground: { trapinch: ['trapinch', 'vibrava', 'flygon'], rhyhorn: ['rhyhorn', 'rhydon', 'rhyperior'] },
   flying: { starly: ['starly', 'staravia', 'staraptor'], pidgey: ['pidgey', 'pidgeotto', 'pidgeot'], pidove: ['pidove', 'tranquill', 'unfezant'] },
-  dark: { deino: ['deino', 'zweilous', 'hydreigon'] },
+  dark: { deino: ['deino', 'zweilous', 'hydreigon'], sandile: ['sandile', 'krokorok', 'krookodile'] },
 };
 
 /** The two starters of a duo, lead first. */

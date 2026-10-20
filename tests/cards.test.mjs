@@ -171,7 +171,8 @@ test('Dark: a full starting deck, its evolution cards, its Ability, and the name
   assert.equal(evolutionCardsFor('dark', 2).length, 4);
   assert.equal(ABILITIES.dark.id, 'intimidate');
   const pool = typePool('dark');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [10, 14, 6]);
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 14
+  assert.equal(STARTERS_BY_ID.sandile.skinOf, 'deino');
   // Intimidate is Dark's Ability, so Fighting's card of that id goes by another name
   assert.notEqual(CARDS_BY_ID.intimidate.name, 'Intimidate');
 });

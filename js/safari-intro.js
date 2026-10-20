@@ -63,6 +63,14 @@ const SKY_MARSH = {
   night: { sky: ['#060c10', '#0a141a', '#0e1c22', '#14242a', '#1a2c32', '#203438'], cloud: ['#2a3432', '#1e2826', '#141c1a'] },
 };
 
+// Night Alley's: night at any hour, its dawn and dusk only a little warmer
+const SKY_ALLEY = {
+  day: { sky: ['#120e2a', '#1c1638', '#281e48', '#362858', '#463266', '#583e72'], cloud: ['#4a4060', '#3a3250', '#2a2440'] },
+  dawn: { sky: ['#1e1838', '#2e2248', '#46305a', '#6a4068', '#8e5470', '#a86a78'], cloud: ['#6a5070', '#523e5c', '#3a2c48'] },
+  dusk: { sky: ['#160e2e', '#24163e', '#36204c', '#4c2a58', '#663464', '#7e3e6c'], cloud: ['#5a3c60', '#46304e', '#30223a'] },
+  night: { sky: ['#06040e', '#0c0818', '#120e22', '#1a142c', '#221a36', '#2a2040'], cloud: ['#221c2e', '#1a1624', '#12101a'] },
+};
+
 const SKY_PLANT = {
   day: { sky: ['#2a3048', '#343c58', '#40486a', '#4e587a', '#5e6a8a', '#727e9a'], cloud: ['#c8ccd8', '#a8aec0', '#8890a4'] },
   dawn: { sky: ['#3a3858', '#4c4866', '#64587a', '#7e6a88', '#9a7e90', '#b49498'], cloud: ['#c8b8c0', '#a090a0', '#786a80'] },
@@ -163,6 +171,24 @@ export const SAFARI_INTROS = {
     },
     glow: { aura: ['#e8fff0', '#b8f0d0', '#88d8b0'], wisp: ['#e8fff0', '#a8f0c8'], firefly: ['#e8f8a0', '#a8d858'] },
     stages: nearer([null, { mist: 1.2 }, { mist: 1.45 }, { mist: 1.7 }]),
+    beats: { CLEAR: [300, 4800], PAN: [0, 8000], PUSH: [0, 8600], POPS: [3400, 4300, 5200], TITLE_AT: 5600, END: 9400 },
+    art: { move: 'mist', far: marshFar, mid: marshMid, back: marshBack, ground: marshGround, trail: [{ at: 0, style: 'planks', key: 'trail' }], air: ['mist', 'wisps'] },
+  }),
+  // the duo pool's Night Alley: the Marsh's film as a town after dark, slate roofs for its willows, wet cobbles for its bog, chimney smoke for its mist, lamplight for its fireflies, until its own art session
+  nightalley: film('nightalley', {
+    ink: ['#f4ecff', '#6a4a9a', '#160e24'], skies: SKY_ALLEY,
+    land: {
+      far: ['#2e2840', '#262036'], crown: ['#4a4260', '#3a3450', '#2c2640', '#1e1a2e'], bark: ['#3a3040', '#241e2a'],
+      dead: ['#5a4e5c', '#403644', '#2a2230'], snag: ['#5e5464', '#463c4c', '#302838', '#1c1622'],
+      bog: ['#6a6488', '#3a3650', '#2e2a40', '#201c2e'], algae: ['#f8d070', '#c89a40'], hill: ['#4c465c', '#403a50', '#342e44'],
+      ground: ['#5c566c', '#544e64', '#4c465c', '#443e54', '#3c364c', '#342e44'], blade: ['#7a7490', '#56506a', '#3a3450'],
+      tall: ['#5a5470', '#423c58', '#16121e'], fore: ['#5e5874', '#46405a', '#2e2a40', '#16121e'],
+      reed: ['#8a7a68', '#5e5244', '#3a3228', '#2a2030'], mist: ['#b8acd0'],
+      flowers: ['#f8d870', '#fff4c8'], trail: ['#8a8498', '#6c667e', '#524c64', '#221e2c'],
+      ...ZONE,
+    },
+    glow: { aura: ['#fff4d0', '#f8d890', '#c8a0f0'], wisp: ['#f4ecff', '#c8b0f0'], firefly: ['#fff0a0', '#f8b848'] },
+    stages: nearer([null, { mist: 1.1 }, { mist: 1.3 }, { mist: 1.5 }]),
     beats: { CLEAR: [300, 4800], PAN: [0, 8000], PUSH: [0, 8600], POPS: [3400, 4300, 5200], TITLE_AT: 5600, END: 9400 },
     art: { move: 'mist', far: marshFar, mid: marshMid, back: marshBack, ground: marshGround, trail: [{ at: 0, style: 'planks', key: 'trail' }], air: ['mist', 'wisps'] },
   }),

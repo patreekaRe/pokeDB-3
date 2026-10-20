@@ -659,6 +659,36 @@ SAFARI_ART.windycliffs = {
     night: { clouds: { count: 0.6 }, life: ['stars', 'clouds', 'blades', 'safari'] },
   }),
 };
+/* Night Alley (the duo pool's Dark area, docs/duo-design.md section 5): the Marsh's painters as a town after dark, its
+   willows slate roofs and chimneys against a violet sky under the moon, its bog wet cobbles, its walkway a cobbled lane,
+   its mist chimney smoke and its fireflies lamplight, until its own art session. It is night there at any hour. */
+SAFARI_ART.nightalley = {
+  ...SAFARI_ART.marsh,
+  paintAs: 'marsh',
+  light: 'moon', stars: true,
+  storm: { rain: ['#c8c0e0', '#7a7098'], fall: 3.5, count: 1.3, sky: [0.55, 0, 6, 10], ground: [0.72, 0, 4, 6] },   // rain on the rooftops
+  sky: ['#120e2a', '#1c1638', '#281e48', '#362858', '#463266', '#583e72'],
+  farForest: ['#2e2840', '#262036'],   // the far skyline
+  trees: ['#4a4260', '#3a3450', '#2c2640', '#1e1a2e'], trunk: ['#3a3040', '#241e2a'],   // slate roofs and chimney stacks
+  dead: ['#5a4e5c', '#403644', '#2a2230'],   // bare lamp posts and railings
+  bog: ['#6a6488', '#3a3650', '#2e2a40', '#201c2e'], algae: ['#f8d070', '#c89a40'], mud: ['#3e3848', '#322c3c'], lily: ['#5a5470', '#423c58', '#f8e0a0', '#fff4c8'],   // puddles catching the lamplight
+  ground: ['#5c566c', '#544e64', '#4c465c', '#443e54', '#3c364c', '#342e44'],   // cobbles
+  blade: ['#7a7490', '#56506a', '#3a3450'], patch: '#3e3850',
+  tall: ['#5a5470', '#423c58', '#2e2a40', '#16121e'],   // weeds between the stones
+  reed: ['#8a7a68', '#5e5244', '#3a3228'],
+  trail: [{ at: 0, style: 'planks', c: ['#8a8498', '#6c667e', '#524c64', '#221e2c'], edge: 'stake' }],   // the cobbled lane
+  mist: 28, mistColour: '#b8acd0',
+  flowers: [['#f8d870', '#fff4c8']],   // window lights
+  rock: ['#7a748a', '#5a546a', '#3c3648'],
+  firefly: ['#fff0a0', '#f8b848'], bird: '#120e1a', butterflies: ['#8a7ab0'],   // lamplight, bats
+  pad: { style: 'stone', top: '#6a6480', mid: '#56506a', low: '#443e56', rim: '#141020', earth: '#2e2a3a', moss: '#f8d070' },
+  life: ['stars', 'mist', 'fireflies', 'safari'], fireflyCount: 1.2,
+  times: safariTimes({
+    dawn: { light: 'moon', stars: true, sky: ['#1e1838', '#2e2248', '#46305a', '#6a4068', '#8e5470', '#a86a78'] },
+    dusk: { light: 'moon', stars: true, sky: ['#160e2e', '#24163e', '#36204c', '#4c2a58', '#663464', '#7e3e6c'] },
+    night: { sky: ['#06040e', '#0c0818', '#120e22', '#1a142c', '#221a36', '#2a2040'], fireflyCount: 1.8 },
+  }),
+};
 for (const [area, art] of Object.entries(SAFARI_ART)) {
   BIOME_ART[area] = {
     backdrop: 'safari', floor: 'safari', area: art.paintAs ?? area, kin: { meadow: 'clearing', forest: 'shrine', wetland: 'clearing', marsh: 'shrine', peak: 'clearing', desert: 'wastes' }[art.paintAs ?? area],
@@ -1802,6 +1832,7 @@ const WEATHER = {
   dojomountain: 'leaves',
   quarry: 'sand',
   windycliffs: 'feathers',
+  nightalley: { dusk: 'drizzle', night: 'drizzle' },
 };
 const WEATHER_LOOK = {
   drizzle: { colours: ['#d8e6fa', '#8aa2c8'], per: 420, glow: true },

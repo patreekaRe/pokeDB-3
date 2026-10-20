@@ -1020,7 +1020,7 @@ const FLYING_EVO_HIGH = [
 /* Dark (the Safari's duo pool, docs/duo-design.md section 5): Steal takes the enemy's strength and block as yours
    (Disarm and Sap, turned round), Punish pays off when it intends to attack (Go for the Eyes, Spot Weakness), and
    Illusion cards hit as whichever of your two types does better, while Disguise lets you defend as it (Zorua's
-   Illusion, a duo trick). Session 13 built 30 of its 66 pool cards and all 8 evolution cards. */
+   Illusion, a duo trick). Session 13 built 30 of its 66 pool cards and all 8 evolution cards; session 14 the other 36. */
 const DARK_CARDS = [
   { id: 'bite',           name: 'Bite',           type: 'dark', cost: 1, art: '🦷', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike
   { id: 'obstruct',       name: 'Obstruct',       type: 'dark', cost: 1, art: '✋', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
@@ -1052,6 +1052,43 @@ const DARK_CARDS = [
   { id: 'ruination',      name: 'Ruination',      type: 'dark', cost: 2, art: '💀', effects: { damage: 8, punish: { perIntent: 1 } }, rarity: 'rare', upgrade: { effects: { damage: 12 } } },   // (Punish's own: Spite thrown back)
   { id: 'prankster',      name: 'Prankster',      type: 'dark', cost: 2, art: '🃏', effects: { punishDraw: 2 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Machine Learning, on its intent
   { id: 'hyperspace-fury', name: 'Hyperspace Fury', type: 'dark', cost: 2, art: '🌌', effects: { damage: 5, hits: 4, steal: 1 }, illusion: true, rarity: 'rare', upgrade: { effects: { damage: 6 } } },   // a Steal / Illusion bridge: Riddle with Holes-lite
+  // session 14's 36 (docs/duo-design.md section 5, "Dark's second session"): defence-leaning, the first half being hits
+  { id: 'pilfer',         name: 'Pilfer',         type: 'dark', cost: 1, art: '🧤', effects: { block: 6, steal: 1 }, upgrade: { effects: { block: 9 } } },   // Defend, with Disarm's theft
+  { id: 'hoard',          name: 'Hoard',          type: 'dark', cost: 1, art: '💰', effects: { block: 5, blockPerStrength: 2 }, upgrade: { effects: { block: 7, blockPerStrength: 3 } } },   // (Steal's Spirit Shield)
+  { id: 'shakedown',      name: 'Shakedown',      type: 'dark', cost: 1, art: '🫨', effects: { block: 7, ifBuffed: { weaken: 1 } }, upgrade: { effects: { block: 10 } } },   // Defend, on its buffs
+  { id: 'brace-for-it',   name: 'Brace for It',   type: 'dark', cost: 1, art: '🧱', effects: { block: 6, punish: { block: 5 } }, upgrade: { effects: { block: 9, punish: { block: 6 } } } },   // Defend, doubled on its intent
+  { id: 'lurk',           name: 'Lurk',           type: 'dark', cost: 1, art: '👁️', effects: { block: 6, punish: { weaken: 2 } }, upgrade: { effects: { block: 9 } } },   // Defend with Leg Sweep's Weak on its intent
+  { id: 'cower',          name: 'Cower',          type: 'dark', cost: 0, art: '🙈', effects: { block: 3, punish: { block: 4 } }, upgrade: { effects: { block: 4, punish: { block: 6 } } } },   // Deflect, on its intent
+  { id: 'veil',           name: 'Veil',           type: 'dark', cost: 1, art: '🧕', effects: { block: 5, ifDisguised: { block: 5 } }, upgrade: { effects: { block: 7, ifDisguised: { block: 6 } } } },   // Defend, in disguise
+  { id: 'decoy',          name: 'Decoy',          type: 'dark', cost: 0, art: '🪆', effects: { block: 3, disguise: 1 }, illusion: true, upgrade: { effects: { block: 5 } } },   // Deflect, in disguise
+  { id: 'night-shroud',   name: 'Night Shroud',   type: 'dark', cost: 1, art: '🌑', effects: { block: 5, blockPerIllusion: 3 }, upgrade: { effects: { block: 7, blockPerIllusion: 4 } } },   // (Illusion's Spirit Shield)
+  { id: 'snarl',          name: 'Snarl',          type: 'dark', cost: 2, art: '😾', effects: { block: 12, weaken: 2 }, upgrade: { effects: { block: 15 } } },   // Leg Sweep
+  { id: 'sticky-hold',    name: 'Sticky Hold',    type: 'dark', cost: 1, art: '🍯', effects: { stealBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { stealBlock: 4 } } },   // (Steal's Feel No Pain)
+  { id: 'siphon',         name: 'Siphon',         type: 'dark', cost: 1, art: '🩸', effects: { block: 6, steal: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // Disarm, with a Defend
+  { id: 'knock-away',     name: 'Knock Away',     type: 'dark', cost: 2, art: '🏏', effects: { block: 12, steal: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 15 } } },   // Defend+, with Disarm-lite
+  { id: 'extort',         name: 'Extort',         type: 'dark', cost: 1, art: '🧾', effects: { weaken: 1, ifBuffed: { steal: 2 } }, rarity: 'uncommon', upgrade: { effects: { weaken: 2 } } },   // Disarm, on its buffs
+  { id: 'vendetta',       name: 'Vendetta',       type: 'dark', cost: 1, art: '🗡️', effects: { punishBlock: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { punishBlock: 6 } } },   // (Unnerve's defensive twin)
+  { id: 'night-watch',    name: 'Night Watch',    type: 'dark', cost: 1, art: '🔦', effects: { intentBlock: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { intentBlock: 6 } } },   // Metallicize, on its intent
+  { id: 'turnabout',      name: 'Turnabout',      type: 'dark', cost: 1, art: '🔄', effects: { block: 5, punish: { blockIntent: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 8 } } },   // (Punish's own: its hit turned to block)
+  { id: 'spite-guard',    name: 'Spite Guard',    type: 'dark', cost: 2, art: '🛡️', effects: { block: 11, punish: { weaken: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 14 } } },   // Leg Sweep, on its intent
+  { id: 'goad',           name: 'Goad',           type: 'dark', cost: 1, art: '👉', effects: { block: 8, taunt: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 11 } } },   // Defend with Taunt
+  { id: 'costume-change', name: 'Costume Change', type: 'dark', cost: 1, art: '👘', effects: { disguiseBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { disguiseBlock: 4 } } },   // (Disguise's Feel No Pain)
+  { id: 'hall-of-mirrors', name: 'Hall of Mirrors', type: 'dark', cost: 1, art: '🪞', effects: { illusionBlock: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { illusionBlock: 3 } } },   // (Illusion's After Image)
+  { id: 'shadow-cloak',   name: 'Shadow Cloak',   type: 'dark', cost: 2, art: '🧛', effects: { block: 12, disguise: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 15 } } },   // Defend+, in disguise
+  { id: 'reflection',     name: 'Reflection',     type: 'dark', cost: 1, art: '🌗', effects: { block: 7, draw: 1 }, illusion: true, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Shrug It Off, an Illusion
+  { id: 'veiled-strike',  name: 'Veiled Strike',  type: 'dark', cost: 1, art: '🥷', effects: { damage: 6, disguise: 1 }, illusion: true, rarity: 'uncommon', upgrade: { effects: { damage: 9 } } },   // Iron Wave, its block a disguise
+  { id: 'ambush',         name: 'Ambush',         type: 'dark', cost: 1, art: '🕸️', effects: { block: 7, punish: { steal: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // a Steal / Punish bridge: Defend, stealing on its intent
+  { id: 'vanishing-act',  name: 'Vanishing Act',  type: 'dark', cost: 1, art: '🎩', effects: { block: 5, steal: 1, disguise: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 8 } } },   // a Steal / Illusion bridge: Disarm-lite with a Defend, in disguise
+  { id: 'play-dead',      name: 'Play Dead',      type: 'dark', cost: 1, art: '😵', effects: { block: 7, punish: { disguise: 1 } }, illusion: true, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // a Punish / Illusion bridge: Defend, in disguise on its intent
+  { id: 'lick-wounds',    name: 'Lick Wounds',    type: 'dark', cost: 1, art: '👅', effects: { block: 8, heal: 3 }, rarity: 'uncommon', upgrade: { effects: { block: 11 } } },   // Defend with Bandage Up (the Safari's signature cards hold most other mixes)
+  { id: 'magician',       name: 'Magician',       type: 'dark', cost: 2, art: '🪄', effects: { stealEachTurn: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Steal's own: Disarm every turn)
+  { id: 'ill-gotten-gains', name: 'Ill-Gotten Gains', type: 'dark', cost: 1, art: '💸', effects: { steal: 2, blockPerStrength: 4 }, rarity: 'rare', upgrade: { effects: { blockPerStrength: 5 } } },   // (Steal's own: Body Slam's block)
+  { id: 'retribution',    name: 'Retribution',    type: 'dark', cost: 2, art: '⚔️', effects: { block: 10, punish: { blockIntent: 1, weaken: 1 } }, rarity: 'rare', upgrade: { effects: { block: 14 } } },   // Impervious, on its intent
+  { id: 'pressure',       name: 'Pressure',       type: 'dark', cost: 2, art: '😤', effects: { intentWeak: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Punish's own: Leg Sweep kept up)
+  { id: 'shadow-fortress', name: 'Shadow Fortress', type: 'dark', cost: 2, art: '🏯', effects: { block: 16, disguise: 1 }, rarity: 'rare', upgrade: { effects: { block: 20 } } },   // Impervious-lite, in disguise
+  { id: 'phantom-mask',   name: 'Phantom Mask',   type: 'dark', cost: 1, art: '🎭', effects: { disguiseWeak: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // (Disguise's own: Weak kept up)
+  { id: 'parting-shot',   name: 'Parting Shot',   type: 'dark', cost: 0, art: '💨', effects: { weaken: 2, steal: 1, draw: 1 }, exhaust: true, rarity: 'rare', upgrade: { effects: { weaken: 3 } } },   // Disarm with Neutralize's Weak
+  { id: 'smoke-and-mirrors', name: 'Smoke and Mirrors', type: 'dark', cost: 0, art: '🌫️', effects: { block: 4, disguise: 1, punish: { weaken: 2 } }, rarity: 'rare', upgrade: { effects: { block: 7 } } },   // a Punish / Illusion bridge: Deflect, in disguise, with Leg Sweep on its intent
 ];
 
 const DARK_EVO_MID = [
@@ -1180,7 +1217,8 @@ const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, streng
   frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1, thornFrost: 1, hailChipBlock: 2,
   mixBlock: 1, counterEachTurn: 1, followBlock: 1, followCounter: 2, counterBlock: 1, statusBlock: 2, statusHeldBlock: 1,
   faultEachTurn: 1, surfaceDamage: 3, sandAttack: 1, sandFault: 2, digBlock: 1, faultBlock: 1, sandChipBlock: 2, sandWeak: 1,
-  evadeDamage: 3, tailwindDamage: 3, emptyDraw: 1, evasionBlock: 1, tailwindBlock: 2, unburdenBlock: 2, emptyBlock: 3 };
+  evadeDamage: 3, tailwindDamage: 3, emptyDraw: 1, evasionBlock: 1, tailwindBlock: 2, unburdenBlock: 2, emptyBlock: 3,
+  stealBlock: 1, punishBlock: 2, intentBlock: 2, disguiseBlock: 1, illusionBlock: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -1376,6 +1414,14 @@ export const POWERS = {
   punishDamage:     { icon: '😰', text: (n) => `Whenever a Punish happens, deal ${n} damage.` },
   punishDraw:       { icon: '🃏', text: (n) => `At the start of each turn, if the enemy intends to attack, draw ${plural(n, 'card')}.` },
   mirage:           { icon: '🌫️', flag: true, text: () => 'Your Dark cards are Illusions. At the start of each turn, Disguise.' },
+  stealBlock:       { icon: '🍯', text: (n) => `Whenever you Steal, gain ${n} block.` },
+  punishBlock:      { icon: '🗡️', text: (n) => `Whenever a Punish happens, gain ${n} block.` },
+  intentBlock:      { icon: '🔦', text: (n) => `At the start of each turn, if the enemy intends to attack, gain ${n} block.` },
+  intentWeak:       { icon: '😤', text: (n) => `At the start of each turn, if the enemy intends to attack, apply ${n} Weak.` },
+  stealEachTurn:    { icon: '🪄', text: (n) => `At the start of each turn, Steal ${n}.` },
+  disguiseBlock:    { icon: '👘', text: (n) => `Whenever you Disguise, gain ${n} block.` },
+  disguiseWeak:     { icon: '🎭', text: (n) => `Whenever you Disguise, apply ${n} Weak.` },
+  illusionBlock:    { icon: '🪞', text: (n) => `Whenever you play an Illusion card, gain ${n} block.` },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -1462,6 +1508,9 @@ function sentences(e) {
   if (e.blockPerFault) parts.push(`+${e.blockPerFault} block for each Fault on the enemy.`);
   if (e.blockPerEvasion) parts.push(`${e.block ? '+' : 'Gain '}${e.blockPerEvasion} block for each Evasion you have${e.evasion ? ', this card\'s too' : ''}.`);
   if (e.blockPerTailwind) parts.push(`+${e.blockPerTailwind} block for each turn of Tailwind left.`);
+  if (e.blockPerStrength) parts.push(`${e.block ? '+' : 'Then gain '}${e.blockPerStrength} block for each strength you have.`);
+  if (e.blockPerIllusion) parts.push(`+${e.blockPerIllusion} block for each other Illusion card you've played this turn.`);
+  if (e.blockIntent)  parts.push(`${e.block ? '+' : 'Gain'} block equal to the damage its attack would deal you.`);
   if (e.blockPerCard) parts.push(`Gain ${e.blockPerCard} block for each card in your hand.`);
   if (e.blockNext)    parts.push(`Next turn, gain ${e.blockNext} block.`);
   if (e.blockFault)   parts.push('Then apply Fault equal to your block.');
@@ -1676,10 +1725,10 @@ export function cardTerms(card) {
     uses(/evasion|^evade(Damage|Weak|Sap)$/i) && term('Evasion'),
     (uses(/tailwind/i) || card.freeIn === 'tailwind') && term('Tailwind'),
     uses(/^ifEmpty$|^empty(Draw|Block)$|^unburdenBlock$/) && term('Unburden'),
-    uses(/^steal$/) && term('Steal'),
-    uses(/^ifBuffed$|^mirrorStrength$/) && term('Strength'),
-    uses(/^punish|^taunt$/) && term('Punish'),
-    (card.illusion || uses(/^perIllusion$|^copyPartner$|^mirage$/)) && term('Illusion'),
+    uses(/^steal$|^stealBlock$|^stealEachTurn$/) && term('Steal'),
+    uses(/^ifBuffed$|^mirrorStrength$|^blockPerStrength$/) && term('Strength'),
+    uses(/^punish|^taunt$|^intent(Block|Weak)$|^blockIntent$/) && term('Punish'),
+    (card.illusion || uses(/^perIllusion$|^blockPerIllusion$|^illusionBlock$|^copyPartner$|^mirage$/)) && term('Illusion'),
     uses(/disguise|^mirage$/i) && term('Disguise'),
     uses(/^ifAfter|^followAlways$|^mixBlock$|^follow(Block|Counter)$/) && term('Follow-up'),
     uses(/^counter|^followCounter$/) && term('Counter'),

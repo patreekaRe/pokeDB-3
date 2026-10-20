@@ -54,10 +54,10 @@ const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
 const BOSS_PRELUDE_LINES = { clearing: 'The Ancient Tree stirs...', shrine: 'The shrine lanterns answer...', ruins: 'The water round the altar begins to churn...', wastes: 'The crater rumbles...', thornwood: 'The Heart Tree\'s roots begin to writhe...', savanna: 'The air above Sun Rock begins to blaze...', depths: 'The crystals hum with a terrible energy...' };
-const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...', powerplant: 'The generators begin to roar...', icecave: 'The frozen lake begins to crack...', dojomountain: 'A gong sounds across the summit...', quarry: 'The ground begins to split...', windycliffs: 'A gale howls round the Eyrie...' };
+const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...', powerplant: 'The generators begin to roar...', icecave: 'The frozen lake begins to crack...', dojomountain: 'A gong sounds across the summit...', quarry: 'The ground begins to split...', windycliffs: 'A gale howls round the Eyrie...', nightalley: 'The streetlamps flicker out one by one...' };
 
 /** Relics that boost attacks of one type, by the type of your starter. */
-const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water', electric: 'bar-magnet', ice: 'never-melt-ice', fighting: 'expert-belt', ground: 'soft-sand', flying: 'sharp-beak' };
+const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water', electric: 'bar-magnet', ice: 'never-melt-ice', fighting: 'expert-belt', ground: 'soft-sand', flying: 'sharp-beak', dark: 'black-glasses' };
 
 /** The current battle, or null when no battle is running. */
 let battle = null;
@@ -157,7 +157,8 @@ function abilityFor(type, relics, aug) {
   const base = ABILITIES[type] ?? null;
   const stone = base?.id === 'torrent' && relics.includes('water-stone') ? 2 : base?.id === 'overgrow' && relics.includes('leaf-stone') ? 7
     : base?.id === 'static' && relics.includes('thunder-stone') ? 2 : base?.id === 'snow-warning' && relics.includes('ice-stone') ? 2 : base?.id === 'guts' && relics.includes('fightinium-z') ? 3
-    : base?.id === 'sturdy' && relics.includes('groundium-z') ? 1 : base?.id === 'keen-eye' && relics.includes('flyinium-z') ? 1 : 0;
+    : base?.id === 'sturdy' && relics.includes('groundium-z') ? 1 : base?.id === 'keen-eye' && relics.includes('flyinium-z') ? 1
+    : base?.id === 'intimidate' && relics.includes('darkinium-z') ? 1 : 0;
   return base && (aug.abilityAdd || aug.abilityMult || stone) ? { ...base, amount: (base.amount + stone + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
 }
 /** Battle speed (Settings, js/settings.js): 2x halves the waits of the enemy's turn and your hits; CSS halves their
@@ -658,7 +659,12 @@ function beginPlayerTurn() {
   b.drawNext = 0;
   if (b.turn === 1 && hasAbility('keen-eye')) keenEye();
   if (b.turn === 1 && hasAbility('intimidate')) intimidate();
+  if (b.turn === 1 && hasRelic('razor-claw')) taunt();
+  if (b.turn === 1 && hasRelic('dread-plate')) steal(1);
+  if (p.stealEachTurn) steal(p.stealEachTurn);   // Magician
   if (p.punishDraw && punishing()) { draw(p.punishDraw); pop('player-zone', '🃏 Prankster', 'note good', 150); }
+  if (p.intentBlock && punishing()) gainBlock(p.intentBlock);   // Night Watch
+  if (p.intentWeak && punishing()) applyDebuff('weaken', p.intentWeak);   // Pressure
   if (p.statusHeldBlock && statusHeld()) gainBlock(p.statusHeldBlock * statusHeld());   // Gritted Teeth, on the hand just drawn
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (a.randomCard) addRandomCards(a.randomCard);
@@ -707,7 +713,7 @@ function turnDraw() {
   return HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
     + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0)
-    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0) + (hasRelic('ice-stone') ? 1 : 0) + (hasRelic('fightinium-z') ? 1 : 0) + (hasRelic('groundium-z') ? 1 : 0) + (hasRelic('flyinium-z') ? 1 : 0) + (hailing() ? p.hailDraw || 0 : 0);
+    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0) + (hasRelic('ice-stone') ? 1 : 0) + (hasRelic('fightinium-z') ? 1 : 0) + (hasRelic('groundium-z') ? 1 : 0) + (hasRelic('flyinium-z') ? 1 : 0) + (hasRelic('darkinium-z') ? 1 : 0) + (hailing() ? p.hailDraw || 0 : 0);
 }
 
 /* The opening hand can't be tapped until it has finished sliding in: a tap meant for the intro, or one landing on a
@@ -884,6 +890,7 @@ const partnerType = () => battle.duo?.types.find(t => t !== battle.starter.type)
     in the bot check, 2026-10-20.) */
 function steal(n) {
   const b = battle, en = b.enemy;
+  n += hasRelic('dark-memory') ? 1 : 0;
   const str = Math.min(n, Math.max(0, en.strength)), shield = Math.min(STEAL_BLOCK * n, en.block);
   en.strength -= n;
   pop('enemy-zone', `🫳 -${n} strength`, 'note', 100);
@@ -891,7 +898,11 @@ function steal(n) {
   if (shield) { en.block -= shield; gainBlock(shield); }
   statFx('enemy', 'down');
   log(`Stole ${[`${n} strength`, shield && `${shield} block`].filter(Boolean).join(' and ')}!`);
+  if (b.powers.stealBlock) gainBlock(b.powers.stealBlock);   // Sticky Hold
 }
+
+/** The strength a Steal of n would give you now (what the enemy has of it, Dark Memory's 1 more counted). */
+const stealGain = (n) => (n ? Math.min(n + (hasRelic('dark-memory') ? 1 : 0), Math.max(0, battle.enemy.strength)) : 0);
 
 /** The enemy gains strength (a buff move, Enrage, Analytic): Pickpocket copies it. */
 function enemyStrength(n) {
@@ -901,9 +912,13 @@ function enemyStrength(n) {
 
 /** Dark's Disguise, until your next turn. */
 function disguise() {
-  battle.disguised = true;
+  const b = battle;
+  b.disguised = true;
   pop('player-zone', '🎭 Disguised', 'note good', 100);
   statFx('player');
+  if (b.powers.disguiseBlock) gainBlock(b.powers.disguiseBlock);   // Costume Change
+  if (hasRelic('reveal-glass')) gainBlock(3);
+  if (b.powers.disguiseWeak && b.enemy.hp > 0) applyDebuff('weaken', b.powers.disguiseWeak);   // Phantom Mask
 }
 
 /** Taunt: the enemy's intent becomes the next attack in its move list (a buff or a shield skipped). */
@@ -1150,6 +1165,9 @@ function effectsOf(card, x = 0, held = battle.hand.length) {
   if (e.blockPerFault) e.block = (e.block || 0) + e.blockPerFault * b.enemy.fault;             // Rubble Wall
   if (e.blockPerEvasion) e.block = (e.block || 0) + e.blockPerEvasion * (b.evasion + (e.evasion || 0));   // Plumage, Phantom Wing: its own Evasion too
   if (e.blockPerTailwind) e.block = (e.block || 0) + e.blockPerTailwind * b.tailwind;          // Thermal
+  if (e.blockPerStrength) e.block = (e.block || 0) + e.blockPerStrength * Math.max(0, b.strength + stealGain(e.steal));   // Hoard, Ill-Gotten Gains: its own Steal too
+  if (e.blockPerIllusion) e.block = (e.block || 0) + e.blockPerIllusion * b.illusions;         // Night Shroud
+  if (e.blockIntent && punishing()) e.block = (e.block || 0) + e.blockIntent * attackDamage(currentMove());   // Turnabout, Retribution
   if (e.block && card.type === 'ground' && sanding()) e.block += SAND.bonus;                // Sandstorm: every Ground block
   return e;
 }
@@ -1460,7 +1478,12 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     if (hasRelic('coba-berry')) gainBlock(3);
   }
   if (punished && b.powers.punishDamage && b.enemy.hp > 0) { const d = hurtEnemy(b.powers.punishDamage); pop('enemy-zone', d > 0 ? `-${d} 😰` : 'Blocked', d > 0 ? 'dmg' : 'note', 200); }   // Unnerve
-  if (illusive(card)) b.illusions += 1;
+  if (punished && b.powers.punishBlock) gainBlock(b.powers.punishBlock);   // Vendetta
+  if (punished && hasRelic('colbur-berry')) gainBlock(3);
+  if (illusive(card)) {
+    b.illusions += 1;
+    if (b.powers.illusionBlock) gainBlock(b.powers.illusionBlock);   // Hall of Mirrors
+  }
   if (!echo && !card.status) b.lastCards[b.duo ? b.duo.run.out : 0] = settled(card);   // Imposter's
   if (card.icicle) {   // every Icicle card deals more from now on, this one's next play too (Claw)
     b.icicles += 1;
@@ -1951,6 +1974,8 @@ async function itemEffects(e) {
   if (e.faultMult) { b.enemy.fault *= e.faultMult; pop('enemy-zone', `🌋 Fault ${b.enemy.fault}!`, 'note'); }   // Terrain Extender
   if (e.hail)     setWeather('hail', e.hail);   // Ice Gem
   if (e.evasion)  gainEvasion(e.evasion);   // Flying Gem
+  if (e.steal)    steal(e.steal);           // Dark Gem
+  if (e.disguise) disguise();               // Smoke Ball
   if (e.tailwind) { b.tailwind += e.tailwind; pop('player-zone', `🌬️ Tailwind ${e.tailwind}`, 'note good', 100); }   // Swift Wing
   if (e.tide)     gainTide(e.tide);
   if (e.maxHp)    { b.maxHp += e.maxHp; b.hp += e.maxHp; pop('player-zone', `💚 Max HP +${e.maxHp}`, 'heal'); playSound('stat-up'); statFx('player'); }

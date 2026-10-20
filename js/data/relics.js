@@ -24,6 +24,7 @@ export const RELICS = [
   { id: 'expert-belt',  name: 'Expert Belt',  icon: '🥋', rarity: 'common', only: 'fighting', text: 'Your Fighting attacks deal +2 damage.' },   // Fighting's held item: Black Belt was taken (black-belt, the strength relic)
   { id: 'soft-sand',    name: 'Soft Sand',    icon: '⏳', rarity: 'common', only: 'ground', text: 'Your Ground attacks deal +2 damage.' },
   { id: 'sharp-beak',   name: 'Sharp Beak',   icon: '🐦', rarity: 'common', only: 'flying', text: 'Your Flying attacks deal +2 damage.' },
+  { id: 'black-glasses', name: 'Black Glasses', icon: '🕶️', rarity: 'common', only: 'dark', text: 'Your Dark attacks deal +2 damage.' },
 
   { id: 'muscle-band',  name: 'Muscle Band',  icon: '💪', rarity: 'common', text: 'All your attacks deal +2 damage.' },
   { id: 'leftovers',    name: 'Leftovers',    icon: '🍙', rarity: 'uncommon', text: 'Heal 2 HP at the start of each of your turns.' },
@@ -132,6 +133,12 @@ export const RELICS = [
   { id: 'coba-berry',    name: 'Coba Berry',    icon: '🫐', rarity: 'uncommon', only: 'flying', text: 'Whenever an Unburden happens, gain 3 block.' },   // (Unburden's own, Focus Band's shape)
   { id: 'air-balloon',   name: 'Air Balloon',   icon: '🎈', rarity: 'uncommon', only: 'flying', text: 'Start each battle with Evasion 2.' },   // (Evasion's own)
   { id: 'flying-memory', name: 'Flying Memory', icon: '💾', rarity: 'rare',     only: 'flying', text: 'At the start of your turn, your Evasion halves instead of going away.' },   // (Evasion's own, Fighting Memory's shape)
+  // Dark's (docs/duo-design.md section 5, "Dark's second session")
+  { id: 'dread-plate',   name: 'Dread Plate',   icon: '⬛', rarity: 'common',   only: 'dark', text: 'At the start of each battle, Steal 1.' },   // (Steal's own, Sky Plate's shape)
+  { id: 'reveal-glass',  name: 'Reveal Glass',  icon: '🪞', rarity: 'common',   only: 'dark', text: 'Whenever you Disguise, gain 3 block.' },   // (Disguise's own, Pretty Wing's shape)
+  { id: 'colbur-berry',  name: 'Colbur Berry',  icon: '🫐', rarity: 'uncommon', only: 'dark', text: 'Whenever a Punish happens, gain 3 block.' },   // (Punish's own, Coba Berry's shape)
+  { id: 'razor-claw',    name: 'Razor Claw',    icon: '🦅', rarity: 'uncommon', only: 'dark', text: 'Each battle starts with the enemy Taunted: its first move is an attack.' },   // (Punish's own)
+  { id: 'dark-memory',   name: 'Dark Memory',   icon: '💾', rarity: 'rare',     only: 'dark', text: 'Whenever you Steal, steal 1 more.' },   // (Steal's own)
   // a Duo Run's (docs/duo-design.md section 1): `duo` keeps it out of every other run
   { id: 'shed-shell',     name: 'Shed Shell',     icon: '🐚', rarity: 'uncommon', duo: true, text: 'Your first switch each turn is free.' },   // (the duo's own: StS has no switching)
   { id: 'sacred-ash',     name: 'Sacred Ash',     icon: '🕯️', rarity: 'rare',     text: 'Once this run, when you would faint, you come back with half your max HP.' },   // Lizard Tail
@@ -167,6 +174,7 @@ export const RELICS = [
   { id: 'fightinium-z', name: 'Fightinium Z', icon: '💎', boss: true, only: 'fighting', text: 'Draw 1 extra card each turn. Guts gives +6, not +3.' },   // Ring of the Serpent, Water Stone's shape (Fighting has no stone)
   { id: 'groundium-z',  name: 'Groundium Z',  icon: '💎', boss: true, only: 'ground', text: 'Draw 1 extra card each turn. Sturdy saves you twice a fight, not once.' },   // Ring of the Serpent, Water Stone's shape (Ground has no stone)
   { id: 'flyinium-z',   name: 'Flyinium Z',   icon: '💎', boss: true, only: 'flying', text: 'Draw 1 extra card each turn. Keen Eye draws 2, not 1.' },   // Ring of the Serpent, Water Stone's shape (Flying has no stone)
+  { id: 'darkinium-z',  name: 'Darkinium Z',  icon: '💎', boss: true, only: 'dark', text: 'Draw 1 extra card each turn. Intimidate applies 2 Weak, not 1.' },   // Ring of the Serpent, Water Stone's shape (the Dusk Stone is everyone's)
   { id: 'thunder-stone', name: 'Thunder Stone', icon: '⚡', boss: true, only: 'electric', text: 'Draw 1 extra card each turn. Static charges the enemy 4, not 2.' },   // Ring of the Serpent, Water Stone's shape
   { id: 'shiny-charm',  name: 'Shiny Charm',  icon: '🌟', boss: true, text: 'Alphas give 2 relics to choose from, one after the other.' },   // Black Star
 

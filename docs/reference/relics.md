@@ -89,3 +89,10 @@ happens, in `resolveCard()`), Air Balloon (Evasion 2 at the first turn's start),
 turn's start instead of going, in `beginPlayerTurn()`) and Flyinium Z (boss: +1 draw, Keen Eye draws 2; `abilityFor()`'s
 `stone`). Items: Flying Gem (8 block, Evasion 2) and Swift Wing (Tailwind 3, draw 2; there's no Flying Drive). Measured on
 solo Flying like Ground's.
+
+**Dark's** (2026-10-20, Dark's second session; `docs/duo-design.md` section 5): **Black Glasses** (`black-glasses`, its held
+item in `TYPE_RELIC`), Dread Plate (Steal 1 at the first turn's start), Reveal Glass (3 block whenever you Disguise, in
+`disguise()`), Colbur Berry (3 block whenever a Punish happens, in `resolveCard()`), Razor Claw (`taunt()` at the first
+turn's start), Dark Memory (every Steal takes 1 more, in `steal()` and `stealGain()`) and Darkinium Z (boss: +1 draw,
+Intimidate's Weak 2; `abilityFor()`'s `stone`; the Dusk Stone was already everyone's boss relic). Items: Dark Gem (8 block,
+Steal 2) and Smoke Ball (Disguise, draw 2; there's no Dark Drive). Measured on solo Dark like Flying's.
