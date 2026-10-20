@@ -682,6 +682,7 @@ function beginPlayerTurn() {
   if (b.turn === 1 && !b.safari) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
   else if (b.turn === HINT_TURNS + 1) hideHandHint();
   $('swap-hint').hidden = !b.duo || b.turn > HINT_TURNS || b.duo.held;   // a duo's "hold to swap", the hand hint's way
+  if (!$('swap-hint').hidden) centreSwapHint();
   renderAll();
 }
 
@@ -3076,6 +3077,17 @@ function whyNotSwitch() {
   if (!b?.duo || b.busy || b.over || b.enemyActing || choosing || pilePick) return 'Not now.';
   if (b.energy < switchCost()) return `Switching costs ${DUO_SWITCH_PP} PP.`;
   return '';
+}
+
+/** "hold to swap" over the middle of your Pokémon's body (the user's call, 2026-10-20), wherever its sprite stands. */
+function centreSwapHint() {
+  const img = $('player-sprite');
+  if (!img.naturalHeight) { img.addEventListener('load', centreSwapHint, { once: true }); return; }
+  const zone = $('player-zone').getBoundingClientRect(), r = img.getBoundingClientRect();
+  const W = img.naturalWidth, H = img.naturalHeight, [top, bottom] = spriteFit(img.src);
+  const k = Math.min(r.width / W, r.height / H);   // object-fit: contain, stood on the box's bottom
+  const poseMid = r.bottom - H * k + (top + (H - top - bottom) / 2) * k;   // the pose's middle, not the GIF frame's
+  $('player-zone').style.setProperty('--hint-y', `${poseMid - zone.top}px`);
 }
 
 const HOLD_MS = 450;   // how long a press on your Pokémon takes to bring up the switch
