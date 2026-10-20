@@ -3179,3 +3179,8 @@ The user's ask: the rare spawn's gold ✦ floated between rooms and, with the �
 a shaking pixel grass tuft in a gold-rimmed badge on the room's top-right corner like a material's (`rareMark()` in
 `js/ui.js`, `.map-grass`), the same badge in the Safari rules, the Duo Run's areas and on its name in battle, its plate
 rimmed grass green (a shiny keeps ✨ and gold). Checked headless at 390x844: badge on the corner, the battle mark, no errors.
+
+### Safari: catches so far on the map (2026-10-20, cloud)
+The user's ask: the daily run's map never said how many you'd caught. A Safari Ball chip with `run.tally.caught` sits
+beside the Ability on the run card (`#run-caught`, `showCaught()` in `js/run.js`), bumping when it rises; hidden in other
+runs. Checked headless at 390x844 (fits between the Ability and the HP at 12px, no errors).

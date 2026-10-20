@@ -50,6 +50,7 @@ export const NEXT = [
   ['mall', 'The Safari Outfitter\'s Ranger Task Board is lit by lanterns, shows your own tasks, and glows and sparkles when one waits to be claimed.'],
   ['mall', 'A Garden catalogue tag floats over Smeargle once you have a backyard, and a Grand catalogue tag over Gardevoir, so you know to tap them.'],
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
+  ['modes', 'A Safari run\'s map shows how many Pokémon you\'ve caught so far, beside your Ability.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

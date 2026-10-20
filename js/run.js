@@ -1153,6 +1153,7 @@ function showMap() {
     : !run.safari ? `Trainer Level ${run.level}.` : run.safari.first ? 'Today\'s first try: it goes on the leaderboard.'
     : 'Today\'s run is used up: this replay doesn\'t count for the leaderboard.';
 
+  showCaught();
   setHpBar('run', run.hp, run.maxHp);
   setMoney(run.money);
   showExp(floor, run.map.floors.length);
@@ -2943,6 +2944,18 @@ function creditSafari() {
     lines.push('The Safari Pokédex is complete! Every Safari Pokémon is caught.');
   }
   return lines;
+}
+
+/** A Safari run's catches so far on the run card, bumped when it went up since the map was last shown. */
+function showCaught() {
+  const chip = $('run-caught'), n = run.tally.caught || 0;
+  chip.hidden = !isSafari();
+  if (chip.hidden) return;
+  const was = Number($('run-caught-n').textContent);
+  $('run-caught-n').textContent = String(n);
+  chip.title = `Pokémon caught this run: ${n}`;
+  chip.setAttribute('aria-label', chip.title);
+  if (n > was) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
 }
 
 /** A caught Pokémon offers its signature card for the run, take it or leave it, like a card reward (one copy a run). */
