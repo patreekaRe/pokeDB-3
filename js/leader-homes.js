@@ -1042,7 +1042,7 @@ export const LEADER_HOMES = {
   /* THE NIETOS: Law, Britt and baby Linc's house in the Clearing, and Kangaskhan's; a mansion since 2026-10-20 (the
      user's ask: "an extravagant aesthetic mansion from the outside and inside"): baby-blue silk damask over a gilt-panelled
      wainscot, a marble floor in baby blue and white with a gold medallion before the door, two crystal chandeliers, the
-     family in oils over the hearth between gold sconces, a gold piano and a fountain either side of the way in.
+     family in oils over the hearth between gold sconces (no piano or fountain: the user's call, 2026-10-20).
      It's still theirs: Linc's nursery in the corner (the crib Kangaskhan rocks with one foot, the laundry it folds, his
      toys everywhere and Lego underfoot, marble or not), Law's party waiting on him, Britt's Sage, her phone on Pokémon,
      the very tired couch they wouldn't part with, fish sticks on the stove, Britt's corner of papers to grade and the
@@ -1143,7 +1143,7 @@ export const LEADER_HOMES = {
     furnish: [['crib', 0, 0], ['dresser', 1, 0], ['blocktoyshelf', 3, 0], ['fireplace', 5, 0, { mid: true }], ['minifridge', 8, 0],
       ['desk', 9, 0], ['desk', 11, 0], ['laundrypile', 2, 1], ['goldurn', 4, 2], ['goldurn', 8, 2], ['swivelchair-fire', 9, 1], ['swivelchair-aqua', 11, 1],
       ['puzzlemat', 1, 2], ['stackrings', 3, 2], ['blocktower', 2, 3], ['toybox', 0, 3], ['rockinghorse', 0, 4], ['bigpikachudoll', 0, 5],
-      ['goldrug', 5, 2, { free: true }], ['elgrug', 9, 4, { free: true }], ['console', 12, 3], ['goldpiano', 4, 7], ['htlfountain', 7, 7],
+      ['goldrug', 5, 2, { free: true }], ['elgrug', 9, 4, { free: true }], ['console', 12, 3],
       ['sofa-ragged', 8, 4, { turn: Math.PI / 2 }], ['coffeetable', 10, 4, { turn: Math.PI / 2 }], ['tv', 12, 4, { turn: -Math.PI / 2 }],
       ['highchair', 3, 6], ['fridge', 0, 7], ['stove', 1, 7], ['coffeecounter', 2, 7], ['bin', 0, 9],
       ['schoolbag', 9, 7], ['teacherdesk', 10, 7], ['bookcart', 12, 7], ['plant', 12, 9]],

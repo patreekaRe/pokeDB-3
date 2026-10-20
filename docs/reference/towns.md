@@ -390,11 +390,11 @@ medallion (a sixteen-point star round the pacifier) before the door; the family 
 Linc in his Pikachu suit, Kangaskhan biggest behind them) in a gilt frame with a shell on top, a gold sconce either side;
 two crystal chandeliers (gold rings of candles, instanced drops, a glow round each) over the nursery side and the lounge,
 swaying a touch (still under calm); the gold rug under the family, the oval medallion rug under the coffee table (both
-`free`: their models would otherwise block the tiles), a gold urn either side of the rug, a gold piano left of the way in
-and the hotel lobby fountain right of it (the tiered one stood 2.5 tall in the foreground). The gaming desks stay plain
+`free`: their models would otherwise block the tiles), a gold urn either side of the rug. No piano or fountain by the
+way in (the user's call, 2026-10-20: "remove the piano and fountain from their house"). The gaming desks stay plain
 (`golddesk`'s crested gallery stood higher than its writing top, so the monitors floated). `K.merge` (event-3d's
 `mergeStatic`, handed in on the kit) bakes each chandelier's gold and the frame into one mesh. About 350 draws a frame
-inside (was ~310).
+inside (was ~310) before the piano and fountain came out.
 
 **The questlines' dialogue** (session 5 of Towns step 6, 2026-10-14). Each town's `QUESTS` entry carries `talk` (per
 step id: `nudge`, the step's leader's word added to the board's Quest sign while it isn't done, via `stepNudge()`, which

@@ -3320,6 +3320,6 @@ The user's ask: "make the Nietos house an extravagant aesthetic mansion from the
 (`nietosHouse()` in `js/hub-3d.js`): a white château on a 5 x 4 lot, mansard of their baby-blue slates crested in gold,
 two turrets with banners, a columned portico under a pediment with their crowned pacifier, a carpeted stair, golden
 Kangaskhan on the gate piers, rose beds behind an iron fence. Inside (`LEADER_HOMES.nietos`): damask and gilt panelling,
-a marble floor with a gold medallion, two crystal chandeliers, the family in oils over the hearth, a gold piano and a
-fountain by the way in; the nursery, desks, couch and Lego kept. Checked headless: no errors, every tile reachable, the
+a marble floor with a gold medallion, two crystal chandeliers, the family in oils over the hearth (a gold piano and a
+fountain by the way in came out the same day, the user's call); the nursery, desks, couch and Lego kept. Checked headless: no errors, every tile reachable, the
 Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` and `docs/reference/towns.md`.
