@@ -205,6 +205,26 @@ export const SAFARI_INTROS = {
     sounds: ['gust'],
     art: { move: 'crane', house: 'back', far: peakFar, mid: peakMid, back: peakBack, ground: peakGround, fence: false, trail: [{ at: 0, style: 'dirt' }, { at: 2, style: 'snow', key: 'track' }], birds: '#202430', air: ['snow'] },
   }),
+  // the duo pool's Windy Cliffs: the Peak's film as chalk sea cliffs under a gusty sky, feathers on the wind, until its own art session
+  windycliffs: film('windycliffs', {
+    ink: ['#ffffff', '#3a88c0', '#122a44'],
+    land: {
+      range: ['#a8c8e0', '#90b4d4', '#7aa0c8'], snow: ['#9cc470', '#7ea85a', '#5e8a44'],
+      cliff: ['#f0ece0', '#d4cebe', '#aaa496', '#76705e'], pines: ['#5a8a4a', '#3a6232'], bark: ['#6a5a44', '#43382a'],
+      hill: ['#9cc470', '#86b05e', '#6e9a4e'],
+      ground: ['#a8d07c', '#9cc672', '#90bc68', '#84b05e', '#78a656', '#6c9a4e'], blade: ['#d4ecb0', '#94bc70', '#5a8240'],
+      snowField: ['#b4d88c', '#a6ce80', '#98c474', '#8aba68'],
+      tall: ['#98c470', '#6a9c50', '#24401e'], fore: ['#a4cc78', '#78a456', '#4e7a3e', '#24401e'],
+      pole: ['#ffffff', '#3a88c0', '#1a5a88'], rock: ['#f4f0e6', '#d8d2c2', '#a8a292', '#6a6454'],
+      flowers: ['#f8f8ff', '#f8e048', '#f8a8c8'], trail: ['#d8ccb0', '#bcb090', '#988c6c', '#6a7a50'], track: ['#e8e2d0', '#d0c8b2', '#aca48a', '#bcb49c'],
+      ...ZONE,
+    },
+    glow: { aura: ['#ffffff', '#f0f8ff', '#d8ecfa'], flake: ['#ffffff', '#e0ecf8'], firefly: ['#f8f8a0', '#c8e858'], leaf: ['#ffffff', '#e4ecf4', '#c8d4e0'] },
+    stages: nearer([null, { snow: 0.25 }, { snow: 0.7 }, { snow: 1 }]),
+    beats: { RISE: [200, 4000], POPS: [4300, 5000], TITLE_AT: 5300, END: 9200 },
+    sounds: ['gust'],
+    art: { move: 'crane', house: 'back', far: peakFar, mid: peakMid, back: peakBack, ground: peakGround, fence: false, trail: [{ at: 0, style: 'dirt' }, { at: 2, style: 'snow', key: 'track' }], birds: '#2a3a50', air: ['leaves'] },
+  }),
   // the duo pool's Dojo Mountain: the Desert's film on a granite mountainside with maples, until its own art session
   dojomountain: film('dojomountain', {
     ink: ['#fff0e4', '#c0603a', '#3a1a10'],
@@ -941,7 +961,7 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   // ---- the air ----
   const air = new Set(art.air);
   const clouds = [];
-  const cloudy = art.move === 'drop' || ['meadow', 'wetland', 'peak', 'desert', 'icecave', 'dojomountain', 'quarry'].includes(art.id);
+  const cloudy = art.move === 'drop' || ['meadow', 'wetland', 'peak', 'desert', 'icecave', 'dojomountain', 'quarry', 'windycliffs'].includes(art.id);
   if (cloudy) for (let n = 0; n < (art.id === 'desert' ? 3 : 6); n++) clouds.push({ img: cloudImage(Math.round(W * (0.22 + rand() * 0.3)), cloud, rand), x: rand() * W * 1.6 - W * 0.3, y: -H * 0.3 + rand() * hz * 0.9, lift: 0.5, drift: 0.6 + rand() });
   if (!mini && art.move === 'drop') for (let n = 0; n < 3; n++) clouds.push({ img: cloudImage(Math.round(W * (0.7 + rand() * 0.4)), cloud, rand), x: rand() * W - W * 0.3, y: -H * 1.25 + rand() * H * 0.5, lift: 1.7, drift: 2 });
   const motes = Array.from({ length: 40 }, () => ({ x: rand(), y: rand(), speed: 0.5 + rand(), wob: rand() * 6, c: Math.floor(rand() * 3) }));

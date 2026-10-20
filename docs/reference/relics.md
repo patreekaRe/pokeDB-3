@@ -81,3 +81,11 @@ Rock (a Sandstorm lasts 3 more turns when it starts, in `setWeather()`, beside I
 count all their Fault, in `faultLine()`) and Groundium Z (boss: +1 draw, Sturdy twice a fight; `abilityFor()`'s `stone`).
 Items: Ground Gem (8 block, Fault 8) and Terrain Extender (Fault x2; there's no Ground Drive). Measured on solo Ground like
 Fighting's.
+
+**Flying's** (2026-10-20, Flying's second session; `docs/duo-design.md` section 5): **Sharp Beak** (`sharp-beak`, its held
+item in `TYPE_RELIC`), Sky Plate (start each battle with Tailwind 2, set in `startBattle()`; the first turn's draw spends
+one), Pretty Wing (2 block whenever you gain Evasion, in `gainEvasion()`), Coba Berry (3 block whenever an Unburden
+happens, in `resolveCard()`), Air Balloon (Evasion 2 at the first turn's start), Flying Memory (Evasion halves at your
+turn's start instead of going, in `beginPlayerTurn()`) and Flyinium Z (boss: +1 draw, Keen Eye draws 2; `abilityFor()`'s
+`stone`). Items: Flying Gem (8 block, Evasion 2) and Swift Wing (Tailwind 3, draw 2; there's no Flying Drive). Measured on
+solo Flying like Ground's.

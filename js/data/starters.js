@@ -513,6 +513,27 @@ export const DUO_STARTERS = [
     blurb: 'Small, loud and never still. Dodges what it can, rides the wind for more cards, and hits hardest with nothing left in hand.',
     deck: FLYING_DECK,
   },
+  // Starly's deck under two other looks, as Rhyhorn is Trapinch's (session 12)
+  {
+    id: 'pidgey', type: 'flying', duoOnly: true, skinOf: 'starly',
+    line: [
+      { id: 'pidgey', name: 'Pidgey' },
+      { id: 'pidgeotto', name: 'Pidgeotto' },
+      { id: 'pidgeot', name: 'Pidgeot' },
+    ],
+    blurb: 'Would rather flutter off than fight. Kicks up sand to blind a foe, and its wings beat up a gale that carries it for miles.',
+    deck: FLYING_DECK,
+  },
+  {
+    id: 'pidove', type: 'flying', duoOnly: true, skinOf: 'starly',
+    line: [
+      { id: 'pidove', name: 'Pidove' },
+      { id: 'tranquill', name: 'Tranquill' },
+      { id: 'unfezant', name: 'Unfezant' },
+    ],
+    blurb: 'Follows the flock and always finds its way home. Light on its feet, it travels with nothing to weigh it down.',
+    deck: FLYING_DECK,
+  },
 ];
 
 export const STARTERS_BY_ID = Object.fromEntries([...STARTERS, ...DUO_STARTERS].map(s => [s.id, s]));

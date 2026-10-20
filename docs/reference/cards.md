@@ -214,6 +214,13 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Light, once a turn, after a card in `playCard()`). Boxes: Evasion, Tailwind, Unburden. The **Keen Eye** Ability
   (`keenEye()`: draw 1 at the fight's start, and as Flying comes out in a duo, once a turn). Flying's Tailwind card is
   `tailwind-gust`: the neutral card `tailwind` (+1 PP next turn) is named **Rest** now, its id kept (answer 18).
+  Session 12 (2026-10-20, "Flying's second session") brought the other 36 (74 in all), defence-leaning: new keys
+  `blockPerEvasion` (the card's own Evasion counted: Phantom Wing) and `blockPerTailwind`, folded into the card's block in
+  `effectsOf()`; powers `evasionBlock` (in `gainEvasion()`), `evadeWeak`, `evadeSap` (on an evaded hit in `enemyTurn()`;
+  Gale Wings' Weak is `enemy.weakNew`, so it isn't worn off at the end of the turn it lands in, StS's rule for a debuff
+  applied on the monster's turn), `tailwindBlock` (a turn's start in Tailwind), `tailwindKeep` (Delta Stream: the turn's
+  draw no longer spends it), `unburdenBlock` (whenever an Unburden happens, in `resolveCard()`), `emptyBlock` (Weightless,
+  sharing Feather Light's once a turn). Sharp Beak is Flying's `TYPE_RELIC`.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,

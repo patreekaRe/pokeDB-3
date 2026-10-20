@@ -82,6 +82,9 @@ export const ITEMS = [
   // Ground's (no Ground Drive exists: Terrain Extender takes its place)
   { id: 'ground-gem',   name: 'Ground Gem',   icon: '🟫', rarity: 'uncommon', only: 'ground', effects: { block: 8, fault: 8 }, text: 'Gain 8 block. Fault 8.' },
   { id: 'terrain-extender', name: 'Terrain Extender', icon: '🌋', rarity: 'uncommon', only: 'ground', effects: { faultMult: 2 }, text: 'Double the enemy\'s Fault.' },   // Catalyst, the Drives' shape for Fault
+  // Flying's (no Flying Drive exists: Swift Wing takes its place)
+  { id: 'flying-gem',   name: 'Flying Gem',   icon: '🔷', rarity: 'uncommon', only: 'flying', effects: { block: 8, evasion: 2 }, text: 'Gain 8 block. Evasion 2.' },
+  { id: 'swift-wing',   name: 'Swift Wing',   icon: '🪽', rarity: 'uncommon', only: 'flying', effects: { tailwind: 3, draw: 2 }, text: 'Tailwind 3. Draw 2 cards.' },   // Tools of the Trade's timer, with a draw
 ];
 
 export const ITEMS_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));

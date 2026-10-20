@@ -201,6 +201,7 @@ const AREA_LOOK = {
   icecave: ['gem', ['#f0faff', '#90cce8', '#2a5878']],
   dojomountain: ['octagon', ['#ffe0c8', '#d8743c', '#6a3420']],
   quarry: ['gem', ['#f4e0c0', '#c09058', '#5a3c20']],
+  windycliffs: ['hex', ['#f0f8ff', '#7ab8e0', '#1e4a70']],
 };
 const TYPE_LOOK = {
   fire: [LOOK.fire[1], 'flame'], water: [LOOK.water[1], 'drop'], grass: [LOOK.grass[1], 'leafy'],

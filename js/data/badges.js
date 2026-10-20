@@ -97,7 +97,7 @@ const raresCaught = (save) => new Set((save.safariDex?.caught || []).filter(id =
 const TYPE_NAME = { fire: 'Fire', water: 'Water', grass: 'Grass', normal: 'Neutral', psychic: 'Psychic' };
 const TYPE_EMOJI = { fire: '🔥', water: '💧', grass: '🍃', normal: '⚪', psychic: '🔮' };
 const TYPE_ORDER = ['fire', 'water', 'grass', 'normal', 'psychic'];
-const AREA_EMOJI = { meadow: '🌼', forest: '🌲', wetland: '🦆', marsh: '🪷', peak: '🏔️', desert: '🏜️', powerplant: '⚡', icecave: '🧊', dojomountain: '🥋', quarry: '⛏️' };
+const AREA_EMOJI = { meadow: '🌼', forest: '🌲', wetland: '🦆', marsh: '🪷', peak: '🏔️', desert: '🏜️', powerplant: '⚡', icecave: '🧊', dojomountain: '🥋', quarry: '⛏️', windycliffs: '🪶' };
 
 /** One badge per type on each Safari Pokédex page: every Pokémon of that type there caught. */
 const SAFARI_TYPE_BADGES = SAFARI_DEX_PAGES.flatMap(p => TYPE_ORDER

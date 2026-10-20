@@ -23,6 +23,7 @@ export const RELICS = [
   { id: 'never-melt-ice', name: 'Never-Melt Ice', icon: '🧊', rarity: 'common', only: 'ice', text: 'Your Ice attacks deal +2 damage.' },
   { id: 'expert-belt',  name: 'Expert Belt',  icon: '🥋', rarity: 'common', only: 'fighting', text: 'Your Fighting attacks deal +2 damage.' },   // Fighting's held item: Black Belt was taken (black-belt, the strength relic)
   { id: 'soft-sand',    name: 'Soft Sand',    icon: '⏳', rarity: 'common', only: 'ground', text: 'Your Ground attacks deal +2 damage.' },
+  { id: 'sharp-beak',   name: 'Sharp Beak',   icon: '🐦', rarity: 'common', only: 'flying', text: 'Your Flying attacks deal +2 damage.' },
 
   { id: 'muscle-band',  name: 'Muscle Band',  icon: '💪', rarity: 'common', text: 'All your attacks deal +2 damage.' },
   { id: 'leftovers',    name: 'Leftovers',    icon: '🍙', rarity: 'uncommon', text: 'Heal 2 HP at the start of each of your turns.' },
@@ -125,6 +126,12 @@ export const RELICS = [
   { id: 'shuca-berry',   name: 'Shuca Berry',   icon: '🫐', rarity: 'uncommon', only: 'ground', text: 'Whenever a card goes underground, gain 3 block.' },   // (Dig's own)
   { id: 'smooth-rock',   name: 'Smooth Rock',   icon: '🪨', rarity: 'uncommon', only: 'ground', text: 'Whenever a Sandstorm starts, it lasts 3 more turns.' },   // Icy Rock's, for Sandstorm
   { id: 'ground-memory', name: 'Ground Memory', icon: '💾', rarity: 'rare',     only: 'ground', text: 'Alphas and bosses count all their Fault, not half.' },   // (Fault's own, Electric Memory's rarity)
+  // Flying's (docs/duo-design.md section 5, "Flying's second session")
+  { id: 'sky-plate',     name: 'Sky Plate',     icon: '🟦', rarity: 'common',   only: 'flying', text: 'Start each battle with Tailwind 2.' },   // (Tailwind's own, Snowball's shape for you)
+  { id: 'pretty-wing',   name: 'Pretty Wing',   icon: '🪶', rarity: 'common',   only: 'flying', text: 'Whenever you gain Evasion, gain 2 block.' },   // (Evasion's own, Light Clay's shape)
+  { id: 'coba-berry',    name: 'Coba Berry',    icon: '🫐', rarity: 'uncommon', only: 'flying', text: 'Whenever an Unburden happens, gain 3 block.' },   // (Unburden's own, Focus Band's shape)
+  { id: 'air-balloon',   name: 'Air Balloon',   icon: '🎈', rarity: 'uncommon', only: 'flying', text: 'Start each battle with Evasion 2.' },   // (Evasion's own)
+  { id: 'flying-memory', name: 'Flying Memory', icon: '💾', rarity: 'rare',     only: 'flying', text: 'At the start of your turn, your Evasion halves instead of going away.' },   // (Evasion's own, Fighting Memory's shape)
   // a Duo Run's (docs/duo-design.md section 1): `duo` keeps it out of every other run
   { id: 'shed-shell',     name: 'Shed Shell',     icon: '🐚', rarity: 'uncommon', duo: true, text: 'Your first switch each turn is free.' },   // (the duo's own: StS has no switching)
   { id: 'sacred-ash',     name: 'Sacred Ash',     icon: '🕯️', rarity: 'rare',     text: 'Once this run, when you would faint, you come back with half your max HP.' },   // Lizard Tail
@@ -159,6 +166,7 @@ export const RELICS = [
   { id: 'ice-stone',    name: 'Ice Stone',    icon: '❄️', boss: true, only: 'ice', text: 'Draw 1 extra card each turn. Snow Warning brings 4 turns of Hail, not 2.' },   // Ring of the Serpent, Water Stone's shape
   { id: 'fightinium-z', name: 'Fightinium Z', icon: '💎', boss: true, only: 'fighting', text: 'Draw 1 extra card each turn. Guts gives +6, not +3.' },   // Ring of the Serpent, Water Stone's shape (Fighting has no stone)
   { id: 'groundium-z',  name: 'Groundium Z',  icon: '💎', boss: true, only: 'ground', text: 'Draw 1 extra card each turn. Sturdy saves you twice a fight, not once.' },   // Ring of the Serpent, Water Stone's shape (Ground has no stone)
+  { id: 'flyinium-z',   name: 'Flyinium Z',   icon: '💎', boss: true, only: 'flying', text: 'Draw 1 extra card each turn. Keen Eye draws 2, not 1.' },   // Ring of the Serpent, Water Stone's shape (Flying has no stone)
   { id: 'thunder-stone', name: 'Thunder Stone', icon: '⚡', boss: true, only: 'electric', text: 'Draw 1 extra card each turn. Static charges the enemy 4, not 2.' },   // Ring of the Serpent, Water Stone's shape
   { id: 'shiny-charm',  name: 'Shiny Charm',  icon: '🌟', boss: true, text: 'Alphas give 2 relics to choose from, one after the other.' },   // Black Star
 

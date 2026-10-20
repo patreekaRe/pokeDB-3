@@ -54,10 +54,10 @@ const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
 const BOSS_PRELUDE_LINES = { clearing: 'The Ancient Tree stirs...', shrine: 'The shrine lanterns answer...', ruins: 'The water round the altar begins to churn...', wastes: 'The crater rumbles...', thornwood: 'The Heart Tree\'s roots begin to writhe...', savanna: 'The air above Sun Rock begins to blaze...', depths: 'The crystals hum with a terrible energy...' };
-const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...', powerplant: 'The generators begin to roar...', icecave: 'The frozen lake begins to crack...', dojomountain: 'A gong sounds across the summit...', quarry: 'The ground begins to split...' };
+const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...', powerplant: 'The generators begin to roar...', icecave: 'The frozen lake begins to crack...', dojomountain: 'A gong sounds across the summit...', quarry: 'The ground begins to split...', windycliffs: 'A gale howls round the Eyrie...' };
 
 /** Relics that boost attacks of one type, by the type of your starter. */
-const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water', electric: 'bar-magnet', ice: 'never-melt-ice', fighting: 'expert-belt', ground: 'soft-sand' };
+const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water', electric: 'bar-magnet', ice: 'never-melt-ice', fighting: 'expert-belt', ground: 'soft-sand', flying: 'sharp-beak' };
 
 /** The current battle, or null when no battle is running. */
 let battle = null;
@@ -157,7 +157,7 @@ function abilityFor(type, relics, aug) {
   const base = ABILITIES[type] ?? null;
   const stone = base?.id === 'torrent' && relics.includes('water-stone') ? 2 : base?.id === 'overgrow' && relics.includes('leaf-stone') ? 7
     : base?.id === 'static' && relics.includes('thunder-stone') ? 2 : base?.id === 'snow-warning' && relics.includes('ice-stone') ? 2 : base?.id === 'guts' && relics.includes('fightinium-z') ? 3
-    : base?.id === 'sturdy' && relics.includes('groundium-z') ? 1 : 0;
+    : base?.id === 'sturdy' && relics.includes('groundium-z') ? 1 : base?.id === 'keen-eye' && relics.includes('flyinium-z') ? 1 : 0;
   return base && (aug.abilityAdd || aug.abilityMult || stone) ? { ...base, amount: (base.amount + stone + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
 }
 /** Battle speed (Settings, js/settings.js): 2x halves the waits of the enemy's turn and your hits; CSS halves their
@@ -287,7 +287,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     underground: [],   // Ground's dug cards: { card, owner, exhaust }, surfacing at the start of your next turn (surface())
     sturdy: 0,         // the times Ground's Sturdy has saved you this fight (Groundium Z: twice)
     evasion: 0,        // Flying's: each stack halves an enemy attack on you, until your next turn
-    tailwind: 0,       // Flying's: the turns left that draw 1 more card at their start
+    tailwind: run.relics.includes('sky-plate') ? 2 : 0,   // Flying's: the turns left that draw 1 more card at their start
     emptied: false,    // Feather Light has drawn this turn
     keenTurn: 0,       // the turn Flying's Keen Eye last drew (once a turn)
     bide: null,        // Bide: { turns, stored }, the HP enemy attacks take until it lets go, twice over
@@ -614,9 +614,11 @@ function beginPlayerTurn() {
   if (p.counterEachTurn) gainCounter(p.counterEachTurn);   // Counterstance
   if (p.faultEachTurn) applyFault(p.faultEachTurn);   // Quicksand
   if (p.sandEachTurn) setWeather('sand', p.sandEachTurn);   // Sand Stream
-  b.evasion = 0;   // Evasion lasts until your next turn (banked, it lifted Flying 15 points over the other types, 2026-10-20)
+  b.evasion = hasRelic('flying-memory') ? Math.floor(b.evasion / 2) : 0;   // Evasion lasts until your next turn (banked, it lifted Flying 15 points over the other types, 2026-10-20)
+  if (b.turn === 1 && hasRelic('air-balloon')) gainEvasion(2);
   if (p.evasionEachTurn) gainEvasion(p.evasionEachTurn);   // Wind Wall
   if (b.tailwind && p.tailwindEvasion) gainEvasion(p.tailwindEvasion);   // Wind Dancer
+  if (b.tailwind && p.tailwindBlock) gainBlock(p.tailwindBlock);   // Jet Stream
   if (b.tailwind && p.tailwindDamage) { const d = hurtEnemy(p.tailwindDamage); pop('enemy-zone', d > 0 ? `-${d} 🏄` : 'Blocked', d > 0 ? 'dmg' : 'note', 120); }   // Wind Rider
   if (b.turn === 1 && hasRelic('ring-target')) gainCounter(8);
   if (b.bide && --b.bide.turns <= 0) {   // Bide lets go: twice the HP the enemy's attacks took meanwhile
@@ -644,7 +646,7 @@ function beginPlayerTurn() {
   b.emptied = false;
   const wind = b.tailwind > 0 ? 1 : 0;   // Tailwind: a turn goes as it draws
   draw(turnDraw() + b.drawNext + wind);
-  b.tailwind -= wind;
+  if (!p.tailwindKeep) b.tailwind -= wind;   // Delta Stream
   b.drawNext = 0;
   if (b.turn === 1 && hasAbility('keen-eye')) keenEye();
   if (p.statusHeldBlock && statusHeld()) gainBlock(p.statusHeldBlock * statusHeld());   // Gritted Teeth, on the hand just drawn
@@ -695,7 +697,7 @@ function turnDraw() {
   return HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
     + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0)
-    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0) + (hasRelic('ice-stone') ? 1 : 0) + (hasRelic('fightinium-z') ? 1 : 0) + (hasRelic('groundium-z') ? 1 : 0) + (hailing() ? p.hailDraw || 0 : 0);
+    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0) + (hasRelic('ice-stone') ? 1 : 0) + (hasRelic('fightinium-z') ? 1 : 0) + (hasRelic('groundium-z') ? 1 : 0) + (hasRelic('flyinium-z') ? 1 : 0) + (hailing() ? p.hailDraw || 0 : 0);
 }
 
 /* The opening hand can't be tapped until it has finished sliding in: a tap meant for the intro, or one landing on a
@@ -830,6 +832,8 @@ function gainEvasion(n, delay = 0) {
   battle.evasion += n;
   pop('player-zone', `🪶 Evasion ${n}`, 'note good', 100 + delay);
   statFx('player');
+  if (battle.powers.evasionBlock) gainBlock(battle.powers.evasionBlock);   // Big Pecks
+  if (hasRelic('pretty-wing')) gainBlock(2);
 }
 
 /** An enemy hit as Evasion leaves it: halved while you have any. */
@@ -1068,6 +1072,8 @@ function effectsOf(card, x = 0, held = battle.hand.length) {
   if (e.counterPerLost) e.counter = (e.counter || 0) + e.counterPerLost * b.lostLast;          // Final Gambit
   if (e.blockPerUnder) e.block = (e.block || 0) + e.blockPerUnder * b.underground.length;      // Trench, Bunker
   if (e.blockPerFault) e.block = (e.block || 0) + e.blockPerFault * b.enemy.fault;             // Rubble Wall
+  if (e.blockPerEvasion) e.block = (e.block || 0) + e.blockPerEvasion * (b.evasion + (e.evasion || 0));   // Plumage, Phantom Wing: its own Evasion too
+  if (e.blockPerTailwind) e.block = (e.block || 0) + e.blockPerTailwind * b.tailwind;          // Thermal
   if (e.block && card.type === 'ground' && sanding()) e.block += SAND.bonus;                // Sandstorm: every Ground block
   return e;
 }
@@ -1214,7 +1220,11 @@ async function playCard(uid) {
     renderAll();
   }
   if (!b.hand.length && hasRelic('magnet')) { draw(1); pop('player-zone', '🧿 Quick Powder', 'note good'); }
-  if (!b.hand.length && b.powers.emptyDraw && !b.emptied) { b.emptied = true; draw(b.powers.emptyDraw); pop('player-zone', '🎈 Feather Light', 'note good'); }
+  if (!b.hand.length && (b.powers.emptyDraw || b.powers.emptyBlock) && !b.emptied) {   // Feather Light, Weightless: the first time each turn
+    b.emptied = true;
+    if (b.powers.emptyBlock) gainBlock(b.powers.emptyBlock);
+    if (b.powers.emptyDraw) { draw(b.powers.emptyDraw); pop('player-zone', '🎈 Feather Light', 'note good'); }
+  }
   b.busy = false;
   renderAll();
 }
@@ -1234,6 +1244,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
   const e = effectsOf(card, x);
   const who = stageName(b.starter, b.stage);
   const followed = (!!e.ifAfterAttack && followsUp('attack')) || (!!e.ifAfterSkill && followsUp('skill'));   // read before this card's kind is
+  const unburden = !!e.ifEmpty && unburdened();   // an Unburden happening: Early Bird, Coba Berry
 
   if (e.selfDamage) loseHp(e.selfDamage);
   if (e.exhaustHand) {
@@ -1362,6 +1373,10 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     if (b.powers.followBlock) gainBlock(b.powers.followBlock);
     if (b.powers.followCounter) gainCounter(b.powers.followCounter);
     if (hasRelic('focus-band')) gainBlock(3);
+  }
+  if (unburden) {
+    if (b.powers.unburdenBlock) gainBlock(b.powers.unburdenBlock);
+    if (hasRelic('coba-berry')) gainBlock(3);
   }
   if (card.icicle) {   // every Icicle card deals more from now on, this one's next play too (Claw)
     b.icicles += 1;
@@ -1848,6 +1863,8 @@ async function itemEffects(e) {
   if (e.fault)    applyFault(e.fault);   // Ground Gem
   if (e.faultMult) { b.enemy.fault *= e.faultMult; pop('enemy-zone', `🌋 Fault ${b.enemy.fault}!`, 'note'); }   // Terrain Extender
   if (e.hail)     setWeather('hail', e.hail);   // Ice Gem
+  if (e.evasion)  gainEvasion(e.evasion);   // Flying Gem
+  if (e.tailwind) { b.tailwind += e.tailwind; pop('player-zone', `🌬️ Tailwind ${e.tailwind}`, 'note good', 100); }   // Swift Wing
   if (e.tide)     gainTide(e.tide);
   if (e.maxHp)    { b.maxHp += e.maxHp; b.hp += e.maxHp; pop('player-zone', `💚 Max HP +${e.maxHp}`, 'heal'); playSound('stat-up'); statFx('player'); }
   if (e.block)    { b.block += e.block; pop('player-zone', `+${e.block} 🛡️`, 'block'); statFx('player'); }
@@ -2445,6 +2462,8 @@ async function enemyTurn() {
         if (dodged) { b.evasion -= 1; pop('player-zone', '🪶 Evaded!', 'block', 100); }
         const through = hurtPlayer(Math.max(0, hit - (b.aug.hitReduce || 0)), move.name);
         if (dodged && b.powers.evadeDamage) { const d = hurtEnemy(b.powers.evadeDamage); pop('enemy-zone', d > 0 ? `-${d} 💨` : 'Blocked', d > 0 ? 'dmg' : 'note', 350); }   // Gale
+        if (dodged && b.powers.evadeWeak) { applyDebuff('weaken', b.powers.evadeWeak); b.enemy.weakNew = (b.enemy.weakNew || 0) + b.powers.evadeWeak; }   // Gale Wings
+        if (dodged && b.powers.evadeSap) applyDebuff('sap', b.powers.evadeSap);       // Levitate
         const effect = enemyTypeMultiplier(move);
         hitSound(through, effect);
         hitEffect('player-sprite');
@@ -2524,7 +2543,8 @@ async function enemyTurn() {
     }
   }
 
-  if (en.weak > 0) en.weak -= 1;                  // like StS, Weak and Vulnerable wear off at the end of the enemy's turn
+  if (en.weak > (en.weakNew || 0)) en.weak -= 1;  // like StS, Weak and Vulnerable wear off at the end of the enemy's turn (not Weak it only just got: Gale Wings')
+  en.weakNew = 0;
   if (en.vulnerable > 0) en.vulnerable -= 1;
   if (en.frostbite > 0 && !b.powers.frostKeep && !(hailing() && hasRelic('ice-memory'))) en.frostbite -= 1;   // Frostbite thaws (Permafrost keeps it)
 

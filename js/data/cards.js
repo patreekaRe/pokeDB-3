@@ -809,7 +809,7 @@ const GROUND_CARDS = [
 /* Flying (the Safari's duo pool, docs/duo-design.md section 5): Evasion halves the enemy's next hits, one stack a hit
    (Blur and Wraith Form, softened), Tailwind draws 1 more card at the start of each of your next turns (Tools of the
    Trade, as a timer), and Unburden pays off when the card is the last in your hand (FTL, Finisher, Grand Finale).
-   Session 11 built 30 of its ~66 pool cards and all 8 evolution cards. */
+   Session 11 built 30 of its 66 pool cards and all 8 evolution cards; session 12 the other 36. */
 const FLYING_CARDS = [
   { id: 'gust',           name: 'Gust',           type: 'flying', cost: 1, art: '🌬️', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike
   { id: 'feather-guard',  name: 'Feather Guard',  type: 'flying', cost: 1, art: '🪶', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
@@ -841,6 +841,43 @@ const FLYING_CARDS = [
   { id: 'brave-bird',     name: 'Brave Bird',     type: 'flying', cost: 1, art: '🔥', effects: { selfDamage: 3, damage: 20, ifEmpty: { energy: 1 } }, rarity: 'rare', upgrade: { effects: { damage: 26 } } },   // Hemokinesis, refunded on the last card
   { id: 'beak-blast',     name: 'Beak Blast',     type: 'flying', cost: 1, art: '💥', effects: { damage: 12, ifEmpty: { bonus: 12, vulnerable: 2 } }, rarity: 'rare', upgrade: { effects: { damage: 15, ifEmpty: { bonus: 15, vulnerable: 2 } } } },   // (Unburden's Bludgeon)
   { id: 'wind-dancer',    name: 'Wind Dancer',    type: 'flying', cost: 1, art: '🩰', effects: { tailwindEvasion: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // an Evasion / Tailwind bridge: Tailwind's Wraith Form
+  // session 12's 36 (docs/duo-design.md section 5, "Flying's second session"): defence-leaning, the first half being hits and draw
+  { id: 'tangled-feet',   name: 'Tangled Feet',   type: 'flying', cost: 1, art: '🦩', effects: { block: 5, evasion: 1 }, upgrade: { effects: { block: 8 } } },   // Blur, Evasion for its kept block
+  { id: 'plumage',        name: 'Plumage',        type: 'flying', cost: 1, art: '🦚', effects: { block: 5, blockPerEvasion: 3 }, upgrade: { effects: { block: 7, blockPerEvasion: 4 } } },   // (Evasion's Spirit Shield)
+  { id: 'cloud-cover',    name: 'Cloud Cover',    type: 'flying', cost: 1, art: '☁️', effects: { block: 8, ifEvasion: { block: 4 } }, upgrade: { effects: { block: 10, ifEvasion: { block: 5 } } } },   // Defend, on a condition
+  { id: 'crosswind',      name: 'Crosswind',      type: 'flying', cost: 1, art: '🎏', effects: { block: 6, tailwind: 1 }, upgrade: { effects: { block: 8, tailwind: 2 } } },   // Defend with Tools of the Trade's timer
+  { id: 'slipstream',     name: 'Slipstream',     type: 'flying', cost: 1, art: '〰️', effects: { block: 5, ifTailwind: { block: 5 } }, upgrade: { effects: { block: 7, ifTailwind: { block: 6 } } } },   // Defend, in the wind
+  { id: 'thermal',        name: 'Thermal',        type: 'flying', cost: 1, art: '♨️', effects: { block: 5, blockPerTailwind: 2 }, upgrade: { effects: { block: 7, blockPerTailwind: 3 } } },   // (Tailwind's Spirit Shield)
+  { id: 'preen',          name: 'Preen',          type: 'flying', cost: 0, art: '🪮', effects: { block: 3, ifEmpty: { block: 4 } }, upgrade: { effects: { block: 4, ifEmpty: { block: 6 } } } },   // Deflect, doubled on the last card
+  { id: 'perch',          name: 'Perch',          type: 'flying', cost: 1, art: '🪵', effects: { block: 6, ifEmpty: { weaken: 2 } }, upgrade: { effects: { block: 9 } } },   // Defend with Leg Sweep's Weak on the last card
+  { id: 'floaty-fall',    name: 'Floaty Fall',    type: 'flying', cost: 1, art: '🪁', effects: { damage: 5, block: 5, ifEmpty: { draw: 1 } }, upgrade: { effects: { damage: 7, block: 7 } } },   // Iron Wave, with a draw on the last card
+  { id: 'defog',          name: 'Defog',          type: 'flying', cost: 2, art: '🌁', effects: { block: 12, weaken: 2 }, upgrade: { effects: { block: 15 } } },   // Leg Sweep
+  { id: 'big-pecks',      name: 'Big Pecks',      type: 'flying', cost: 1, art: '🐤', effects: { evasionBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { evasionBlock: 4 } } },   // (Evasion's Feel No Pain)
+  { id: 'gale-wings',     name: 'Gale Wings',     type: 'flying', cost: 1, art: '🌬️', effects: { evadeWeak: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // (Blinding Sand's twin)
+  { id: 'hover',          name: 'Hover',          type: 'flying', cost: 1, art: '🛸', effects: { evasion: 1, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { evasion: 2 } } },   // Disarm, with Blur's Evasion
+  { id: 'down-feathers',  name: 'Down Feathers',  type: 'flying', cost: 2, art: '🛏️', effects: { block: 12, evasion: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 15 } } },   // Defend+, with Blur's Evasion
+  { id: 'mirror-move',    name: 'Mirror Move',    type: 'flying', cost: 1, art: '🪞', effects: { block: 6, ifEvasion: { weaken: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // Leg Sweep-lite, on a condition
+  { id: 'jet-stream',     name: 'Jet Stream',     type: 'flying', cost: 1, art: '🛫', effects: { tailwindBlock: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { tailwindBlock: 6 } } },   // Metallicize, in the wind
+  { id: 'wind-power',     name: 'Wind Power',     type: 'flying', cost: 1, art: '🌀', effects: { block: 7, ifTailwind: { draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Shrug It Off, in the wind
+  { id: 'air-lock',       name: 'Air Lock',       type: 'flying', cost: 1, art: '🔐', effects: { weaken: 2, tailwind: 1 }, rarity: 'uncommon', upgrade: { effects: { weaken: 3 } } },   // Leg Sweep-lite with a timer
+  { id: 'windbreak',      name: 'Windbreak',      type: 'flying', cost: 2, art: '🌲', effects: { block: 10, tailwind: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 13, tailwind: 3 } } },   // Defend+ with Tools of the Trade's timer
+  { id: 'downdraft',      name: 'Downdraft',      type: 'flying', cost: 1, art: '⬇️', effects: { block: 6, ifTailwind: { sap: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // Disarm-lite, in the wind
+  { id: 'early-bird',     name: 'Early Bird',     type: 'flying', cost: 1, art: '🐓', effects: { unburdenBlock: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { unburdenBlock: 6 } } },   // (Unburden's Feel No Pain)
+  { id: 'ruffle',         name: 'Ruffle',         type: 'flying', cost: 0, art: '🐔', effects: { block: 4, draw: 1, ifEmpty: { block: 4 } }, rarity: 'uncommon', upgrade: { effects: { block: 6, ifEmpty: { block: 6 } } } },   // Shrug It Off-lite, free
+  { id: 'nest',           name: 'Nest',           type: 'flying', cost: 1, art: '🪺', effects: { block: 8, ifEmpty: { heal: 4 } }, rarity: 'uncommon', upgrade: { effects: { block: 11 } } },   // Defend with Bandage Up on the last card
+  { id: 'squawk',         name: 'Squawk',         type: 'flying', cost: 0, art: '📢', effects: { weaken: 1, ifEmpty: { draw: 2 } }, rarity: 'uncommon', upgrade: { effects: { weaken: 2 } } },   // Neutralize, with Finesse's draw
+  { id: 'soar',           name: 'Soar',           type: 'flying', cost: 1, art: '🦅', effects: { block: 8, ifTailwind: { evasion: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 11 } } },   // an Evasion / Tailwind bridge: Defend with Blur, in the wind
+  { id: 'unburden',       name: 'Unburden',       type: 'flying', cost: 1, art: '🎒', effects: { block: 6, ifEmpty: { evasion: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // an Evasion / Unburden bridge: Defend with Blur, on the last card
+  { id: 'lift',           name: 'Lift',           type: 'flying', cost: 0, art: '🎈', effects: { block: 3, ifEmpty: { tailwind: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 5 } } },   // a Tailwind / Unburden bridge: Updraft's defensive twin
+  { id: 'wingspan',       name: 'Wingspan',       type: 'flying', cost: 2, art: '🪽', effects: { block: 9, weaken: 1, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 12 } } },   // Leg Sweep with Disarm's Sap
+  { id: 'delta-stream',   name: 'Delta Stream',   type: 'flying', cost: 3, art: '♾️', effects: { tailwind: 3, tailwindKeep: 1 }, power: true, rarity: 'rare', upgrade: { cost: 2 } },   // (Endless Winter's twin)
+  { id: 'sky-fortress',   name: 'Sky Fortress',   type: 'flying', cost: 2, art: '🏰', effects: { block: 16, tailwind: 2 }, rarity: 'rare', upgrade: { effects: { block: 20 } } },   // Impervious-lite, bringing the wind
+  { id: 'phantom-wing',   name: 'Phantom Wing',   type: 'flying', cost: 1, art: '👻', effects: { evasion: 2, blockPerEvasion: 4 }, rarity: 'rare', upgrade: { effects: { blockPerEvasion: 5 } } },   // (Evasion's own: block that grows with the stacks)
+  { id: 'levitate',       name: 'Levitate',       type: 'flying', cost: 2, art: '🫧', effects: { evadeSap: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Evasion's own: Sap kept up)
+  { id: 'featherweight',  name: 'Featherweight',  type: 'flying', cost: 0, art: '🪶', effects: { block: 5, ifEmpty: { block: 8, draw: 1 } }, rarity: 'rare', upgrade: { effects: { block: 7, ifEmpty: { block: 10, draw: 1 } } } },   // (Unburden's own)
+  { id: 'weightless',     name: 'Weightless',     type: 'flying', cost: 1, art: '🎐', effects: { emptyBlock: 8 }, power: true, rarity: 'rare', upgrade: { effects: { emptyBlock: 11 } } },   // (Feather Light's defensive twin)
+  { id: 'cloud-nine',     name: 'Cloud Nine',     type: 'flying', cost: 1, art: '9️⃣', effects: { weaken: 2, evasion: 1, ifTailwind: { sap: 1 } }, rarity: 'rare', upgrade: { effects: { weaken: 3 } } },   // an Evasion / Tailwind bridge: Feather Dance with Disarm, in the wind
+  { id: 'oblivion-wing',  name: 'Oblivion Wing',  type: 'flying', cost: 2, art: '🦇', effects: { damage: 14, heal: 7 }, rarity: 'rare', upgrade: { effects: { damage: 18, heal: 9 } } },   // Reaper, on one foe
 ];
 
 /* ============================================================
@@ -1089,7 +1126,7 @@ const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, streng
   frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1, thornFrost: 1, hailChipBlock: 2,
   mixBlock: 1, counterEachTurn: 1, followBlock: 1, followCounter: 2, counterBlock: 1, statusBlock: 2, statusHeldBlock: 1,
   faultEachTurn: 1, surfaceDamage: 3, sandAttack: 1, sandFault: 2, digBlock: 1, faultBlock: 1, sandChipBlock: 2, sandWeak: 1,
-  evadeDamage: 3, tailwindDamage: 3, emptyDraw: 1 };
+  evadeDamage: 3, tailwindDamage: 3, emptyDraw: 1, evasionBlock: 1, tailwindBlock: 2, unburdenBlock: 2, emptyBlock: 3 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -1273,6 +1310,13 @@ export const POWERS = {
   tailwindDamage:   { icon: '🏄', text: (n) => `At the start of each turn in Tailwind, deal ${n} damage.` },
   tailwindEvasion:  { icon: '🩰', text: (n) => `At the start of each turn in Tailwind, Evasion ${n}.` },
   emptyDraw:        { icon: '🎈', text: (n) => `The first time your hand empties each turn, draw ${plural(n, 'card')}.` },
+  evasionBlock:     { icon: '🐤', text: (n) => `Whenever you gain Evasion, gain ${n} block.` },
+  evadeWeak:        { icon: '🌬️', text: (n) => `Whenever Evasion halves a hit, apply ${n} Weak.` },
+  evadeSap:         { icon: '🫧', text: (n) => `Whenever Evasion halves a hit, apply Sap ${n}.` },
+  tailwindBlock:    { icon: '🛫', text: (n) => `At the start of each turn in Tailwind, gain ${n} block.` },
+  tailwindKeep:     { icon: '♾️', flag: true, text: () => 'Tailwind no longer runs out.' },
+  unburdenBlock:    { icon: '🐓', text: (n) => `Whenever an Unburden happens, gain ${n} block.` },
+  emptyBlock:       { icon: '🎐', text: (n) => `The first time your hand empties each turn, gain ${n} block.` },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -1351,6 +1395,8 @@ function sentences(e) {
   if (e.blockPerStatusHeld) parts.push(`+${e.blockPerStatusHeld} block for each status card in your hand.`);
   if (e.blockPerUnder) parts.push(`+${e.blockPerUnder} block for each card underground.`);
   if (e.blockPerFault) parts.push(`+${e.blockPerFault} block for each Fault on the enemy.`);
+  if (e.blockPerEvasion) parts.push(`${e.block ? '+' : 'Gain '}${e.blockPerEvasion} block for each Evasion you have${e.evasion ? ', this card\'s too' : ''}.`);
+  if (e.blockPerTailwind) parts.push(`+${e.blockPerTailwind} block for each turn of Tailwind left.`);
   if (e.blockPerCard) parts.push(`Gain ${e.blockPerCard} block for each card in your hand.`);
   if (e.blockNext)    parts.push(`Next turn, gain ${e.blockNext} block.`);
   if (e.blockFault)   parts.push('Then apply Fault equal to your block.');
@@ -1554,9 +1600,9 @@ export function cardTerms(card) {
     uses(/^surface|^perUnder$|^blockPerUnder$|^digBlock$/) && term('Dig'),
     uses(/fault/i) && term('Fault'),
     uses(/^sand|^ifSand$/) && term('Sandstorm'),
-    uses(/evasion|^evadeDamage$/i) && term('Evasion'),
+    uses(/evasion|^evade(Damage|Weak|Sap)$/i) && term('Evasion'),
     (uses(/tailwind/i) || card.freeIn === 'tailwind') && term('Tailwind'),
-    uses(/^ifEmpty$|^emptyDraw$/) && term('Unburden'),
+    uses(/^ifEmpty$|^empty(Draw|Block)$|^unburdenBlock$/) && term('Unburden'),
     uses(/^ifAfter|^followAlways$|^mixBlock$|^follow(Block|Counter)$/) && term('Follow-up'),
     uses(/^counter|^followCounter$/) && term('Counter'),
     uses(/^perStatusHeld$|^statusDraw$|^statusStrength$|^blockPerStatusHeld$|^counterPerStatus$|^statusBlock$|^statusHeldBlock$/) && ['Status cards', 'Junk in your deck for this fight: Sore, and what enemies add.'],

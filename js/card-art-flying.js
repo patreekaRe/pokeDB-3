@@ -4,7 +4,7 @@
    (48x48, dark outline; see card-art.js).
    ============================================================ */
 
-import { INK, f, line, star, sparkle, linear, radial, tube, puffs, speed, spiral } from './card-art-kit.js';
+import { INK, f, line, star, sparkle, linear, radial, tube, puffs, speed, spiral, sun } from './card-art-kit.js';
 
 const WIND = '#d8f2ff', WIND_DEEP = '#9ad8ff', PLUME = '#f4f2ff', PLUME_DARK = '#a8a0e8', BIRD = '#8a7a72', BIRD_DARK = '#4e4440', BEAK = '#ffb030';
 const sky = linear('k', [[0, '#9ad8ff'], [1, '#e8f6ff']]);
@@ -53,6 +53,14 @@ const palm = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})">
   </g>`;
 /** A slash across, from (x1, y1) to (x2, y2). */
 const slash = (x1, y1, x2, y2, w = 3.4) => tube(`M${x1} ${y1}Q${f((x1 + x2) / 2 + 3)} ${f((y1 + y2) / 2 - 3)} ${x2} ${y2}`, w, '#ffffff', WIND_DEEP);
+
+/** A kite shield (block), its middle on (cx, cy), radius r. */
+const guard = (cx, cy, r, fill = WIND_DEEP, rim = '#ffffff') => `<path d="M${cx} ${f(cy - r * 1.15)}L${f(cx + r)} ${f(cy - r * 0.7)}V${f(cy + r * 0.1)}Q${f(cx + r)} ${f(cy + r * 0.9)} ${cx} ${f(cy + r * 1.3)}Q${f(cx - r)} ${f(cy + r * 0.9)} ${f(cx - r)} ${f(cy + r * 0.1)}V${f(cy - r * 0.7)}Z" fill="${fill}" ${line(2.4)}/>
+    <path d="M${f(cx - r * 0.55)} ${f(cy - r * 0.45)}V${f(cy + r * 0.1)}Q${f(cx - r * 0.5)} ${f(cy + r * 0.6)} ${f(cx - r * 0.1)} ${f(cy + r * 0.85)}" fill="none" stroke="${rim}" stroke-width="1.6" stroke-linecap="round" opacity="0.8"/>`;
+/** An egg, its middle on (x, y), r wide. */
+const egg = (x, y, r, fill = '#fff8ec') => `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${f(r * 1.3)}" fill="${fill}" ${line(1.8)}/><circle cx="${f(x - r * 0.35)}" cy="${f(y - r * 0.5)}" r="${f(r * 0.25)}" fill="#fff"/>`;
+/** A down arrow, weakening (Weak), its tip at (x, y). */
+const down = (x, y, fill = '#b8a0f0') => `<path d="M${x} ${y}L${x - 5} ${y - 6}H${x - 2}V${y - 12}H${x + 2}V${y - 6}H${x + 5}Z" fill="${fill}" ${line(1.6)}/>`;
 
 export const FLYING = {
   gust: `<defs>${sky}</defs>
@@ -211,4 +219,157 @@ export const FLYING = {
     ${tube('M30 4L26 28', 3.4, '#fff', null)}
     ${bird(24, 32, 0.9, 70)}
     <path d="M6 44H42" ${line(2.4)}/>`,
+
+  // session 12's 36: the defensive half
+  'tangled-feet': `<defs>${plumeG}</defs>
+    ${guard(30, 22, 11)}
+    ${tube('M6 40C10 30 20 44 24 34S32 32 30 42', 2, WIND, null)}
+    ${feather(6, 18, 14, -40)}`,
+
+  plumage: `<defs>${plumeG}</defs>
+    ${feather(24, 42, 26, -60)}${feather(24, 42, 28, -90)}${feather(24, 42, 26, -120)}${feather(24, 42, 22, -40)}${feather(24, 42, 22, -140)}
+    <circle cx="24" cy="40" r="4" fill="${PLUME_DARK}" ${line(1.6)}/>`,
+
+  'cloud-cover': `${cloud(24, 18, 1.3)}
+    ${guard(24, 34, 7, '#e8f4ff')}
+    ${half(40, 40, 4)}`,
+
+  crosswind: `${tube('M4 12L44 30', 2.4, WIND, '#fff')}${tube('M4 34L44 16', 2.4, WIND_DEEP, '#fff')}
+    ${guard(24, 24, 8)}`,
+
+  slipstream: `<defs>${sky}</defs>
+    ${tube('M2 18C14 14 30 14 46 18', 2.4, WIND, '#fff')}${tube('M2 30C14 26 30 26 46 30', 2.4, WIND_DEEP, '#fff')}
+    ${bird(26, 24, 0.7)}`,
+
+  thermal: `${tube('M10 44C6 34 14 26 10 16', 2.4, '#ffd08a', '#fff')}${tube('M24 44C20 34 28 26 24 14', 2.4, '#ffb060', '#fff')}${tube('M38 44C34 34 42 26 38 16', 2.4, '#ffd08a', '#fff')}
+    ${bird(24, 10, 0.6, -10)}`,
+
+  preen: `<defs>${plumeG}</defs>
+    ${feather(8, 36, 30, -20)}
+    ${beak(20, 18, 0.9)}
+    ${sparkle(40, 36, 3)}`,
+
+  perch: `<path d="M2 36H46" stroke="#8a6438" stroke-width="5" stroke-linecap="round"/><path d="M2 36H46" ${line(1.4)} opacity="0.5"/>
+    <path d="M34 36L40 44" stroke="#8a6438" stroke-width="3" stroke-linecap="round"/>
+    ${bird(22, 26, 0.95)}`,
+
+  'floaty-fall': `<defs>${plumeG}</defs>
+    ${feather(10, 12, 18, 30)}
+    <path d="M24 12Q30 22 22 28T26 42" fill="none" stroke="${WIND_DEEP}" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"/>
+    ${guard(36, 32, 6)}`,
+
+  defog: `${puffs([[10, 18, 7], [20, 14, 8], [32, 16, 7], [40, 22, 5]], '#c8ccd8', '#e8ecf4')}
+    ${gusts([[34, 36], [44, 30, -1]])}`,
+
+  'big-pecks': `${bird(22, 24, 1.15)}
+    ${guard(40, 12, 5)}`,
+
+  'gale-wings': `<defs>${plumeG}</defs>
+    ${wing(24, 24, 0.9)}${wing(24, 24, 0.9, true)}
+    ${gusts([[40, 20], [44, 16, -1]], 14)}
+    ${down(8, 14)}`,
+
+  hover: `<defs>${sky}</defs>
+    ${bird(24, 18, 0.9)}
+    <ellipse cx="24" cy="40" rx="12" ry="3" fill="${PLUME_DARK}" opacity="0.5"/>
+    <path d="M16 30V36M24 30V36M32 30V36" stroke="${WIND_DEEP}" stroke-width="2" stroke-dasharray="2 2"/>`,
+
+  'down-feathers': `<defs>${plumeG}</defs>
+    ${puffs([[12, 34, 8], [24, 30, 10], [36, 34, 8]], '#ffffff', null, 1.6)}
+    ${feather(14, 20, 14, -30)}${feather(30, 14, 12, 20)}`,
+
+  'mirror-move': `<rect x="12" y="6" width="24" height="34" rx="11" fill="#c8e8ff" ${line(2.4)}/>
+    <path d="M18 14L22 10M18 22L28 12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+    ${bird(24, 26, 0.6)}
+    <path d="M24 40V46" ${line(2.4)}/>`,
+
+  'jet-stream': `<path d="M4 30C16 26 30 20 44 10" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="0.7"/>
+    ${tube('M4 30C16 26 30 20 44 10', 2, WIND_DEEP, null)}
+    ${guard(16, 16, 7)}`,
+
+  'wind-power': `<circle cx="24" cy="22" r="3" fill="#fff" ${line(1.8)}/>
+    ${[0, 120, 240].map(a => `<path transform="rotate(${a} 24 22)" d="M24 19C22 12 24 6 26 4C28 10 27 16 24 19Z" fill="#f4f8ff" ${line(1.8)}/>`).join('')}
+    <path d="M24 25V44" ${line(2.6)}/>`,
+
+  'air-lock': `<rect x="12" y="22" width="24" height="20" rx="3" fill="#d8b860" ${line(2.4)}/>
+    <path d="M17 22V16A7 7 0 0 1 31 16V22" fill="none" ${line(2.6)}/>
+    ${tube('M4 10C12 8 20 10 26 8', 2, WIND, null)}
+    <circle cx="24" cy="31" r="2.6" fill="${INK}"/>`,
+
+  windbreak: `${[10, 24, 38].map(x => `<path d="M${x} 42V30" stroke="#6a4a2c" stroke-width="3"/><path d="M${x - 7} 32L${x} 8L${x + 7} 32Z" fill="#4a9a5a" ${line(2)}/>`).join('')}
+    ${tube('M2 20C8 18 10 22 6 24', 1.8, WIND, null)}`,
+
+  downdraft: `${cloud(24, 10, 1)}
+    ${tube('M14 18V36', 2.4, WIND, '#fff')}${tube('M34 18V36', 2.4, WIND, '#fff')}
+    <path d="M9 32L14 40L19 32M29 32L34 40L39 32" fill="none" ${line(2.2)}/>`,
+
+  'early-bird': `${sun(36, 14, 5, 10)}
+    ${bird(20, 30, 0.95)}
+    <path d="M2 44H46" ${line(2)}/>`,
+
+  ruffle: `<defs>${plumeG}</defs>
+    ${feather(8, 30, 14, -50)}${feather(40, 30, 14, -130)}${feather(18, 12, 12, 40)}${feather(30, 12, 12, 140)}
+    ${bird(24, 28, 0.8)}`,
+
+  nest: `<path d="M4 32Q24 48 44 32Q40 24 24 24Q8 24 4 32Z" fill="#c8a070" ${line(2.2)}/>
+    ${egg(18, 24, 5)}${egg(30, 24, 5, '#e8f4ff')}
+    <path d="M8 32L14 28M20 36L26 30M32 34L38 30" stroke="#8a6430" stroke-width="1.4" stroke-linecap="round"/>`,
+
+  squawk: `${beak(10, 22, 1.3)}
+    <path d="M32 14Q38 22 32 30M38 10Q46 22 38 34" fill="none" stroke="${WIND_DEEP}" stroke-width="2.4" stroke-linecap="round"/>
+    ${down(42, 46)}`,
+
+  soar: `<defs>${sky}</defs>
+    ${cloud(10, 38, 0.7)}${cloud(38, 40, 0.6)}
+    ${bird(24, 18, 1, -20)}
+    ${tube('M4 28C14 26 22 22 28 14', 1.8, WIND, null)}`,
+
+  unburden: `<rect x="12" y="20" width="22" height="22" rx="5" fill="#c87a3a" ${line(2.4)}/>
+    <path d="M17 20V15A6 6 0 0 1 29 15V20" fill="none" ${line(2.4)}/>
+    ${tube('M32 26C38 22 40 14 44 8', 1.8, WIND, null)}
+    ${feather(30, 22, 14, -60)}`,
+
+  lift: `${tube('M24 44V18', 2.6, WIND, '#fff')}
+    <path d="M14 22L24 8L34 22" fill="none" ${line(2.6)}/>
+    ${puffs([[10, 38, 3], [38, 36, 3]], WIND, null, 1)}`,
+
+  wingspan: `<defs>${plumeG}</defs>
+    ${wing(24, 26, 1.3)}${wing(24, 26, 1.3, true)}
+    <path d="M6 40H42" stroke="${WIND_DEEP}" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/>`,
+
+  'delta-stream': `<path d="M24 6L42 38H6Z" fill="none" stroke="${WIND_DEEP}" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M24 6L42 38H6Z" fill="none" ${line(1.4)}/>
+    ${tube(spiral(24, 28, 1.6, 8), 2, '#fff', null)}`,
+
+  'sky-fortress': `<defs>${sky}</defs>
+    ${cloud(24, 38, 1.4)}
+    <path d="M12 32V16H16V12H20V16H28V12H32V16H36V32Z" fill="#e8f0fa" ${line(2.2)}/>
+    <path d="M22 32V24A2 2 0 0 1 26 24V32" fill="${WIND_DEEP}" ${line(1.6)}/>`,
+
+  'phantom-wing': `<defs>${plumeG}</defs>
+    <g opacity="0.45">${wing(18, 26, 1)}</g>${wing(22, 24, 1)}
+    ${half(10, 38, 5)}${half(38, 10, 4)}`,
+
+  levitate: `<circle cx="24" cy="20" r="11" fill="#e8f4ff" ${line(2.2)}/><circle cx="20" cy="16" r="3" fill="#fff"/>
+    <ellipse cx="24" cy="42" rx="14" ry="3" fill="${PLUME_DARK}" opacity="0.5"/>
+    <path d="M14 34Q24 30 34 34" fill="none" stroke="${WIND_DEEP}" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"/>`,
+
+  featherweight: `<defs>${plumeG}</defs>
+    <path d="M8 40H40" ${line(2.4)}/><path d="M24 40V30" ${line(2.4)}/><path d="M10 30H38" ${line(2.4)}/>
+    ${feather(10, 26, 14, -80)}
+    <circle cx="36" cy="26" r="4" fill="#9aa2c8" ${line(1.8)}/>`,
+
+  weightless: `<defs>${plumeG}</defs>
+    ${palm(24, 44, 0.9)}
+    ${feather(18, 22, 16, -60)}
+    ${sparkle(12, 10, 2.6)}${sparkle(38, 14, 2.6)}`,
+
+  'cloud-nine': `<defs>${sky}</defs>
+    ${cloud(24, 26, 1.5)}
+    <path d="M29 20A5 5 0 1 0 29 22V30" fill="none" stroke="${WIND_DEEP}" stroke-width="3" stroke-linecap="round"/>
+    ${sparkle(10, 10, 2.6)}`,
+
+  'oblivion-wing': `<defs>${radial('g', [[0, '#ff8ab0'], [0.6, '#c0204a'], [1, '#600a24']], '50%', '50%')}</defs>
+    <path d="M24 30C14 18 6 20 2 10C10 12 14 8 18 14C18 8 22 6 24 4C26 6 30 8 30 14C34 8 38 12 46 10C42 20 34 18 24 30Z" fill="url(#$g)" ${line(2)}/>
+    <path d="M18 40L24 34L30 40" fill="none" stroke="#7ce08a" stroke-width="2.4" stroke-linecap="round"/>`,
 };

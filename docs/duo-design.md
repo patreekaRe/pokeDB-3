@@ -1021,6 +1021,88 @@ Eye stays. Confirmed (300, the bot valuing stacks as fading): solo **78.7**, pai
 72.7 / 74.7**: solo level with Fighting's first session (79.3), the pairs ~5-10 over Fighting's and Ice's first sessions
 on Fire, Grass and Water, for the balance pass (session 15) once the defensive half is in.
 
+#### Flying's second session: its other cards (session 12, 2026-10-20)
+
+Written here before the code, as Ground's second was. The other 36 pool cards (10 common, 18 uncommon, 8 rare),
+**defence-leaning**: 35 of the 36 block, Weaken, Sap, heal or give Evasion (the first half's 30 are mostly hits and
+draw). Flying is then whole: 20 common, 32 uncommon, 14 rare and 8 evolution cards (74). Each card is on a StS 1 card at
+x~1.2 (the last column and a comment on its line) with a hand-picked upgrade.
+
+**The new rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- `blockPerEvasion` / `blockPerTailwind`: +N block per Evasion you have (the card's own counted) / per turn of Tailwind
+  left (Plumage, Phantom Wing, Thermal), folded into the card's block in `effectsOf()` as Ground's `blockPerUnder` is.
+- Powers: `evasionBlock` (whenever you gain Evasion, block N: Big Pecks), `evadeWeak` / `evadeSap` (whenever Evasion
+  halves a hit, Weak / Sap N: Gale Wings, Levitate), `tailwindBlock` (at the start of each turn in Tailwind, block N: Jet
+  Stream), `tailwindKeep` (Tailwind no longer runs out: Delta Stream, Endless Sands' twin), `unburdenBlock` (whenever an
+  Unburden happens, block N: Early Bird, Focus Band's shape), `emptyBlock` (the first time your hand empties each turn,
+  block N: Weightless, Feather Light's twin; the two share the turn's once).
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Tangled Feet | C | 1 | Block 5, Evasion 1 *(up 8)* | Evasion | Blur, Evasion for its kept block |
+| Plumage | C | 1 | Block 5, +3 per Evasion *(up 7, +4)* | Evasion | (Evasion's Spirit Shield) |
+| Cloud Cover | C | 1 | Block 8; if you have Evasion, +4 *(up 10, +5)* | Evasion | Defend, on a condition |
+| Crosswind | C | 1 | Block 6, Tailwind 1 *(up 8, 2)* | Tailwind | Defend with Tools of the Trade's timer |
+| Slipstream | C | 1 | Block 5; in Tailwind, +5 *(up 7, +6)* | Tailwind | Defend, in the wind |
+| Thermal | C | 1 | Block 5, +2 per turn of Tailwind *(up 7, +3)* | Tailwind | (Tailwind's Spirit Shield) |
+| Preen | C | 0 | Block 3. Unburden: block 4 *(up 4, 6)* | Unburden | Deflect, doubled on the last card |
+| Perch | C | 1 | Block 6. Unburden: Weak 2 *(up 9)* | Unburden | Defend with Leg Sweep's Weak on the last card |
+| Floaty Fall | C | 1 | Deal 5, block 5. Unburden: draw 1 *(up 7, 7)* | Unburden | Iron Wave, with a draw on the last card |
+| Defog | C | 2 | Block 12, Weak 2 *(up 15)* | — | Leg Sweep |
+| Big Pecks | U | 1 | Power: whenever you gain Evasion, block 3 *(up 4)* | Evasion | (Evasion's Feel No Pain) |
+| Gale Wings | U | 1 | Power: whenever Evasion halves a hit, Weak 1 *(up cost 0)* | Evasion | (Blinding Sand's twin) |
+| Hover | U | 1 | Evasion 1, Sap 1 *(up Evasion 2)* | Evasion | Disarm, with Blur's Evasion |
+| Down Feathers | U | 2 | Block 12, Evasion 1 *(up 15)* | Evasion | Defend+, with Blur's Evasion |
+| Mirror Move | U | 1 | Block 6; if you have Evasion, Weak 2 *(up 9)* | Evasion | Leg Sweep-lite, on a condition |
+| Jet Stream | U | 1 | Power: at the start of each turn in Tailwind, block 4 *(up 6)* | Tailwind | Metallicize, in the wind |
+| Wind Power | U | 1 | Block 7; in Tailwind, draw 1 *(up 10)* | Tailwind | Shrug It Off, in the wind |
+| Air Lock | U | 1 | Weak 2, Tailwind 1 *(up Weak 3)* | Tailwind | Leg Sweep-lite with a timer |
+| Windbreak | U | 2 | Block 10, Tailwind 2 *(up 13, 3)* | Tailwind | Defend+ with Tools of the Trade's timer |
+| Downdraft | U | 1 | Block 6; in Tailwind, Sap 1 *(up 9)* | Tailwind | Disarm-lite, in the wind |
+| Early Bird | U | 1 | Power: whenever an Unburden happens, block 4 *(up 6)* | Unburden | (Unburden's Feel No Pain) |
+| Ruffle | U | 0 | Block 4, draw 1. Unburden: block 4 *(up 6, 6)* | Unburden | Shrug It Off-lite, free |
+| Nest | U | 1 | Block 8. Unburden: heal 4 *(up 11)* | Unburden | Defend with Bandage Up on the last card |
+| Squawk | U | 0 | Weak 1. Unburden: draw 2 *(up Weak 2)* | Unburden | Neutralize, with Finesse's draw |
+| Soar *(bridge)* | U | 1 | Block 8; in Tailwind, Evasion 1 *(up 11)* | Evasion/Tailwind | Defend with Blur, in the wind |
+| Unburden *(bridge)* | U | 1 | Block 6. Unburden: Evasion 2 *(up 9)* | Evasion/Unburden | Defend with Blur, on the last card |
+| Lift *(bridge)* | U | 0 | Block 3. Unburden: Tailwind 2 *(up 5)* | Tailwind/Unburden | Updraft's defensive twin |
+| Wingspan | U | 2 | Block 9, Weak 1, Sap 1 *(up 12)* | — | Leg Sweep with Disarm's Sap |
+| Delta Stream | R | 3 | Power: Tailwind 3; Tailwind no longer runs out *(up cost 2)* | Tailwind | (Endless Winter's twin) |
+| Sky Fortress | R | 2 | Block 16, Tailwind 2 *(up 20)* | Tailwind | Impervious-lite, bringing the wind |
+| Phantom Wing | R | 1 | Evasion 2, then block 4 per Evasion *(up 5)* | Evasion | (Evasion's own: block that grows with the stacks) |
+| Levitate | R | 2 | Power: whenever Evasion halves a hit, Sap 1 *(up cost 1)* | Evasion | (Evasion's own: Sap kept up) |
+| Featherweight | R | 0 | Block 5. Unburden: block 8, draw 1 *(up 7, 10)* | Unburden | (Unburden's own) |
+| Weightless | R | 1 | Power: the first time your hand empties each turn, block 8 *(up 11)* | Unburden | (Feather Light's defensive twin) |
+| Cloud Nine *(bridge)* | R | 1 | Weak 2, Evasion 1; in Tailwind, Sap 1 *(up Weak 3)* | Evasion/Tailwind | Feather Dance with Disarm, in the wind |
+| Oblivion Wing | R | 2 | Deal 14, heal 7 *(up 18, 9)* | — | Reaper, on one foe |
+
+Flying whole: 20 common (Evasion 6, Tailwind 5, Unburden 5, 3 basics and the Bash), 32 uncommon, 14 rare, 8 evolution =
+**74**.
+
+**Relics** (`only: 'flying'`, 6 plus its held item, answer 21): **Sharp Beak** (`sharp-beak`, common: your Flying attacks
+deal +2), **Sky Plate** (common: start each battle with Tailwind 2; Snowball's shape, for you), **Pretty Wing** (common:
+whenever you gain Evasion, gain 2 block; Light Clay's shape), **Coba Berry** (uncommon: whenever an Unburden happens, gain
+3 block; Focus Band's shape), **Air Balloon** (uncommon: start each battle with Evasion 2), **Flying Memory** (rare: at
+the start of your turn, your Evasion halves instead of going away; Fighting Memory's shape), **Flyinium Z** (boss: draw 1
+more each turn, and Keen Eye draws 2; Water Stone's shape: Flying has no stone). **Items**: **Flying Gem** (gain 8 block,
+Evasion 2) and **Swift Wing** (Tailwind 3, draw 2; there's no Flying Drive, so it takes the Drive's place, as Red Card does
+Fighting's).
+
+**Starters**: Pidgey (Pidgey, Pidgeotto, Pidgeot) and Pidove (Pidove, Tranquill, Unfezant), `DUO_STARTERS` skins of
+Starly's deck (`FLYING_DECK`), as Rhyhorn is of Trapinch's. Catching any stage adds Flying with that look
+(`DUO_LINES.flying`).
+
+**The Windy Cliffs** (`windycliffs`): Cliff Path, Nesting Ledges, Rope Bridge, the Eyrie. Its roster is the **birds**
+(35): every Normal / Flying Safari Pokémon (the Pidgey, Starly, Pidove, Spearow, Taillow, Hoothoot, Doduo, Rufflet and
+Togetic lines, Swablu and Altaria, Farfetch'd, Chatot), the sea birds (Wingull, Pelipper, Ducklett, Swanna), Natu and
+Xatu, the Archen line, Aerodactyl and Skarmory, moved in from the Meadow, Forest, Wetland, Peak and Desert. The other
+Flying-typed ones stay where they live: the bugs, bats, balloons, Hoppip's line, Tropius, the Mantine line, Gyarados and
+the dragons are their first type's, and the Dark birds (Murkrow, Honchkrow, Vullaby, Mandibuzz) wait for Dark's Night
+Alley. Its rare spawns are the ones already rare (Farfetch'd, Togetic, Togekiss, Braviary, Aerodactyl). Painted as the
+**Peak recoloured** to sea cliffs (chalk-white faces, wind-bent scrub, turf tops, a bright gusty sky, feathers on the
+wind) until its art session. **Date-gated** like the others (`SAFARI_FROM`, 2026-10-20 on the branch: move it to the day
+after the branch goes live); from then, 3 of the 11 a day.
+
 ### Dark: Steal, Punish, Illusion
 
 Sly. Hits Psychic and Ghost; fears Fighting and Bug.

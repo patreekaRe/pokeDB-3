@@ -627,6 +627,38 @@ SAFARI_ART.quarry = {
     night: { clouds: { count: 0.3 }, life: ['stars', 'safari'] },
   }),
 };
+/* The Windy Cliffs (the duo pool's Flying area, docs/duo-design.md section 5): the Peak's painters as chalk sea cliffs, its
+   snowcaps turf, its snowfields windswept grass, its pines wind-bent scrub, under a bright gusty sky, until its own art
+   session (the Power Plant borrows the Peak too, in a storm). */
+SAFARI_ART.windycliffs = {
+  ...SAFARI_ART.peak,
+  paintAs: 'peak',
+  storm: { rain: ['#e0ecf8', '#a8c0d8'], fall: 2, count: 1.2, sky: [0.65, 10, 14, 30], ground: [0.8, 8, 10, 24] },   // a squall off the sea
+  sun: ['#ffffff', '#fffce8', '#f8f0c8'],
+  cloud: ['#ffffff', '#f4f8fc', '#dce8f4', '#bcd0e4'], clouds: { count: 1.3 },
+  sky: ['#2a78d0', '#3a88d8', '#529ae0', '#6eaee8', '#8cc2f0', '#acd6f4', '#cce8f8'],
+  range: ['#a8c8e0', '#90b4d4', '#7aa0c8'], snow: ['#9cc470', '#7ea85a', '#5e8a44'],   // far headlands, turf on their tops
+  cliff: ['#f0ece0', '#d4cebe', '#aaa496', '#76705e'],   // chalk faces
+  pines: ['#5a8a4a', '#3a6232'], trunk: ['#6a5a44', '#43382a'],   // wind-bent scrub
+  ground: ['#a8d07c', '#9cc672', '#90bc68', '#84b05e', '#78a656', '#6c9a4e'],
+  snowField: ['#b4d88c', '#a6ce80', '#98c474', '#8aba68', '#7cb05c', '#6ea652'],   // windswept grass
+  blade: ['#d4ecb0', '#94bc70', '#5a8240'], patch: '#78a456',
+  tall: ['#98c470', '#6a9c50', '#44743a', '#24401e'],
+  trail: [
+    { at: 0, style: 'dirt', c: ['#d8ccb0', '#bcb090', '#988c6c', '#6a7a50'], edge: 'pole' },
+    { at: 2, style: 'snow', c: ['#e8e2d0', '#d0c8b2', '#aca48a', '#bcb49c'], edge: 'pole' },   // the chalk path along the edge
+  ],
+  pole: ['#ffffff', '#3a88c0', '#1a5a88'],   // rope posts
+  flowers: [['#f8f8ff', '#f8e048'], ['#f8a8c8', '#ffffff']],   // sea thrift
+  rock: ['#f4f0e6', '#d8d2c2', '#a8a292'],
+  bird: '#2a3a50', flake: ['#ffffff', '#e0ecf8'],
+  pad: { style: 'stone', top: '#ece8dc', mid: '#d0cabc', low: '#aea898', rim: '#4a4638', earth: '#7a7462', moss: '#9cc470' },
+  times: safariTimes({
+    dawn: { sky: ['#4a6cb8', '#6a7cc4', '#9090cc', '#c0a0c8', '#e8b8bc', '#f8d0b8', '#fce8cc'] },
+    dusk: { sky: ['#20305a', '#38406c', '#5a4c78', '#86587a', '#b46c74', '#da8a6c', '#f0b070'] },
+    night: { clouds: { count: 0.6 }, life: ['stars', 'clouds', 'blades', 'safari'] },
+  }),
+};
 for (const [area, art] of Object.entries(SAFARI_ART)) {
   BIOME_ART[area] = {
     backdrop: 'safari', floor: 'safari', area: art.paintAs ?? area, kin: { meadow: 'clearing', forest: 'shrine', wetland: 'clearing', marsh: 'shrine', peak: 'clearing', desert: 'wastes' }[art.paintAs ?? area],
@@ -1769,6 +1801,7 @@ const WEATHER = {
   icecave: 'snow',
   dojomountain: 'leaves',
   quarry: 'sand',
+  windycliffs: 'feathers',
 };
 const WEATHER_LOOK = {
   drizzle: { colours: ['#d8e6fa', '#8aa2c8'], per: 420, glow: true },
@@ -1777,6 +1810,7 @@ const WEATHER_LOOK = {
   dust: { colours: ['#ffffff', '#b8f4ff', '#e8b8ff'], per: 900, glow: true },
   snow: { colours: ['#ffffff', '#dce6f4'], per: 600, glow: true },
   sand: { colours: ['#f4dca8', '#d4b478'], per: 450 },
+  feathers: { colours: ['#ffffff', '#c8d4e0', '#f4f8fc', '#a8b8c8', '#e8eef4', '#b8c4d0'], per: 1500 },   // the Windy Cliffs': drawn as leaves
 };
 
 function weatherFor(biomeId, time) {
@@ -1803,7 +1837,7 @@ function drawWeather(t) {
       if (p.y > H) reset(p);
       put(p.x, p.y, c[0]); put(p.x + 1, p.y - 2, c[1]);
       if (s > 1) put(p.x + 1, p.y - 1, c[1]);
-    } else if (kind === 'leaves') {
+    } else if (kind === 'leaves' || kind === 'feathers') {
       p.y += (0.35 * s) * DT; p.x += (0.35 + Math.sin((t + p.phase) / 6) * 0.6) * DT;
       if (p.y > H + 2 || p.x > W + 3) reset(p);
       const pair = (i % 3) * 2, [a, b] = [c[pair], c[pair + 1]], spin = Math.floor((t + p.phase) / 3) % 4;

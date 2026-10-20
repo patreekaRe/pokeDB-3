@@ -430,7 +430,17 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   and the Forest until the Windy Cliffs). In `js/battle.js`: **Evasion** (`gainEvasion()`, `b.evasion`, the 🪶 badge,
   `evaded()`), **Tailwind** (`b.tailwind`, the 🌬️ badge, its extra card in `beginPlayerTurn()`), **Unburden**
   (`unburdened()`) and **Keen Eye** (`keenEye()`, `b.keenTurn`). `tools/flying-probe.mjs` checks them in a real fight.
-- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting, Ground and Flying; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+- **Flying's second session** (session 12, 2026-10-20; `docs/duo-design.md` section 5's "Flying's second session"):
+  36 more cards (defence-leaning), Sharp Beak + 6 relics (Sky Plate, Pretty Wing, Coba Berry, Air Balloon, Flying Memory,
+  the boss Flyinium Z in `abilityFor()`), Flying Gem and Swift Wing, the Card index's Flying tab, **Pidgey** and **Pidove**
+  (`skinOf: 'starly'` looks; `DUO_LINES.flying.pidgey` / `.pidove`; back GIFs, `SPRITE_FIT`, `BODY_X`, six cries) and **the
+  Windy Cliffs** (`windycliffs`, an 11th area: the birds, 35: every Normal / Flying Safari Pokémon, the sea birds, Natu and
+  Xatu, the Archen line, Aerodactyl and Skarmory, moved in with `was:`; the bugs, bats, balloons, grass and water flyers and
+  dragons stay with their first type, and the Dark birds wait for Night Alley; date-gated by `SAFARI_FROM`; painted as the
+  Peak recoloured to chalk sea cliffs: `SAFARI_ART.windycliffs`, `paintAs: 'peak'`, the `feathers` weather (drawn as
+  leaves); its rares the ones already rare: Farfetch'd, Togetic, Togekiss, Braviary, Aerodactyl). Playtest a Duo Run in it
+  with `&windycliffs`.
+- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting, Ground and Flying; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` / `&windycliffs` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 

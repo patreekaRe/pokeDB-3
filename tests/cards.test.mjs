@@ -153,7 +153,9 @@ test('Flying: a full starting deck, its evolution cards, its Ability, and the ne
   assert.equal(evolutionCardsFor('flying', 2).length, 4);
   assert.equal(ABILITIES.flying.id, 'keen-eye');
   const pool = typePool('flying');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [10, 14, 6]);
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 12
+  assert.equal(STARTERS_BY_ID.pidgey.skinOf, 'starly');
+  assert.equal(STARTERS_BY_ID.pidove.skinOf, 'starly');
   // answer 18: Flying owns Tailwind; the neutral card keeps its id under another name
   assert.equal(CARDS_BY_ID.tailwind.type, 'normal');
   assert.notEqual(CARDS_BY_ID.tailwind.name, 'Tailwind');

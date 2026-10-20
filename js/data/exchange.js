@@ -31,7 +31,7 @@ export const EXCHANGE_INK = {
   meadow: ['#8cd060', '#3a7a24'], forest: ['#4aa860', '#163e20'], wetland: ['#4ab0d8', '#164a78'],
   marsh: ['#9a80c0', '#2e2448'], peak: ['#9ab4d0', '#34466a'], desert: ['#eab860', '#8a5418'], powerplant: ['#e8c830', '#5a4a10'],
   icecave: ['#a8d8f0', '#2a5878'],
-  dojomountain: ['#e09060', '#6a3420'], quarry: ['#c8a070', '#5a3c20'],
+  dojomountain: ['#e09060', '#6a3420'], quarry: ['#c8a070', '#5a3c20'], windycliffs: ['#8cc4e8', '#1e4a70'],
 };
 
 /** The odds of a gold capsule after `pity` plain ones in a row. */
