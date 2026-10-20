@@ -2680,7 +2680,7 @@ function afterFight(node, result) {
     if (!peeking && isSafari()) for (const t of finishedBy(getSave(), rangerInfo(node, result))) dexNews.push(`📋 Ranger task done: ${t.title}! Claim it on the board at the Safari Outfitter.`);
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
   }
-  if (isSafari() && !peeking) dexNews.push(...creditSafari());   // before unlock(): a full Safari Pokédex is Rayquaza's
+  if (isSafari() && !peeking) dexNews.push(...creditSafari(unlocked));   // before unlock(): a full Safari Pokédex is Rayquaza's
   if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
   const drop = gleaning() && !gleaned(gleanKey(node, 'drop')) ? fightDrop(mainBiome().id, node.type, random) : null;   // a material for the Satchel
   if (drop) dexNews.unshift(matLine(drop));   // first: the final boss's window drops a finished Pokédex page's last line
@@ -2951,7 +2951,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
 /** Pays a Safari Pokédex page's reward once, the first won Safari fight after its last Pokémon is caught (any try: the
     coins don't touch the leaderboard; the rare boost waits for a replay, rareOdds()), and marks a full Safari Pokédex,
     Rayquaza's achievement. Returns the reward box's lines. */
-function creditSafari() {
+function creditSafari(windows) {
   const news = safariNews(getSave().safariDex);
   const lines = [];
   for (const area of news.areas) {
@@ -2965,19 +2965,28 @@ function creditSafari() {
     updateSave(d => { d.safariDex.complete = true; });
     lines.push('The Safari Pokédex is complete! Every Safari Pokémon is caught.');
   }
-  lines.push(...duoNews());
+  lines.push(...duoNews(windows));
   return lines;
 }
 
 /** A starter line's stage caught in the Safari adds its type to the duo pool, with that look (js/data/duo.js's
-    DUO_LINES). Catches already in the save count, so this also runs on opening the Duo app. */
-export function duoNews() {
+    DUO_LINES). Catches already in the save count. Given `windows`, each new starter gets the unlock window (the user's ask,
+    2026-10-20: a line in the catch box was easy to miss) instead of a line. */
+export function duoNews(windows) {
   const gains = duoGains(getSave().safariDex.caught, getSave().duoPool);
   const lines = [];
   for (const [type, looks] of Object.entries(gains)) {
     const fresh = !getSave().duoPool?.[type]?.length;
     updateSave(d => { d.duoPool = { ...d.duoPool, [type]: [...(d.duoPool?.[type] || []), ...looks] }; });
-    for (const look of looks) lines.push(`${STARTERS_BY_ID[look].line[0].name} joined your duo pool!${fresh ? ` ${type[0].toUpperCase()}${type.slice(1)} unlocked.` : ''}`);
+    const Type = `${type[0].toUpperCase()}${type.slice(1)}`;
+    looks.forEach((look, i) => {
+      const s = STARTERS_BY_ID[look], name = s.line[0].name, deck = STARTERS_BY_ID[s.skinOf]?.line[0].name;
+      if (!windows) return lines.push(`${name} joined your duo pool!${fresh && !i ? ` ${Type} unlocked.` : ''}`);
+      windows.push({ feat: true, kicker: '🔓 New duo starter!', name, sprite: spriteUrl(s, 'front', 0, false), cry: s.line[0].id,
+        text: fresh && !i ? `${name} joined your duo pool, and ${Type} is unlocked for Safari Duo Runs!`
+          : `${name} joined your duo pool: a new look for your ${Type} partner${deck ? `, playing ${deck}'s deck` : ''}.`,
+        hint: 'Pick it in the Safari lobby, in Duo Run.' });
+    });
   }
   return lines;
 }
