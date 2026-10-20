@@ -5,13 +5,15 @@
    A Duo Run is a replay: it opens once the day's free Daily run is finished, needs the Day Pass and never posts.
    ============================================================ */
 
-import { safariDaily } from './data/safari.js';
+import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { STARTERS, STARTERS_BY_ID, DUO_STARTERS, spriteUrl } from './data/starters.js';
 import { TYPES } from './data/cards.js';
 import { REAL_TYPES, speciesTypes, realFactor } from './data/real-types.js';
 import { DUO_BASE, DUO_LINES, duoPool, duoOpen } from './data/duo.js';
+import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { getSave } from './storage.js';
+import { typeBadge } from './type-badge.js';
 import { isStarterUnlocked } from './progress.js';
 import { playSound } from './audio.js';
 import { $, el } from './ui.js';
@@ -33,6 +35,7 @@ function poolNow() {
 
 let host = null, start = null;
 const pick = { order: [], look: {} };   // the types picked, lead first, and the look shown for each type
+const opened = new Set();   // the areas of today's road unfolded, kept across a pick's re-render
 
 /** An area's main types: the real types most of its wild Pokémon wear, two or three. */
 export function areaTypes(area) {
@@ -52,13 +55,27 @@ export function fares(types, area) {
   };
 }
 
-const chip = (t) => Object.assign(el('span', `duo-type type-${t}`, `${REAL_TYPES[t].icon} ${REAL_TYPES[t].label}`), { title: `${REAL_TYPES[t].label} type` });
+function chip(t) {
+  const c = el('span', `duo-type type-${t}`);
+  c.append(typeBadge(t), REAL_TYPES[t].label);
+  c.title = `${REAL_TYPES[t].label} type`;
+  return c;
+}
 
 function road(daily) {
   const seen = new Set([...getSave().safariDex.seen, ...getSave().safariDex.caught]);
   const box = el('ol', 'duo-road');
   daily.areas.forEach((area, i) => {
     const li = el('li', 'duo-area');
+    const fold = el('details', 'duo-fold');
+    fold.open = opened.has(area.id);
+    fold.addEventListener('toggle', () => { if (fold.open) opened.add(area.id); else opened.delete(area.id); });
+    const page = SAFARI_DEX_PAGES.find(p => p.area === area.id);
+    const { caught } = safariProgress(page.ids, getSave().safariDex);
+    const head = el('summary', `duo-area-head${caught === page.ids.length ? ' done' : ''}`);
+    head.append(el('span', 'sp-area-no', `${i + 1}`), el('b', '', area.name), el('small', 'duo-area-count', `${caught}/${page.ids.length}`));
+    head.title = `${area.name}: ${caught} of ${page.ids.length} caught. Tap for its types and Pokémon.`;
+    head.addEventListener('click', () => playSound('confirm'));
     const types = el('span', 'duo-types');
     types.append(...areaTypes(area).map(chip));
     const mons = el('span', 'duo-mons');
@@ -76,13 +93,12 @@ function road(daily) {
       img.title = 'A rare spawn';
       mons.append(img, el('span', 'map-rare inline', '✦'));
     }
-    const head = el('p', 'duo-area-head');
-    head.append(el('span', 'sp-area-no', `${i + 1}`), el('b', '', area.name));
-    li.append(head, types, mons);
+    fold.append(head, types, mons);
     if (pick.order.length === 2) {
       const f = fares(pick.order, area);
-      li.append(el('p', 'duo-fares', `▲ ${f.up}/${f.of} you hit hard · ▼ ${f.down}/${f.of} hit you hard`));
+      fold.append(el('p', 'duo-fares', `▲ ${f.up}/${f.of} you hit hard · ▼ ${f.down}/${f.of} hit you hard`));
     }
+    li.append(fold);
     box.append(li);
   });
   return box;
@@ -96,13 +112,10 @@ function portrait(type, pool) {
   const look = STARTERS_BY_ID[looks.includes(pick.look[type]) ? pick.look[type] : looks[0]];
   const face = el('button', 'duo-face');
   face.type = 'button';
-  if (look) {
-    const img = el('img', 'pixel');
-    img.src = spriteUrl(look, 'front', 0);
-    img.alt = '';
-    face.append(img);
-  }
-  face.append(el('b', 'duo-face-type', `${TYPES[type]?.icon ?? REAL_TYPES[type].icon}`), ...(on >= 0 ? [el('em', 'duo-face-no', on === 0 ? 'Lead' : '2nd')] : []));
+  if (look) face.append(faceSprite(spriteUrl(look, 'front', 0)));
+  const badge = typeBadge(type);
+  badge.classList.add('duo-face-type');
+  face.append(badge, ...(on >= 0 ? [el('em', 'duo-face-no', on === 0 ? 'Lead' : '2nd')] : []));
   const label = have ? `${look.line[0].name} (${(TYPES[type] ?? REAL_TYPES[type]).label})` : `${REAL_TYPES[type].label}: not caught yet`;
   face.title = label;
   face.setAttribute('aria-label', label);
@@ -131,6 +144,24 @@ function portrait(type, pool) {
   return card;
 }
 
+const FACE = 64, POSE = 50;   // the portrait's circle, and how big the Pokémon's resting pose stands in it
+/** A starter's sprite stood in the middle of its portrait by its resting pose (SPRITE_FIT) and its body (BODY_X), not
+    its GIF's frame, whose empty room for a hop or a tail pushed it off centre (the user's call, 2026-10-20). */
+function faceSprite(src) {
+  const img = el('img', 'pixel duo-face-mon');
+  img.alt = '';
+  img.onload = () => {
+    const W = img.naturalWidth, H = img.naturalHeight, [top, bottom, left, right] = spriteFit(src);
+    const pw = W - left - right, ph = H - top - bottom, k = POSE / Math.max(pw, ph);
+    Object.assign(img.style, { width: `${W * k}px`, height: `${H * k}px`,
+      left: `${FACE / 2 - (left + pw / 2 + bodyX(src)) * k}px`, top: `${FACE / 2 - (top + ph / 2) * k}px` });
+  };
+  img.src = src;
+  const pic = el('span', 'duo-face-pic');
+  pic.append(img);
+  return pic;
+}
+
 /** Where a type not caught yet comes from: "Catch Shinx in the Power Plant". */
 function hintFor(type) {
   const first = Object.keys(DUO_LINES[type] || {})[0];
@@ -143,15 +174,21 @@ function render() {
   const open = duoUnlocked();
   const types = [...new Set([...DUO_BASE, ...Object.keys(pool), ...Object.keys(DUO_LINES)])];
   const parts = [];
-  parts.push(el('h3', 'duo-head', "Today's road"), road(daily));
   parts.push(el('h3', 'duo-head', 'Your duo pool'), el('p', 'duo-note', 'Pick two types. The first is out first; switch for 1 PP on your turn.'));
+  if (!open) parts.push(el('p', 'duo-lock', "🔒 Finish today's Daily run to unlock the Duo Run (won or lost)."));
   const grid = el('div', 'duo-pool');
   grid.append(...types.map(t => portrait(t, pool)));
   parts.push(grid);
-  if (!open) parts.push(el('p', 'duo-lock', "🔒 Finish today's Daily run to unlock the Duo Run (won or lost)."));
-  else parts.push(el('p', 'duo-note', 'A replay with the Day Pass: perks on, coins as a replay, never on the leaderboard.'));
+  parts.push(el('h3', 'duo-head', "Today's road"), el('p', 'duo-note', "Today's Daily run, the same three areas. Tap one for its types and Pokémon."), road(daily));
+  if (open) parts.push(el('p', 'duo-note', 'A replay with the Day Pass: perks on, coins as a replay, never on the leaderboard.'));
   host.replaceChildren(...parts);
   host.dispatchEvent(new Event('duo-change', { bubbles: true }));
+}
+
+/** The looks picked so far, lead first (none, one or two), for the lobby's window to stand at the gate. */
+export function duoLooks() {
+  const pool = poolNow();
+  return pick.order.map(t => STARTERS_BY_ID[(pool[t] || []).includes(pick.look[t]) ? pick.look[t] : pool[t]?.[0]]).filter(Boolean);
 }
 
 /** The picked pair as starter ids, lead first, or null until two are picked. */

@@ -346,6 +346,14 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   your owned starters of the type), how the pair fares in each area (`fares()`), A = Pick 2 / Start Duo / Locked.
   Start Duo goes through `safariTicket()` (the Day Pass) and `onDuo` in `js/main.js`. Locked until the day's free try
   ends, won or lost (`save.safari.done`, set in `endRun()`; abandoning never gets there); `?duorun` lends it.
+  **Its layout** (the user's calls, 2026-10-20): the Duo app alone keeps the lobby's window (`window: true` in `APPS`),
+  and the picks stand at the gate as they're made, lead on the left (`dressGate()` in `js/safariprep.js`, `duoLooks()`;
+  "Pick your duo" / "Pick a partner" until two are picked). Below it the panel scrolls: the pool first, then today's
+  road, each area a `<details>` row (number, name, its Safari Dex count; collapsed by default, its open state kept
+  across a pick's re-render) holding the types, Pokémon and fares. The road is the Daily run's own three areas and the
+  counts are the one Safari Dex, the same as the lobby's rows. Type chips and the portraits' corners are round badges
+  (`typeBadge()` in `js/type-badge.js`, SVG glyphs in the games' icon colours, not the emoji), and each portrait stands
+  its sprite by `SPRITE_FIT` / `BODY_X` (`faceSprite()`), not by its GIF's frame.
 - **The duo pool**: `save.duoPool` holds the types caught beyond Fire / Grass / Water (type -> starter ids as looks);
   the base three are every owned starter of the type. `duoNews()` in `js/run.js` (from `creditSafari()`) adds a type
   when a stage of one of its `DUO_LINES` starter lines is in `save.safariDex.caught`, old catches included, with the

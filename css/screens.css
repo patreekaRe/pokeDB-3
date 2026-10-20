@@ -4213,6 +4213,25 @@ body.scene-peek #backdrop { display: none; }
 #sp-duo.locked .mdex-ico { opacity: 0.5; }
 /* .cdev-dex's overflow: hidden is for the Dex, which scrolls its own list; the Duo app is one long page */
 .cdev-app.sp-duo-app { overflow-y: auto; }
+/* the Duo app keeps the window: the picked pair stands at the gate, lead on the left */
+.sp-gate-mon[hidden], .sp-gate-note[hidden] { display: none; }
+.sp-window.duo-gate .sp-gate-mon { left: 36%; }
+.sp-window.duo-gate .sp-gate-second { left: 64%; z-index: 0; animation-delay: -0.7s; }
+.sp-gate-note { position: absolute; z-index: 2; left: 50%; bottom: 10px; translate: -50% 0; margin: 0; padding: 3px 8px; border: 2px solid #2a2a30;
+  border-radius: 6px; background: rgba(216, 236, 176, 0.92); color: #1f3a14; font-family: var(--pixel-font); font-size: 0.75rem; white-space: nowrap; }
+.type-badge { display: inline-block; width: 1.25em; height: 1.25em; flex: none; vertical-align: middle; }
+.type-badge svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.25)); }
+.duo-type { display: inline-flex; align-items: center; gap: 4px; }
+.duo-fold > summary { list-style: none; cursor: pointer; }
+.duo-fold > summary::-webkit-details-marker { display: none; }
+.duo-fold > summary::after { content: '▸'; margin-left: 2px; transition: rotate 0.2s; }
+.duo-fold[open] > summary::after { rotate: 90deg; }
+.duo-fold[open] { display: flex; flex-direction: column; gap: 4px; }
+.duo-area-count { margin-left: auto; font-size: 0.75rem; }
+.duo-area-head.done .duo-area-count::before { content: '✓ '; }
+.duo-face-pic { position: absolute; inset: 0; overflow: hidden; border-radius: 50%; }
+.duo-face .duo-face-mon { position: absolute; max-width: none; object-fit: fill; image-rendering: pixelated; }
+.duo-face-type.type-badge { width: 22px; height: 22px; z-index: 1; }
 /* the Duo key's app (js/duoprep.js): today's road, the duo pool's portraits, how the pair fares */
 .duo-app { padding: 10px 12px 18px; display: flex; flex-direction: column; gap: 8px; font-family: var(--pixel-font); color: #1f3a14; }
 .duo-head { margin: 4px 0 0; font-size: 0.85rem; letter-spacing: 0.04em; text-transform: uppercase; }
