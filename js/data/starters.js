@@ -454,6 +454,46 @@ export const DUO_STARTERS = [
     deck: ELECTRIC_DECK,
   },
   {
+    id: 'electrike', type: 'electric', duoOnly: true, skinOf: 'shinx',
+    line: [
+      { id: 'electrike', name: 'Electrike' },
+      { id: 'manectric', name: 'Manectric' },
+      { id: 'manectric', name: 'Awakened Manectric', aura: 'awakened' },
+    ],
+    blurb: 'Runs so fast its fur builds up a charge. It grows a mane that crackles and pulls thunder down from the clouds.',
+    deck: ELECTRIC_DECK,
+  },
+  {
+    id: 'blitzle', type: 'electric', duoOnly: true, skinOf: 'shinx',
+    line: [
+      { id: 'blitzle', name: 'Blitzle' },
+      { id: 'zebstrika', name: 'Zebstrika' },
+      { id: 'zebstrika', name: 'Awakened Zebstrika', aura: 'awakened' },
+    ],
+    blurb: 'Its mane flashes when it is angry, which is often. It grows into a stallion that gallops at lightning speed.',
+    deck: ELECTRIC_DECK,
+  },
+  {
+    id: 'joltik', type: 'electric', duoOnly: true, skinOf: 'shinx',
+    line: [
+      { id: 'joltik', name: 'Joltik' },
+      { id: 'galvantula', name: 'Galvantula' },
+      { id: 'galvantula', name: 'Awakened Galvantula', aura: 'awakened' },
+    ],
+    blurb: 'Too small to make power, so it rides bigger Pokémon and drinks theirs. It grows to spin webs that shock.',
+    deck: ELECTRIC_DECK,
+  },
+  {
+    id: 'voltorb', type: 'electric', duoOnly: true, skinOf: 'shinx',
+    line: [
+      { id: 'voltorb', name: 'Voltorb' },
+      { id: 'electrode', name: 'Electrode' },
+      { id: 'electrode', name: 'Awakened Electrode', aura: 'awakened' },
+    ],
+    blurb: 'Looks like a Poké Ball and blows up at a touch. It grows bigger, louder, and even quicker to go off.',
+    deck: ELECTRIC_DECK,
+  },
+  {
     id: 'vanillite', type: 'ice', duoOnly: true,
     line: [
       { id: 'vanillite', name: 'Vanillite' },
@@ -534,6 +574,26 @@ export const DUO_STARTERS = [
       { id: 'jynx', name: 'Awakened Jynx', aura: 'awakened' },
     ],
     blurb: 'Tests everything with its lips first. It grows up to dance in a way that sets the snow swirling round it.',
+    deck: ICE_DECK,
+  },
+  {
+    id: 'lapras', type: 'ice', duoOnly: true, skinOf: 'vanillite',
+    line: [
+      { id: 'lapras', name: 'Lapras' },
+      { id: 'lapras', name: 'Awakened Lapras', aura: 'awakened' },
+      { id: 'lapras', name: 'Ascendant Lapras', aura: 'ascendant' },
+    ],
+    blurb: 'Ferries people across the sea on its back and sings as it swims. It never evolves: it powers up like a legend.',
+    deck: ICE_DECK,
+  },
+  {
+    id: 'cryogonal', type: 'ice', duoOnly: true, skinOf: 'vanillite',
+    line: [
+      { id: 'cryogonal', name: 'Cryogonal' },
+      { id: 'cryogonal', name: 'Awakened Cryogonal', aura: 'awakened' },
+      { id: 'cryogonal', name: 'Ascendant Cryogonal', aura: 'ascendant' },
+    ],
+    blurb: 'A snowflake that drifts in on the coldest nights and binds foes with ice chains. It powers up instead of evolving.',
     deck: ICE_DECK,
   },
   {
@@ -699,6 +759,46 @@ export const DUO_STARTERS = [
     deck: GROUND_DECK,
   },
   {
+    id: 'cubone', type: 'ground', duoOnly: true, skinOf: 'trapinch',
+    line: [
+      { id: 'cubone', name: 'Cubone' },
+      { id: 'marowak', name: 'Marowak' },
+      { id: 'marowak', name: 'Awakened Marowak', aura: 'awakened' },
+    ],
+    blurb: 'Wears a skull and never takes it off. It grows tough and wields its bone like a boomerang.',
+    deck: GROUND_DECK,
+  },
+  {
+    id: 'phanpy', type: 'ground', duoOnly: true, skinOf: 'trapinch',
+    line: [
+      { id: 'phanpy', name: 'Phanpy' },
+      { id: 'donphan', name: 'Donphan' },
+      { id: 'donphan', name: 'Awakened Donphan', aura: 'awakened' },
+    ],
+    blurb: 'Small, but its trunk is strong enough to lift a grown-up. It grows into a tank that rolls over anything.',
+    deck: GROUND_DECK,
+  },
+  {
+    id: 'sandshrew', type: 'ground', duoOnly: true, skinOf: 'trapinch',
+    line: [
+      { id: 'sandshrew', name: 'Sandshrew' },
+      { id: 'sandslash', name: 'Sandslash' },
+      { id: 'sandslash', name: 'Awakened Sandslash', aura: 'awakened' },
+    ],
+    blurb: 'Curls into a ball to dodge, then digs in deep. It grows spines that it rolls up in to bowl foes over.',
+    deck: GROUND_DECK,
+  },
+  {
+    id: 'drilbur', type: 'ground', duoOnly: true, skinOf: 'trapinch',
+    line: [
+      { id: 'drilbur', name: 'Drilbur' },
+      { id: 'excadrill', name: 'Excadrill' },
+      { id: 'excadrill', name: 'Awakened Excadrill', aura: 'awakened' },
+    ],
+    blurb: 'Spins its claws to tunnel at top speed. It grows into a drill that bores through a mountain\'s steel.',
+    deck: GROUND_DECK,
+  },
+  {
     id: 'starly', type: 'flying', duoOnly: true,
     line: [
       { id: 'starly', name: 'Starly' },
@@ -777,6 +877,26 @@ export const DUO_STARTERS = [
       { id: 'salamence', name: 'Salamence' },
     ],
     blurb: 'Dreams of flying and headbutts cliffs trying. Its wish comes true at last, as a dragon that soars.',
+    deck: FLYING_DECK,
+  },
+  {
+    id: 'rufflet', type: 'flying', duoOnly: true, skinOf: 'starly',
+    line: [
+      { id: 'rufflet', name: 'Rufflet' },
+      { id: 'braviary', name: 'Braviary' },
+      { id: 'braviary', name: 'Awakened Braviary', aura: 'awakened' },
+    ],
+    blurb: 'Picks fights with anything, however big. It grows into a brave hero of the skies that never gives up.',
+    deck: FLYING_DECK,
+  },
+  {
+    id: 'swablu', type: 'flying', duoOnly: true, skinOf: 'starly',
+    line: [
+      { id: 'swablu', name: 'Swablu' },
+      { id: 'altaria', name: 'Altaria' },
+      { id: 'altaria', name: 'Awakened Altaria', aura: 'awakened' },
+    ],
+    blurb: 'Its wings are like cotton, and it loves to clean things with them. It grows to hum in a cloud of its own.',
     deck: FLYING_DECK,
   },
   {
@@ -868,6 +988,16 @@ export const DUO_STARTERS = [
       { id: 'honchkrow', name: 'Awakened Honchkrow', aura: 'awakened' },
     ],
     blurb: 'Thought to bring bad luck, it steals shiny things at night. Grows into a boss that a flock of Murkrow obeys.',
+    deck: DARK_DECK,
+  },
+  {
+    id: 'absol', type: 'dark', duoOnly: true, skinOf: 'deino',
+    line: [
+      { id: 'absol', name: 'Absol' },
+      { id: 'absol', name: 'Awakened Absol', aura: 'awakened' },
+      { id: 'absol', name: 'Ascendant Absol', aura: 'ascendant' },
+    ],
+    blurb: 'Appears before disaster strikes, to warn of it. It never evolves: it powers up like a legend.',
     deck: DARK_DECK,
   },
 ];

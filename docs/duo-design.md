@@ -77,7 +77,9 @@ says "Finish today's Daily run to unlock".
   single Pokémon powers up as a legendary does (Awakened, then Ascendant), by an `aura` field on the line's stage
   (`spriteUrl()`; GIFs from `tools/legendary-aura.py <id> <type> [awakened]`, which now has Ice, Fighting and Dark
   palettes). Ice: Snorunt, Snover, Cubchoo, Sneasel, Seel, Smoochum (8 in all). Fighting: Riolu, Makuhita, Mankey,
-  Meditite, Mienfoo, Hitmonlee, Hitmonchan (10). Dark: Zorua, Poochyena, Houndour, Pawniard, Murkrow (9). These 14 were **not** moved into their type's area: each has a stage somewhere in the Safari, and a catch
+  Meditite, Mienfoo, Hitmonlee, Hitmonchan (10). Dark: Zorua, Poochyena, Houndour, Pawniard, Murkrow (9). Then every type
+  to 10 (the user's ask, same day): Electric + Electrike, Blitzle, Joltik, Voltorb; Ice + Lapras, Cryogonal (singles);
+  Ground + Cubone, Phanpy, Sandshrew, Drilbur; Flying + Rufflet, Swablu; Dark + Absol (a single). 60 duo looks. These 14 were **not** moved into their type's area: each has a stage somewhere in the Safari, and a catch
   anywhere counts.
 - Each new type's **starter lines** live in that type's own new Safari area (section 5), moved there from the areas
   they're in today. **Catching any stage of a starter line** in any Safari run (Daily, Replay or Duo) adds that type to the

@@ -248,6 +248,9 @@ with a legendary's aura (`docs/duo-design.md` section 3). 47 duo looks in all. *
 auras (80 new GIFs, ~8 MB, loaded only for the two starters in a run).
 Then the Duo Run's own three areas (`duoRoad()`) and the map's badge on rooms holding a duo starter not caught yet
 (`docs/reference/safari.md`).
+Then every duo type to 10 looks (60 in all; `docs/duo-design.md` section 3), the type badges everywhere a type was an emoji
+(`typeText()` in `js/type-badge.js`: card faces, the battle's plates, the Pokédex and Stats chips, the Hall of Fame, the
+map's match marks, the crossroads), and the duo's swap button on the plate's top-left corner (`#player-plate .bench-chip`).
 Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
 start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
 docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo

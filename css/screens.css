@@ -428,7 +428,8 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 }
 .nameplate-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0; }
 .nameplate-title strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nameplate-title .chip { padding: 0; background: none; font-size: 1rem; line-height: 1; cursor: help; }   /* just the type's pixel icon, no pill */
+.nameplate-title .chip { padding: 0; background: none; font-size: 1rem; line-height: 1; cursor: help; display: inline-flex; gap: 2px; }
+.nameplate-title .chip .type-badge { width: 1.3em; height: 1.3em; }   /* just the type's pixel icon, no pill */
 /* a duo's benched partner on your nameplate (renderBench() in js/battle.js): a portrait in its type's colour, its
    ▲ / ▼ for the coming hit; a tap arms the switch's Go pill over the plate */
 .bench-chip {
@@ -449,6 +450,10 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .bench-chip[data-type="ground"] { --c1: #e8c878; --c2: #8a6430; }
 .bench-chip[data-type="flying"] { --c1: #c8c0ff; --c2: #5a50b0; }
 .bench-chip[data-type="dark"] { --c1: #a8907c; --c2: #3e2e26; }
+/* it sits on the plate's top-left corner, over its edge, where a thumb finds it (the user's call, 2026-10-20) */
+#player-plate .bench-chip { position: absolute; left: -18px; top: -18px; z-index: 5; width: 44px; height: 44px; margin: 0;
+  box-shadow: 0 0 0 2px #fff, 2px 3px 0 1px rgba(0, 0, 0, 0.35); }
+#player-plate:has(.bench-chip:not([hidden])) .nameplate-title strong { padding-left: 24px; }
 .bench-chip.armed { box-shadow: 0 0 0 2px #ffd84a, 0 0 8px 2px rgba(255, 216, 74, 0.7); }
 .bench-face { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
 .bench-mark {
@@ -6809,3 +6814,8 @@ button.craft-mat.on { box-shadow: inset 0 0 0 3px #f0a820; background: #fff8e0; 
   grid-column: 1 / -1; padding: 6px 10px; border-radius: 6px; background: #2c3866; color: #fff;
   font-family: var(--pixel-font); font-size: 0.85rem; text-shadow: 1px 1px 0 #10142a;
 }
+
+/* the type badges (js/type-badge.js) where an emoji stood: sized to the mark they sit in */
+.map-match .type-badge, .map-revealed-type .type-badge { width: 16px; height: 16px; }
+.card-type .type-badge { width: 1.15em; height: 1.15em; margin-top: -0.1em; }
+.xr-wicon .type-badge { width: 1.2em; height: 1.2em; }

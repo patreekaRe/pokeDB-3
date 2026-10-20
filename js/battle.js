@@ -45,6 +45,7 @@ import { safariSprite, workshopOf } from './data/workshop.js';
 import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows, safariBallsLeft } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 import { flyTrail, burnAway } from './cardfx.js';
+import { typeText } from './type-badge.js';
 
 const ENERGY_PER_TURN = 3;
 const HAND_SIZE = 5;
@@ -2963,7 +2964,7 @@ function dressPlayer() {
   const b = battle;
   $('player-name').textContent = stageName(b.starter, b.stage);
   const type = b.starter.type;
-  $('player-type').textContent = TYPES[type].icon;
+  $('player-type').replaceChildren(typeText(type, TYPES[type].icon, ''));
   $('player-type').title = `${TYPES[type].label} type`;
   $('player-type').className = `chip type-${type}`;
   $('player-ability').hidden = !b.ability;
@@ -3018,7 +3019,7 @@ function setupEnemy() {
   // the Safari shows a wild's real types (one icon each); everywhere else the game's own
   const real = b.safari && !typeless() ? speciesTypes(b.def) : null;
   if (real) $('enemy-zone').dataset.type = real[0];
-  $('enemy-type').textContent = real ? real.map(t => REAL_TYPES[t].icon).join('') : TYPES[type].icon;
+  $('enemy-type').replaceChildren(...(real ?? [type]).map(t => typeText(t, (REAL_TYPES[t] ?? TYPES[t]).icon, '')));
   $('enemy-type').title = real ? `${real.map(t => REAL_TYPES[t].label).join(' / ')} type` : `${TYPES[type].label} type`;
   $('enemy-type').className = `chip type-${real ? real[0] : type}`;
   box.classList.toggle('max', !!b.phased);

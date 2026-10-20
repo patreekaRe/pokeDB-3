@@ -316,3 +316,7 @@ starts calm.
 Before adding a
 generic class name, grep `css/` and `js/` for it.
 
+
+**A duo's swap button** (2026-10-20, the user's call from their phone): the benched partner's portrait (`#player-bench`)
+sits on the player plate's top-left corner, 44px, layered over its edge (`#player-plate .bench-chip` in `css/screens.css`);
+the name pads past it. The plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.

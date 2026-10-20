@@ -794,7 +794,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     const match = track && type && node.type === 'fight' && !node.visited && matchUp(node.enemyId, type, track);
     if (match) {
       const def = ENEMY_DEFS[node.enemyId];
-      btn.append(el('span', `map-match ${match}`, TYPES[def.type].icon));
+      btn.append(el('span', `map-match ${match}`)); btn.lastChild.append(typeBadge(def.type));
       label = `${label}: a ${TYPES[def.type].label} Pokémon, ${match === 'tough' ? 'a tough match-up' : 'weak to you'}`;
     }
 
@@ -1017,7 +1017,7 @@ function revealedFigure(node) {
   img.src = def.image;
   img.alt = '';
   fig.append(img);
-  if (node.type === 'fight' && TYPES[def.type]) fig.append(el('span', `map-revealed-type type-${def.type}`, TYPES[def.type].icon));
+  if (node.type === 'fight' && TYPES[def.type]) { fig.append(el('span', `map-revealed-type type-${def.type}`)); fig.lastChild.append(typeBadge(def.type)); }
   fig.title = `${node.type === 'elite' ? 'Alpha ' : ''}${def.name}${node.type === 'fight' ? ` (${TYPES[def.type].label} type)` : ''}`;
   place(fig, nodeX(node), rowY(node.floor));
   return fig;

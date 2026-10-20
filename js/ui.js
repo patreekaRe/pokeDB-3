@@ -11,6 +11,7 @@ import { getSave, safariSparkle } from './storage.js';
 import { shinyImage } from './data/shinies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { playMusic, playSound } from './audio.js';
+import { typeText } from './type-badge.js';
 
 /** Shorthand for document.getElementById. */
 export const $ = (id) => document.getElementById(id);
@@ -219,7 +220,8 @@ export function makeCard(card, options = {}) {
   // catch box's, before the catch is saved)
   const sparkle = card.safari && card.from ? options.sparkle ?? safariSparkle(card.from) : 0;
   const art = (sparkle && shinyArt(card.from)) || cardArt(card) || (card.sprite ? cardSprite(card) : el('div', 'card-art', card.art));
-  const tag = el('div', 'card-type', `${type.icon} ${type.label}${kind ? ` · ${kind[0].toUpperCase()}${kind.slice(1)}` : ''}`);
+  const tag = el('div', 'card-type');
+  tag.append(typeText(card.type, type.icon, `${type.label}${kind ? ` · ${kind[0].toUpperCase()}${kind.slice(1)}` : ''}`));
   const text = el('p', 'card-text');
   text.append(cardLine(card, options.stage || 0));
 

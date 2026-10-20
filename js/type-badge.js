@@ -31,6 +31,16 @@ export const TYPE_COLOR = {
   rock: '#c5b78c', ghost: '#5269ad', dragon: '#0b6dc3', dark: '#5a5465', steel: '#5a8ea2', fairy: '#ec8fe6',
 };
 
+/** A type's badge then its words, for a chip or a card's type line; a type with no badge (a masked one) keeps its
+    emoji. Used wherever the game names a type (the user's ask, 2026-10-20: the badges everywhere, not the emoji). */
+export function typeText(type, icon, text) {
+  const f = document.createDocumentFragment();
+  if (TYPE_COLOR[type]) f.append(typeBadge(type), ' ');
+  else if (icon) f.append(`${icon} `);
+  f.append(text);
+  return f;
+}
+
 /** A type's badge, a span holding its SVG; `label` names it for a screen reader when it stands alone. */
 export function typeBadge(type, label = '') {
   const span = document.createElement('span');

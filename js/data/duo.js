@@ -26,11 +26,13 @@ export const DUO_LINES = {
   electric: {
     shinx: ['shinx', 'luxio', 'luxray'], mareep: ['mareep', 'flaaffy', 'ampharos'], pichu: ['pichu', 'pikachu', 'raichu'],
     elekid: ['elekid', 'electabuzz', 'electivire'], tynamo: ['tynamo', 'eelektrik', 'eelektross'],
-    magnemite: ['magnemite', 'magneton', 'magnezone'],
+    magnemite: ['magnemite', 'magneton', 'magnezone'], electrike: ['electrike', 'manectric'], blitzle: ['blitzle', 'zebstrika'],
+    joltik: ['joltik', 'galvantula'], voltorb: ['voltorb', 'electrode'],
   },
   ice: {
     vanillite: ['vanillite', 'vanillish', 'vanilluxe'], swinub: ['swinub', 'piloswine', 'mamoswine'], snorunt: ['snorunt', 'glalie'],
     snover: ['snover', 'abomasnow'], cubchoo: ['cubchoo', 'beartic'], sneasel: ['sneasel', 'weavile'], seel: ['seel', 'dewgong'], smoochum: ['smoochum', 'jynx'],
+    lapras: ['lapras'], cryogonal: ['cryogonal'],
   },
   fighting: {
     timburr: ['timburr', 'gurdurr', 'conkeldurr'], machop: ['machop', 'machoke', 'machamp'], ralts: ['ralts', 'kirlia', 'gallade'],
@@ -40,16 +42,18 @@ export const DUO_LINES = {
   ground: {
     trapinch: ['trapinch', 'vibrava', 'flygon'], rhyhorn: ['rhyhorn', 'rhydon', 'rhyperior'], gible: ['gible', 'gabite', 'garchomp'],
     geodude: ['geodude', 'graveler', 'golem'], nidoranm: ['nidoranm', 'nidorino', 'nidoking'], nidoranf: ['nidoranf', 'nidorina', 'nidoqueen'],
+    cubone: ['cubone', 'marowak'], phanpy: ['phanpy', 'donphan'], sandshrew: ['sandshrew', 'sandslash'], drilbur: ['drilbur', 'excadrill'],
   },
   flying: {
     starly: ['starly', 'staravia', 'staraptor'], pidgey: ['pidgey', 'pidgeotto', 'pidgeot'], pidove: ['pidove', 'tranquill', 'unfezant'],
     togepi: ['togepi', 'togetic', 'togekiss'], zubat: ['zubat', 'golbat', 'crobat'], hoppip: ['hoppip', 'skiploom', 'jumpluff'],
     dratini: ['dratini', 'dragonair', 'dragonite'], bagon: ['bagon', 'shelgon', 'salamence'],
+    rufflet: ['rufflet', 'braviary'], swablu: ['swablu', 'altaria'],
   },
   dark: {
     deino: ['deino', 'zweilous', 'hydreigon'], sandile: ['sandile', 'krokorok', 'krookodile'], larvitar: ['larvitar', 'pupitar', 'tyranitar'],
     seedot: ['seedot', 'nuzleaf', 'shiftry'], zorua: ['zorua', 'zoroark'], poochyena: ['poochyena', 'mightyena'], houndour: ['houndour', 'houndoom'],
-    pawniard: ['pawniard', 'bisharp'], murkrow: ['murkrow', 'honchkrow'],
+    pawniard: ['pawniard', 'bisharp'], murkrow: ['murkrow', 'honchkrow'], absol: ['absol'],
   },
 };
 

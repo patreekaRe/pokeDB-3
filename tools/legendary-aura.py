@@ -37,6 +37,12 @@ TYPES = {
                      bits=['#ffe0a0', '#ff8040', '#d03020'], shape='ember'),
     'dark':     dict(aura=['#efe0ff', '#b090e0', '#7048b0', '#382068'], flare=['#efe0ff', '#a888d8', '#6840a8', '#301860'],
                      bits=['#d8c0ff', '#9068d0', '#5030a0'], shape='ember'),
+    'electric': dict(aura=['#fffff0', '#fff480', '#ffd830', '#e0a010'], flare=['#fffff0', '#fff070', '#f8c820', '#c89010'],
+                     bits=['#ffffff', '#fff080', '#f8c830'], shape='star'),
+    'ground':   dict(aura=['#fff4d8', '#f0d090', '#d8a050', '#986028'], flare=['#fff4d8', '#e8c880', '#c89048', '#885020'],
+                     bits=['#f8e0b0', '#d0a060', '#986830'], shape='ember'),
+    'flying':   dict(aura=['#ffffff', '#e0e4ff', '#a8b0f8', '#6870d0'], flare=['#ffffff', '#d8dcff', '#a0a8f0', '#6068c8'],
+                     bits=['#ffffff', '#d8dcff', '#a8b0f8'], shape='star'),
 }
 SPARK = (255, 255, 255, 255)
 BOLT = [(255, 255, 255, 255), (184, 224, 255, 255), (120, 170, 255, 255)]   # lightning: core, glow, edge
