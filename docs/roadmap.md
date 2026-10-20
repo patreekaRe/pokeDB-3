@@ -254,7 +254,14 @@ map's match marks, the crossroads), and the duo's swap button on the plate's top
 Then the switch reworked (the user's calls, same day): the bench portrait is gone (the Pokémon moved too much to read);
 you **hold your Pokémon** to bring up the Go pill, and **a switch ends your turn** as in the games (1 PP still; a card's
 switch stays free and mid-turn). pokeDB-sim mirrors it (same branch name there); its bot now only switches last, keeping
-the PP back when the coming hit is ▲ on the one out and not the partner. Bot check: see the commit and pokeDB-sim's README.
+the PP back when the coming hit is ▲ on the one out and not the partner. Bot check (150 a pair, 8 pairs): mean 65.2 -> 74.1,
+switches a run ~44 -> under 1 (the old bot's hand-fetching churn cost it; pokeDB-sim's README). Session 15 measures with it.
+Then "hold to swap" fades over your Pokémon through a duo fight's first two turns.
+**Waiting on the user** (2026-10-20, from their phone): the Ice Cave's intro film showed black behind its title and snow,
+and the map card's Pokémon came out of its ball small and choppy. Not reproduced headless (the film draws fully, day or
+night, every area; a Duo Run's map holds ~131 MB, as the start screen does; run-map within budget). The phone was on low
+battery with 7 tabs open, so likely Safari dropping a canvas under memory pressure. If it repeats in a fresh tab, note the
+area and time, and add a guard that repaints a lost film canvas.
 Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
 start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
 docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo
