@@ -249,21 +249,30 @@ The first section began as the note on playtesting the live site and grew into t
 - **Kurt's Workshop** (2026-10-14, towns on only): tiles 23-25 x 6-8 in the plaza's north-east, its door on a path to the
   east avenue. Halloween's pumpkin patch and scarecrow sit on the south-east lawn by the Nietos' house since 2026-10-15 (the user's ask: they crowded the Secret Base's door). Detail: `docs/reference/towns.md`.
 
-- **The Nietos' house, a storybook cottage** (2026-10-14, the user's ask: "more aesthetic than a stupid bland house"):
-  `nietosHouse(g, x, z, home)` in `js/hub-3d.js`. Its paintings are made once in `cottageArt()` (butter-cream clapboard,
-  scalloped baby-blue shingles drawn eave-up so each row laps the one below, a stone footing, bricks, a fanlit four-panel
-  door and pink-curtained windows whose glass glows through `shine()`, heart-cut shutters, baby Linc's washing, an OUT!
-  note). Roof slopes come from one `slope()` helper (shingles, barge boards, fascia; the porch's own gable reuses it turned
-  side-on, its shingles scaled down by the texture's `repeat`). The OUT! note is on the door while `home` (`nietosHome()`)
-  is false. Chimney smoke is five puffs moved in `liveSmoke()`. Pickets, flower tufts and blooms are `InstancedMesh`es,
-  and `mergeStatic()` bakes the rest that share a material into one mesh each (117 meshes down to 53: draw calls on a
-  phone). Outside its 3 x 3 it stands on `NIETOS_YARD` (the name board and washing line west, the fenced garden either
-  side of the doorstep, the pram and sandbox east), added to the place's tiles so nothing walks through it.
-- **The Nietos' name board** (2026-10-14, the user's ask: fix it, bring it closer, stop its sticks sticking out, make it
-  readable): `nietosSign()`, its own place `nietos-sign` on yard tile [-1, 2] (doorstep the tile south of it), so a tap
-  isn't swallowed by the house's merged meshes and shows its card's line. It stands at the garden's front left, turned
-  0.3 rad to the path; its posts sit at the board's ends behind it and stop under its roof (inside its width they poked
-  through the face).
+- **The Nietos' mansion** (2026-10-20, the user's ask: "an extravagant aesthetic mansion from the outside and inside";
+  it was a storybook cottage from 2026-10-14). `nietosHouse(g, x, z, home)` in `js/hub-3d.js`, on a 5 x 4 lot
+  (`NIETOS_AT` 22,16, a tile in off the ring road; the door on its middle column, step 24,20; the place is named "The
+  Nietos' Mansion"). A white château on a pale stone terrace: the main house two storeys of cream ashlar stucco with
+  white quoins and a gold-banded cornice under a mansard of the family's scalloped baby-blue slates (one `mansard()`
+  helper, its UVs in world units so every roof shares one slate material), gold cresting and corner balls round each flat
+  top (instanced), round-windowed dormers, two white chimneys (the left one smoking), a flag on the roof; a one-storey
+  wing either side with its own mansard and dormer; a round turret on each front corner under a slate cone and gold spire,
+  their banner (the crowned pacifier on baby blue, a swallowtail) hanging off it. A portico of four white columns with gilt
+  bases and capitals carries a royal-blue frieze reading THE NIETOS and a pediment whose tympanum holds the crowned
+  pacifier in a gold medallion between laurels; arched windows with velvet drapes tied back in gold and a chandelier's
+  glints, a gilt balconette over the fanlit double door, lanterns either side, the OUT! note on the door while `home`
+  (`nietosHome()`) is false. A four-step stair with a blue carpet on gold rods, its cheeks lit by lanterns, the carpet on
+  to the door; a white balustrade along the terrace; on it a Kangaskhan clipped in box (left), baby Linc's gilded pram
+  (right) and a ball tree in a gold urn by each turret. In front, rose beds edged in clipped box, each with a cone
+  topiary, behind an iron fence tipped in gold, its gate piers carrying golden Kangaskhan (the joey in the pouch); the
+  fence stands on `NIETOS_YARD` (the row in front, either side of the gate). All its paintings come from `mansionArt()`
+  (painted once). Moving parts (smoke puffs, the banners, the flag) are `nietosFx`, run by `liveNietos()`, kept out of
+  `mergeStill()` by their own raycast; everything else merges (34 meshes). Pickets, cresting, balusters, blooms are
+  instanced. The Clearing stayed within its phone budget (253 draws at the plaza, was 246).
+- **The Nietos' name board**: `nietosSign()`, its own place `nietos-sign` on tile [-1, 3] off `NIETOS_AT` (21,19; step the
+  tile south of it), so a tap isn't swallowed by the house's merged meshes and shows its card's line. White on deep blue
+  (the user's ask, 2026-10-14: pale blue on sky blue couldn't be read) in a gilt frame since the mansion, on two white
+  posts capped with gold balls at its ends behind it, turned 0.3 rad to the path. The quest "!" floats over it.
 
 - **Cracks where the Sealed Gate will stand** (2026-10-14, the user's ask: foreshadow the portal, with words vaguely
   saying what's happening): while the gate isn't broken (`gateOpen()`), a place `cracks` on `SEALED_AT` (its tile blocked,

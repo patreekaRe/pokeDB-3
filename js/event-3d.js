@@ -10871,7 +10871,7 @@ async function buildHome(figs, { time, town, home, gift, belt }) {
   const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : H ? { castAt: H.castAt, beat: H.beat, flip: H.flip } : HOMES[town.id]?.[home] || {};
   if (h.camp) return buildCamp(figs, h);
   if (h.dojo) return buildDojoHall(figs, { home: true, belt });
-  const K = { THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, haloArt, puffs, shell, PIECES, calm: () => calm, buddy: () => walker };
+  const K = { THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, haloArt, puffs, shell, PIECES, merge: mergeStatic, calm: () => calm, buddy: () => walker };
   if (L) buildLeaderHome({ ...K, away: !figs[town.homes[home].leader] }, home);
   else if (H) buildHall(K, home);
   else shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: h.walls !== 'tent', walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
