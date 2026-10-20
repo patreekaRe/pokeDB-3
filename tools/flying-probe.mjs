@@ -67,11 +67,13 @@ check(/^\s*⚔️?\s*10/.test(s) || s.includes('10'), `the intent shows the halv
 let pre = await B(() => ({ hp: window.__battle().hp, foe: window.__battle().enemy.hp }));
 await B(() => window.__endTurn());
 s = await B((p) => { const b = window.__battle(); return { lost: p.hp - b.hp, ev: b.evasion, gale: p.foe - b.enemy.hp }; }, pre);
-check(s.lost === 10 && s.ev === 1 && s.gale === 6, `a 20 hit lands as 10, one stack used, Gale deals 6 (${JSON.stringify(s)})`);
+check(s.lost === 10 && s.ev === 0 && s.gale === 6, `a 20 hit lands as 10, the rest fade at your turn, Gale deals 6 (${JSON.stringify(s)})`);
 await fresh();
 await B(() => window.__play('wind-wall'));
 await B(() => window.__endTurn());
-check(await B(() => window.__battle().evasion) === 1, 'Wind Wall: Evasion 1 at the start of each turn');
+await B(() => { window.__battle().evasion = 3; });
+await B(() => window.__endTurn());
+check(await B(() => window.__battle().evasion) === 1, 'Evasion fades at your turn\'s start; Wind Wall gives 1 back');
 
 // Tailwind
 await fresh();

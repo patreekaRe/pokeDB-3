@@ -205,7 +205,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (2 with Groundium Z), the second save from 1 HP too.
 - **Flying** (session 11, 2026-10-20; `docs/duo-design.md` section 5's "Flying's first session"): `FLYING_CARDS` /
   `FLYING_EVO_*` (30 + 8 so far), art in `js/card-art-flying.js`. New keys: `evasion` (`b.evasion`, the 🪶 badge: each
-  stack halves the next enemy attack, before block, in `enemyTurn()`; `evaded()` shows the halved hit on the intent and the
+  stack halves an enemy attack, before block, in `enemyTurn()`, and they're gone at your turn's start; `evaded()` shows the halved hit on the intent and the
   shield preview), `ifEvasion`, `perEvasion`, `tailwind` (`b.tailwind`, the 🌬️ badge: 1 more card at the start of each
   of your next N turns, a turn going as it draws in `beginPlayerTurn()`), `ifTailwind`, `perTailwind`, `freeIn: 'tailwind'`
   (Sky Attack), `ifEmpty` (**Unburden**: `unburdened()`, the last card in your hand as it's played; `effectsOf()` takes the

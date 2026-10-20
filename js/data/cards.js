@@ -1484,7 +1484,7 @@ export const TERMS = {
   Dig: 'Goes underground when played. At the start of your next turn it surfaces and does its Surface part.',
   Fault: 'At the start of its turn, if its HP is at or below its Fault, it\'s knocked out. Alphas and bosses count half.',
   Sandstorm: `Weather. At the end of your turn the enemy loses ${SAND.chip} HP. Your Ground cards block +${SAND.bonus}. Lasts that many turns.`,
-  Evasion: 'Each stack halves the next enemy attack on you, before your block.',
+  Evasion: 'Each stack halves an enemy attack on you, before your block. Gone at your next turn.',
   Tailwind: 'Draw 1 more card at the start of each of your next that many turns.',
   Unburden: 'A bonus if it\'s the last card in your hand when you play it.',
   Hail: `Weather. At the end of your turn the enemy loses ${HAIL.chip} HP. Your Ice attacks deal +${HAIL.bonus} a hit. Lasts that many turns.`,

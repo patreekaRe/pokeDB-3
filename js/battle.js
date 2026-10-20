@@ -286,7 +286,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     attackedLast: false, lostLast: 0,   // ...and the last one's, which Revenge and Counter read on your turn
     underground: [],   // Ground's dug cards: { card, owner, exhaust }, surfacing at the start of your next turn (surface())
     sturdy: 0,         // the times Ground's Sturdy has saved you this fight (Groundium Z: twice)
-    evasion: 0,        // Flying's: each stack halves the next enemy attack on you
+    evasion: 0,        // Flying's: each stack halves an enemy attack on you, until your next turn
     tailwind: 0,       // Flying's: the turns left that draw 1 more card at their start
     emptied: false,    // Feather Light has drawn this turn
     keenTurn: 0,       // the turn Flying's Keen Eye last drew (once a turn)
@@ -614,6 +614,7 @@ function beginPlayerTurn() {
   if (p.counterEachTurn) gainCounter(p.counterEachTurn);   // Counterstance
   if (p.faultEachTurn) applyFault(p.faultEachTurn);   // Quicksand
   if (p.sandEachTurn) setWeather('sand', p.sandEachTurn);   // Sand Stream
+  b.evasion = 0;   // Evasion lasts until your next turn (banked, it lifted Flying 15 points over the other types, 2026-10-20)
   if (p.evasionEachTurn) gainEvasion(p.evasionEachTurn);   // Wind Wall
   if (b.tailwind && p.tailwindEvasion) gainEvasion(p.tailwindEvasion);   // Wind Dancer
   if (b.tailwind && p.tailwindDamage) { const d = hurtEnemy(p.tailwindDamage); pop('enemy-zone', d > 0 ? `-${d} 🏄` : 'Blocked', d > 0 ? 'dmg' : 'note', 120); }   // Wind Rider
@@ -824,7 +825,7 @@ const followsUp = (kind) => !!battle.powers.followAlways || battle.lastKind === 
 /** Status cards in your hand: Fighting's Guts and Reversal count them. */
 const statusHeld = () => battle.hand.filter(h => h.card.status).length;
 
-/** Evasion on you (Flying's): each stack halves one enemy attack, until a hit uses it. */
+/** Evasion on you (Flying's): each stack halves one enemy attack, until your next turn. */
 function gainEvasion(n, delay = 0) {
   battle.evasion += n;
   pop('player-zone', `🪶 Evasion ${n}`, 'note good', 100 + delay);
@@ -3250,7 +3251,7 @@ function renderStatus() {
   if (b.tide)       playerBadges.push(['🌊', b.tide, `Tide ${b.tide}: lasts all fight; a move that says "per Tide" spends it all for a bigger hit`, 'good']);
   if (b.blockNext)  playerBadges.push(['🛡️', `+${b.blockNext}`, `+${b.blockNext} block at the start of your next turn`, 'block']);
   if (b.blur)       playerBadges.push(['🔰', '', 'Your block stays at the start of your next turn', 'block']);
-  if (b.evasion)    playerBadges.push(['🪶', b.evasion, `Evasion ${b.evasion}: the next ${b.evasion > 1 ? `${b.evasion} enemy attacks` : 'enemy attack'} on you deal${b.evasion > 1 ? '' : 's'} half`, 'good']);
+  if (b.evasion)    playerBadges.push(['🪶', b.evasion, `Evasion ${b.evasion}: the next ${b.evasion > 1 ? `${b.evasion} enemy attacks` : 'enemy attack'} on you deal${b.evasion > 1 ? '' : 's'} half, until your next turn`, 'good']);
   if (b.tailwind)   playerBadges.push(['🌬️', b.tailwind, `Tailwind ${b.tailwind}: draw 1 more card at the start of your next ${b.tailwind > 1 ? `${b.tailwind} turns` : 'turn'}`, 'good']);
   if (b.underground.length) playerBadges.push(['⛏️', b.underground.length, `Underground: ${b.underground.map(u => u.card.name).join(', ')}. ${b.underground.length > 1 ? 'They surface' : 'It surfaces'} at the start of your next turn`, 'good']);
   if (b.counter)    playerBadges.push(['🥊', b.counter, `Counter ${b.counter}: until your next turn, each enemy attack takes ${b.counter} back`, 'good']);

@@ -946,7 +946,8 @@ signature). This half leans on attacks and draw; the second half is the defensiv
 
 **The rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
 - **Evasion** (`evasion: N`, `b.evasion`, a 🪶 badge on you): each of the next N enemy attacks on you deals half (rounded
-  down), before your block; one stack per hit. Stacks last until a hit uses them. The intent and the shield preview show
+  down), before your block; one stack per hit. Stacks last until your next turn, as Blur's block does (banked, they lifted
+  Flying 15-25 points over the other types: the bot check below). The intent and the shield preview show
   the halved hit. Payoffs `ifEvasion` (an extra while you have any), `perEvasion` (+N per stack), powers `evadeDamage`
   (Gale: whenever Evasion halves a hit, deal N), `evasionEachTurn` (Wind Wall).
 - **Tailwind** (`tailwind: N`, `b.tailwind`, a 🌬️ badge): you draw 1 more card at the start of each of your next N turns
