@@ -566,10 +566,10 @@ export const PATCHES = [
 /** What's in the game, as of the newest patch. */
 export const IN_THE_GAME = [
   ['🔥', '31 starters', 'Charmander, Bulbasaur and Squirtle, 12 more from later generations, 15 legendaries to earn, and Mewtwo behind the Sealed Gate.'],
-  ['🃏', '342 moves', 'About 80 each for Fire, Grass and Water, 74 Psychic moves for Mewtwo, and 28 Neutral moves any type can learn. Every one can be powered up with PP Up.'],
+  ['🃏', '786 moves', 'About 80 each for Fire, Grass and Water, 74 for each of the Duo Run\'s six Safari types, 74 Psychic moves for Mewtwo, and 28 Neutral moves any type can learn. Every one can be powered up with PP Up.'],
   ['🗺️', '7 biomes', 'Whispering Clearing, Overgrown Shrine and Ember Wastes, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna on the roads that branch off them, and the Crystal Depths for Mewtwo alone.'],
-  ['💎', '93 relics', 'Starter Abilities, relics for each type, and boss relics: extra PP with a catch, or your Ability made stronger.'],
-  ['🧴', '34 items', 'Potions, battle items and one for each type, carried in your Bag, plus five held berries Kurt makes from your backyard\'s crop.'],
+  ['💎', '136 relics', 'Starter Abilities, relics for each type, and boss relics: extra PP with a catch, or your Ability made stronger.'],
+  ['🧴', '46 items', 'Potions, battle items and one for each type, carried in your Bag, plus five held berries Kurt makes from your backyard\'s crop.'],
   ['❓', '30 events', 'From the Berry Tree, Move Tutor and Team Rocket to a Sleeping Snorlax, Bill\'s PC, a Litwick Bonfire and Voltorb Flip, each a 3D place you walk about, with its own music.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
   ['🏘️', '5 towns', 'A gateway town on every road out of the Clearing, each with a trader, its Gym Leaders\' homes and a broken Waystone to mend, plus Kurt\'s Workshop at home to craft for it.'],
@@ -578,7 +578,7 @@ export const IN_THE_GAME = [
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
   ['🏆', '189 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
-  ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas, each with a rare shiny, and a leaderboard.'],
+  ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over twelve areas, each with a rare shiny, and a leaderboard; then a Duo Run with two starters of nine types.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls, Day Passes and the Shiny Exchange.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 28 games to take home and play, from slot machines to five pinball tables, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],

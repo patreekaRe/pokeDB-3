@@ -226,7 +226,7 @@ export function relicTerms(relic) {
 export const ABILITIES = {
   fire:  { id: 'blaze',    name: 'Blaze',    icon: '🔥', sprite: 'ability-capsule', amount: 3, text: 'While your HP is below half, your attacks deal +3 damage.' },
   grass: { id: 'overgrow', name: 'Overgrow', icon: '🌿', sprite: 'ability-capsule', amount: 3, text: 'After each fight you win, heal 3 HP.' },
-  water: { id: 'torrent',  name: 'Torrent',  icon: '🌊', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Tide.' },
+  water: { id: 'torrent',  name: 'Torrent',  icon: '🌊', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Tide (in a Duo Run, again each time it comes back out, once a turn).' },
   psychic: { id: 'pressure', name: 'Pressure', icon: '🔮', sprite: 'ability-capsule', amount: 2, text: 'Start each fight with 2 Focus: your next attack deals +2 damage.' },
   electric: { id: 'static', name: 'Static', icon: '⚡', sprite: 'ability-capsule', amount: 2, text: 'Each time the enemy attacks you, it gains 2 Static.' },
   ice: { id: 'snow-warning', name: 'Snow Warning', icon: '🌨️', sprite: 'ability-capsule', amount: 2, text: 'Start each fight in Hail for 2 turns.' },

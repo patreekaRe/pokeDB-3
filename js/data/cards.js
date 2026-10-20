@@ -127,7 +127,7 @@ export const NOT_VERY_EFFECTIVE = 0.75;
 
 /** Electric's Static: the meter that Paralyzes the enemy, a wild one's, an Alpha's and a boss's, and how much each
     Paralysis this fight raises it (docs/duo-design.md section 5). */
-export const STATIC_CAP = { fight: 7, elite: 11, boss: 15, step: 3 };   // 10 / 15 / 20 +5 at first: Electric's pairs trailed 15-40 points (2026-10-19)
+export const STATIC_CAP = { fight: 7, elite: 11, boss: 12, step: 3 };   // 10 / 15 / 20 +5 at first: Electric's pairs trailed 15-40 points (2026-10-19); boss 12 for the first area's boss (2026-10-20)
 
 /** Ice's (docs/duo-design.md section 5): each Icicle card played makes every Icicle card deal this much more this fight,
     and Hail's chip at the end of your turn and its bonus on every hit of your Ice attacks. */
@@ -519,7 +519,7 @@ const PSYCHIC_CARDS = [
 const ELECTRIC_CARDS = [
   { id: 'thunder-shock',  name: 'Thunder Shock',  type: 'electric', cost: 1, art: '⚡', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike (8: without Burn or Tide, 7 left Electric's pairs 10-15 points under, 2026-10-19's bot check)
   { id: 'magnet-rise',    name: 'Magnet Rise',    type: 'electric', cost: 1, art: '🧲', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend (8, like Flame Wall and Withdraw)
-  { id: 'spark',          name: 'Spark',          type: 'electric', cost: 2, art: '✨', effects: { damage: 10, static: 4, vulnerable: 2 }, upgrade: { effects: { damage: 12, static: 6, vulnerable: 3 } } },   // Bash, plus Static
+  { id: 'spark',          name: 'Spark',          type: 'electric', cost: 2, art: '✨', effects: { damage: 13, static: 4, vulnerable: 2 }, upgrade: { effects: { damage: 15, static: 6, vulnerable: 3 } } },   // Bash, plus Static
   { id: 'thunder-wave',   name: 'Thunder Wave',   type: 'electric', cost: 1, art: '〰️', effects: { static: 5, weaken: 1 }, upgrade: { effects: { static: 7, weaken: 2 } } },   // Deadly Poison, plus Weak like Will-O-Wisp
   { id: 'nuzzle',         name: 'Nuzzle',         type: 'electric', cost: 1, art: '🐭', effects: { damage: 6, static: 3 }, upgrade: { effects: { damage: 8, static: 4 } } },   // Poisoned Stab
   { id: 'eerie-impulse',  name: 'Eerie Impulse',  type: 'electric', cost: 1, art: '📡', effects: { block: 10, static: 3 }, upgrade: { effects: { block: 13, static: 4 } } },   // Iron Wave, Static for the hit: Electric's Flame Body
@@ -745,7 +745,7 @@ const GROUND_CARDS = [
   { id: 'sand-veil',      name: 'Sand Veil',      type: 'ground', cost: 1, art: '🏜️', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
   { id: 'bulldoze',       name: 'Bulldoze',       type: 'ground', cost: 2, art: '🚜', effects: { damage: 10, weaken: 2, fault: 5 }, upgrade: { effects: { damage: 12, weaken: 3, fault: 7 } } },   // Bash, Fault for its Vulnerable (+ Weak, as Icy Wind)
   { id: 'sand-attack',    name: 'Sand Attack',    type: 'ground', cost: 1, art: '💨', effects: { block: 10, fault: 3 }, upgrade: { effects: { block: 13, fault: 4 } } },   // Iron Wave (Frost Armor's shape)
-  { id: 'dig',            name: 'Dig',            type: 'ground', cost: 1, art: '⛏️', effects: { block: 6, surface: { damage: 12 } }, upgrade: { effects: { block: 8, surface: { damage: 15 } } } },   // Iron Wave over two turns
+  { id: 'dig',            name: 'Dig',            type: 'ground', cost: 1, art: '⛏️', effects: { block: 9, surface: { damage: 12 } }, upgrade: { effects: { block: 11, surface: { damage: 15 } } } },   // Iron Wave over two turns
   { id: 'tunnel',         name: 'Tunnel',         type: 'ground', cost: 0, art: '🕳️', effects: { surface: { damage: 7 } }, upgrade: { effects: { surface: { damage: 10 } } } },   // a free Strike, a turn late (Doppelganger's delay)
   { id: 'mud-bomb',       name: 'Mud Bomb',       type: 'ground', cost: 1, art: '💣', effects: { damage: 6, fault: 5 }, upgrade: { effects: { damage: 8, fault: 7 } } },   // Poisoned Stab
   { id: 'bonemerang',     name: 'Bonemerang',     type: 'ground', cost: 1, art: '🦴', effects: { damage: 4, hits: 2, fault: 3 }, upgrade: { effects: { damage: 5, fault: 4 } } },   // Twin Strike
@@ -817,7 +817,7 @@ const GROUND_CARDS = [
 const FLYING_CARDS = [
   { id: 'gust',           name: 'Gust',           type: 'flying', cost: 1, art: '🌬️', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike
   { id: 'feather-guard',  name: 'Feather Guard',  type: 'flying', cost: 1, art: '🪶', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
-  { id: 'wing-attack',    name: 'Wing Attack',    type: 'flying', cost: 2, art: '🦅', effects: { damage: 10, vulnerable: 2, evasion: 1 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },   // Bash, Evasion for Ground's Fault
+  { id: 'wing-attack',    name: 'Wing Attack',    type: 'flying', cost: 2, art: '🦅', effects: { damage: 10, vulnerable: 2 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },   // Bash (Evasion 1 too until 2026-10-20: Flying's pairs ran ~10 over the base three's)
   { id: 'aerial-ace',     name: 'Aerial Ace',     type: 'flying', cost: 1, art: '✈️', effects: { damage: 6, evasion: 1 }, upgrade: { effects: { damage: 9 } } },   // Iron Wave, Evasion for its block
   { id: 'feather-dance',  name: 'Feather Dance',  type: 'flying', cost: 1, art: '💃', effects: { weaken: 2, evasion: 1 }, upgrade: { effects: { weaken: 3, evasion: 2 } } },   // Leg Sweep-lite
   { id: 'air-slash',      name: 'Air Slash',      type: 'flying', cost: 1, art: '🌀', effects: { damage: 7, ifEvasion: { bonus: 6 } }, upgrade: { effects: { damage: 9, ifEvasion: { bonus: 8 } } } },   // Sucker Punch
@@ -1026,7 +1026,7 @@ const DARK_CARDS = [
   { id: 'obstruct',       name: 'Obstruct',       type: 'dark', cost: 1, art: '✋', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
   { id: 'snatch',         name: 'Snatch',         type: 'dark', cost: 2, art: '🫳', effects: { damage: 10, vulnerable: 2, steal: 1 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },   // Bash, Steal for Wing Attack's Evasion
   { id: 'feint-attack',   name: 'Feint Attack',   type: 'dark', cost: 1, art: '🎭', effects: { damage: 6, block: 6 }, illusion: true, upgrade: { effects: { damage: 8, block: 8 } } },   // Iron Wave
-  { id: 'lash-out',       name: 'Lash Out',       type: 'dark', cost: 0, art: '😤', effects: { damage: 4, weaken: 1, punish: { draw: 1 } }, upgrade: { effects: { damage: 6 } } },   // Flash of Steel, on its intent, with Weak (5 and no Weak: solo Dark 43)
+  { id: 'lash-out',       name: 'Lash Out',       type: 'dark', cost: 0, art: '😤', effects: { damage: 4, punish: { draw: 1 } }, upgrade: { effects: { damage: 6 } } },   // Flash of Steel, on its intent (Weak 1 too until 2026-10-20: solo Dark 43 without it at first, but its pairs ran ~8 over the base three's once Dark was whole)
   { id: 'covet',          name: 'Covet',          type: 'dark', cost: 1, art: '🤲', effects: { damage: 7, steal: 1 }, upgrade: { effects: { damage: 10 } } },   // Sucker Punch (Silent's), Steal for its Weak
   { id: 'brutal-swing',   name: 'Brutal Swing',   type: 'dark', cost: 1, art: '🌀', effects: { damage: 7, ifBuffed: { bonus: 6 } }, upgrade: { effects: { damage: 9, ifBuffed: { bonus: 8 } } } },   // Bane, on its buffs
   { id: 'throat-chop',    name: 'Throat Chop',    type: 'dark', cost: 1, art: '🤚', effects: { damage: 7, punish: { bonus: 6 } }, upgrade: { effects: { damage: 9, punish: { bonus: 8 } } } },   // Bane, on its intent

@@ -292,6 +292,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     emptied: false,    // Feather Light has drawn this turn
     keenTurn: 0,       // the turn Flying's Keen Eye last drew (once a turn)
     intimTurn: 0,      // the turn Dark's Intimidate last applied its Weak (once a turn)
+    tideTurn: 1,       // the turn Water's Torrent last gave Tide in a duo (once a turn; the fight's start is turn 1's)
     disguised: false,  // Dark's Disguise: until your next turn, enemy hits land on whichever of your types takes them best
     illusions: 0,      // Illusion cards played this turn (Doppelganger)
     lastCards: [null, null],   // the last card each partner played this turn (alone, [0]): Imposter copies it
@@ -3142,9 +3143,13 @@ async function comeOut(b) {
   if (hasAbility('intimidate')) intimidate();   // Dark's: the same
   if (!d.came.includes(d.run.out)) {   // a fight-start Ability fires the first time each partner comes out, so switching can't farm it
     d.came.push(d.run.out);
-    if (hasAbility('torrent')) { gainTide(b.ability.amount); abilityBanner(); }
+    if (hasAbility('torrent')) { b.tideTurn = b.turn; gainTide(b.ability.amount); abilityBanner(); }
     if (hasAbility('pressure')) { b.focus += b.ability.amount; abilityBanner(); }
     if (hasAbility('snow-warning')) { setWeather('hail', b.ability.amount); abilityBanner(); }
+  } else if (hasAbility('torrent') && b.tideTurn !== b.turn) {   // Water's Tide again each time it comes back, once a turn: once a fight left its pairs ~10 under (2026-10-20)
+    b.tideTurn = b.turn;
+    gainTide(b.ability.amount);
+    abilityBanner();
   }
 }
 
