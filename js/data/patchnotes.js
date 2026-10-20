@@ -46,8 +46,9 @@ export const NEXT = [
   ['runs', 'Materials and Waystone Shards you find on a run now pop up in their own window, big enough to see over the card choices.'],
   ['hub', 'Your Trainers\' buddies in the Plaza wear bigger, clearer name tags, and once one has had its say, its trainer\'s Trainer Card opens.'],
   ['dex', 'Your Trainers page shows friends your Pokédex colour: their page opens in the shell they wear.'],
-  ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again, a room that won\'t load just after an update offers a reload, and towns, gyms and ? rooms use less memory.'],
+  ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again, a room that won\'t load just after an update offers a reload, towns, gyms and ? rooms use less memory, a Safari Alpha or boss greys out Throw to say it can\'t be caught, and a rare spawn shows rustling grass on its room\'s corner, not a shiny\'s star.'],
   ['mall', 'The Safari Outfitter\'s Ranger Task Board is lit by lanterns, shows your own tasks, and glows and sparkles when one waits to be claimed.'],
+  ['mall', 'A Garden catalogue tag floats over Smeargle once you have a backyard, and a Grand catalogue tag over Gardevoir, so you know to tap them.'],
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
   ['modes', 'Safari wild Pokémon fight on their real types and moves, on Gen 5\'s type chart; a ▲ on a card means super effective, and Net Balls suit Water and Bug.'],
   ['modes', 'Duo Run: once the day\'s Safari run is done, replay it with two of your own starters, each with its own deck and hand; switch for 1 PP.'],
@@ -55,6 +56,8 @@ export const NEXT = [
   ['modes', 'Ice joins the Duo Run: catch Vanillite or Swinub in the new Ice Cave, then stack Frostbite on foes, grow your Icicles and call down Hail.'],
   ['modes', 'Fighting joins the Duo Run: catch Timburr or Machop on the new Dojo Mountain, then chain Follow-ups, Counter every hit, and let Guts turn junk cards into power.'],
   ['modes', 'Ground joins the Duo Run: catch Trapinch, then Dig moves underground to strike next turn, open Faults that swallow weakened foes, and whip up Sandstorms.'],
+  ['modes', 'A Safari run\'s map shows how many Pokémon you\'ve caught so far, beside your Ability.'],
+  ['modes', 'Every Safari replay with the Day Pass deals new maps, fights and rare spawns on the day\'s areas; the first try stays the same for everyone.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

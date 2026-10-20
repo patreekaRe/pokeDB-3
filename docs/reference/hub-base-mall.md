@@ -806,3 +806,14 @@ PC, Safari fence and the plaza board's ball and lanterns are merged too. The cau
 joins its pot, logs and stones, and its twelve flame tongues are two instanced meshes. Headless: ~459 -> ~243 GL draws a
 frame (night ~245, winter ~174), 506 meshes -> 312, the same 18 places tappable and the same parts moving, no console
 errors. `tools/draw-probe.mjs --why` lists where a scene's draws go, group by group.
+
+## Catalogue signs over the shopkeepers (2026-10-19, the user's ask)
+
+Players didn't know Smeargle's tap opens a catalogue. A keeper in `KEEPERS` (`js/mall-furniture.js`) with a `sign(base)`
+wears its words over its head (`keeperSign()` in `js/mall-3d.js`): first painted into the 3D in Bungee, which the user
+found bad (small, blurred, lost behind the CASHIER sign), so since the same day an on-screen tag in the price tags' style
+(`.mall-sign` in `css/hub.css`: cream pill, the keeper's `ink` border, `signIcon`, a point down at the keeper, bobbing,
+kept on screen): Smeargle's Garden catalogue only once the save has a backyard (without one its tap only chats),
+Gardevoir's Grand catalogue always. Re-read on each walk in. The Garden pond
+(`pond`) is now `layer: 'rug'`, walked over like the Koi and Frozen ponds (the user couldn't tell what it was or why it
+blocked them).

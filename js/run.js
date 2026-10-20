@@ -604,7 +604,8 @@ const starterName = () => stageName(run.starter, run.stage);
 const an = (name) => `${/^[AEIOUX]/.test(name) ? 'an' : 'a'} ${name}`;
 
 /** Today's Safari Zone run: the date's starter and areas at Level 0's rules. Only the day's first try counts for the
-    leaderboard; after it the same seed replays as often as you like. */
+    leaderboard; after it every replay rolls a seed of its own (the user's call, 2026-10-20: the same day's maps and
+    fights over again got dull), on the day's areas and starter. */
 export function beginSafari(daily = safariDaily(), pair = null) {
   const tries = getSave().safari.day === daily.day ? getSave().safari.tries : 0;
   const days = safariDays(getSave()) + (tries ? 0 : 1);   // the Safari Regular Badge's
@@ -619,7 +620,7 @@ export function beginSafari(daily = safariDaily(), pair = null) {
   }
   updateSave(d => { d.safari = { day: daily.day, tries: tries + (duo ? 0 : 1), days: duo ? safariDays(d) : days, pass: d.safari.pass, done: d.safari.done, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
   rangerDay(daily.day);
-  beginRun(duo ? STARTERS_BY_ID[duo.ids[0]] : daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 && !duo }, null, null, duo);
+  beginRun(duo ? STARTERS_BY_ID[duo.ids[0]] : daily.starter, 0, null, { day: daily.day, seed: tries === 0 && !duo ? daily.seed : (Math.random() * 2 ** 32) >>> 0, areas: daily.areas.map(a => a.id), first: tries === 0 && !duo }, null, null, duo);
   mission('safari');
 }
 
@@ -1171,6 +1172,7 @@ function showMap() {
     : !run.safari ? `Trainer Level ${run.level}.` : run.safari.first ? 'Today\'s first try: it goes on the leaderboard.'
     : 'Today\'s run is used up: this replay doesn\'t count for the leaderboard.';
 
+  showCaught();
   setHpBar('run', run.hp, run.maxHp);
   setMoney(run.money);
   showExp(floor, run.map.floors.length);
@@ -2977,6 +2979,18 @@ export function duoNews() {
     for (const look of looks) lines.push(`${STARTERS_BY_ID[look].line[0].name} joined your duo pool!${fresh ? ` ${type[0].toUpperCase()}${type.slice(1)} unlocked.` : ''}`);
   }
   return lines;
+}
+
+/** A Safari run's catches so far on the run card, bumped when it went up since the map was last shown. */
+function showCaught() {
+  const chip = $('run-caught'), n = run.tally.caught || 0;
+  chip.hidden = !isSafari();
+  if (chip.hidden) return;
+  const was = Number($('run-caught-n').textContent);
+  $('run-caught-n').textContent = String(n);
+  chip.title = `Pokémon caught this run: ${n}`;
+  chip.setAttribute('aria-label', chip.title);
+  if (n > was) { chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump'); }
 }
 
 /** A caught Pokémon offers its signature card for the run, take it or leave it, like a card reward (one copy a run). */

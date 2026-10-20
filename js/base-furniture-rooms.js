@@ -280,7 +280,7 @@ add('Garden', CROPS.map(([id, name, crop]) => ({ set: 'patch', id: `${id}patch`,
   for (const cy of [11, 22]) { R(5, cy + 3, w - 10, 2, '#4a2e18'); R(5, cy - 4, w - 10, 1, '#7a5432'); for (let cx = 10; cx < w - 6; cx += 9) crop(cx, cy); }
 } })));
 add('Garden', [
-  { id: 'pond', name: 'Garden pond', w: 2, h: 2, price: 650, high: 0.06, side: 'p', flat(w, h) {
+  { id: 'pond', name: 'Garden pond', w: 2, h: 2, layer: 'rug', price: 650, high: 0.06, side: 'p', flat(w, h) {
     for (let a = 0; a < 22; a++) { const ang = a / 22 * Math.PI * 2; ovalShade(w / 2 + Math.cos(ang) * 27, h / 2 + Math.sin(ang) * 27, 5, 4, hash(a) < 0.5 ? STONE : sh(STONE, 1)); }
     oval(w / 2, h / 2, 25, 25, '#2a5a8a'); oval(w / 2, h / 2 - 2, 22, 21, '#3a7ab8'); oval(w / 2 - 4, h / 2 - 7, 12, 8, '#5a9ad0');
     for (const [i, j] of [[22, 34], [40, 26], [30, 46]]) { disc(i, j, 4, k.leaf); R(i, j - 4, 1, 4, '#2a5a8a'); P(i - 2, j - 1, sh(k.leaf, 1)); }

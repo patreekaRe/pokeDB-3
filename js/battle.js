@@ -33,7 +33,7 @@ import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems, syncDecks } from './data/duo.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
-import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
+import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog, rareMark } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS } from './data/enemies.js';
 import { REAL_TYPES, realMultiplier, speciesTypes, moveType } from './data/real-types.js';
@@ -237,6 +237,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     felledBy: null,    // what landed the last blow: 'burn' or 'seed' at the start of its turn, else a hit
     safari: Boolean(run.safari),   // a Safari Zone daily run: its starter may not be yours, so it earns no achievement goals
     catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown any turn
+    uncatchable: Boolean(run.safari) && (encounter.kind === 'elite' || encounter.kind === 'boss'),   // a Safari Alpha or boss: Throw shows greyed, so its absence isn't a surprise
     rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
     shiny: Boolean(run.safari) && encounter.kind === 'fight' && Boolean(encounter.shiny),   // a Safari wild in its shiny colours: looks only, the fight is the same (js/data/shinies.js)
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
@@ -1847,6 +1848,8 @@ async function recallCard() {
 /** A Safari wild fight: the Throw Ball button shows all fight (the odds are low at high HP, catchChance()). */
 const canCatch = () => battle.catchable && !battle.over && battle.enemy.hp > 0;
 
+const NO_CATCH = { elite: 'Alphas are too strong to catch. Knock it out!', boss: 'The area\'s boss can\'t be caught. Knock it out!' };
+
 /** Why a throw can't be made now, or null. A throw costs THROW_PP and ends your turn, so cards can be played first. */
 function whyNotThrow() {
   const b = battle;
@@ -1877,6 +1880,7 @@ function closeBallPicker() {
 function toggleBallPicker() {
   const picker = $('ball-picker'), btn = $('throw-btn');
   if (!picker.hidden) return closeBallPicker();
+  if (battle.uncatchable) { log(NO_CATCH[battle.kind]); playSound('no-pp'); return; }
   if (!canCatch()) return;
   const problem = whyNotThrow();
   if (problem) { log(problem); playSound('no-pp'); return; }
@@ -2791,7 +2795,8 @@ function setupEnemy() {
 
   const type = typeless() ? 'normal' : b.def.type;   // elites and bosses ignore the chart, so show them as Neutral
   $('enemy-zone').dataset.type = type;
-  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.rare || b.shiny ? '✨ ' : '') + b.def.name;
+  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.shiny ? '✨ ' : '') + b.def.name;
+  if (b.rare) $('enemy-name').prepend(rareMark('inline'), ' ');   // rustling grass, not a shiny's ✨ (the user mixed them up, 2026-10-20)
   $('enemy-plate').classList.toggle('rare', b.rare);
   $('enemy-plate').classList.toggle('shiny', b.shiny);
   $('enemy-shiny').hidden = !b.shiny;
@@ -3075,8 +3080,11 @@ function renderBars() {
   $('mulligan-btn').hidden = !b.aug.mulligan || b.mulled || b.over;
   $('mulligan-btn').disabled = b.busy;
   const throwable = canCatch();
-  $('throw-btn').hidden = !throwable;
-  if (!throwable) closeBallPicker();
+  $('throw-btn').hidden = !throwable && !(b.uncatchable && !b.over);
+  if (b.uncatchable) {
+    $('throw-btn').classList.add('spent');
+    $('throw-btn').title = NO_CATCH[b.kind];
+  } else if (!throwable) closeBallPicker();
   else {
     const problem = whyNotThrow();
     $('throw-btn').classList.toggle('spent', !!problem);

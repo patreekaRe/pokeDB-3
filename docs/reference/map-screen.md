@@ -239,8 +239,8 @@ unlocks. Escape closes it while nothing modal is open. The grille and ball are p
 Once Kenmatta has been beaten 3 times (`save.kenBeaten`, see `docs/reference/events.md`), the Move Tutor's ❓ room shows his
 pixel face instead (`.map-node.ken`, `.ken-face`: a 26x26 crop of Alder's sprite on a cream square, the event's purple frame).
 
-A Safari rare spawn's room has a gold ✦ over it (`.map-rare`, added in `js/map.js`; see `docs/reference/safari.md`): 22px,
-with a soft glow that swells as it slowly bobs and twinkles (`rareTwinkle`), still under reduced motion.
+A Safari rare spawn's room has a rustling-grass badge on its top-right corner, like a material's (`.map-grass`,
+`rareMark()` in `js/ui.js`; a gold ✦ above the room until 2026-10-20; see `docs/reference/safari.md`).
 **The floating icons are buttons** (2026-10-18, the user's ask: "make it so that we can click on those floating icons and
 it'll tell us what it is"): the rare star, a town material's badge and a Waystone Shard are each their own `.map-float` button beside their room (`floater()` in `js/map.js`), not inside the room's button (a
 disabled room swallowed the tap). A tap shows a bubble saying what it is (`mapTip()`, `.map-tip`: the material's name and count), flipped below its icon at

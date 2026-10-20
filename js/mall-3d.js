@@ -800,6 +800,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     k.mon.group.position.set(k.x, k.lift ?? 0.3, k.z);   // on a step behind the counter, so it shows over it
     k.mon.group.traverse(o => { o.userData.front = spot; });
     built.group.add(k.mon.group);
+    if (k.sign) k.label = keeperSign(k);
     places[id] = { id, front: SHOPS[id].front, ...built };
     if (id !== 'f2' && id !== 'f3') addDoor(places[id]);   // upstairs the way out is the lift down
     smallNoShadow(built.group);
@@ -811,6 +812,8 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
       say, partner: () => walker, keeper: () => places.gc.keeper, calm: () => calm,
     });
   }
+  const kl = places[id].keeper?.label;
+  if (kl) kl.show(places[id].keeper.sign(loadBase()));   // the yard may have been built since
   setPlace(places[id], (typeof at === 'function' ? at(places[id]) : at) ?? places[id].door ?? DOOR, facing);
   if ((id === 'f1' || id === 'f2') && ballroomOpen(loadBase())) loadStatues(statueStands().map(k => PIECES[k].statueOf));   // 3F's, fetched ahead
   if (id === 'hall') syncRibbon();
@@ -824,6 +827,38 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     return talk('You came! Welcome to my shop! Every piece on the stands is fresh today. Tap one and I\'ll tell you about it.', 5600);
   }
   if (P.keeper) talk(pickLine(P.keeper.hello), 4200);
+}
+
+/** The words over a shopkeeper whose tap opens a catalogue, a tag in the price tags' style pinned over its head on
+    screen (2026-10-19: painted into the 3D they came out small, blurred and lost behind the CASHIER sign). `show(text)`
+    sets them, '' hides them; `tick()` keeps the tag over the keeper. */
+function keeperSign(k) {
+  const at = new THREE.Vector3(), board = k.mon.board;
+  board.geometry.computeBoundingBox();
+  const top = board.geometry.boundingBox.max.y;
+  let el = null, text = '';
+  return {
+    show(t) { text = t; if (el) el.hidden = !t; },
+    tick(hud, now) {
+      if (!el?.isConnected) {
+        el = document.createElement('span');
+        el.className = 'mall-sign';
+        el.style.setProperty('--ink', k.ink);
+        el.append(smoothIcon(k.signIcon, 'mall-sign-icon'), document.createElement('b'));
+        hud.view.after(el);
+      }
+      el.lastChild.textContent = text;
+      if (!text) { el.hidden = true; return; }
+      const g = k.mon.group.position;
+      at.set(g.x, g.y + top + 0.12, g.z).project(hud.camera);
+      const r = hud.view.getBoundingClientRect(), o = hud.stage.getBoundingClientRect();
+      el.hidden = Math.abs(at.x) > 1 || Math.abs(at.y) > 1;
+      const bob = calm ? 0 : Math.sin(now / 600) * 3;
+      const half = el.offsetWidth / 2 + 6, x = Math.min(Math.max((at.x + 1) / 2 * r.width, half), r.width - half);   // kept on screen
+      el.style.translate = `${(r.left - o.left + x).toFixed(1)}px ${(r.top - o.top + (1 - at.y) / 2 * r.height + bob).toFixed(1)}px`;
+    },
+    drop() { el?.remove(); el = null; },
+  };
 }
 
 const pickLine = (lines) => lines[Math.floor(Math.random() * lines.length)];
@@ -1448,6 +1483,7 @@ function frame(now) {
     k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
   }
   P.tick?.(now, dt, hud);
+  for (const pl of Object.values(places)) if (pl.keeper?.label) { if (pl === P) pl.keeper.label.tick(hud, now); else pl.keeper.label.show(''); }
   if (P.id === 'hall') for (const t of dressed) t(now, dt);
   places.gc?.crowd?.tick(now, dt, P.id === 'gc');
   places.hall?.crowd?.tick(now, dt, P.id === 'hall');
