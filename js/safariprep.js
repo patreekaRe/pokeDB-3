@@ -25,7 +25,7 @@ import { ballsApp } from './shop.js';
 import { playSound } from './audio.js';
 import { bootDevice } from './device-boot.js';
 import { smoothIcon } from './smooth-icons.js';
-import { $, el, openDialog, closeDialog, itemSprite, makeCard, zoomable } from './ui.js';
+import { $, el, openDialog, closeDialog, itemSprite, makeCard, zoomable, rareMark } from './ui.js';
 
 let actions = {};
 
@@ -37,7 +37,7 @@ const RULES = [
   ['🎯', 'Debuffs on it raise the odds.'],
   ['🍙', 'Bait: better odds, but it hits harder. A card reward after fights, Safari runs only.', 'bait'],
   ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, but it may run off. A card reward after fights, Safari runs only.`, 'rock'],
-  ['✦', `A room marked with this star on the map holds a rare Pokémon. It runs off after ${RARE.turns} turns.`],
+  ['rare', `A room marked with rustling grass on the map holds a rare Pokémon. It runs off after ${RARE.turns} turns.`],
   ['🃏', 'Each Pokémon you catch offers its own signature card for your deck.'],
   ['💰', `Catch a whole area: ${SAFARI_AREA_COINS} coins, x${RARE_BOOST} rare spawns.`],
 ];
@@ -238,7 +238,7 @@ function render() {
   $('sp-rules').replaceChildren(...[...RULES, ['👑', prize]].map(([icon, text, cardId]) => {
     const li = el('li', cardId ? 'with-card' : '');
     const mark = el('span', 'sp-rule-icon');
-    mark.append(icon === '✦' ? el('span', 'map-rare inline', '✦') : icon);   // the map's own rare-spawn star, not a stand-in
+    mark.append(icon === 'rare' ? rareMark('inline') : icon);   // the map's own rare-spawn mark, not a stand-in
     li.append(mark, el('span', '', text));
     if (cardId) {   // a Safari-only card: tap to read it big, with its keyword boxes
       const card = makeCard(CARDS_BY_ID[cardId]);
