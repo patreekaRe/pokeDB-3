@@ -1087,7 +1087,7 @@ never goes on the leaderboard, so its length can change without touching any day
 the new-type areas (Power Plant, Ice Cave, Dojo Mountain, ...), so every Duo Run can catch toward the duo pool. It needs its
 own difficulty step (~x6.3 / +29 / boss +40) set by the bot: duos already win less than solo (electric+fire / +grass /
 +water 64.7 / 43.7 / 36.3 against solo ~71), so area 4 may need to be gentler, or come with an extra card reward. Build it
-on `duo-types` (the Duo Run isn't on `main`). Waiting on the user's go.
+on `duo-types` (the Duo Run isn't on `main`). **The user's call: wait until the duo types are finished**, then build it.
 
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6
