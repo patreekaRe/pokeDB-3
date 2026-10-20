@@ -3263,3 +3263,16 @@ Machamp's cry). Dojo Mountain: a 9th Safari area holding all 30 Fighting-typed S
 Desert's painters as a granite mountainside. The Card index's Fighting tab. The rare first named Sturdy is Stand Firm
 (Sturdy is Ground's Ability). `tools/fighting-probe.mjs` covers the new rules. Bot: solo 87.3 vs 76.0, the pairs ~5 under
 session 7's Fighting (`fightFirst`), left for the balance pass. Numbers in pokeDB-sim's README.
+
+**Duo types, session 9: Ground's first** (2026-10-20, branch `duo-types`, both repos). Its card table went into
+`docs/duo-design.md` first (section 5, "Ground's first session"): 30 pool cards (10 / 14 / 6) and 8 evolution cards, art in
+`js/card-art-ground.js`. New rules in `js/battle.js`: Dig (`surface`, `b.underground`, `surface()` at your next turn's
+start, after the draw, each card back to its own deck's discard pile), Fault (`enemy.fault`, the 🌋 badge since the
+Safari's Rock has 🪨; `faultLine()` half on Alphas and bosses, checked after Burn and Leech Seed), Sandstorm (the Weather
+engine's `'sand'`: `SAND` chip 3, +3 on a Ground card's block; Hail's own powers and Safety Goggles now read Hail only),
+`perUnder`, `perFault`, `faultMult`, `ifSand`, powers Arena Trap, Excavate, Quicksand, Sand Force, Sand Stream, Desert
+Spirit, and the Sturdy Ability (in `hurtPlayer()`, after Focus Sash). Trapinch is a `DUO_STARTERS` entry with backs, fits
+and Vibrava's and Flygon's cries; catching any stage adds Ground (`DUO_LINES.ground`). `tools/ground-probe.mjs` checks the
+rules in a real fight, and `tools/duo-probe.mjs --pair=ground,fire` the Duo Run; pokeDB-sim mirrors it all. Bot (300):
+solo 71.3; with Fire / Grass / Water / Electric / Ice / Fighting 66.0 / 55.6 / 51.6 / 50.3 / 57.4 / 55.4. Bulldoze +
+Vulnerable 2 lifted only solo, so it shipped as written. Numbers in pokeDB-sim's README.

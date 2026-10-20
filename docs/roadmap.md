@@ -44,8 +44,9 @@ type's starter in its area adds it to your duo pool.
 `duo-types`; a session working alongside another (below) works on its own `duo-types-<part>` branch and merges into
 `duo-types` when done, the later one to finish resolving the merge. Playtest links are githack links on its commit.
 **When it goes live** (one step, not a session's: every area session leaves it): set `SAFARI_FROM` in
-`js/data/safari.js` (the Power Plant, the Ice Cave, Dojo Mountain and any area added since) to **the day after** the merge
-reaches `main` (UTC), in the same push, so no Safari day already played is dealt again. It reads 2026-10-20 on the branch.
+`js/data/safari.js` (the Power Plant, the Ice Cave, Dojo Mountain, the Quarry and any area added since) to **the day after** the merge
+reaches `main` (UTC), in the same push, so no Safari day already played is dealt again. It reads 2026-10-20 on the branch. The
+branch's `NEXT` patch lines (one per type) are past `RELEASE_AT`: cut that patch in the same merge.
 **One at a time from now on** (the user's call, 2026-10-19, after 0 and 2 ran side by side): run the sessions
 below in order, one each; the side-by-side rule that follows stays only in case that changes. **Two at a time** (the user's earlier ask): 2 (real types) can run beside 0 (its rules are settled above and it works with
 today's single starter), on `duo-types-realtypes`; 1 runs after 0, and 15 alone at the end.
@@ -146,15 +147,28 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?duorun&duopool&dojomountain&coins=500`, or `?area=dojomountain`, `?bossfight=dojomountain&starter=machop`,
    `?arena=fight&starter=machop&cards=stand-firm,justified,last-stand,gritted-teeth`. **Waiting on the user**: the
    playtest (whether the Moves app's 8 type tabs still read on a phone); the Expert Belt call.
-Prompt for session 9, Ground's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
-start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (Ground, the clash check, and
-Ice's and Fighting's session tables and bot checks as the pattern) and 6, docs/reference/safari.md's duo section,
-cards.md and card-design.md. Build Ground's first session: write its ~38-card table into the doc first (30 pool cards:
-10 common, 14 uncommon, 6 rare, and all 8 evolution cards), then Dig (a card underground until your next turn), Fault
-(the execute) and Sandstorm (on Ice's Weather engine), the Sturdy Ability, Trapinch's line (DUO_STARTERS, back GIFs,
-SPRITE_FIT, BODY_X, cries), the cards with art (a js/card-art-ground.js), describe() / cardTerms() lines, the Ground
-theme colours, the sim mirror and a bot check of Ground's pairs against the other six types' numbers. The Quarry's data
-comes in Ground's second session. Push only to duo-types in both repos and give me a githack link."
+9. ~~**Ground's first**~~ done 2026-10-20 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Ground's
+   first session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 30 pool cards + 8 evolution cards
+   with art (`js/card-art-ground.js`), **Dig** (a card goes underground, ⛏️, and surfaces at your next turn's start),
+   **Fault** (🌋: at its turn's start a foe at or under its Fault is knocked out; Alphas and bosses count half),
+   **Sandstorm** (the Weather engine's second kind: the chip and +3 on Ground blocks), the **Sturdy** Ability (once a
+   fight, a knock-out hit leaves you at 1 HP), Trapinch's line (`DUO_STARTERS`, backs, fits, Vibrava's and Flygon's
+   cries), the Ground colours, the sim mirror. Bot (300 a cell): ground+fire / +grass / +water / +electric / +ice /
+   +fighting 66.0 / 55.6 / 51.6 / 50.3 / 57.4 / 55.4; solo Ground 71.3 (Fire 68 under the same bot): level on the base
+   three, ~10 under Fighting's and Ice's first sessions with Electric and Ice, for the balance pass (15). Playtest: the
+   githack link with `?duorun&duopool&coins=500` (Ground lent), or a solo fight
+   `?arena=fight&starter=trapinch&cards=dig,landslide,mud-sport,stomping-tantrum,sandstorm`. **Waiting on the user**: the
+   playtest, and whether Fault at half on Alphas and bosses and Sandstorm's +3 block feel right.
+Prompt for session 10, Ground's second, **next** (▶ Run in: CLOUD, effort: medium; attach both pokeDB-3 and pokeDB-sim,
+start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 5 (Ground, its first session's
+table and bot check, and Fighting's second session as the pattern) and 7, docs/reference/safari.md's duo section,
+cards.md and card-design.md. Build Ground's second session: write its other ~36 cards into the doc first
+(defence-leaning: 10 common, 18 uncommon, 8 rare, 74 in all), then Soft Sand (its held item) + 6 relics (Smooth Rock among
+them), a Ground Gem and a Drive-like item, the Card index's Ground tab (and its Moves app icon), Rhyhorn's look
+(Rhyhorn, Rhydon, Rhyperior: backs, fits, cries) and the Quarry's data (a 10th Safari area: the Ground-typed Safari
+Pokémon moved in with `was:`, date-gated by SAFARI_FROM, the Desert's painters recoloured; Drilbur stays out), the sim
+mirror with Ground's relics ranked, and a bot check of its pairs against session 9's. Push only to duo-types in both
+repos and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

@@ -820,6 +820,15 @@ Ground so far: 10 common, 14 uncommon, 6 rare, 8 evolution = **38**.
 
 **Starting deck**: Mud Shot x3, **Sand Attack**, Sand Veil x4, Bulldoze, Dig.
 
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`; solo the
+main game at Level 0), win %, 300 a cell: **solo Ground 71.3** (solo Fire 68.0 under the same bot, 150); **ground+fire
+66.0, +grass 55.6, +water 51.6, +electric 50.3, +ice 57.4, +fighting 55.4**. Screened (150): Bulldoze with Vulnerable 2
+lifts solo to 80.7 but no pair (+grass 52.7, +electric 54.7, +ice 60.7), so it shipped as written. Against the others'
+first sessions (Fighting's with Fire / Grass / Water / Electric / Ice 67 / 58 / 49 / 64 / 73, Ice's 67 / 62 / 62 / 70)
+Ground sits with them on Fire, Grass and Water and ~10 under on Electric and Ice; its Grass and Electric pairs lose a
+sixth of their runs at the first area's boss (Ground fears Grass, Water and Ice wilds; Electric fears Ground ones): for
+the balance pass (session 15).
+
 ### Flying: Evasion, Tailwind, Unburden
 
 Light and quick: cheap cards, an empty hand, dodging. Hits Grass, Fighting, Bug; fears Electric, Ice, Rock.
