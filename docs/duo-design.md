@@ -1148,8 +1148,10 @@ is **Stare Down** now, as Ground's Sturdy card became Stand Firm: Intimidate is 
 called Intimidate stays: augments are climbs only, and it means the same.)
 
 **The rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
-- **Steal** (`steal: N`): take up to N of the enemy's strength (it loses it, you gain it) and up to 3 x N of its block
-  (it loses it, you gain it as block), before the card's damage, so a stolen shield lets the hit through. Strength comes
+- **Steal** (`steal: N`): the enemy loses N strength (below 0 too, so its attacks deal less) and you gain what it had of
+  it, up to N; and up to 3 x N of its block becomes yours, before the card's damage, so a stolen shield lets the hit
+  through. (As first built it took only strength the enemy had, so it did nothing to a foe that hadn't buffed: the bot
+  check below.) Strength comes
   from its buff moves and Enrage, block from its defend moves (it keeps it through your turn). Payoffs: `ifBuffed` (an
   extra if it has strength or block as you play the card, read before the Steal), Pickpocket (`mirrorStrength`: whenever
   the enemy gains strength, you gain 1), `payDay` (Pay Day's knockout ₽, Plunder).
@@ -1180,7 +1182,7 @@ called Intimidate stays: augments are climbs only, and it means the same.)
 | Obstruct | C | 1 | Block 8 *(up 11)* | — | Defend |
 | Snatch | C | 2 | Deal 10, Vulnerable 2, Steal 1 *(up 12, 3)* | Steal | Bash, Steal for Wing Attack's Evasion |
 | Feint Attack | C | 1 | Deal 6, block 6. Illusion *(up 8, 8)* | Illusion | Iron Wave |
-| Lash Out | C | 0 | Deal 5. Punish: draw 1 *(up 7)* | Punish | Flash of Steel, on its intent |
+| Lash Out | C | 0 | Deal 4, Weak 1. Punish: draw 1 *(up 6)* | Punish | Flash of Steel, on its intent, with Weak |
 | Covet | C | 1 | Deal 7, Steal 1 *(up 10)* | Steal | Sucker Punch (Silent's), Steal for its Weak |
 | Brutal Swing | C | 1 | Deal 7; if it has strength or block, +6 *(up 9, +8)* | Steal | Bane, on its buffs |
 | Throat Chop | C | 1 | Deal 7. Punish: +6 *(up 9, +8)* | Punish | Bane, on its intent |
@@ -1226,6 +1228,16 @@ Dark so far: 10 common, 14 uncommon, 6 rare, 8 evolution = **38**.
 
 **Starters**: **Deino** (Deino, Zweilous, Hydreigon; `DUO_STARTERS`, `DARK_DECK`; back GIFs, `SPRITE_FIT`, `BODY_X`,
 cries), `DUO_LINES.dark` (catching any stage adds Dark; they still live in the Peak and the Marsh until Night Alley).
+
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`, Dark the
+lead; solo the main game at Level 0), win %. As first built (Steal took only strength the enemy had; Lash Out deal 5, no
+Weak), 150 a cell: solo **43.3** (solo Fire 71.3 under the same bot), dark+fire / +water / +ground 59.3 / 54.7 / 57.3.
+Solo starting-deck screens (150): Lash Out with Weak 1 53.3, Intimidate Weak 2 51.3, Snatch's Vulnerable as Weak 41.3,
+Feint Attack block 8 46.7, Snatch and Lash Out both Weak 58.0. Steal always taking N strength (below 0 too, you gaining
+what it had) 52.0; with Lash Out's Weak **76.0** (Snatch's Weak too: 82.0, over the others); +fire / +water 68.0 / 60.0.
+So **Steal always takes strength** and **Lash Out applies Weak 1**. Confirmed (300): solo **73.3**; dark+fire / +grass /
++water / +electric / +ice / +fighting / +ground / +flying **75.0 / 76.0 / 62.3 / 77.7 / 77.3 / 77.7 / 77.3 / 89.3**: level
+with Flying's first session (solo 78.7, pairs 67-82); +flying runs high (Flying is whole), for the balance pass (session 15).
 
 ### The clash check
 

@@ -1,5 +1,5 @@
 /* dark-probe.mjs  -  Dark's mechanics in a real fight, headless (docs/duo-design.md section 5, "Dark's first session"):
-   the Intimidate Ability, Steal (strength and block, before the hit), its payoffs (Brutal Swing, Jaw Lock, Pickpocket,
+   the Intimidate Ability, Steal (strength, below its 0 too, and block, before the hit), its payoffs (Brutal Swing, Jaw Lock, Pickpocket,
    Plunder's ₽), Punish (Throat Chop, Lash Out, the glow, Taunt, Ruination, Unnerve, Prankster), Illusion and Disguise
    (the better of two types, on a stand-in partner), Doppelganger, Imposter, Mirage, Fighting's card renamed Stare Down,
    and the art, back sprites and cries:
@@ -53,6 +53,10 @@ await B(() => { const en = window.__battle().enemy; en.strength = 3; en.block = 
 await B(() => window.__play('covet'));
 s = await B(() => { const b = window.__battle(); return { mine: b.strength, its: b.enemy.strength }; });
 check(s.mine === 1 && s.its === 2, `Covet's Steal 1 takes 1 strength (${JSON.stringify(s)})`);
+await fresh();
+await B(() => window.__play('covet'));
+s = await B(() => { const b = window.__battle(); return { mine: b.strength, its: b.enemy.strength }; });
+check(s.mine === 0 && s.its === -1, `on a foe with no strength, Steal 1 still takes 1: it goes to -1, you gain none (${JSON.stringify(s)})`);
 await fresh();
 await B(() => { window.__battle().enemy.block = 10; });
 let dealt = await hit('ransack');

@@ -3307,6 +3307,16 @@ cliffs with a `feathers` weather. The Card index's Flying tab. Gale Wings' Weak 
 lands in (`enemy.weakNew`). `tools/flying-probe.mjs` covers the new rules (54 checks). Bot: solo 92.7 vs 78.0; the pairs
 level with session 11's but Ice and Ground (-7), left for the balance pass. Numbers in pokeDB-sim's README.
 
+**Duo types, session 13: Dark's first** (2026-10-20, branch `duo-types`, both repos). Its table went into
+`docs/duo-design.md` first: 30 pool cards (10 / 14 / 6) and 8 evolution cards with art (`js/card-art-dark.js`). Steal
+(`steal()`: the enemy loses N strength, below 0 too, you gain what it had, and take 3 x N of its block, before the hit),
+Punish (`punishing()`, the glow) and Taunt, Illusion (`illusive()`: the better of your two types on the chart) and Disguise
+(`b.disguised`, 🎭, `guardType()`), powers Pickpocket, Unnerve, Prankster, Mirage, Imposter's copy of your partner's last
+card, and the Intimidate Ability. Deino is a `DUO_STARTERS` entry with backs, fits and cries; catching any stage adds Dark.
+Fighting's Intimidate card is Stare Down; Supersonic Skystrike's Unburden adds its hit. `tools/dark-probe.mjs` checks the
+rules in a real fight; pokeDB-sim mirrors it all. Bot: as first built solo 43 vs Fire 71; Steal always taking strength and
+Lash Out's Weak 1 made it solo 73.3, pairs 62-89. Numbers in pokeDB-sim's README.
+
 **Catalogue signs over the mall's shopkeepers, a walkable Garden pond** (2026-10-19, the user's ask: players didn't know to
 tap Smeargle). GARDEN CATALOGUE floats over Smeargle once you have a backyard, GRAND CATALOGUE over Gardevoir; the Garden
 pond is a rug-layer piece now. Checked headless (sign shown/hidden, no errors) and within the phone budget. Detail in

@@ -1026,7 +1026,7 @@ const DARK_CARDS = [
   { id: 'obstruct',       name: 'Obstruct',       type: 'dark', cost: 1, art: '✋', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
   { id: 'snatch',         name: 'Snatch',         type: 'dark', cost: 2, art: '🫳', effects: { damage: 10, vulnerable: 2, steal: 1 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },   // Bash, Steal for Wing Attack's Evasion
   { id: 'feint-attack',   name: 'Feint Attack',   type: 'dark', cost: 1, art: '🎭', effects: { damage: 6, block: 6 }, illusion: true, upgrade: { effects: { damage: 8, block: 8 } } },   // Iron Wave
-  { id: 'lash-out',       name: 'Lash Out',       type: 'dark', cost: 0, art: '😤', effects: { damage: 5, punish: { draw: 1 } }, upgrade: { effects: { damage: 7 } } },   // Flash of Steel, on its intent
+  { id: 'lash-out',       name: 'Lash Out',       type: 'dark', cost: 0, art: '😤', effects: { damage: 4, weaken: 1, punish: { draw: 1 } }, upgrade: { effects: { damage: 6 } } },   // Flash of Steel, on its intent, with Weak (5 and no Weak: solo Dark 43)
   { id: 'covet',          name: 'Covet',          type: 'dark', cost: 1, art: '🤲', effects: { damage: 7, steal: 1 }, upgrade: { effects: { damage: 10 } } },   // Sucker Punch (Silent's), Steal for its Weak
   { id: 'brutal-swing',   name: 'Brutal Swing',   type: 'dark', cost: 1, art: '🌀', effects: { damage: 7, ifBuffed: { bonus: 6 } }, upgrade: { effects: { damage: 9, ifBuffed: { bonus: 8 } } } },   // Bane, on its buffs
   { id: 'throat-chop',    name: 'Throat Chop',    type: 'dark', cost: 1, art: '🤚', effects: { damage: 7, punish: { bonus: 6 } }, upgrade: { effects: { damage: 9, punish: { bonus: 8 } } } },   // Bane, on its intent
@@ -1602,7 +1602,7 @@ export const TERMS = {
   Evasion: 'Each stack halves an enemy attack on you, before your block. Gone at your next turn.',
   Tailwind: 'Draw 1 more card at the start of each of your next that many turns.',
   Unburden: 'A bonus if it\'s the last card in your hand when you play it.',
-  Steal: 'Take up to that much of the enemy\'s strength, and 3 times that of its block, as your own.',
+  Steal: 'The enemy loses that much strength (below 0 too) and you gain what it had. You also take 3 times that of its block.',
   Punish: 'A bonus if the enemy intends to attack this turn.',
   Illusion: 'Counts as your partner\'s type too: it hits as whichever of the two does better (alone: Dark or Neutral).',
   Disguise: 'Until your next turn, enemy attacks hit you as whichever of your two types takes them best (alone: Dark or Neutral).',

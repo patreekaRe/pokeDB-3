@@ -879,15 +879,18 @@ const illusive = (card) => !!card.illusion || (!!battle.powers.mirage && card.ty
 /** The other type an Illusion or a Disguise can be: the benched partner's, alone Neutral. */
 const partnerType = () => battle.duo?.types.find(t => t !== battle.starter.type) ?? 'normal';
 
-/** Dark's Steal: up to n of the enemy's strength and STEAL_BLOCK x n of its block become yours. */
+/** Dark's Steal: the enemy loses n strength (below 0 too) and you gain what it had of it; STEAL_BLOCK x n of its block
+    becomes yours. (Taking only what it had, Steal did nothing to a foe that hadn't buffed: solo Dark ran 43 to Fire's 71
+    in the bot check, 2026-10-20.) */
 function steal(n) {
   const b = battle, en = b.enemy;
   const str = Math.min(n, Math.max(0, en.strength)), shield = Math.min(STEAL_BLOCK * n, en.block);
-  if (!str && !shield) { pop('enemy-zone', '🫳 Nothing to steal', 'note', 120); return; }
-  if (str) { en.strength -= str; gainStrength(str, `🫳 +${str} strength`); }
+  en.strength -= n;
+  pop('enemy-zone', `🫳 -${n} strength`, 'note', 100);
+  if (str) gainStrength(str, `🫳 +${str} strength`);
   if (shield) { en.block -= shield; gainBlock(shield); }
   statFx('enemy', 'down');
-  log(`Stole ${[str && `${str} strength`, shield && `${shield} block`].filter(Boolean).join(' and ')}!`);
+  log(`Stole ${[`${n} strength`, shield && `${shield} block`].filter(Boolean).join(' and ')}!`);
 }
 
 /** The enemy gains strength (a buff move, Enrage, Analytic): Pickpocket copies it. */
@@ -3344,7 +3347,8 @@ function renderStatus() {
   if (en.sap)      enemyBadges.push(['🍂', en.sap, `Sap ${en.sap}: its attacks deal ${en.sap} less damage, all fight`]);
   if (en.tempSap)  enemyBadges.push(['💕', en.tempSap, `Charmed: its attacks deal ${en.tempSap} less damage this turn`]);
   if (b.skipEnemy) enemyBadges.push(['🌀', '', 'Eye of the Storm: it skips its next turn']);
-  if (en.strength) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: +${en.strength} damage on every attack`, 'bad']);
+  if (en.strength > 0) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: +${en.strength} damage on every attack`, 'bad']);
+  if (en.strength < 0) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: ${-en.strength} less damage on every attack`, 'good']);
   if (en.bait)     enemyBadges.push(['🍓', en.bait, `Bait ${en.bait}: easier to catch, but its attacks deal ${en.bait * BAIT.damage} more`, 'bad']);
   if (en.rock)     enemyBadges.push(['🪨', en.rock, b.rare ? `Rock ${en.rock}: it runs off ${en.rock} turn${en.rock > 1 ? 's' : ''} sooner` : `Rock ${en.rock}: ${Math.round(ROCK_FLEE * en.rock * 100)}% chance it runs off on its turn`]);
   if (b.rare && !b.over) { const left = Math.max(0, RARE.turns - en.rock - b.turn + 1); enemyBadges.push(['💨', left, `A rare Pokémon: it runs off after ${left} more turn${left === 1 ? '' : 's'} of yours. Catch it or knock it out first!`, 'bad']); }

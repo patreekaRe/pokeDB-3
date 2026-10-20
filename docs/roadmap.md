@@ -197,12 +197,30 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?arena=fight&starter=pidove&cards=phantom-wing,delta-stream,gale-wings,weightless,preen&relics=pretty-wing`.
    **Waiting on the user**: the playtest (the Moves app now has 10 type tabs on a phone); whether the Windy Cliffs should
    take only the birds (35, as built) or every Flying-typed Safari Pokémon (70, the bugs and bats too).
-Prompt for session 13, Dark's first, **next** (▶ Run in: CLOUD, effort: high, the user's call: design and engine
-work; attach both pokeDB-3 and pokeDB-sim, start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md
-sections 5 (Dark's plan, and Flying's first session as the pattern) and 7, docs/reference/safari.md's duo section,
-cards.md and card-design.md. Build Dark's first session: write its ~30 cards and 8 evolution cards into the doc first,
-then the cards with art, Steal, Punish and Illusion, the Intimidate Ability, Deino's line (backs, fits, cries), the sim
-mirror and a bot check of its pairs. Push only to duo-types in both repos and give me a githack link."
+13. ~~**Dark's first**~~ done 2026-10-20 on `duo-types` (both repos; game `3bb88ab`+, `docs/duo-design.md` section 5's "Dark's
+   first session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 30 pool cards + 8 evolution cards with
+   art (`js/card-art-dark.js`), **Steal** (the enemy loses N strength, below 0 too, you gain what it had, and you take 3 x N
+   of its block, before the hit), **Punish** (a bonus when it intends to attack; it glows) and **Taunt** (its intent becomes
+   its next attack), **Illusion** (the card hits as the better of your two types; alone Dark or Neutral) and **Disguise**
+   (🎭: until your next turn its hits land on whichever of your two types takes them best), the **Intimidate** Ability
+   (Weak 1 as Dark comes out, once a turn), Deino's line (backs, fits, cries), the sim mirror. Names: most Dark moves were
+   already Safari signature cards, so Thief is **Snatch**, Payback **Lash Out**, Copycat **Imposter** and so on (the doc's
+   "Names"); Fighting's Intimidate card is **Stare Down** (id kept), as Ground's Sturdy card became Stand Firm. Supersonic
+   Skystrike's Unburden now adds its hit (it had no first hit to add to). Bot: as first built solo Dark ran 43 to Fire's 71
+   (Steal did nothing to a foe that hadn't buffed); with Steal always taking strength and Lash Out applying Weak 1, solo
+   **73.3**, dark+fire / +grass / +water / +electric / +ice / +fighting / +ground / +flying **75.0 / 76.0 / 62.3 / 77.7 /
+   77.3 / 77.7 / 77.3 / 89.3** (300 a cell): level with Flying's first session. Playtest: the githack link with
+   `?duorun&duopool&coins=500` (Dark lent), or a solo fight
+   `?arena=fight&starter=deino&cards=taunt,throat-chop,ruination,masquerade,wicked-blow,imposter`. **Waiting on the user**:
+   the playtest; whether Steal pushing strength below 0 and Disguise "the better of your two types" read right; the names.
+Prompt for session 14, Dark's second, **next** (▶ Run in: CLOUD, effort: high, as Flying's second was; attach both
+pokeDB-3 and pokeDB-sim, start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 5 (Dark's
+plan and first session, and Flying's second session as the pattern) and 7, docs/reference/safari.md's duo section, cards.md
+and card-design.md. Build Dark's second session: write its other ~36 cards (defence-leaning) into the doc first, then the
+cards with art, Black Glasses + 6 relics, a Dark Gem and a second item, the Card index's Dark tab, Sandile's look, and
+Night Alley (the Dark Pokémon, the Sandile line and the Dark birds moved in, date-gated, on a recoloured area), the sim
+mirror with Dark's relic ranks, and a bot check of its pairs against session 13's Dark. Push only to duo-types in both repos
+and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
