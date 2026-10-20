@@ -3292,3 +3292,7 @@ rimmed grass green (a shiny keeps ✨ and gold). Checked headless at 390x844: ba
 The user's ask: the daily run's map never said how many you'd caught. A Safari Ball chip with `run.tally.caught` sits
 beside the Ability on the run card (`#run-caught`, `showCaught()` in `js/run.js`), bumping when it rises; hidden in other
 runs. Checked headless at 390x844 (fits between the Ability and the HP at 12px, no errors).
+
+### Safari Pokédex banners: no repeated rare (2026-10-20, cloud)
+The user saw two Kecleon and two Chansey silhouettes: each banner showed its first rare, and both spawn in two areas. A
+banner now shows the first rare only its page has (`bannerRare()` in `js/safaridex.js`): Furret, Ambipom, Linoone, Watchog.
