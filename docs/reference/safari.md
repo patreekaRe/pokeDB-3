@@ -440,7 +440,13 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   Peak recoloured to chalk sea cliffs: `SAFARI_ART.windycliffs`, `paintAs: 'peak'`, the `feathers` weather (drawn as
   leaves); its rares the ones already rare: Farfetch'd, Togetic, Togekiss, Braviary, Aerodactyl). Playtest a Duo Run in it
   with `&windycliffs`.
-- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting, Ground and Flying; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` / `&windycliffs` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+- **Dark's first session** (session 13, 2026-10-20; rules and card table in `docs/duo-design.md` section 5's "Dark's
+  first session"): **Deino** (`DUO_STARTERS`, `DARK_DECK`; back GIFs, `SPRITE_FIT`, `BODY_X`, Deino's, Zweilous's and
+  Hydreigon's cries), `DUO_LINES.dark` (catching Deino, Zweilous or Hydreigon adds Dark; they still live in the Peak and the
+  Marsh until Night Alley). In `js/battle.js`: **Steal** (`steal()`), **Punish** (`punishing()`, `taunt()`), **Illusion**
+  (`illusive()`, `partnerType()`), **Disguise** (`b.disguised`, `guardType()`) and **Intimidate** (`intimidate()`,
+  `b.intimTurn`). `tools/dark-probe.mjs` checks them in a real fight; `tools/duo-probe.mjs --pair=dark,fire` a whole duo.
+- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting, Ground, Flying and Dark; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` / `&windycliffs` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 

@@ -142,6 +142,7 @@ body[data-theme="ice"] { --accent: #66d8f0; --accent-dark: #2a8cb8; }
 body[data-theme="fighting"] { --accent: #e0603c; --accent-dark: #a03420; }
 body[data-theme="ground"] { --accent: #d8a850; --accent-dark: #946a2c; }
 body[data-theme="flying"] { --accent: #a8a0f8; --accent-dark: #6a5cc8; }
+body[data-theme="dark"] { --accent: #a88c74; --accent-dark: #5c4636; }
 
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }

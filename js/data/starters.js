@@ -48,6 +48,8 @@ const FIGHTING_DECK = ['rock-smash', 'rock-smash', 'rock-smash', 'vital-throw', 
 const GROUND_DECK = ['mud-shot', 'mud-shot', 'mud-shot', 'sand-attack', 'sand-veil', 'sand-veil', 'sand-veil', 'sand-veil', 'bulldoze', 'dig'];
 // Fire's shape: 3 attacks, an Iron Wave (Aerial Ace), 4 blocks, the Bash (Wing Attack) and a second signature (Peck)
 const FLYING_DECK = ['gust', 'gust', 'gust', 'aerial-ace', 'feather-guard', 'feather-guard', 'feather-guard', 'feather-guard', 'wing-attack', 'peck'];
+// Fire's shape: 3 attacks, an Iron Wave (Feint Attack), 4 blocks, the Bash (Snatch) and a second signature (Lash Out)
+const DARK_DECK = ['bite', 'bite', 'bite', 'feint-attack', 'obstruct', 'obstruct', 'obstruct', 'obstruct', 'snatch', 'lash-out'];
 const PSYCHIC_DECK = ['psywave', 'psywave', 'psywave', 'psywave', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-confusion', 'psystrike'];
 
 export const STARTERS = [
@@ -533,6 +535,16 @@ export const DUO_STARTERS = [
     ],
     blurb: 'Follows the flock and always finds its way home. Light on its feet, it travels with nothing to weigh it down.',
     deck: FLYING_DECK,
+  },
+  {
+    id: 'deino', type: 'dark', duoOnly: true,
+    line: [
+      { id: 'deino', name: 'Deino' },
+      { id: 'zweilous', name: 'Zweilous' },
+      { id: 'hydreigon', name: 'Hydreigon' },
+    ],
+    blurb: 'Bites first and finds out what it bit later. Steals what you were saving, punishes every swing, and fights in disguise.',
+    deck: DARK_DECK,
   },
 ];
 

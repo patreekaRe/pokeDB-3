@@ -23,9 +23,10 @@ const PALETTES = {
   fighting: ['#ffffff', '#ffd8c0', '#f09058', '#c84a28', '#842818', '#401008'],
   ground:  ['#ffffff', '#fff0c8', '#e8c878', '#c09048', '#8a6430', '#402c10'],
   flying:  ['#ffffff', '#eef0ff', '#c8d0ff', '#98a4f0', '#6070c8', '#283070'],
+  dark:    ['#f4ece4', '#c8b4a4', '#9a8070', '#6a5444', '#3e2e26', '#1c1410'],
   normal:  ['#ffffff', '#f4f4f8', '#d8d8e0', '#b0b0bc', '#808090', '#484858'],
 };
-const KIND = { fire: 'ember', water: 'drop', grass: 'leaf', psychic: 'spark', electric: 'spark', ice: 'spark', fighting: 'speck', ground: 'speck', flying: 'speck', normal: 'speck' };
+const KIND = { fire: 'ember', water: 'drop', grass: 'leaf', psychic: 'spark', electric: 'spark', ice: 'spark', fighting: 'speck', ground: 'speck', flying: 'speck', dark: 'speck', normal: 'speck' };
 const CHAR = '#281008';
 
 let canvas, ctx, PX = 4, raf = 0, last = 0;

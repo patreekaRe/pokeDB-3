@@ -244,7 +244,7 @@ const CRIES = new Set([
   'turtwig', 'grotle', 'torterra', 'piplup', 'prinplup', 'empoleon',
   'moltres', 'virizion', 'suicune', 'mewtwo', 'entei', 'celebi', 'kyogre', 'hooh', 'lugia', 'palkia',
   'reshiram', 'victini', 'heatran', 'manaphy', 'keldeo', 'rayquaza',
-  'shinx', 'luxio', 'luxray', 'vanillite', 'vanillish', 'vanilluxe', 'timburr', 'gurdurr', 'conkeldurr', 'vibrava', 'flygon', 'starly', 'staravia', 'staraptor', 'rhydon', 'rhyperior',
+  'shinx', 'luxio', 'luxray', 'vanillite', 'vanillish', 'vanilluxe', 'timburr', 'gurdurr', 'conkeldurr', 'vibrava', 'flygon', 'starly', 'staravia', 'staraptor', 'deino', 'zweilous', 'hydreigon', 'rhydon', 'rhyperior',
   'pidgey', 'pidgeotto', 'pidgeot', 'pidove', 'tranquill', 'unfezant',
   'mareep', 'flaaffy', 'ampharos', 'pichu', 'pikachu', 'raichu', 'elekid', 'electabuzz', 'electivire', 'tynamo', 'eelektrik', 'eelektross',
   'swinub', 'piloswine', 'mamoswine', 'machamp',

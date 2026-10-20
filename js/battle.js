@@ -21,7 +21,7 @@
 
 import { gymTalk } from './gym.js';
 import { talkOf } from './data/gym.js';
-import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT, STATIC_CAP, ICICLE_STEP, HAIL, SAND } from './data/cards.js';
+import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT, STATIC_CAP, ICICLE_STEP, HAIL, SAND, STEAL_BLOCK } from './data/cards.js';
 import { spriteUrl, stageName, STARTERS_BY_ID } from './data/starters.js';
 import { ITEMS_BY_ID, ITEM_SLOTS } from './data/items.js';
 import { heldFires, heldHeal, clearsCard } from './data/held.js';
@@ -290,6 +290,10 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     tailwind: run.relics.includes('sky-plate') ? 2 : 0,   // Flying's: the turns left that draw 1 more card at their start
     emptied: false,    // Feather Light has drawn this turn
     keenTurn: 0,       // the turn Flying's Keen Eye last drew (once a turn)
+    intimTurn: 0,      // the turn Dark's Intimidate last applied its Weak (once a turn)
+    disguised: false,  // Dark's Disguise: until your next turn, enemy hits land on whichever of your types takes them best
+    illusions: 0,      // Illusion cards played this turn (Doppelganger)
+    lastCards: [null, null],   // the last card each partner played this turn (alone, [0]): Imposter copies it
     bide: null,        // Bide: { turns, stored }, the HP enemy attacks take until it lets go, twice over
     weather: ability?.id === 'snow-warning' ? { kind: 'hail', turns: ability.amount + (run.relics.includes('icy-rock') ? ICY_ROCK : 0) } : null,   // Ice's Hail (Ground's Sandstorm later): one at a time
 
@@ -614,6 +618,10 @@ function beginPlayerTurn() {
   if (p.counterEachTurn) gainCounter(p.counterEachTurn);   // Counterstance
   if (p.faultEachTurn) applyFault(p.faultEachTurn);   // Quicksand
   if (p.sandEachTurn) setWeather('sand', p.sandEachTurn);   // Sand Stream
+  b.illusions = 0;
+  b.lastCards = [null, null];
+  b.disguised = false;
+  if (p.mirage) disguise();   // Mirage
   b.evasion = hasRelic('flying-memory') ? Math.floor(b.evasion / 2) : 0;   // Evasion lasts until your next turn (banked, it lifted Flying 15 points over the other types, 2026-10-20)
   if (b.turn === 1 && hasRelic('air-balloon')) gainEvasion(2);
   if (p.evasionEachTurn) gainEvasion(p.evasionEachTurn);   // Wind Wall
@@ -649,6 +657,8 @@ function beginPlayerTurn() {
   if (!p.tailwindKeep) b.tailwind -= wind;   // Delta Stream
   b.drawNext = 0;
   if (b.turn === 1 && hasAbility('keen-eye')) keenEye();
+  if (b.turn === 1 && hasAbility('intimidate')) intimidate();
+  if (p.punishDraw && punishing()) { draw(p.punishDraw); pop('player-zone', '🃏 Prankster', 'note good', 150); }
   if (p.statusHeldBlock && statusHeld()) gainBlock(p.statusHeldBlock * statusHeld());   // Gritted Teeth, on the hand just drawn
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (a.randomCard) addRandomCards(a.randomCard);
@@ -850,6 +860,66 @@ function keenEye() {
 
 /** Unburden (Flying's): the card is the last in your hand as it's played. `held` is the hand without it. */
 const unburdened = (held = battle.hand.length) => held === 0;
+
+/** Dark's Intimidate: Weak 1 as Dark comes out, at most once a turn. */
+function intimidate() {
+  const b = battle;
+  if (b.intimTurn === b.turn) return;
+  b.intimTurn = b.turn;
+  applyDebuff('weaken', b.ability.amount);
+  abilityBanner();
+}
+
+/** Punish (Dark's): the enemy intends to attack this turn, and isn't about to be Paralyzed out of it. */
+const punishing = () => ['attack', 'drain'].includes(currentMove().kind) && !paralyzing();
+
+/** An Illusion card (Dark's; Mirage makes every Dark card one): it counts as your partner's type too. */
+const illusive = (card) => !!card.illusion || (!!battle.powers.mirage && card.type === 'dark');
+
+/** The other type an Illusion or a Disguise can be: the benched partner's, alone Neutral. */
+const partnerType = () => battle.duo?.types.find(t => t !== battle.starter.type) ?? 'normal';
+
+/** Dark's Steal: up to n of the enemy's strength and STEAL_BLOCK x n of its block become yours. */
+function steal(n) {
+  const b = battle, en = b.enemy;
+  const str = Math.min(n, Math.max(0, en.strength)), shield = Math.min(STEAL_BLOCK * n, en.block);
+  if (!str && !shield) { pop('enemy-zone', '🫳 Nothing to steal', 'note', 120); return; }
+  if (str) { en.strength -= str; gainStrength(str, `🫳 +${str} strength`); }
+  if (shield) { en.block -= shield; gainBlock(shield); }
+  statFx('enemy', 'down');
+  log(`Stole ${[str && `${str} strength`, shield && `${shield} block`].filter(Boolean).join(' and ')}!`);
+}
+
+/** The enemy gains strength (a buff move, Enrage, Analytic): Pickpocket copies it. */
+function enemyStrength(n) {
+  battle.enemy.strength += n;
+  if (battle.powers.mirrorStrength) gainStrength(battle.powers.mirrorStrength, `👛 +${battle.powers.mirrorStrength} strength`);
+}
+
+/** Dark's Disguise, until your next turn. */
+function disguise() {
+  battle.disguised = true;
+  pop('player-zone', '🎭 Disguised', 'note good', 100);
+  statFx('player');
+}
+
+/** Taunt: the enemy's intent becomes the next attack in its move list (a buff or a shield skipped). */
+function taunt() {
+  const b = battle, moves = b.def.moves, i = b.enemy.moveIndex;
+  const k = [...moves.keys()].find(k => ['attack', 'drain'].includes(moves[(i + k) % moves.length].kind));
+  if (k == null) { pop('enemy-zone', '😜 Unmoved', 'note', 150); return; }
+  if (k) { b.enemy.moveIndex = i + k; $('enemy-portrait-box').classList.remove('charging'); }
+  pop('enemy-zone', '😜 Taunted!', 'note good', 150);
+  log(`${b.def.name} fell for the taunt!`);
+}
+
+/** Imposter: a copy of the last card your partner played this turn (alone, your own last), as an Illusion. */
+function imposter() {
+  const b = battle;
+  const src = b.lastCards[b.duo ? 1 - b.duo.run.out : 0];
+  if (!src) { pop('player-zone', '🫥 Nothing to copy', 'note', 120); return; }
+  addCopies({ ...src, illusion: true, copied: true }, 1);
+}
 
 /** Fault on the enemy (Ground's): it stacks and never wears off. */
 function applyFault(n, delay = 0) {
@@ -1059,6 +1129,9 @@ function effectsOf(card, x = 0, held = battle.hand.length) {
   if (e.ifEvasion && b.evasion > 0) addExtras(e, e.ifEvasion);
   if (e.ifTailwind && b.tailwind > 0) addExtras(e, e.ifTailwind);
   if (e.ifEmpty && unburdened(held)) addExtras(e, e.ifEmpty);
+  if (e.ifBuffed && (b.enemy.strength > 0 || b.enemy.block > 0)) addExtras(e, e.ifBuffed);
+  if (e.punish && punishing()) addExtras(e, e.punish);
+  if (e.ifDisguised && b.disguised) addExtras(e, e.ifDisguised);
   if (e.ifAfterAttack && followsUp('attack')) addExtras(e, e.ifAfterAttack);
   if (e.ifAfterSkill && followsUp('skill')) addExtras(e, e.ifAfterSkill);
   if (e.ifAttacked && b.attackedLast) addExtras(e, e.ifAttacked);
@@ -1113,6 +1186,8 @@ function damageFor(card, e) {
   if (e.perFault) amount += e.perFault * b.enemy.fault;           // Stomping Tantrum
   if (e.perEvasion) amount += e.perEvasion * b.evasion;           // Sky Drop
   if (e.perTailwind) amount += e.perTailwind * b.tailwind;        // Aeroblast
+  if (e.perIllusion) amount += e.perIllusion * b.illusions;       // Doppelganger
+  if (e.perIntent) amount += e.perIntent * attackDamage(currentMove());   // Ruination
   if (b.powers.sandAttack && sanding()) amount += b.powers.sandAttack;   // Sand Force
   if (e.perStatusHeld) amount += e.perStatusHeld * statusHeld();  // Reversal
   if (hasAbility('guts') && statusHeld()) amount += b.ability.amount;
@@ -1124,6 +1199,7 @@ function damageFor(card, e) {
   // relics
   if (hasRelic('muscle-band')) amount += 2;
   if (battleTypes().includes(card.type) && hasRelic(TYPE_RELIC[card.type])) amount += 2;   // a duo's held items boost their type whoever's out
+  else if (illusive(card) && b.duo && hasRelic(TYPE_RELIC[partnerType()])) amount += 2;   // an Illusion: the partner's too
   if (hasRelic('black-sludge')) amount += 3;
   if (b.firstAttack) amount += (hasRelic('dragon-fang') ? 10 : 0) + (b.aug.firstAttack || 0);   // Dragon Fang, First Strike
   amount += b.aug.attackBonus || 0;
@@ -1245,6 +1321,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
   const who = stageName(b.starter, b.stage);
   const followed = (!!e.ifAfterAttack && followsUp('attack')) || (!!e.ifAfterSkill && followsUp('skill'));   // read before this card's kind is
   const unburden = !!e.ifEmpty && unburdened();   // an Unburden happening: Early Bird, Coba Berry
+  const punished = !!e.punish && punishing();      // a Punish happening: Unnerve
 
   if (e.selfDamage) loseHp(e.selfDamage);
   if (e.exhaustHand) {
@@ -1263,6 +1340,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     e.discardedNow = going.length;
     renderHand();
   }
+  if (e.steal) steal(e.steal);   // before the hit, so a stolen shield lets it through
   if (e.blockDamage && e.block) {
     // Aqua Tail: the block comes first, so the hit counts it
     gainBlock(cardBlock(e.block));
@@ -1378,6 +1456,9 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     if (b.powers.unburdenBlock) gainBlock(b.powers.unburdenBlock);
     if (hasRelic('coba-berry')) gainBlock(3);
   }
+  if (punished && b.powers.punishDamage && b.enemy.hp > 0) { const d = hurtEnemy(b.powers.punishDamage); pop('enemy-zone', d > 0 ? `-${d} 😰` : 'Blocked', d > 0 ? 'dmg' : 'note', 200); }   // Unnerve
+  if (illusive(card)) b.illusions += 1;
+  if (!echo && !card.status) b.lastCards[b.duo ? b.duo.run.out : 0] = settled(card);   // Imposter's
   if (card.icicle) {   // every Icicle card deals more from now on, this one's next play too (Claw)
     b.icicles += 1;
     if (b.powers.icicleFrost && b.enemy.hp > 0) applyFrost(b.powers.icicleFrost);   // Snow Cloak
@@ -1415,7 +1496,7 @@ function enemyTrait(card) {
     pop('player-zone', lost > 0 ? `-${lost} ${TRAITS.barbs.icon}` : `${TRAITS.barbs.icon} Blocked`, lost > 0 ? 'dmg' : 'note', 120);
   }
   if (t.id === 'analytic' && card.power) {
-    en.strength += t.amount;
+    enemyStrength(t.amount);
     pop('enemy-zone', `${TRAITS.analytic.icon} 💪 +${t.amount}`, 'note bad', 150);
     playSound('stat-up');
     statFx('enemy');
@@ -1447,6 +1528,9 @@ function applyEffects(e) {
   if (e.thaw && b.enemy.frostbite) { b.enemy.frostbite = 0; pop('enemy-zone', '❄️ Shattered', 'note', 150); }   // Shatter, after its hit
   if (e.hail)       setWeather('hail', e.hail);
   if (e.evasion)    gainEvasion(e.evasion);
+  if (e.disguise)   disguise();
+  if (e.taunt)      taunt();
+  if (e.copyPartner) imposter();
   if (e.tailwind)   { b.tailwind += e.tailwind; pop('player-zone', `🌬️ Tailwind ${e.tailwind}`, 'note good', 100); }
   if (e.sand)       setWeather('sand', e.sand);
   if (e.fault)      applyFault(e.fault);
@@ -2521,7 +2605,7 @@ async function enemyTurn() {
       statFx('enemy');
       log(`${b.def.name} used ${move.name} and raised a shield.`);
     } else if (move.kind === 'buff') {
-      en.strength += move.amount;
+      enemyStrength(move.amount);
       pop('enemy-zone', `💪 +${move.amount}`, 'note bad');
       playSound('stat-up');
       statFx('enemy');
@@ -2550,7 +2634,7 @@ async function enemyTurn() {
 
   // Enrage: long fights get more dangerous.
   if (b.turn % ENRAGE_EVERY === 0) {
-    en.strength += ENRAGE_BONUS;
+    enemyStrength(ENRAGE_BONUS);
     pop('enemy-zone', `😡 Enraged +${ENRAGE_BONUS}`, 'note bad', 350);
     playSound('stat-up');
     statFx('enemy');
@@ -2589,22 +2673,32 @@ const typeless = () => battle.kind === 'elite' || battle.kind === 'boss';
 
 /** A move with its own `type` (Body Slam is Normal) uses that, else the enemy's type. In the Safari, the move's real
     type on the real chart (js/data/real-types.js). */
-function enemyTypeMultiplier(move, defender = battle.starter.type) {
+function enemyTypeMultiplier(move, defender = guardType(move)) {
   const b = battle;
   if (typeless()) return 1;
   if (b.safari) return realMultiplier(moveType(move, b.def), [defender]);
   return typeMultiplier(move.type ?? b.def.type, defender);
 }
 
-/** A duo's same-type attack bonus: a card of the type that's out deals STAB more. Your own bonus, so it holds against
-    elites and bosses too. */
-const stabOf = (card) => (battle.duo && card.type === battle.starter.type ? STAB : 1);
+/** The type an enemy hit lands on: the one out's, or under Dark's Disguise whichever of it and partnerType() takes the
+    hit best. */
+function guardType(move) {
+  const out = battle.starter.type;
+  if (!battle.disguised) return out;
+  const other = partnerType();
+  return enemyTypeMultiplier(move, other) < enemyTypeMultiplier(move, out) ? other : out;
+}
+
+/** A duo's same-type attack bonus: a card of the type that's out deals STAB more (an Illusion counts as either). Your
+    own bonus, so it holds against elites and bosses too. */
+const stabOf = (card) => (battle.duo && (card.type === battle.starter.type || illusive(card)) ? STAB : 1);
 
 /** Your card on this enemy: the triangle, or in the Safari the real chart on its real types (Neutral cards x1). */
 function cardMultiplier(card) {
   const b = battle;
   if (typeless()) return 1;
-  return b.safari ? realMultiplier(card.type, speciesTypes(b.def), { card: true }) : typeMultiplier(card.type, b.def.type);
+  const as = (type) => (b.safari ? realMultiplier(type, speciesTypes(b.def), { card: true }) : typeMultiplier(type, b.def.type));
+  return illusive(card) ? Math.max(as(card.type), as(partnerType())) : as(card.type);   // an Illusion hits as the better of your two
 }
 
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
@@ -3017,6 +3111,7 @@ async function comeOut(b) {
     draw(turnDraw());
   }
   if (hasAbility('keen-eye')) keenEye();   // Flying's: each time it comes out, once a turn
+  if (hasAbility('intimidate')) intimidate();   // Dark's: the same
   if (!d.came.includes(d.run.out)) {   // a fight-start Ability fires the first time each partner comes out, so switching can't farm it
     d.came.push(d.run.out);
     if (hasAbility('torrent')) { gainTide(b.ability.amount); abilityBanner(); }
@@ -3271,6 +3366,7 @@ function renderStatus() {
   if (b.tide)       playerBadges.push(['🌊', b.tide, `Tide ${b.tide}: lasts all fight; a move that says "per Tide" spends it all for a bigger hit`, 'good']);
   if (b.blockNext)  playerBadges.push(['🛡️', `+${b.blockNext}`, `+${b.blockNext} block at the start of your next turn`, 'block']);
   if (b.blur)       playerBadges.push(['🔰', '', 'Your block stays at the start of your next turn', 'block']);
+  if (b.disguised)  playerBadges.push(['🎭', '', 'Disguised: until your next turn, enemy attacks hit you as whichever of your two types takes them best', 'good']);
   if (b.evasion)    playerBadges.push(['🪶', b.evasion, `Evasion ${b.evasion}: the next ${b.evasion > 1 ? `${b.evasion} enemy attacks` : 'enemy attack'} on you deal${b.evasion > 1 ? '' : 's'} half, until your next turn`, 'good']);
   if (b.tailwind)   playerBadges.push(['🌬️', b.tailwind, `Tailwind ${b.tailwind}: draw 1 more card at the start of your next ${b.tailwind > 1 ? `${b.tailwind} turns` : 'turn'}`, 'good']);
   if (b.underground.length) playerBadges.push(['⛏️', b.underground.length, `Underground: ${b.underground.map(u => u.card.name).join(', ')}. ${b.underground.length > 1 ? 'They surface' : 'It surfaces'} at the start of your next turn`, 'good']);
@@ -3338,7 +3434,7 @@ function renderHand() {
     }
     node.classList.add('in-hand');
     const e = card.effects;
-    node.classList.toggle('follow-ready', !b.busy && ((!!e.ifAfterAttack && followsUp('attack')) || (!!e.ifAfterSkill && followsUp('skill')) || (!!e.ifEmpty && unburdened(b.hand.length - 1))));   // Follow-up, Unburden: it would pay now
+    node.classList.toggle('follow-ready', !b.busy && ((!!e.ifAfterAttack && followsUp('attack')) || (!!e.ifAfterSkill && followsUp('skill')) || (!!e.ifEmpty && unburdened(b.hand.length - 1)) || (!!e.punish && punishing())));   // Follow-up, Unburden, Punish: it would pay now
     if (choosing) node.classList.toggle('choosable', choosing.only(entry));
     else if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     else if (b.busy) node.classList.add('waiting');

@@ -23,6 +23,7 @@ import { ICE } from './card-art-ice.js';
 import { FIGHTING } from './card-art-fighting.js';
 import { GROUND } from './card-art-ground.js';
 import { FLYING } from './card-art-flying.js';
+import { DARK } from './card-art-dark.js';
 import { ALL_CARDS } from './data/cards.js';
 
 const OFF = new URLSearchParams(location.search).has('pixelcards');
@@ -40,6 +41,7 @@ const ART = {
   ...FIGHTING,
   ...GROUND,
   ...FLYING,
+  ...DARK,
   /* ---------- Neutral ---------- */
   tackle: `<defs>${radial('a', [[0, '#fff'], [0.35, '#fff3a0'], [1, '#ffb030']])}</defs>
     <path d="M3 18h9M2 25h11M4 32h8" ${line(2.4)} opacity="0.85"/>

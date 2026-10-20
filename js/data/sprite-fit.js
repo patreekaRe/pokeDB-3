@@ -887,8 +887,11 @@ export const SPRITE_FIT = {
   'bisharp-front': [4, 0, 2, 9],
   'rufflet-front': [8, 0, 2, 2],
   'braviary-front': [10, 20, 11, 5],
+  'deino-back': [1, 0, 0, 5],
   'deino-front': [1, 0, 10, 1],
+  'zweilous-back': [6, 0, 2, 4],
   'zweilous-front': [6, 0, 3, 2],
+  'hydreigon-back': [18, 15, 9, 2],
   'hydreigon-front': [20, 11, 1, 12],
 };
 
@@ -1007,6 +1010,8 @@ export const BODY_X = {
   'starly-back': 2,
   'staravia-back': 8,
   'staraptor-back': 10,
+  'deino-back': 4,
+  'zweilous-back': 8,
   'pidgey-back': 5,
   'pidgeotto-back': 10,
   'pidgeot-back': 12,

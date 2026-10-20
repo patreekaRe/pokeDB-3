@@ -221,6 +221,21 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   applied on the monster's turn), `tailwindBlock` (a turn's start in Tailwind), `tailwindKeep` (Delta Stream: the turn's
   draw no longer spends it), `unburdenBlock` (whenever an Unburden happens, in `resolveCard()`), `emptyBlock` (Weightless,
   sharing Feather Light's once a turn). Sharp Beak is Flying's `TYPE_RELIC`.
+- **Dark** (session 13, 2026-10-20; `docs/duo-design.md` section 5's "Dark's first session"): `DARK_CARDS` / `DARK_EVO_*`
+  (30 + 8 so far), art in `js/card-art-dark.js`. New keys: `steal` (**Steal**: `steal()` in `resolveCard()` before the
+  hit, up to N of the enemy's strength and `STEAL_BLOCK` x N of its block become yours), `ifBuffed` (it has strength or
+  block), `punish` (**Punish**: `punishing()`, its intent an attack or a drain and it not about to be Paralyzed, the older
+  `ifEnemyAttacks` test, whose cards keep their wording; a Punish card glows as Follow-up's do), `taunt` (`taunt()`: its
+  `moveIndex` jumps to the next attack in its list), `perIntent` (Ruination), the card flag `illusion` (**Illusion**:
+  `illusive()`, `cardMultiplier()` takes the better of the card's type and `partnerType()`, alone Neutral; STAB and the
+  partner's held item count it), `perIllusion` (`b.illusions`, this turn's), `disguise` (**Disguise**: `b.disguised` till
+  your next turn, the 🎭 badge; `guardType()` is `enemyTypeMultiplier()`'s default defender, so the intent and the hit
+  both read it), `ifDisguised`, `copyPartner` (Imposter: `b.lastCards`, each partner's last card this turn, copied as an
+  Illusion); powers `mirrorStrength` (Pickpocket, in `enemyStrength()`, which the buff moves, Enrage and Analytic now go
+  through), `punishDamage` (Unnerve), `punishDraw` (Prankster, at the turn's start), `mirage` (Mirage). Boxes: Steal,
+  Punish, Illusion, Disguise. The **Intimidate** Ability (`intimidate()`: Weak 1 at the fight's start and as Dark comes out,
+  once a turn, `b.intimTurn`). Fighting's card `intimidate` is named **Stare Down** now, its id kept. Dark has no held item
+  yet (`TYPE_RELIC`): Black Glasses comes with its second session.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,

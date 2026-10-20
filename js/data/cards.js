@@ -137,6 +137,9 @@ export const HAIL = { chip: 3, bonus: 3 };
     block a Ground card gives. */
 export const SAND = { chip: 3, bonus: 3 };
 
+/** Dark's Steal N takes up to N of the enemy's strength and this many times N of its block. */
+export const STEAL_BLOCK = 3;
+
 /** StS's Weak and Vulnerable. Both wear off by one at the end of each enemy turn. */
 export const WEAK_MULT = 0.75;
 export const VULNERABLE_MULT = 1.5;
@@ -153,6 +156,7 @@ export const TYPES = {
   fighting: { label: 'Fighting', icon: '🥊', beats: null,   losesTo: null    },
   ground:   { label: 'Ground',   icon: '⛰️', beats: null,   losesTo: null    },
   flying:   { label: 'Flying',   icon: '🪶', beats: null,   losesTo: null    },
+  dark:     { label: 'Dark',     icon: '🌙', beats: null,   losesTo: null    },
 };
 
 /* Every card is modelled on a Slay the Spire 1 card (named in its comment), at StS's numbers
@@ -720,7 +724,7 @@ const FIGHTING_CARDS = [
   { id: 'iron-will',      name: 'Iron Will',      type: 'fighting', cost: 2, art: '🗿', effects: { block: 10, blockPerStatusHeld: 4 }, rarity: 'uncommon', upgrade: { effects: { block: 13, blockPerStatusHeld: 5 } } },   // Grit's big brother
   { id: 'scrappy',        name: 'Scrappy',        type: 'fighting', cost: 1, art: '🤛', effects: { block: 8, weaken: 1, addCard: { id: 'sore' } }, rarity: 'uncommon', upgrade: { effects: { block: 11, weaken: 2 } } },   // Power Through-lite, with a Weak
   { id: 'grin-and-bear-it', name: 'Grin and Bear It', type: 'fighting', cost: 2, art: '😁', effects: { block: 16, addCard: { id: 'sore', n: 2, to: 'draw' } }, rarity: 'uncommon', upgrade: { effects: { block: 20 } } },   // Power Through
-  { id: 'intimidate',     name: 'Intimidate',     type: 'fighting', cost: 1, art: '😠', effects: { weaken: 1, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { weaken: 2 } } },   // Disarm-lite, with a Weak
+  { id: 'intimidate',     name: 'Stare Down',     type: 'fighting', cost: 1, art: '😠', effects: { weaken: 1, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { weaken: 2 } } },   // Disarm-lite, with a Weak
   { id: 'stand-firm',     name: 'Stand Firm',     type: 'fighting', cost: 2, art: '🪨', effects: { counterKeep: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Counter's Barricade)
   { id: 'final-gambit',   name: 'Final Gambit',   type: 'fighting', cost: 1, art: '🎲', effects: { counterPerLost: 2 }, exhaust: true, rarity: 'rare', upgrade: { cost: 0 } },   // (Counter's own cash-in)
   { id: 'no-guard',       name: 'No Guard',       type: 'fighting', cost: 1, art: '🙌', effects: { followCounter: 3 }, power: true, rarity: 'rare', upgrade: { effects: { followCounter: 5 } } },   // a Follow-up / Counter bridge: Mental Fortress, as thorns
@@ -1009,8 +1013,58 @@ const FLYING_EVO_MID = [
 const FLYING_EVO_HIGH = [
   { id: 'dragon-ascent',  name: 'Dragon Ascent',  type: 'flying', cost: 2, art: '🐲', effects: { damage: 22, evasion: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 28, evasion: 3 } } },   // Evasion
   { id: 'bleakwind-storm', name: 'Bleakwind Storm', type: 'flying', cost: 2, art: '🌩️', effects: { damage: 7, hits: 3, tailwind: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 9, tailwind: 3 } } },   // Tailwind
-  { id: 'supersonic-skystrike', name: 'Supersonic Skystrike', type: 'flying', cost: 1, art: '🚀', effects: { damage: 14, ifEmpty: { hits: 1 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18 } } },   // Unburden
+  { id: 'supersonic-skystrike', name: 'Supersonic Skystrike', type: 'flying', cost: 1, art: '🚀', effects: { damage: 14, hits: 1, ifEmpty: { hits: 1 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18 } } },   // Unburden
   { id: 'sky-fall',       name: 'Sky Fall',       type: 'flying', cost: 3, art: '🌠', effects: { damage: 34, evasion: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42, evasion: 2 } } },
+];
+
+/* Dark (the Safari's duo pool, docs/duo-design.md section 5): Steal takes the enemy's strength and block as yours
+   (Disarm and Sap, turned round), Punish pays off when it intends to attack (Go for the Eyes, Spot Weakness), and
+   Illusion cards hit as whichever of your two types does better, while Disguise lets you defend as it (Zorua's
+   Illusion, a duo trick). Session 13 built 30 of its 66 pool cards and all 8 evolution cards. */
+const DARK_CARDS = [
+  { id: 'bite',           name: 'Bite',           type: 'dark', cost: 1, art: '🦷', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike
+  { id: 'obstruct',       name: 'Obstruct',       type: 'dark', cost: 1, art: '✋', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
+  { id: 'snatch',         name: 'Snatch',         type: 'dark', cost: 2, art: '🫳', effects: { damage: 10, vulnerable: 2, steal: 1 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },   // Bash, Steal for Wing Attack's Evasion
+  { id: 'feint-attack',   name: 'Feint Attack',   type: 'dark', cost: 1, art: '🎭', effects: { damage: 6, block: 6 }, illusion: true, upgrade: { effects: { damage: 8, block: 8 } } },   // Iron Wave
+  { id: 'lash-out',       name: 'Lash Out',       type: 'dark', cost: 0, art: '😤', effects: { damage: 5, punish: { draw: 1 } }, upgrade: { effects: { damage: 7 } } },   // Flash of Steel, on its intent
+  { id: 'covet',          name: 'Covet',          type: 'dark', cost: 1, art: '🤲', effects: { damage: 7, steal: 1 }, upgrade: { effects: { damage: 10 } } },   // Sucker Punch (Silent's), Steal for its Weak
+  { id: 'brutal-swing',   name: 'Brutal Swing',   type: 'dark', cost: 1, art: '🌀', effects: { damage: 7, ifBuffed: { bonus: 6 } }, upgrade: { effects: { damage: 9, ifBuffed: { bonus: 8 } } } },   // Bane, on its buffs
+  { id: 'throat-chop',    name: 'Throat Chop',    type: 'dark', cost: 1, art: '🤚', effects: { damage: 7, punish: { bonus: 6 } }, upgrade: { effects: { damage: 9, punish: { bonus: 8 } } } },   // Bane, on its intent
+  { id: 'disguise',       name: 'Disguise',       type: 'dark', cost: 1, art: '🥸', effects: { block: 8, disguise: 1 }, upgrade: { effects: { block: 11 } } },   // Defend, in disguise
+  { id: 'sleight-of-hand', name: 'Sleight of Hand', type: 'dark', cost: 1, art: '🃏', effects: { damage: 4, hits: 2 }, illusion: true, upgrade: { effects: { damage: 5 } } },   // Twin Strike
+  { id: 'taunt',          name: 'Taunt',          type: 'dark', cost: 0, art: '😜', effects: { taunt: 1, draw: 1 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { draw: 2 } } },   // (Punish's own: Trip's slot)
+  { id: 'reprisal',       name: 'Reprisal',       type: 'dark', cost: 1, art: '🔁', effects: { block: 7, punish: { vulnerable: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Go for the Eyes, with a Defend
+  { id: 'comeuppance',    name: 'Comeuppance',    type: 'dark', cost: 2, art: '⚖️', effects: { damage: 12, hits: 1, punish: { hits: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 15 } } },   // Twin Strike+, on its intent
+  { id: 'unnerve',        name: 'Unnerve',        type: 'dark', cost: 1, art: '😰', effects: { punishDamage: 5 }, power: true, rarity: 'uncommon', upgrade: { effects: { punishDamage: 7 } } },   // (Punish's Thousand Cuts)
+  { id: 'ransack',        name: 'Ransack',        type: 'dark', cost: 1, art: '🗃️', effects: { damage: 8, steal: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 11, steal: 3 } } },   // Sucker Punch+, Steal for its Weak
+  { id: 'pickpocket',     name: 'Pickpocket',     type: 'dark', cost: 1, art: '👛', effects: { mirrorStrength: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // (Steal's own: Inflame off its buffs)
+  { id: 'jaw-lock',       name: 'Jaw Lock',       type: 'dark', cost: 1, art: '🐊', effects: { damage: 8, steal: 1, ifBuffed: { draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 11 } } },   // Pommel Strike, on its buffs
+  { id: 'imposter',       name: 'Imposter',       type: 'dark', cost: 1, art: '🫥', effects: { copyPartner: 1 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Dual Wield, off your partner
+  { id: 'masquerade',     name: 'Masquerade',     type: 'dark', cost: 1, art: '🎭', effects: { block: 5, disguise: 1, draw: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 8 } } },   // Backflip, in disguise
+  { id: 'wicked-blow',    name: 'Wicked Blow',    type: 'dark', cost: 2, art: '👊', effects: { damage: 16, ifDisguised: { bonus: 6 } }, illusion: true, rarity: 'uncommon', upgrade: { effects: { damage: 20, ifDisguised: { bonus: 8 } } } },   // Bludgeon-lite
+  { id: 'doppelganger',   name: 'Doppelganger',   type: 'dark', cost: 1, art: '👥', effects: { damage: 5, perIllusion: 4 }, illusion: true, rarity: 'uncommon', upgrade: { effects: { damage: 7, perIllusion: 5 } } },   // Finisher, on Illusions
+  { id: 'mug',            name: 'Mug',            type: 'dark', cost: 1, art: '💰', effects: { damage: 7, punish: { steal: 2 } }, rarity: 'uncommon', upgrade: { effects: { damage: 10 } } },   // a Steal / Punish bridge: Sucker Punch, stealing on its intent
+  { id: 'switcheroo',     name: 'Switcheroo',     type: 'dark', cost: 0, art: '🔀', effects: { steal: 1, disguise: 1 }, rarity: 'uncommon', upgrade: { effects: { steal: 2 } } },   // a Steal / Illusion bridge: Disarm-lite, free
+  { id: 'false-surrender', name: 'False Surrender', type: 'dark', cost: 1, art: '🏳️', effects: { damage: 8, punish: { bonus: 5 } }, illusion: true, rarity: 'uncommon', upgrade: { effects: { damage: 10, punish: { bonus: 7 } } } },   // a Punish / Illusion bridge: Bane, on its intent
+  { id: 'mirage',         name: 'Mirage',         type: 'dark', cost: 2, art: '🌫️', effects: { mirage: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Illusion's own: Wraith Form's slot)
+  { id: 'darkest-lariat', name: 'Darkest Lariat', type: 'dark', cost: 2, art: '🌪️', effects: { damage: 16, strengthMult: 3 }, rarity: 'rare', upgrade: { effects: { damage: 20, strengthMult: 4 } } },   // Heavy Blade
+  { id: 'plunder',        name: 'Plunder',        type: 'dark', cost: 2, art: '🏴‍☠️', effects: { damage: 14, steal: 2, payDay: 20 }, rarity: 'rare', upgrade: { effects: { damage: 18, payDay: 25 } } },   // Hand of Greed
+  { id: 'ruination',      name: 'Ruination',      type: 'dark', cost: 2, art: '💀', effects: { damage: 8, punish: { perIntent: 1 } }, rarity: 'rare', upgrade: { effects: { damage: 12 } } },   // (Punish's own: Spite thrown back)
+  { id: 'prankster',      name: 'Prankster',      type: 'dark', cost: 2, art: '🃏', effects: { punishDraw: 2 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Machine Learning, on its intent
+  { id: 'hyperspace-fury', name: 'Hyperspace Fury', type: 'dark', cost: 2, art: '🌌', effects: { damage: 5, hits: 4, steal: 1 }, illusion: true, rarity: 'rare', upgrade: { effects: { damage: 6 } } },   // a Steal / Illusion bridge: Riddle with Holes-lite
+];
+
+const DARK_EVO_MID = [
+  { id: 'heist',          name: 'Heist',          type: 'dark', cost: 1, art: '🦹', effects: { damage: 9, steal: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 12, steal: 3 } } },   // Steal
+  { id: 'vengeance',      name: 'Vengeance',      type: 'dark', cost: 2, art: '😠', effects: { damage: 14, punish: { vulnerable: 2 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18, punish: { vulnerable: 3 } } } },   // Punish
+  { id: 'smoke-bomb',     name: 'Smoke Bomb',     type: 'dark', cost: 0, art: '💨', effects: { disguise: 1, draw: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { draw: 3 } } },   // Illusion
+  { id: 'kowtow-cleave',  name: 'Kowtow Cleave',  type: 'dark', cost: 2, art: '🗡️', effects: { damage: 17, weaken: 1, vulnerable: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 22, weaken: 2, vulnerable: 2 } } },
+];
+const DARK_EVO_HIGH = [
+  { id: 'grand-larceny',  name: 'Grand Larceny',  type: 'dark', cost: 2, art: '💎', effects: { damage: 20, steal: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 26, steal: 4 } } },   // Steal
+  { id: 'black-hole-eclipse', name: 'Black Hole Eclipse', type: 'dark', cost: 2, art: '🌑', effects: { damage: 20, punish: { bonus: 12 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 26, punish: { bonus: 15 } } } },   // Punish
+  { id: 'dark-void',      name: 'Dark Void',      type: 'dark', cost: 2, art: '🕳️', effects: { damage: 24, disguise: 1 }, illusion: true, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 30 } } },   // Illusion
+  { id: 'wicked-torque',  name: 'Wicked Torque',  type: 'dark', cost: 3, art: '⚙️', effects: { damage: 32, weaken: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 40, weaken: 3 } } },
 ];
 
 /* Fight-only cards made by other cards (`addCard`): never offered, not in the Card index, never in your run deck. */
@@ -1099,11 +1153,11 @@ export const SIGNATURE_FOR = Object.fromEntries(SIGNATURE_CARDS.map(c => [c.from
 /** Every card you can be offered (the Card index lists these), and a lookup by id of every card there is,
     upgraded ones included: CARDS_BY_ID['ember'], CARDS_BY_ID['ember+']. */
 export const ALL_CARDS = [
-  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS, ...ICE_CARDS, ...FIGHTING_CARDS, ...GROUND_CARDS, ...FLYING_CARDS,
+  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS, ...ICE_CARDS, ...FIGHTING_CARDS, ...GROUND_CARDS, ...FLYING_CARDS, ...DARK_CARDS,
   ...FIRE_EVO_MID, ...FIRE_EVO_HIGH, ...GRASS_EVO_MID, ...GRASS_EVO_HIGH, ...WATER_EVO_MID, ...WATER_EVO_HIGH,
   ...PSYCHIC_EVO_MID, ...PSYCHIC_EVO_HIGH, ...ELECTRIC_EVO_MID, ...ELECTRIC_EVO_HIGH,
   ...ICE_EVO_MID, ...ICE_EVO_HIGH, ...FIGHTING_EVO_MID, ...FIGHTING_EVO_HIGH,
-  ...GROUND_EVO_MID, ...GROUND_EVO_HIGH, ...FLYING_EVO_MID, ...FLYING_EVO_HIGH,
+  ...GROUND_EVO_MID, ...GROUND_EVO_HIGH, ...FLYING_EVO_MID, ...FLYING_EVO_HIGH, ...DARK_EVO_MID, ...DARK_EVO_HIGH,
 ];
 
 /* ---------- PP Up: upgraded cards ----------
@@ -1150,7 +1204,7 @@ const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id
 export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS].map(c => [c.id, c]));
 for (const card of [...ALL_CARDS, ...TOKEN_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
-const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS, fighting: FIGHTING_CARDS, ground: GROUND_CARDS, flying: FLYING_CARDS };
+const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS, fighting: FIGHTING_CARDS, ground: GROUND_CARDS, flying: FLYING_CARDS, dark: DARK_CARDS };
 // Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
 // 2 = your final evolution (high tier).
 const EVO_SETS = {
@@ -1163,6 +1217,7 @@ const EVO_SETS = {
   fighting: { 1: FIGHTING_EVO_MID, 2: FIGHTING_EVO_HIGH },
   ground: { 1: GROUND_EVO_MID, 2: GROUND_EVO_HIGH },
   flying: { 1: FLYING_EVO_MID, 2: FLYING_EVO_HIGH },
+  dark: { 1: DARK_EVO_MID, 2: DARK_EVO_HIGH },
 };
 
 /** The cards a starter of this type can win as rewards: its own type + neutral cards. A Duo Run's (`duo`) also offers
@@ -1209,7 +1264,7 @@ export function scaledEffects(card, stage = 0) {
  * on your nameplate while it's switched on (battle.js adds up every power you play).
  */
 /** The Power Lens shown when a power card is played, in the starter's colours (purple for any other type). */
-export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦', fighting: '🟫', ground: '🟫', flying: '🟦' };
+export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦', fighting: '🟫', ground: '🟫', flying: '🟦', dark: '⬛' };
 
 export const POWERS = {
   blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
@@ -1317,6 +1372,10 @@ export const POWERS = {
   tailwindKeep:     { icon: '♾️', flag: true, text: () => 'Tailwind no longer runs out.' },
   unburdenBlock:    { icon: '🐓', text: (n) => `Whenever an Unburden happens, gain ${n} block.` },
   emptyBlock:       { icon: '🎐', text: (n) => `The first time your hand empties each turn, gain ${n} block.` },
+  mirrorStrength:   { icon: '👛', text: (n) => `Whenever the enemy gains strength, your hits deal +${n} all fight.` },
+  punishDamage:     { icon: '😰', text: (n) => `Whenever a Punish happens, deal ${n} damage.` },
+  punishDraw:       { icon: '🃏', text: (n) => `At the start of each turn, if the enemy intends to attack, draw ${plural(n, 'card')}.` },
+  mirage:           { icon: '🌫️', flag: true, text: () => 'Your Dark cards are Illusions. At the start of each turn, Disguise.' },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -1356,6 +1415,8 @@ function sentences(e) {
   if (e.perEvasion)   parts.push(`+${e.perEvasion} for each Evasion you have.`);
   if (e.perTailwind)  parts.push(`+${e.perTailwind} for each turn of Tailwind left.`);
   if (e.perFault)     parts.push(`+${e.perFault} for each Fault on the enemy.`);
+  if (e.perIllusion)  parts.push(`+${e.perIllusion} for each other Illusion card you've played this turn.`);
+  if (e.perIntent)    parts.push('+ the damage its attack would deal you.');
   if (e.perLost)      parts.push(`+${e.perLost} for each HP you lost last enemy turn.`);
   if (e.perStatusHeld) parts.push(`+${e.perStatusHeld} for each status card in your hand.`);
   if (e.hits && !e.damage && !e.blockDamage) parts.push(e.hits > 1 ? `It hits ${e.hits} more times.` : 'It hits once more.');
@@ -1373,6 +1434,8 @@ function sentences(e) {
   if (e.sand)         parts.push(`Sandstorm ${e.sand}.`);
   if (e.evasion)      parts.push(`Evasion ${e.evasion}.`);
   if (e.tailwind)     parts.push(`Tailwind ${e.tailwind}.`);
+  if (e.steal)        parts.push(`Steal ${e.steal}.`);
+  if (e.taunt)        parts.push('The enemy\'s intent becomes its next attack.');
   if (e.fault)        parts.push(`Fault ${e.fault}.`);
   if (e.faultMult)    parts.push(`${MULT[e.faultMult] ?? `Multiply by ${e.faultMult}`} the enemy's Fault.`);
   if (e.bide)         parts.push(`Store the HP you lose over the next ${e.bide} enemy turns, then deal twice that.`);
@@ -1383,6 +1446,8 @@ function sentences(e) {
   if (e.guard)        parts.push('Block the enemy\'s next attack completely.');
   if (e.block && !e.blockDamage) parts.push(`Gain ${e.block} block.`);
   if (e.counter)      parts.push(`Counter ${e.counter}.`);
+  if (e.disguise)     parts.push('Disguise.');
+  if (e.copyPartner)  parts.push('Add a copy of the last card your partner played this turn to your hand (alone: your last card). It\'s an Illusion.');
   if (e.counterPerStatus) parts.push(`+${e.counterPerStatus} Counter for each status card in your hand.`);
   if (e.counterPerLost) parts.push(`Counter ${TIMES[e.counterPerLost] ?? `${e.counterPerLost} times`} the HP you lost last enemy turn.`);
   if (e.blockMult)    parts.push(`${MULT[e.blockMult] ?? `Multiply by ${e.blockMult}`} your block.`);
@@ -1477,6 +1542,9 @@ function sentences(e) {
   if (e.ifEvasion)    parts.push(`If you have Evasion: ${sentences(e.ifEvasion).join(' ')}`);
   if (e.ifTailwind)   parts.push(`In Tailwind: ${sentences(e.ifTailwind).join(' ')}`);
   if (e.ifEmpty)      parts.push(`Unburden: ${sentences(e.ifEmpty).join(' ')}`);
+  if (e.ifBuffed)     parts.push(`If the enemy has strength or block: ${sentences(e.ifBuffed).join(' ')}`);
+  if (e.punish)       parts.push(`Punish: ${sentences(e.punish).join(' ')}`);
+  if (e.ifDisguised)  parts.push(`If you're Disguised: ${sentences(e.ifDisguised).join(' ')}`);
   return parts;
 }
 
@@ -1502,6 +1570,7 @@ export function describe(card, stage = 0) {
   if (card.icicle) parts.push('Icicle.');
   if (card.freeIn === 'hail') parts.push('Costs 0 in Hail.');
   if (card.freeIn === 'tailwind') parts.push('Costs 0 in Tailwind.');
+  if (card.illusion) parts.push('Illusion.');
   if (!parts.length && card.status) parts.push(card.exhaust ? 'Does nothing.' : 'Clogs your hand.');
   return parts.join(' ');
 }
@@ -1533,6 +1602,10 @@ export const TERMS = {
   Evasion: 'Each stack halves an enemy attack on you, before your block. Gone at your next turn.',
   Tailwind: 'Draw 1 more card at the start of each of your next that many turns.',
   Unburden: 'A bonus if it\'s the last card in your hand when you play it.',
+  Steal: 'Take up to that much of the enemy\'s strength, and 3 times that of its block, as your own.',
+  Punish: 'A bonus if the enemy intends to attack this turn.',
+  Illusion: 'Counts as your partner\'s type too: it hits as whichever of the two does better (alone: Dark or Neutral).',
+  Disguise: 'Until your next turn, enemy attacks hit you as whichever of your two types takes them best (alone: Dark or Neutral).',
   Hail: `Weather. At the end of your turn the enemy loses ${HAIL.chip} HP. Your Ice attacks deal +${HAIL.bonus} a hit. Lasts that many turns.`,
   Bait: 'Catch odds +50% each, its attacks +3 each. All fight.',
   Rock: 'A wild one may run off on its turn (no reward). A rare one leaves sooner.',
@@ -1603,6 +1676,11 @@ export function cardTerms(card) {
     uses(/evasion|^evade(Damage|Weak|Sap)$/i) && term('Evasion'),
     (uses(/tailwind/i) || card.freeIn === 'tailwind') && term('Tailwind'),
     uses(/^ifEmpty$|^empty(Draw|Block)$|^unburdenBlock$/) && term('Unburden'),
+    uses(/^steal$/) && term('Steal'),
+    uses(/^ifBuffed$|^mirrorStrength$/) && term('Strength'),
+    uses(/^punish|^taunt$/) && term('Punish'),
+    (card.illusion || uses(/^perIllusion$|^copyPartner$|^mirage$/)) && term('Illusion'),
+    uses(/disguise|^mirage$/i) && term('Disguise'),
     uses(/^ifAfter|^followAlways$|^mixBlock$|^follow(Block|Counter)$/) && term('Follow-up'),
     uses(/^counter|^followCounter$/) && term('Counter'),
     uses(/^perStatusHeld$|^statusDraw$|^statusStrength$|^blockPerStatusHeld$|^counterPerStatus$|^statusBlock$|^statusHeldBlock$/) && ['Status cards', 'Junk in your deck for this fight: Sore, and what enemies add.'],

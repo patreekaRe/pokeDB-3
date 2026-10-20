@@ -1131,6 +1131,102 @@ Sly. Hits Psychic and Ghost; fears Fighting and Bug.
 
 Starting deck: Bite x4 (deal 7), Obstruct x4 (block 7), **Thief** as the Bash (2: deal 10, Steal 2), Payback.
 
+#### Dark's first session: its cards (session 13, 2026-10-20)
+
+Written here before the code, as the other types' were. 30 cards in the pools (10 common, 14 uncommon, 6 rare) and all
+8 evolution cards, so a run with Dark is whole; session 14 adds the other ~36, the relics, items, Sandile's look and
+Night Alley. Each card is on a StS 1 card at x~1.2 (its model in the last column and in a comment on its line) with a
+hand-picked upgrade. The deck is Fire's shape (3 attacks, an Iron Wave, 4 blocks, the Bash and a second signature). This
+half leans on attacks and draw; the second half is the defensive one, as Flying's was.
+
+**Names**: most Dark moves already name a Safari signature card a duo can meet (Thief is Sandile's, Pursuit Murkrow's,
+Knock Off, Night Daze, Assurance, Crunch, Dark Pulse, Foul Play, Sucker Punch...), and Payback and Intimidate are
+Fighting cards. So the plan's Thief is **Snatch**, Payback **Lash Out**, Assurance **Reprisal**, Knock Off **Brutal Swing**,
+Night Daze **Wicked Blow**, Copycat **Imposter** (Copycat is Happiny's signature, and a Sky Pillar augment), Punishment
+**Ransack** (so no card is called after a keyword it doesn't use). Fighting's card **Intimidate** (id kept, branch only)
+is **Stare Down** now, as Ground's Sturdy card became Stand Firm: Intimidate is Dark's Ability. (The Sky Pillar augment
+called Intimidate stays: augments are climbs only, and it means the same.)
+
+**The rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- **Steal** (`steal: N`): take up to N of the enemy's strength (it loses it, you gain it) and up to 3 x N of its block
+  (it loses it, you gain it as block), before the card's damage, so a stolen shield lets the hit through. Strength comes
+  from its buff moves and Enrage, block from its defend moves (it keeps it through your turn). Payoffs: `ifBuffed` (an
+  extra if it has strength or block as you play the card, read before the Steal), Pickpocket (`mirrorStrength`: whenever
+  the enemy gains strength, you gain 1), `payDay` (Pay Day's knockout ₽, Plunder).
+- **Punish** (`punish: { ... }`): a bonus if the enemy intends to attack this turn (its intent is an attack or a drain,
+  and it isn't about to be Paralyzed), the same test as the older "If the enemy intends to attack" cards, which keep
+  their text; a Punish card glows when it would pay, as Follow-up's do. **Taunt** (`taunt`): the enemy's intent becomes
+  the next attack in its move list (a buff or a shield is skipped, its pattern goes on from there). `perIntent` (Ruination:
+  + the damage its coming attack would deal you). Powers `punishDamage` (Unnerve: whenever a Punish happens, deal N) and
+  `punishDraw` (Prankster: at the start of each turn, if the enemy intends to attack, draw N).
+- **Illusion** (`illusion: true` on a card, "Illusion." on its face): it counts as your partner's type too. With two decks
+  (session 1b) a Dark card is always played by Dark, so the STAB half of the plan's rule holds anyway; what Illusion adds
+  is the chart: **it hits as whichever of your two types does better against the enemy** (the Safari's real chart; alone,
+  Dark or Neutral, so it's never resisted), and your partner's held item boosts it too. A card Imposter copies is an
+  Illusion, so a partner's card played by Dark keeps its STAB. Payoff `perIllusion` (+N for each other Illusion card
+  you've played this turn, `b.illusions`).
+- **Disguise** (`disguise: 1`, a 🎭 badge): until your next turn, the enemy's attacks hit you as whichever of your two
+  types takes them best (alone: Dark or Neutral), without switching. The intent's number and ▲ / ▼ show it. Payoff
+  `ifDisguised` (an extra while you're Disguised). **Mirage** (power `mirage`): every Dark card is an Illusion card, and
+  you're Disguised at the start of each turn.
+- **Imposter** (`copyPartner`): add a copy of the last card your partner played this turn to your hand (alone: the last
+  card you played), an Illusion. Nothing to copy, nothing happens.
+- **Intimidate** (the Ability, `ABILITIES.dark`): when Dark comes out, the fight's start included, apply 1 Weak, at most
+  once a turn (Keen Eye's rule).
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Bite | C | 1 | Deal 8 *(up 11)* | — | Strike |
+| Obstruct | C | 1 | Block 8 *(up 11)* | — | Defend |
+| Snatch | C | 2 | Deal 10, Vulnerable 2, Steal 1 *(up 12, 3)* | Steal | Bash, Steal for Wing Attack's Evasion |
+| Feint Attack | C | 1 | Deal 6, block 6. Illusion *(up 8, 8)* | Illusion | Iron Wave |
+| Lash Out | C | 0 | Deal 5. Punish: draw 1 *(up 7)* | Punish | Flash of Steel, on its intent |
+| Covet | C | 1 | Deal 7, Steal 1 *(up 10)* | Steal | Sucker Punch (Silent's), Steal for its Weak |
+| Brutal Swing | C | 1 | Deal 7; if it has strength or block, +6 *(up 9, +8)* | Steal | Bane, on its buffs |
+| Throat Chop | C | 1 | Deal 7. Punish: +6 *(up 9, +8)* | Punish | Bane, on its intent |
+| Disguise | C | 1 | Block 8, Disguise *(up 11)* | Illusion | Defend, in disguise |
+| Sleight of Hand | C | 1 | Deal 4 twice. Illusion *(up 5)* | Illusion | Twin Strike |
+| Taunt | U | 0 | The enemy's intent becomes its next attack. Draw 1. Exhaust *(up draw 2)* | Punish | (Punish's own: Trip's slot) |
+| Reprisal | U | 1 | Block 7. Punish: Vulnerable 2 *(up 10)* | Punish | Go for the Eyes, with a Defend |
+| Comeuppance | U | 2 | Deal 12. Punish: it hits once more *(up 15)* | Punish | Twin Strike+, on its intent |
+| Unnerve | U | 1 | Power: whenever a Punish happens, deal 5 *(up 7)* | Punish | (Punish's Thousand Cuts) |
+| Ransack | U | 1 | Deal 8, Steal 2 *(up 11, 3)* | Steal | Sucker Punch+, Steal for its Weak |
+| Pickpocket | U | 1 | Power: whenever the enemy gains strength, you gain 1 *(up cost 0)* | Steal | (Steal's own: Inflame off its buffs) |
+| Jaw Lock | U | 1 | Deal 8, Steal 1; if it has strength or block, draw 1 *(up 11)* | Steal | Pommel Strike, on its buffs |
+| Imposter | U | 1 | Copy your partner's last card this turn into your hand, an Illusion. Exhaust *(up cost 0)* | Illusion | Dual Wield, off your partner |
+| Masquerade | U | 1 | Block 5, Disguise, draw 2 *(up block 8)* | Illusion | Backflip, in disguise |
+| Wicked Blow | U | 2 | Deal 16. Illusion. If you're Disguised, +6 *(up 20, +8)* | Illusion | Bludgeon-lite |
+| Doppelganger | U | 1 | Deal 5, +4 per other Illusion card played this turn. Illusion *(up 7, +5)* | Illusion | Finisher, on Illusions |
+| Mug *(bridge)* | U | 1 | Deal 7. Punish: Steal 2 *(up 10)* | Steal/Punish | Sucker Punch, stealing on its intent |
+| Switcheroo *(bridge)* | U | 0 | Steal 1, Disguise *(up Steal 2)* | Steal/Illusion | Disarm-lite, free |
+| False Surrender *(bridge)* | U | 1 | Deal 8. Illusion. Punish: +5 *(up 10, +7)* | Punish/Illusion | Bane, on its intent |
+| Mirage | R | 2 | Power: your Dark cards are Illusions; Disguise at the start of each turn *(up cost 1)* | Illusion | (Illusion's own: Wraith Form's slot) |
+| Darkest Lariat | R | 2 | Deal 16; strength counts 3 times *(up 20, 4 times)* | Steal | Heavy Blade |
+| Plunder | R | 2 | Deal 14, Steal 2; a knockout gives 20 ₽ *(up 18, 25 ₽)* | Steal | Hand of Greed |
+| Ruination | R | 2 | Deal 8. Punish: + the damage its attack would deal you *(up 12)* | Punish | (Punish's own: Spite thrown back) |
+| Prankster | R | 2 | Power: at the start of each turn, if the enemy intends to attack, draw 2 *(up cost 1)* | Punish | Machine Learning, on its intent |
+| Hyperspace Fury *(bridge)* | R | 2 | Deal 5 four times, Steal 1. Illusion *(up 6)* | Steal/Illusion | Riddle with Holes-lite |
+
+Evolution cards (evo-only, 1 copy; one per archetype and one general a tier):
+
+| Card | Tier | Cost | Effect | Arch |
+|---|---|---|---|---|
+| Heist | 1st | 1 | Deal 9, Steal 2 | Steal |
+| Vengeance | 1st | 2 | Deal 14. Punish: Vulnerable 2 | Punish |
+| Smoke Bomb | 1st | 0 | Disguise, draw 2 | Illusion |
+| Kowtow Cleave | 1st | 2 | Deal 17, Weak 1, Vulnerable 1 | — |
+| Grand Larceny | final | 2 | Deal 20, Steal 3 | Steal |
+| Black Hole Eclipse | final | 2 | Deal 20. Punish: +12 | Punish |
+| Dark Void | final | 2 | Deal 24, Disguise. Illusion | Illusion |
+| Wicked Torque | final | 3 | Deal 32, Weak 2 | — |
+
+Dark so far: 10 common, 14 uncommon, 6 rare, 8 evolution = **38**.
+
+**Starting deck**: Bite x3, **Feint Attack**, Obstruct x4, Snatch, Lash Out.
+
+**Starters**: **Deino** (Deino, Zweilous, Hydreigon; `DUO_STARTERS`, `DARK_DECK`; back GIFs, `SPRITE_FIT`, `BODY_X`,
+cries), `DUO_LINES.dark` (catching any stage adds Dark; they still live in the Peak and the Marsh until Night Alley).
+
 ### The clash check
 
 | Starting idea (roadmap) | Clash found | Now |
