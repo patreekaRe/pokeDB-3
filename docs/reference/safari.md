@@ -336,7 +336,8 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   switches (`switchOut()`), a tap elsewhere puts it away. Only on your turn, any number of times, never ending it. The
   switch swaps the sprite (a red-light `recalled`, then the ball's `released`, under `battleFx()`, a cut without), the
   name, type chip, theme and Ability (`abilityFor()`); a fight-start Ability (Torrent's Tide) fires the first time each
-  partner comes out (`came`). Everything else stays. STAB (`stabOf()`) multiplies the attack damage of the out type's
+  partner comes out (`came`); since the balance pass (2026-10-20) Torrent gives its Tide again each time Water comes back
+  out, once a turn (`tideTurn`), like Keen Eye and Intimidate. Everything else stays. STAB (`stabOf()`) multiplies the attack damage of the out type's
   cards, against elites and bosses too; the card hint (`markEdge()`) counts it, its title naming the parts. Held-item
   relics (Charcoal...) boost their type whoever's out. Who's out is written into `run.duo.out` as you switch, so the
   next fight starts with whoever was out at the knockout (Overgrow goes by that too).

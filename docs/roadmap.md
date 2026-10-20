@@ -88,7 +88,11 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `SPRITE_FIT`, cries), its area's data on a recoloured existing area (the doc's section 7) and the catch that adds it
    to the pool; sim mirror and a bot check of its pairs. Order: Electric, Ice, Fighting, Ground (after Ice's first:
    Sandstorm uses Ice's Weather engine), Flying, Dark.
-15. **The balance pass** (effort: high) over all 36 pairs, then patch notes and a githack link.
+15. ~~**The balance pass**~~ done 2026-10-20 on `claude/balance-36-pairs-b2cpn5` (both repos, off `duo-types`; merge it into
+   `duo-types`; `docs/duo-design.md`'s "The balance pass", `docs/roadmap-done.md`). The pairs 38-90 -> 51-74. **Waiting on the
+   user**: the playtest; whether Torrent firing each time Water comes back (it bends answer 5) stays; Water's pairs still
+   ~8 under; then **go live** (the branch rule's one step: merge into `main`, `SAFARI_FROM` the next day, cut patch 1.28
+   "Duo Run" from `NEXT`; `IN_THE_GAME` is already counted).
 - **The new areas' art** (the user's pick: data first, art after): each new area's scene, intro film, boss prelude and
   arena, one or two areas a session, after the type sessions or beside the balance pass.
 3. ~~**Electric's first**~~ done 2026-10-19 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Electric's
@@ -226,14 +230,6 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?arena=fight&starter=sandile&cards=turnabout,retribution,ill-gotten-gains,costume-change,phantom-mask&relics=dark-memory`.
    **Waiting on the user**: the playtest (the Moves app now has 11 type tabs on a phone); whether Night Alley should look
    like night at every hour (as built) or follow the clock like the other areas.
-Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
-start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
-docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo
-pairs and each type solo: measure them under one bot (300 a pair, 150 solo), find the outliers (the Water pairs, solo
-Flying and Dark high, the second halves' dips with Electric, Ice and Ground), screen fixes in sim/variants.js and ship
-the picks as data changes. Then the patch notes for the go-live, and give me a githack link. Push only to duo-types in
-both repos."
-
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
 set is built (the helpers' brief, budgets, the check) is its "Building a set" section. Done so far: every kind

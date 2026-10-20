@@ -3353,3 +3353,9 @@ banner now shows the first rare only its page has (`bannerRare()` in `js/safarid
 - **Each Safari replay its own seed** (2026-10-20, the user's ask): the day's first try keeps `safariSeed(day)` for the
   leaderboard; every Day Pass replay (and Duo Run) rolls a fresh seed on the day's areas and starter, so its maps, fights
   and rare spawns differ (`beginSafari()` in `js/run.js`; `docs/reference/safari.md`'s Day Pass section).
+
+### Duo Run: the balance pass over all 36 pairs (2026-10-20, cloud, session 15)
+Branch `claude/balance-36-pairs-b2cpn5` off `duo-types` (both repos). Torrent again each time Water comes back out (once a
+turn), Static's boss cap 12, Spark 13, Dig block 9, Wing Attack without Evasion, Lash Out without Weak: the pairs from
+38-90 to 51-74 (150 a pair), Water still ~8 under. `IN_THE_GAME` counted for the go-live (786 moves, 136 relics, 46 items,
+twelve Safari areas). Detail: `docs/duo-design.md`'s "The balance pass", pokeDB-sim's README.

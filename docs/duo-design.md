@@ -1329,6 +1329,22 @@ noise but Electric (-10) and Water (-6) dipping: left for the balance pass (sess
 Dark, 150 each, prog over `none` 21.31): Dark Memory +3.5, Darkinium Z +2.9, Colbur Berry +1.2, Black Glasses +0.7, Dread
 Plate +0.6, Reveal Glass +0.5, Razor Claw -0.6.
 
+### The balance pass (session 15, 2026-10-20)
+
+All 36 pairs under one bot (human bot, Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`, 300 a pair before,
+150 after; the screens and every cell in pokeDB-sim's README). Before, the pairs ran 38-90 (the mean 64): Water's pairs
+51 on average, Flying's 77 and Dark's 75, Electric's Grass and Water pairs dying at the first boss a third of the time.
+Shipped, all duo-only (the new types play only in a Duo Run; Torrent's change is a Duo Run's):
+- **Torrent** gives its 2 Tide again each time Water comes back out, once a turn (it was the first time only, answer 5;
+  Keen Eye and Intimidate already worked so). Water's pairs +8 in the screen.
+- **Static's boss cap** 15 -> 12 and **Spark** 10 -> 13 (15 upgraded): Electric's first-boss deaths.
+- **Dig** block 6 -> 9 (11 upgraded): Ground's Grass, Fighting and Electric pairs.
+- **Wing Attack** loses its Evasion 1, **Lash Out** its Weak 1: Flying's and Dark's pairs ~-9.
+After (150 a pair): the pairs 51-74, the mean 64; by type fire 67, grass 61, water 56, electric 62, ice 67, fighting 62,
+ground 66, flying 68, dark 68. Water's pairs still trail ~8 (grass+water 51, fighting+water 51): the next lever if the
+user wants it. Rejected in the screens: Keen Eye or Intimidate once a fight (noise), Static's Ability at 3, Thunder Shock
+9, Thunder Wave Static 7, Aerial Ace 4, Snatch without Steal, Mud Shot 9.
+
 ### The clash check
 
 | Starting idea (roadmap) | Clash found | Now |
