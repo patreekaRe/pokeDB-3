@@ -3307,6 +3307,15 @@ cliffs with a `feathers` weather. The Card index's Flying tab. Gale Wings' Weak 
 lands in (`enemy.weakNew`). `tools/flying-probe.mjs` covers the new rules (54 checks). Bot: solo 92.7 vs 78.0; the pairs
 level with session 11's but Ice and Ground (-7), left for the balance pass. Numbers in pokeDB-sim's README.
 
+**Duo types, session 14: Dark's second** (2026-10-20, branch `duo-types`, both repos). Its table went into
+`docs/duo-design.md` first: 36 defence-leaning cards (10 / 18 / 8) with art, new keys `blockPerStrength`,
+`blockPerIllusion`, `blockIntent` and eight powers (Sticky Hold, Vendetta, Night Watch, Pressure, Magician, Costume Change,
+Phantom Mask, Hall of Mirrors). Black Glasses + 6 relics, Dark Gem and Smoke Ball, the Card index's Dark tab, Sandile as a
+skin of Deino's deck (backs, fits, cries), and Night Alley (23 Pokémon moved in with `was:`, date-gated, the Marsh painted
+as a town at night). Lick Wounds is block 8 / heal 3: every other mix was a Safari signature card. `tools/dark-probe.mjs`
+checks it all (58 checks); pokeDB-sim mirrors it and ranks the relics. Bot: solo 89.3 vs 74.0, the pairs level but
+Electric -10 and Water -6. Numbers in pokeDB-sim's README.
+
 **Duo types, session 13: Dark's first** (2026-10-20, branch `duo-types`, both repos). Its table went into
 `docs/duo-design.md` first: 30 pool cards (10 / 14 / 6) and 8 evolution cards with art (`js/card-art-dark.js`). Steal
 (`steal()`: the enemy loses N strength, below 0 too, you gain what it had, and take 3 x N of its block, before the hit),

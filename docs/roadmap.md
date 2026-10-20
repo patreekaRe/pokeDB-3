@@ -213,14 +213,26 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?duorun&duopool&coins=500` (Dark lent), or a solo fight
    `?arena=fight&starter=deino&cards=taunt,throat-chop,ruination,masquerade,wicked-blow,imposter`. **Waiting on the user**:
    the playtest; whether Steal pushing strength below 0 and Disguise "the better of your two types" read right; the names.
-Prompt for session 14, Dark's second, **next** (▶ Run in: CLOUD, effort: high, as Flying's second was; attach both
-pokeDB-3 and pokeDB-sim, start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 5 (Dark's
-plan and first session, and Flying's second session as the pattern) and 7, docs/reference/safari.md's duo section, cards.md
-and card-design.md. Build Dark's second session: write its other ~36 cards (defence-leaning) into the doc first, then the
-cards with art, Black Glasses + 6 relics, a Dark Gem and a second item, the Card index's Dark tab, Sandile's look, and
-Night Alley (the Dark Pokémon, the Sandile line and the Dark birds moved in, date-gated, on a recoloured area), the sim
-mirror with Dark's relic ranks, and a bot check of its pairs against session 13's Dark. Push only to duo-types in both repos
-and give me a githack link."
+14. ~~**Dark's second**~~ done 2026-10-20 on `duo-types` (both repos; game `2b2ac59`+, `docs/duo-design.md` section 5's
+   "Dark's second session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 36 more cards
+   (defence-leaning, 74 in all) with art, Black Glasses + 6 relics (Dread Plate, Reveal Glass, Colbur Berry, Razor Claw,
+   Dark Memory, Darkinium Z: the Dusk Stone was already everyone's boss relic), Dark Gem and Smoke Ball, the Card index's
+   Dark tab, Sandile's look, and **Night Alley** (a 12th area: 23 Pokémon, the Dark-first ones, the Sandile line, the Dark
+   birds and the skunks, date-gated, the Marsh painted as a town at night). Bot (300 a duo): dark+fire / +grass / +water /
+   +electric / +ice / +fighting / +ground / +flying 76.0 / 79.0 / 61.0 / 70.7 / 83.0 / 74.3 / 78.3 / 86.7 vs session 13's
+   Dark (`darkFirst`) 74.3 / 72.0 / 67.3 / 80.3 / 82.7 / 77.3 / 77.7 / 88.0; solo 89.3 vs 74.0 (150): solo gains most, the
+   Electric (-10) and Water (-6) pairs dip, for the balance pass (15). Every type is now whole. Playtest: the githack link
+   with `?duorun&duopool&nightalley&coins=500`, or `?area=nightalley`, `?bossfight=nightalley&starter=sandile`,
+   `?arena=fight&starter=sandile&cards=turnabout,retribution,ill-gotten-gains,costume-change,phantom-mask&relics=dark-memory`.
+   **Waiting on the user**: the playtest (the Moves app now has 11 type tabs on a phone); whether Night Alley should look
+   like night at every hour (as built) or follow the clock like the other areas.
+Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
+start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
+docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo
+pairs and each type solo: measure them under one bot (300 a pair, 150 solo), find the outliers (the Water pairs, solo
+Flying and Dark high, the second halves' dips with Electric, Ice and Ground), screen fixes in sim/variants.js and ship
+the picks as data changes. Then the patch notes for the go-live, and give me a githack link. Push only to duo-types in
+both repos."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

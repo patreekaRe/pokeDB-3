@@ -1320,6 +1320,15 @@ Mountain). Its rare spawns are the ones already rare (Absol, Umbreon, Zorua, Zor
 Painted as the **Marsh recoloured** to a town at night (slate roofs for its trees, lamplit cobbles, a violet sky, a big
 moon) until its art session. **Date-gated** like the others (`SAFARI_FROM`, 2026-10-20 on the branch).
 
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`, Dark the
+lead, 300 a cell; solo the main game at Level 0, 150), win %: dark+fire / +grass / +water / +electric / +ice / +fighting /
++ground / +flying 76.0 / 79.0 / 61.0 / 70.7 / 83.0 / 74.3 / 78.3 / 86.7, against session 13's Dark (`darkFirst`: these 36
+cards, the 7 relics and 2 items out, the same game files and days) 74.3 / 72.0 / 67.3 / 80.3 / 82.7 / 77.3 / 77.7 / 88.0;
+solo Dark 89.3 against 74.0. Solo gains most, as Flying's and Ground's second halves did; the pairs are level inside the
+noise but Electric (-10) and Water (-6) dipping: left for the balance pass (session 15). Relic ranks (strong bot, solo
+Dark, 150 each, prog over `none` 21.31): Dark Memory +3.5, Darkinium Z +2.9, Colbur Berry +1.2, Black Glasses +0.7, Dread
+Plate +0.6, Reveal Glass +0.5, Razor Claw -0.6.
+
 ### The clash check
 
 | Starting idea (roadmap) | Clash found | Now |
