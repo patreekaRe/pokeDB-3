@@ -73,3 +73,11 @@ you gain +2, in `gainCounter()`), Weakness Policy (3 block whenever a status car
 Counter halves at your turn's start instead of going) and Fightinium Z (boss: +1 draw, Guts +6; `abilityFor()`'s
 `stone`). Items: Fighting Gem (8 block, Counter 8) and Red Card (Counter x2; there's no Fighting Drive). Measured on solo
 Fighting like Electric's.
+
+**Ground's** (2026-10-20, Ground's second session; `docs/duo-design.md` section 5): **Soft Sand** (`soft-sand`, its held
+item in `TYPE_RELIC`), Earth Plate (the enemy starts each battle with Fault 6, set on the enemy in `startBattle()`), Light
+Clay (2 block whenever you apply Fault, in `applyFault()`), Shuca Berry (3 block whenever a card goes underground), Smooth
+Rock (a Sandstorm lasts 3 more turns when it starts, in `setWeather()`, beside Icy Rock), Ground Memory (Alphas and bosses
+count all their Fault, in `faultLine()`) and Groundium Z (boss: +1 draw, Sturdy twice a fight; `abilityFor()`'s `stone`).
+Items: Ground Gem (8 block, Fault 8) and Terrain Extender (Fault x2; there's no Ground Drive). Measured on solo Ground like
+Fighting's.

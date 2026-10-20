@@ -287,4 +287,195 @@ export const GROUND = {
     <path d="M38 24L46 14L42 26" fill="${BONE}" ${line(2)}/>
     <circle cx="32" cy="25" r="1.8" fill="${INK}"/>
     ${speed(4, [22, 28], 6)}`,
+  // session 10's 36 (docs/duo-design.md section 5, "Ground's second session")
+  trench: `<defs>${earth}</defs>
+    ${ground(24)}
+    <path d="M7 27H41L37 42H11Z" fill="#2a1a10" ${line(2)}/>
+    ${[8, 16, 24, 32].map((x) => `<rect x="${x}" y="18" width="8" height="6" rx="3" fill="${SAND}" ${line(1.8)}/>`).join('')}
+    ${pick(24, 33, 0.5, -20)}`,
+
+  'bone-club': `${speed(10, [14, 20], 7)}
+    ${bone(12, 38, 30, 14, 3.4)}
+    ${rise(40, 22, 10, '#8ac8ff')}`,
+
+  'hunker-down': `<defs>${earth}</defs>
+    ${ground(32)}
+    ${heap(24, 34, 32, 16)}
+    ${peeper(24, 25)}`,
+
+  'sand-tomb': `<defs>${earth}</defs>
+    ${whirl(24, 22, 16, 2)}
+    ${crack('M8 42L16 39L22 44L30 39L38 42', 2)}
+    ${grains([[6, 10, 1.6], [42, 8, 1.4], [44, 30, 1.6]])}`,
+
+  'earth-wall': `<defs>${earth}</defs>
+    ${ground(40)}
+    <rect x="8" y="12" width="32" height="28" rx="1.5" fill="url(#$e)" ${line(2.4)}/>
+    <path d="M8 21.5H40M8 31H40M18 12V21.5M30 12V21.5M13 21.5V31M24 21.5V31M35 21.5V31M18 31V40M30 31V40" stroke="${DIRT_DARK}" stroke-width="1.6"/>
+    ${crack('M36 12L33 17L37 21', 1.4)}`,
+
+  tremor: `<defs>${earth}${stoneG}</defs>
+    ${ground(30)}
+    ${crack('M6 38L14 34L20 40L28 34L36 39L44 35')}
+    ${stone(24, 20, 7)}
+    ${shake(24, 20, 14)}`,
+
+  'dune-wall': `<defs>${dune}</defs>
+    ${heap(16, 42, 30, 18, 'url(#$d)')}${heap(34, 42, 28, 24, 'url(#$d)')}
+    ${blown([12, 19], 6, 42)}`,
+
+  'sand-blast': `<defs>${dune}</defs>
+    ${sandShield(14, 26, 9)}
+    ${speed(44, [16, 30], 8)}
+    ${puffs([[30, 22, 6], [38, 18, 4], [36, 30, 5]], SAND_DARK, SAND)}
+    ${grains([[44, 24, 1.8], [26, 36, 1.4], [42, 38, 1.6]])}`,
+
+  'sand-cloak': `<defs>${dune}</defs>
+    <path d="M24 6Q35 6 34 18L41 42H7L14 18Q13 6 24 6Z" fill="url(#$d)" ${line(2.4)}/>
+    <path d="M18 18Q24 10 30 18Q24 25 18 18Z" fill="#3a2614" ${line(1.8)}/>
+    <path d="M17 26L13 41M31 26L35 41" stroke="${SAND_DARK}" stroke-width="1.6" stroke-linecap="round"/>
+    ${blown([44], 4, 44)}`,
+
+  embankment: `<defs>${earth}</defs>
+    ${ground(40)}
+    <path d="M2 40L12 18H36L46 40Z" fill="url(#$e)" ${line(2.4)}/>
+    <path d="M12 18H36" stroke="#78a048" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M10 30H38" stroke="${DIRT_DARK}" stroke-width="1.6" stroke-linecap="round"/>`,
+
+  foxhole: `<defs>${earth}</defs>
+    ${ground(24)}
+    ${hole(24, 33, 13, 5.4)}
+    <polygon points="16,32 18,20 23,30" fill="#e87838" ${line(1.8)}/><polygon points="25,30 30,20 32,32" fill="#e87838" ${line(1.8)}/>
+    <polygon points="18,29 18.6,24 21,28.6" fill="#fff4e0"/><polygon points="27,28.6 29.4,24 30,29" fill="#fff4e0"/>`,
+
+  'dig-in': `<defs>${earth}</defs>
+    ${ground(32)}
+    ${heap(20, 34, 30, 12)}
+    ${pick(20, 15, 0.7, 25)}
+    <rect x="34" y="12" width="9" height="12" rx="1.5" fill="#fff" ${line(1.8)}/><rect x="36" y="8" width="9" height="12" rx="1.5" fill="#fff" ${line(1.8)}/>`,
+
+  'lie-in-wait': `<defs>${earth}</defs>
+    ${ground(22)}
+    ${hole(24, 32, 15, 7.4)}
+    ${peeper(24, 32)}`,
+
+  'cave-in': `<defs>${earth}${stoneG}</defs>
+    ${ground(38)}
+    ${heap(24, 40, 30, 8)}
+    ${stone(14, 14, 6)}${stone(29, 9, 7, 'url(#$r)', 20)}${stone(37, 25, 5, 'url(#$r)', 40)}
+    <path d="M14 23V28M29 18V24M37 32V35" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/>`,
+
+  hibernate: `<defs>${earth}</defs>
+    ${ground(30)}
+    ${heap(20, 36, 32, 16)}
+    <path d="M30 10H37L30 17H37M38 4H43L38 9H43" fill="none" ${line(2)}/>`,
+
+  tectonics: `<defs>${earth}</defs>
+    <path d="M2 20L24 24L20 46H2Z" fill="url(#$e)" ${line(2.4)}/>
+    <path d="M27 21L46 17V46H23Z" fill="url(#$e)" ${line(2.4)}/>
+    ${tube('M6 12H16', 2.4, '#ffd84a')}<polygon points="20,12 14,8 14,16" fill="#ffd84a" ${line(1.6)}/>
+    ${tube('M42 10H32', 2.4, '#ffd84a')}<polygon points="28,10 34,6 34,14" fill="#ffd84a" ${line(1.6)}/>`,
+
+  'ground-lock': `<defs>${earth}</defs>
+    ${ground(40)}
+    <path d="M17 21V15Q17 8 24 8Q31 8 31 15V21" fill="none" ${line(5)}/><path d="M17 21V15Q17 8 24 8Q31 8 31 15V21" fill="none" stroke="#c8d0e0" stroke-width="2.4"/>
+    <rect x="12" y="20" width="24" height="18" rx="3" fill="url(#$e)" ${line(2.4)}/>
+    <circle cx="24" cy="27" r="2.4" fill="#2a1a10"/><path d="M24 28V33" stroke="#2a1a10" stroke-width="2.4" stroke-linecap="round"/>`,
+
+  'rubble-wall': `<defs>${stoneG}</defs>
+    ${stone(12, 38, 7)}${stone(26, 38, 8, 'url(#$r)', 15)}${stone(39, 38, 6, 'url(#$r)', 30)}
+    ${stone(18, 26, 7, 'url(#$r)', 10)}${stone(32, 26, 7, 'url(#$r)', 25)}
+    ${stone(25, 14, 6, 'url(#$r)', 5)}`,
+
+  rumble: `<defs>${earth}${stoneG}</defs>
+    ${ground(34)}
+    ${crack('M14 40L20 37L26 41L34 37', 1.8)}
+    ${stone(24, 22, 10)}
+    ${shake(24, 22, 15)}`,
+
+  aftershock: `<defs>${earth}</defs>
+    ${ground(22)}
+    ${crack('M8 30L16 34L21 30L29 39L38 35')}
+    ${crack('M30 26L34 28L40 26', 1.6)}
+    <rect x="34" y="6" width="9" height="12" rx="1.5" fill="#fff" ${line(1.8)}/>`,
+
+  'sand-screen': `<defs>${dune}</defs>
+    ${blown([10, 40], 2, 46)}
+    ${[8, 19, 30].map((x) => `<rect x="${x}" y="14" width="10" height="22" rx="1.5" fill="url(#$d)" ${line(2.2)}/><path d="M${x + 2.5} 18V32" stroke="#fff6d0" stroke-width="1.4" stroke-linecap="round"/>`).join('')}`,
+
+  haboob: `<defs>${earth}</defs>
+    ${ground(36)}
+    ${puffs([[8, 24, 7], [18, 16, 9], [31, 14, 10], [42, 22, 7], [24, 26, 8]], SAND_DARK, SAND)}
+    ${blown([40, 44], 4, 44)}`,
+
+  'dust-cloud': `${puffs([[16, 24, 8], [28, 18, 9], [34, 28, 7], [22, 32, 6]], '#c8b090', '#e8dcc0')}
+    ${grains([[6, 12, 1.6], [42, 10, 1.4], [8, 38, 1.4], [42, 40, 1.8]], '#c8b090')}`,
+
+  'desert-mirage': `<defs>${dune}</defs>
+    ${haze}
+    ${heap(14, 42, 28, 12, 'url(#$d)')}${heap(36, 42, 26, 9, 'url(#$d)')}
+    <path d="M6 24Q10 22 14 24T22 24M10 30Q14 28 18 30T26 30" fill="none" stroke="#8ac8ff" stroke-width="1.8" stroke-linecap="round"/>`,
+
+  scour: `<defs>${stoneG}</defs>
+    ${stone(20, 26, 12)}
+    ${blown([18, 26, 34], 28, 46)}
+    ${sparkle(12, 14, 3.4)}${sparkle(30, 18, 2.4)}`,
+
+  quagmire: `<defs>${radial('q', [[0, '#a07a48'], [0.7, '#6e4e2a'], [1, '#4a3218']])}</defs>
+    <ellipse cx="24" cy="30" rx="21" ry="11" fill="url(#$q)" ${line(2.4)}/>
+    <circle cx="16" cy="28" r="3" fill="#8a6438" ${line(1.4)}/><circle cx="30" cy="32" r="2.2" fill="#8a6438" ${line(1.2)}/><circle cx="25" cy="25" r="1.6" fill="#8a6438" ${line(1)}/>
+    ${rise(36, 6, 10, '#c8904c')}`,
+
+  'antlion-pit': `<defs>${dune}</defs>
+    <ellipse cx="24" cy="30" rx="21" ry="11" fill="url(#$d)" ${line(2.4)}/>
+    <ellipse cx="24" cy="31" rx="13" ry="6.4" fill="${SAND_DARK}" ${line(1.8)}/>
+    <ellipse cx="24" cy="32" rx="6" ry="2.8" fill="#2a1a10" ${line(1.4)}/>
+    ${peeper(24, 29)}`,
+
+  'mud-armor': `<defs>${earth}</defs>
+    <path d="M14 8L20 12H28L34 8L40 14L36 20V40H12V20L8 14Z" fill="url(#$e)" ${line(2.4)}/>
+    <path d="M20 12Q24 17 28 12" fill="none" ${line(1.8)}/>
+    ${splat(19, 27, 4.4, '#7a5028')}${splat(30, 33, 3.6, '#7a5028')}`,
+
+  'endless-sands': `${tube('M10 24C10 14 22 14 24 24C26 34 38 34 38 24C38 14 26 14 24 24C22 34 10 34 10 24Z', 3.4, SAND, '#fff6d0')}
+    ${grains([[6, 10, 1.6], [42, 10, 1.4], [8, 40, 1.4], [42, 38, 1.8]])}`,
+
+  bunker: `<defs>${earth}${stoneG}</defs>
+    ${ground(34)}
+    <path d="M7 34Q7 13 24 13Q41 13 41 34Z" fill="url(#$r)" ${line(2.4)}/>
+    <rect x="15" y="22" width="18" height="3.6" rx="1.8" fill="#2a1a10"/>
+    <path d="M13 20Q17 15 23 15" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>`,
+
+  groundswell: `<defs>${earth}</defs>
+    <path d="M2 42Q12 42 16 30Q22 12 34 11Q45 11 46 20Q38 18 34 25Q30 33 33 42Z" fill="url(#$e)" ${line(2.4)}/>
+    ${ground(42)}
+    ${crack('M6 46L14 44L22 47', 1.4)}`,
+
+  chasm: `<defs>${earth}</defs>
+    <path d="M2 16H20L24 46H2Z" fill="url(#$e)" ${line(2.4)}/>
+    <path d="M28 16H46V46H25Z" fill="url(#$e)" ${line(2.4)}/>
+    <path d="M20 16L24 46L25 46L28 16Z" fill="#1a0e08"/>
+    ${grains([[22, 24, 1.4], [25, 32, 1.2]], DIRT)}`,
+
+  'desert-fortress': `<defs>${dune}</defs>
+    <path d="M7 42V22H11V18H15V22H19V12H29V22H33V18H37V22H41V42Z" fill="url(#$d)" ${line(2.2)}/>
+    <path d="M21 42V34Q24 30 27 34V42Z" fill="#3a2614" ${line(1.6)}/>
+    <rect x="22.4" y="16" width="3.2" height="4" rx="1" fill="#3a2614"/>
+    ${blown([8], 2, 46)}`,
+
+  'blinding-sand': `<path d="M5 24Q24 8 43 24Q24 40 5 24Z" fill="#fff" ${line(2.2)}/>
+    <circle cx="24" cy="24" r="6.4" fill="#6a4220" ${line(1.6)}/><circle cx="22" cy="22" r="1.6" fill="#fff"/>
+    ${grains([[14, 20, 2.2], [32, 18, 2], [30, 28, 2.4], [18, 29, 1.6], [38, 24, 1.8]])}`,
+
+  stalagmites: `<defs>${stoneG}</defs>
+    <polygon points="6,42 11,18 16,42" fill="url(#$r)" ${line(2.2)}/>
+    <polygon points="15,42 22,8 29,42" fill="url(#$r)" ${line(2.2)}/>
+    <polygon points="28,42 34,20 40,42" fill="url(#$r)" ${line(2.2)}/>
+    <polygon points="37,42 41,28 45,42" fill="url(#$r)" ${line(2.2)}/>
+    <path d="M2 42H46" ${line(2.6)}/>`,
+
+  'solid-rock': `<defs>${stoneG}</defs>
+    ${stone(24, 26, 17)}
+    <path d="M14 30L22 34L30 31M20 18L24 24" fill="none" stroke="${ROCK_DARK}" stroke-width="1.6" stroke-linecap="round"/>
+    ${sparkle(38, 10, 3.4)}`,
 };

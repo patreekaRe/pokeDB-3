@@ -197,6 +197,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `js/data/cards.js`: the chip, and +3 on a Ground card's block in `effectsOf()`), `ifSand`; powers `surfaceDraw`,
   `surfaceDamage`, `faultEachTurn`, `sandAttack`, `sandEachTurn`, `sandFault`. Hail's own powers and Safety Goggles now
   read Hail only. Boxes: Dig, Fault, Sandstorm. The Sturdy Ability is in `hurtPlayer()`, after Focus Sash.
+  Session 10 (2026-10-20, "Ground's second session") brought the other 36 (74 in all), defence-leaning: new keys
+  `blockPerUnder`, `blockPerFault` (folded into the card's block in `effectsOf()`), `ifFault` (an extra while the enemy has
+  any Fault), `blockFault` (Fault equal to your block, after the card's block: Groundswell); powers `digBlock` (as a card
+  goes underground, in `resolveCard()`), `faultBlock` (in `applyFault()`), `sandChipBlock`, `sandWeak` (on Sandstorm's
+  chip in `endTurn()`), `sandKeep` (Endless Sands). Soft Sand is Ground's `TYPE_RELIC`. Sturdy reads `b.ability.amount`
+  (2 with Groundium Z), the second save from 1 HP too.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,

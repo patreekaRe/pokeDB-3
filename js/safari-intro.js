@@ -226,6 +226,27 @@ export const SAFARI_INTROS = {
     sounds: ['gust'],
     art: { move: 'sweep', house: 'back', far: desertFar, mid: desertMid, back: desertBack, ground: desertGround, trail: [{ at: 0, style: 'sand' }], birds: '#2a2a32', air: ['leaves'] },
   }),
+  // the duo pool's Quarry: the Desert's film as an open-cut quarry under a dusty sky, until its own art session
+  quarry: film('quarry', {
+    ink: ['#f8ecd8', '#a87848', '#3a2614'],
+    land: {
+      far: ['#b0a490', '#c4b8a4'], farMesas: ['#c4a080', '#b09070', '#a08062'], mesas: ['#d8a870', '#b88450', '#94643a', '#6a462a'],
+      dunes: ['#b8aa94', '#9c8e78', '#7e725e'],
+      palm: ['#8a7a64', '#6a5c4a', '#4a4034'], palmTrunk: ['#7a6450', '#5a4836', '#3a2e22'],
+      lake: ['#c8c0a0', '#a89c78', '#8a7c5a', '#544a34'], cactus: ['#8a9858', '#66763e', '#46522a'],
+      bone: ['#f4f0e6', '#cec6b4', '#86806e'], rock: ['#e0d4c0', '#d0c4b0', '#a49680', '#76685a'],
+      ground: ['#d8c8a8', '#d0c09e', '#c6b694', '#bcac8a', '#b2a280', '#a69676'], blade: ['#e8dcc4', '#c8b896', '#a49270'],
+      tall: ['#b8b070', '#908848', '#3e3a1c'], fore: ['#c0b47c', '#9a9058', '#76703c', '#3e3a1c'],
+      weed: ['#a89a68', '#76683e'], sand: ['#efe4cc', '#ddd0b4'],
+      flowers: ['#f8f0e0', '#e8c060'], trail: ['#e8dcc4', '#d4c4a4', '#b4a080', '#c8b896'],
+      ...ZONE,
+    },
+    glow: { aura: ['#fffff0', '#f8f0e0', '#e8dcc0'], glint: ['#ffffff', '#f8f0e0'], firefly: ['#f8f8a0', '#c8e858'] },
+    stages: nearer(),
+    beats: { PAN: [0, 5200], PULL: [0, 5600], POPS: [3000, 3900], TITLE_AT: 5200, END: 9000 },
+    sounds: ['gust'],
+    art: { move: 'sweep', house: 'back', far: desertFar, mid: desertMid, back: desertBack, ground: desertGround, trail: [{ at: 0, style: 'sand' }], birds: '#3a3028', air: ['sand', 'shimmer'] },
+  }),
   desert: film('desert', {
     ink: ['#fff4d0', '#c07830', '#4a2408'],
     land: {
@@ -920,7 +941,7 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   // ---- the air ----
   const air = new Set(art.air);
   const clouds = [];
-  const cloudy = art.move === 'drop' || ['meadow', 'wetland', 'peak', 'desert', 'icecave', 'dojomountain'].includes(art.id);
+  const cloudy = art.move === 'drop' || ['meadow', 'wetland', 'peak', 'desert', 'icecave', 'dojomountain', 'quarry'].includes(art.id);
   if (cloudy) for (let n = 0; n < (art.id === 'desert' ? 3 : 6); n++) clouds.push({ img: cloudImage(Math.round(W * (0.22 + rand() * 0.3)), cloud, rand), x: rand() * W * 1.6 - W * 0.3, y: -H * 0.3 + rand() * hz * 0.9, lift: 0.5, drift: 0.6 + rand() });
   if (!mini && art.move === 'drop') for (let n = 0; n < 3; n++) clouds.push({ img: cloudImage(Math.round(W * (0.7 + rand() * 0.4)), cloud, rand), x: rand() * W - W * 0.3, y: -H * 1.25 + rand() * H * 0.5, lift: 1.7, drift: 2 });
   const motes = Array.from({ length: 40 }, () => ({ x: rand(), y: rand(), speed: 0.5 + rand(), wob: rand() * 6, c: Math.floor(rand() * 3) }));

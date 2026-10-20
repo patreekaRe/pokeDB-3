@@ -734,7 +734,7 @@ const FIGHTING_CARDS = [
    the start of your next turn, doing their Surface part then (Phantasmal Killer's delay, Doppelganger), Fault knocks
    the enemy out at the start of its turn once its HP is at or below it (StS 2's Doom; Alphas and bosses count half), and
    Sandstorm is the Weather engine's second kind: a chip, and +3 on every block a Ground card gives. Session 9 built 30
-   of its ~66 pool cards and all 8 evolution cards. */
+   of its 66 pool cards and all 8 evolution cards; session 10 the other 36. */
 const GROUND_CARDS = [
   { id: 'mud-shot',       name: 'Mud Shot',       type: 'ground', cost: 1, art: '🟤', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike
   { id: 'sand-veil',      name: 'Sand Veil',      type: 'ground', cost: 1, art: '🏜️', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
@@ -766,6 +766,43 @@ const GROUND_CARDS = [
   { id: 'excavate',       name: 'Excavate',       type: 'ground', cost: 1, art: '🪏', effects: { surfaceDamage: 7 }, power: true, rarity: 'rare', upgrade: { effects: { surfaceDamage: 10 } } },   // (Dig's Thousand Cuts)
   { id: 'sand-stream',    name: 'Sand Stream',    type: 'ground', cost: 2, art: '⏳', effects: { sandEachTurn: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Sandstorm's Wraith Form, kept up)
   { id: 'desert-spirit',  name: 'Desert Spirit',  type: 'ground', cost: 2, art: '🐉', effects: { sandFault: 4 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // a Sandstorm / Fault bridge: Ice Age's twin
+  // session 10's 36 (docs/duo-design.md section 5, "Ground's second session"): defence-leaning, the first half being hits and Fault
+  { id: 'trench',         name: 'Trench',         type: 'ground', cost: 1, art: '🪖', effects: { block: 6, blockPerUnder: 3 }, upgrade: { effects: { block: 8, blockPerUnder: 4 } } },   // (Dig's Spirit Shield, per card dug)
+  { id: 'bone-club',      name: 'Bone Club',      type: 'ground', cost: 1, art: '🦴', effects: { damage: 7, surface: { block: 7 } }, upgrade: { effects: { damage: 9, surface: { block: 9 } } } },   // Iron Wave over two turns, the other way round
+  { id: 'hunker-down',    name: 'Hunker Down',    type: 'ground', cost: 0, art: '🫣', effects: { block: 2, surface: { block: 4 } }, upgrade: { effects: { block: 3, surface: { block: 6 } } } },   // Deflect, split over two turns
+  { id: 'sand-tomb',      name: 'Sand Tomb',      type: 'ground', cost: 1, art: '⚱️', effects: { weaken: 2, fault: 4 }, upgrade: { effects: { weaken: 3, fault: 5 } } },   // Leg Sweep-lite, with Fault for its block
+  { id: 'earth-wall',     name: 'Earth Wall',     type: 'ground', cost: 1, art: '🧱', effects: { block: 8, ifFault: { block: 4 } }, upgrade: { effects: { block: 10, ifFault: { block: 5 } } } },   // Defend, on a condition
+  { id: 'tremor',         name: 'Tremor',         type: 'ground', cost: 1, art: '〽️', effects: { block: 5, weaken: 1, fault: 2 }, upgrade: { effects: { block: 7, fault: 3 } } },   // Iron Wave with Sash Whip's Weak
+  { id: 'dune-wall',      name: 'Dune Wall',      type: 'ground', cost: 1, art: '🏝️', effects: { block: 5, ifSand: { block: 5 } }, upgrade: { effects: { block: 7, ifSand: { block: 6 } } } },   // Defend, in the weather
+  { id: 'sand-blast',     name: 'Sand Blast',     type: 'ground', cost: 1, art: '💥', effects: { damage: 7, ifSand: { block: 7 } }, upgrade: { effects: { damage: 9, ifSand: { block: 9 } } } },   // Iron Wave, in the weather
+  { id: 'sand-cloak',     name: 'Sand Cloak',     type: 'ground', cost: 1, art: '🧥', effects: { block: 5, sand: 2 }, upgrade: { effects: { block: 7, sand: 3 } } },   // Defend with Noxious Fumes' timer (Snowscape's shape)
+  { id: 'embankment',     name: 'Embankment',     type: 'ground', cost: 2, art: '⛰️', effects: { block: 12, sap: 1 }, upgrade: { effects: { block: 15 } } },   // Defend+ with Disarm's Sap
+  { id: 'foxhole',        name: 'Foxhole',        type: 'ground', cost: 1, art: '🦊', effects: { digBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { digBlock: 4 } } },   // (Dig's Feel No Pain)
+  { id: 'dig-in',         name: 'Dig In',         type: 'ground', cost: 1, art: '🪣', effects: { block: 10, surface: { draw: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 13, surface: { draw: 2 } } } },   // Shrug It Off, its draw a turn late
+  { id: 'lie-in-wait',    name: 'Lie in Wait',    type: 'ground', cost: 1, art: '👀', effects: { block: 6, surface: { block: 6, weaken: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 8, surface: { block: 8, weaken: 2 } } } },   // Dodge and Roll with Leg Sweep's Weak
+  { id: 'cave-in',        name: 'Cave In',        type: 'ground', cost: 2, art: '🪨', effects: { block: 12, surface: { damage: 12 } }, rarity: 'uncommon', upgrade: { effects: { block: 15, surface: { damage: 15 } } } },   // Iron Wave, big, over two turns
+  { id: 'hibernate',      name: 'Hibernate',      type: 'ground', cost: 1, art: '💤', effects: { surface: { block: 15 } }, rarity: 'uncommon', upgrade: { effects: { surface: { block: 20 } } } },   // Impervious-lite, a turn late
+  { id: 'tectonics',      name: 'Tectonics',      type: 'ground', cost: 1, art: '🗺️', effects: { faultBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { faultBlock: 4 } } },   // (Fault's Feel No Pain)
+  { id: 'ground-lock',    name: 'Ground Lock',    type: 'ground', cost: 1, art: '🔒', effects: { sap: 1, fault: 5 }, rarity: 'uncommon', upgrade: { effects: { fault: 7 } } },   // Disarm with Deadly Poison
+  { id: 'rubble-wall',    name: 'Rubble Wall',    type: 'ground', cost: 2, art: '🏚️', effects: { block: 8, blockPerFault: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 11 } } },   // (Fault's Spirit Shield)
+  { id: 'rumble',         name: 'Rumble',         type: 'ground', cost: 1, art: '📳', effects: { block: 7, ifFault: { weaken: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Leg Sweep-lite, on a condition
+  { id: 'aftershock',     name: 'Aftershock',     type: 'ground', cost: 0, art: '📉', effects: { fault: 3, draw: 1 }, rarity: 'uncommon', upgrade: { effects: { fault: 5 } } },   // Deadly Poison-lite with a draw (a 0-cost Bouncing Flask)
+  { id: 'sand-screen',    name: 'Sand Screen',    type: 'ground', cost: 1, art: '🪟', effects: { sandChipBlock: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { sandChipBlock: 6 } } },   // (Polar Vortex's twin)
+  { id: 'haboob',         name: 'Haboob',         type: 'ground', cost: 2, art: '🌫️', effects: { sand: 3, block: 10 }, rarity: 'uncommon', upgrade: { effects: { sand: 4, block: 13 } } },   // Noxious Fumes with a Defend+
+  { id: 'dust-cloud',     name: 'Dust Cloud',     type: 'ground', cost: 1, art: '☁️', effects: { block: 4, weaken: 1, ifSand: { weaken: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 6 } } },   // Leg Sweep-lite, in the weather
+  { id: 'desert-mirage',  name: 'Desert Mirage',  type: 'ground', cost: 1, art: '🌅', effects: { block: 6, ifSand: { draw: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // Backflip, in the weather
+  { id: 'scour',          name: 'Scour',          type: 'ground', cost: 1, art: '🧽', effects: { damage: 6, ifSand: { sap: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 9 } } },   // Disarm on a Strike, in the weather
+  { id: 'quagmire',       name: 'Quagmire',       type: 'ground', cost: 1, art: '🫠', effects: { block: 6, surface: { weaken: 2, fault: 4 } }, rarity: 'uncommon', upgrade: { effects: { block: 8, surface: { weaken: 2, fault: 6 } } } },   // a Dig / Fault bridge: Spikes' defensive twin
+  { id: 'antlion-pit',    name: 'Antlion Pit',    type: 'ground', cost: 1, art: '🐜', effects: { sand: 1, surface: { block: 10 } }, rarity: 'uncommon', upgrade: { effects: { surface: { block: 13 } } } },   // a Dig / Sandstorm bridge: Sinkhole's defensive twin
+  { id: 'mud-armor',      name: 'Mud Armor',      type: 'ground', cost: 1, art: '🦺', effects: { block: 7, blockNext: 5 }, rarity: 'uncommon', upgrade: { effects: { block: 9, blockNext: 7 } } },   // Dodge and Roll
+  { id: 'endless-sands',  name: 'Endless Sands',  type: 'ground', cost: 3, art: '♾️', effects: { sand: 3, sandKeep: 1 }, power: true, rarity: 'rare', upgrade: { cost: 2 } },   // (Endless Winter's twin)
+  { id: 'bunker',         name: 'Bunker',         type: 'ground', cost: 1, art: '🏯', effects: { block: 6, blockPerUnder: 4, surface: { draw: 1 } }, rarity: 'rare', upgrade: { effects: { block: 8, blockPerUnder: 5, surface: { draw: 1 } } } },   // (Dig's own: block that grows with the pit)
+  { id: 'groundswell',    name: 'Groundswell',    type: 'ground', cost: 1, art: '🌊', effects: { block: 8, blockFault: true }, rarity: 'rare', upgrade: { effects: { block: 11 } } },   // Body Press, as Fault
+  { id: 'chasm',          name: 'Chasm',          type: 'ground', cost: 1, art: '🕳️', effects: { weaken: 2, faultMult: 2 }, exhaust: true, rarity: 'rare', upgrade: { exhaust: false } },   // Catalyst, with a Weak
+  { id: 'desert-fortress', name: 'Desert Fortress', type: 'ground', cost: 2, art: '🏰', effects: { block: 18, sand: 2 }, rarity: 'rare', upgrade: { effects: { block: 22 } } },   // Impervious-lite, in the weather
+  { id: 'blinding-sand',  name: 'Blinding Sand',  type: 'ground', cost: 1, art: '😵', effects: { sandWeak: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // (Sandstorm's own: Weak kept up)
+  { id: 'stalagmites',    name: 'Stalagmites',    type: 'ground', cost: 2, art: '🦷', effects: { block: 10, surface: { fault: 12, weaken: 2 } }, rarity: 'rare', upgrade: { effects: { block: 13, surface: { fault: 16, weaken: 2 } } } },   // a Dig / Fault bridge: a big Spikes
+  { id: 'solid-rock',     name: 'Solid Rock',     type: 'ground', cost: 2, art: '🗿', effects: { block: 10, sap: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { block: 14 } } },   // Disarm with a Defend+, once
 ];
 
 /* ============================================================
@@ -1000,7 +1037,7 @@ const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, streng
   staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1, thornStatic: 1, energyBlock: 1, switchStatic: 1,
   frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1, thornFrost: 1, hailChipBlock: 2,
   mixBlock: 1, counterEachTurn: 1, followBlock: 1, followCounter: 2, counterBlock: 1, statusBlock: 2, statusHeldBlock: 1,
-  faultEachTurn: 1, surfaceDamage: 3, sandAttack: 1, sandFault: 2 };
+  faultEachTurn: 1, surfaceDamage: 3, sandAttack: 1, sandFault: 2, digBlock: 1, faultBlock: 1, sandChipBlock: 2, sandWeak: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -1173,6 +1210,11 @@ export const POWERS = {
   sandAttack:       { icon: '💪', text: (n) => `In Sandstorm, your attacks deal +${n} damage a hit.` },
   sandEachTurn:     { icon: '⏳', text: (n) => `At the start of each turn, Sandstorm ${n}.` },
   sandFault:        { icon: '🐉', text: (n) => `Whenever Sandstorm hurts the enemy, Fault ${n}.` },
+  digBlock:         { icon: '🦊', text: (n) => `Whenever a card goes underground, gain ${n} block.` },
+  faultBlock:       { icon: '🗺️', text: (n) => `Whenever you apply Fault, gain ${n} block.` },
+  sandChipBlock:    { icon: '🧱', text: (n) => `Whenever Sandstorm hurts the enemy, gain ${n} block.` },
+  sandWeak:         { icon: '😵', text: (n) => `Whenever Sandstorm hurts the enemy, apply ${n} Weak.` },
+  sandKeep:         { icon: '♾️', flag: true, text: () => 'Sandstorm no longer runs out.' },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -1245,8 +1287,11 @@ function sentences(e) {
   if (e.blockPerIcicle) parts.push(`+${e.blockPerIcicle} block for each Icicle card you've played this fight.`);
   if (e.blockPerLost) parts.push(`+${e.blockPerLost} block for each HP you lost last enemy turn.`);
   if (e.blockPerStatusHeld) parts.push(`+${e.blockPerStatusHeld} block for each status card in your hand.`);
+  if (e.blockPerUnder) parts.push(`+${e.blockPerUnder} block for each card underground.`);
+  if (e.blockPerFault) parts.push(`+${e.blockPerFault} block for each Fault on the enemy.`);
   if (e.blockPerCard) parts.push(`Gain ${e.blockPerCard} block for each card in your hand.`);
   if (e.blockNext)    parts.push(`Next turn, gain ${e.blockNext} block.`);
+  if (e.blockFault)   parts.push('Then apply Fault equal to your block.');
   if (e.blur)         parts.push('Your block doesn\'t wear off at the start of your next turn.');
   if (e.blockPerExhausted) parts.push(`Gain ${e.blockPerExhausted} block for each card exhausted.`);
   if (e.heal)         parts.push(`Heal ${e.heal} HP.`);
@@ -1319,6 +1364,7 @@ function sentences(e) {
   if (e.ifAfterSkill) parts.push(`Follow-up (skill): ${sentences(e.ifAfterSkill).join(' ')}`);
   if (e.ifAttacked)   parts.push(`If the enemy attacked you last turn: ${sentences(e.ifAttacked).join(' ')}`);
   if (e.ifSand)       parts.push(`In Sandstorm: ${sentences(e.ifSand).join(' ')}`);
+  if (e.ifFault)      parts.push(`If the enemy has Fault: ${sentences(e.ifFault).join(' ')}`);
   if (e.surface)      parts.push(`Dig. Surface: ${sentences(e.surface).join(' ')}`);
   return parts;
 }
@@ -1436,7 +1482,7 @@ export function cardTerms(card) {
     uses(/^frostbite$|frost/i) && term('Frostbite'),
     (card.icicle || uses(/icicle/i)) && term('Icicle'),
     (uses(/hail|weather/i) || card.freeIn === 'hail') && term('Hail'),
-    uses(/^surface|^perUnder$/) && term('Dig'),
+    uses(/^surface|^perUnder$|^blockPerUnder$|^digBlock$/) && term('Dig'),
     uses(/fault/i) && term('Fault'),
     uses(/^sand|^ifSand$/) && term('Sandstorm'),
     uses(/^ifAfter|^followAlways$|^mixBlock$|^follow(Block|Counter)$/) && term('Follow-up'),

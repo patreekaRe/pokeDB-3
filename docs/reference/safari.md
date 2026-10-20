@@ -407,7 +407,15 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   (`applyFault()`, `enemy.fault`, the 🌋 badge, `faultLine()`), **Sandstorm** (the Weather engine's `'sand'` kind, the 🏜️
   badge; its chip and Ground blocks' +3) and **Sturdy** (`b.sturdy`, once a fight in `hurtPlayer()`).
   `tools/ground-probe.mjs` checks them in a real fight.
-- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting and Ground), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+- **Ground's second session** (session 10, 2026-10-20; `docs/duo-design.md` section 5's "Ground's second session"):
+  36 more cards (defence-leaning), Soft Sand + 6 relics (Earth Plate, Light Clay, Shuca Berry, Smooth Rock, Ground Memory,
+  the boss Groundium Z in `abilityFor()`), Ground Gem and Terrain Extender, the Card index's Ground tab, **Rhyhorn** (a
+  `skinOf: 'trapinch'` look; `DUO_LINES.ground.rhyhorn`; Rhydon's and Rhyperior's cries new) and **the Quarry**
+  (`quarry`, a 10th area: every Ground-typed Safari Pokémon but Drilbur, the Swinub line (the Ice Cave's) and the Sandile
+  line (left for Dark's Night Alley), 40, moved in with `was:`, date-gated by `SAFARI_FROM`, painted as the Desert
+  recoloured to an open-cut quarry: `SAFARI_ART.quarry`, `paintAs: 'desert'`; its rares the ones already rare: Gible,
+  Gabite, Garchomp, Flygon, Rhyperior). Playtest a Duo Run in it with `&quarry`.
+- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting and Ground; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 

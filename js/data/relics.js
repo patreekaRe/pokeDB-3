@@ -22,6 +22,7 @@ export const RELICS = [
   { id: 'bar-magnet',   name: 'Magnet',       icon: '🧲', rarity: 'common', only: 'electric', sprite: 'magnet', text: 'Your Electric attacks deal +2 damage.' },
   { id: 'never-melt-ice', name: 'Never-Melt Ice', icon: '🧊', rarity: 'common', only: 'ice', text: 'Your Ice attacks deal +2 damage.' },
   { id: 'expert-belt',  name: 'Expert Belt',  icon: '🥋', rarity: 'common', only: 'fighting', text: 'Your Fighting attacks deal +2 damage.' },   // Fighting's held item: Black Belt was taken (black-belt, the strength relic)
+  { id: 'soft-sand',    name: 'Soft Sand',    icon: '⏳', rarity: 'common', only: 'ground', text: 'Your Ground attacks deal +2 damage.' },
 
   { id: 'muscle-band',  name: 'Muscle Band',  icon: '💪', rarity: 'common', text: 'All your attacks deal +2 damage.' },
   { id: 'leftovers',    name: 'Leftovers',    icon: '🍙', rarity: 'uncommon', text: 'Heal 2 HP at the start of each of your turns.' },
@@ -118,6 +119,12 @@ export const RELICS = [
   { id: 'protector',       name: 'Protector',       icon: '🛡️', rarity: 'uncommon', only: 'fighting', text: 'Whenever you gain Counter, gain 2 more.' },   // (Counter's own, Muscle Wing's shape)
   { id: 'weakness-policy', name: 'Weakness Policy', icon: '📜', rarity: 'uncommon', only: 'fighting', text: 'Whenever a status card is exhausted, gain 3 block.' },   // (Guts' own: Feel No Pain, on status cards)
   { id: 'fighting-memory', name: 'Fighting Memory', icon: '💾', rarity: 'rare',     only: 'fighting', text: 'At the start of your turn, your Counter halves instead of going away.' },   // (Counter's own, Electric Memory's rarity)
+  // Ground's (docs/duo-design.md section 5, "Ground's second session")
+  { id: 'earth-plate',   name: 'Earth Plate',   icon: '🟫', rarity: 'common',   only: 'ground', text: 'The enemy starts each battle with Fault 6.' },   // (Fault's own, Snowball's shape)
+  { id: 'light-clay',    name: 'Light Clay',    icon: '🧱', rarity: 'common',   only: 'ground', text: 'Whenever you apply Fault, gain 2 block.' },   // (Fault's own)
+  { id: 'shuca-berry',   name: 'Shuca Berry',   icon: '🫐', rarity: 'uncommon', only: 'ground', text: 'Whenever a card goes underground, gain 3 block.' },   // (Dig's own)
+  { id: 'smooth-rock',   name: 'Smooth Rock',   icon: '🪨', rarity: 'uncommon', only: 'ground', text: 'Whenever a Sandstorm starts, it lasts 3 more turns.' },   // Icy Rock's, for Sandstorm
+  { id: 'ground-memory', name: 'Ground Memory', icon: '💾', rarity: 'rare',     only: 'ground', text: 'Alphas and bosses count all their Fault, not half.' },   // (Fault's own, Electric Memory's rarity)
   // a Duo Run's (docs/duo-design.md section 1): `duo` keeps it out of every other run
   { id: 'shed-shell',     name: 'Shed Shell',     icon: '🐚', rarity: 'uncommon', duo: true, text: 'Your first switch each turn is free.' },   // (the duo's own: StS has no switching)
   { id: 'sacred-ash',     name: 'Sacred Ash',     icon: '🕯️', rarity: 'rare',     text: 'Once this run, when you would faint, you come back with half your max HP.' },   // Lizard Tail
@@ -151,6 +158,7 @@ export const RELICS = [
   { id: 'water-stone',  name: 'Water Stone',  icon: '💧', boss: true, only: 'water', text: 'Draw 1 extra card each turn. Torrent starts each fight with 4 Tide, not 2.' },   // Ring of the Serpent
   { id: 'ice-stone',    name: 'Ice Stone',    icon: '❄️', boss: true, only: 'ice', text: 'Draw 1 extra card each turn. Snow Warning brings 4 turns of Hail, not 2.' },   // Ring of the Serpent, Water Stone's shape
   { id: 'fightinium-z', name: 'Fightinium Z', icon: '💎', boss: true, only: 'fighting', text: 'Draw 1 extra card each turn. Guts gives +6, not +3.' },   // Ring of the Serpent, Water Stone's shape (Fighting has no stone)
+  { id: 'groundium-z',  name: 'Groundium Z',  icon: '💎', boss: true, only: 'ground', text: 'Draw 1 extra card each turn. Sturdy saves you twice a fight, not once.' },   // Ring of the Serpent, Water Stone's shape (Ground has no stone)
   { id: 'thunder-stone', name: 'Thunder Stone', icon: '⚡', boss: true, only: 'electric', text: 'Draw 1 extra card each turn. Static charges the enemy 4, not 2.' },   // Ring of the Serpent, Water Stone's shape
   { id: 'shiny-charm',  name: 'Shiny Charm',  icon: '🌟', boss: true, text: 'Alphas give 2 relics to choose from, one after the other.' },   // Black Star
 

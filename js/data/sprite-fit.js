@@ -504,6 +504,7 @@ export const SPRITE_FIT = {
   'mankey-front': [14, 0, 0, 1],
   'aerodactyl-front': [4, 12, 11, 7],
   'riolu-front': [4, 1, 2, 1],
+  'rhyhorn-back': [1, 0, 3, 1],
   'rhyhorn-front': [0, 0, 2, 2],
   'phanpy-front': [2, 1, 9, 2],
   'gligar-front': [5, 4, 13, 16],
@@ -775,6 +776,7 @@ export const SPRITE_FIT = {
   'carracosta-front': [2, 2, 3, 4],
   'exeggutor-front': [4, 0, 5, 4],
   'ninjask-front': [3, 3, 0, 0],
+  'rhydon-back': [6, 1, 5, 2],
   'rhydon-front': [5, 0, 2, 5],
   'gliscor-front': [13, 11, 5, 6],
   'archeops-front': [13, 2, 3, 6],
@@ -850,6 +852,7 @@ export const SPRITE_FIT = {
   'bronzor-front': [11, 10, 8, 8],
   'happiny-front': [8, 0, 0, 0],
   'munchlax-front': [1, 0, 4, 5],
+  'rhyperior-back': [2, 1, 2, 1],
   'rhyperior-front': [4, 1, 0, 2],
   'electivire-back': [15, 2, 8, 15],
   'electivire-front': [12, 2, 9, 8],
@@ -987,6 +990,11 @@ export const BODY_X = {
   'gurdurr-back': 4,
   'trapinch-back': 2,
   'flygon-back': -2,
+  'rhyhorn-back': -4,
+  'rhydon-front': -4,
+  'rhydon-back': 6,
+  'rhyperior-front': -5,
+  'rhyperior-back': 6,
 };
 
 /** GIF pixels to add to a sprite's pose-box centring so its body, not its box, stands in the middle. */

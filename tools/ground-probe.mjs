@@ -2,7 +2,8 @@
    session"): Dig cards going underground and surfacing at your next turn's start (their hits and blocks, Arena Trap,
    Excavate, Earth Power), Fault and its knock-out (half on an Alpha), Stomping Tantrum, Precipice Blades, Quicksand,
    Sandstorm's chip and its +3 on Ground blocks, Mud-Slap, Sand Force, Desert Spirit, Sand Stream, the Sturdy Ability;
-   and the art, back sprites and cries:
+   session 10's half (Trench, Bunker, Foxhole, Hibernate, Earth Wall, Rubble Wall, Groundswell, Tectonics, Sand Screen,
+   Blinding Sand, Endless Sands), Ground's relics and items, Rhyhorn's look and the Quarry; and the art, back sprites and cries:
      NODE_PATH=$(npm root -g) node tools/ground-probe.mjs
    Prints what it checks and exits 1 on a failed check or a console error. */
 import { serve, launch, phone, threeCopy } from './probe-kit.mjs';
@@ -13,6 +14,7 @@ window.__battle = () => battle;
 window.__give = (id) => { const card = CARDS_BY_ID[id]; const uid = nextUid++; battle.hand.push({ uid, card }); renderAll(); return uid; };
 window.__play = async (id) => { const uid = window.__give(id); await playCard(uid); for (let i = 0; i < 40 && battle.busy; i++) await sleep(100); };
 window.__render = () => renderAll();
+window.__item = (e) => itemEffects(e);
 window.__endTurn = async () => { battle.busy = false; await endTurn(); for (let i = 0; i < 60 && (battle.busy || battle.enemyActing); i++) await sleep(100); };
 `
   : body;
@@ -119,16 +121,102 @@ await B(() => window.__endTurn());
 s = await B(() => { const b = window.__battle(); return { hp: b.hp, used: b.sturdy, over: b.over }; });
 check(s.hp === 1 && s.used && !s.over, `Sturdy: a knock-out hit leaves you at 1 HP, once (${JSON.stringify(s)})`);
 
+// session 10: the defensive half
+await open();
+await B(() => window.__play('tunnel'));
+await B(() => window.__play('tunnel'));
+check(await gain('trench') === 6 + 3 * 2, 'Trench with 2 cards underground: 6 + 3 x2');
+check(await gain('bunker') === 6 + 4 * 2, 'Bunker with 2 cards underground: 6 + 4 x2, then it digs in too');
+await B(() => window.__play('foxhole'));
+check(await gain('hunker-down') === 2 + 3, 'Foxhole: 3 block as Hunker Down goes under, on its own 2');
+await B(() => window.__play('hibernate'));
+await B(() => window.__endTurn());
+s = await B(() => { const b = window.__battle(); return { block: b.block, hand: b.hand.length, under: b.underground.length }; });
+check(s.block === 4 + 15 && s.hand === 5 + 1 && s.under === 0, `next turn Hunker Down's 4 and Hibernate's 15 surface, Bunker draws 1 (${JSON.stringify(s)})`);
+
+await fresh();
+check(await gain('earth-wall') === 8, 'Earth Wall with no Fault: 8');
+await B(() => window.__play('mud-sport'));
+check(await gain('earth-wall') === 8 + 4, 'Earth Wall on Fault: 8 + 4');
+check(await gain('rubble-wall') === 8 + 8, 'Rubble Wall on Fault 8: 8 + 8');
+await B(() => window.__play('rumble'));
+check(await B(() => window.__battle().enemy.weak) === 2, 'Rumble on Fault: Weak 2');
+await fresh();
+await B(() => window.__play('groundswell'));
+s = await B(() => { const b = window.__battle(); return { block: b.block, fault: b.enemy.fault }; });
+check(s.block === 8 && s.fault === 8, `Groundswell: block 8, then Fault 8 (${JSON.stringify(s)})`);
+await B(() => window.__play('tectonics'));
+check(await gain('mud-bomb') === 3, 'Tectonics: 3 block whenever you apply Fault');
+
+await fresh();
+await B(() => window.__play('sandstorm'));
+await B(() => window.__play('sand-screen'));
+await B(() => window.__play('blinding-sand'));
+await moves({ kind: 'attack', amount: 20, name: 'Tackle', type: 'normal' });
+await B(() => { const b = window.__battle(); b.hp = b.maxHp = 200; b.block = 0; b.enemy.dmgBonus = 0; });
+await B(() => window.__endTurn());
+s = await B(() => 200 - window.__battle().hp);
+check(s === 15 - 4, `Sand Screen's 4 block and Blinding Sand's Weak on the chip: a 20 hit lands as 15 - 4 (${s})`);
+
+// Ground's relics and items
+await page.goto(`http://localhost:${port}/?arena=fight&starter=rhyhorn&relics=earth-plate,light-clay,shuca-berry,smooth-rock,ground-memory,groundium-z,soft-sand`);
+await page.waitForTimeout(8000);
+await ready();
+s = await B(() => { const b = window.__battle(); return { f: b.enemy.fault, look: b.starter.line.map(l => l.id).join(), sturdy: b.ability?.amount, deck: b.starter.deck.join() }; });
+check(s.f === 6, `Earth Plate: the enemy starts with Fault 6 (${s.f})`);
+check(s.look === 'rhyhorn,rhydon,rhyperior' && s.sturdy === 2, `Rhyhorn plays Trapinch's deck; Groundium Z: Sturdy twice (${JSON.stringify(s)})`);
+await fresh();
+await calm();
+check(await gain('mud-bomb') === 2, 'Light Clay: 2 block whenever you apply Fault');
+check(await gain('tunnel') === 3, 'Shuca Berry: 3 block as a card goes underground');
+check(await hit('mud-shot') === 8 + 2, 'Soft Sand: Ground attacks +2');
+await B(() => window.__play('endless-sands'));
+s = await B(() => window.__battle().weather);
+check(s?.kind === 'sand' && s.turns === 3 + 3, `Smooth Rock: Endless Sands' Sandstorm 3 lasts 3 more (${JSON.stringify(s)})`);
+await B(() => window.__endTurn());
+s = await B(() => window.__battle().weather);
+check(s?.turns === 6, `Endless Sands: the Sandstorm doesn't run out (${JSON.stringify(s)})`);
+await fresh();
+await B(() => window.__item({ block: 8, fault: 8 }));
+await B(() => window.__item({ faultMult: 2 }));
+s = await B(() => { const b = window.__battle(); return { block: b.block, f: b.enemy.fault }; });
+check(s.block === 8 + 2 && s.f === 16, `Ground Gem: block 8, Fault 8 (Light Clay's 2); Terrain Extender doubles it (${JSON.stringify(s)})`);
+await B(() => { const b = window.__battle(); b.kind = 'boss'; b.enemy.hp = 16; });
+await B(() => window.__endTurn());
+t = await B(() => { const b = window.__battle(); return { over: b.over, by: b.felledBy }; });
+check(t.over && t.by === 'fault', `Ground Memory: a boss at 16 HP with Fault 16 counts all of it (${JSON.stringify(t)})`);
+await page.goto(`http://localhost:${port}/?arena=fight&starter=rhyhorn&relics=groundium-z`);
+await page.waitForTimeout(8000);
+await ready();
+await fresh();
+await moves({ kind: 'attack', amount: 60, name: 'Mega Kick', type: 'normal' });
+await B(() => { const b = window.__battle(); b.hp = 20; b.relics = b.relics.filter(r => r !== 'focus-sash'); b.sashReady = false; });
+await B(() => window.__endTurn());
+await B(() => { window.__battle().block = 0; });
+await B(() => window.__endTurn());
+s = await B(() => { const b = window.__battle(); return { hp: b.hp, used: b.sturdy, over: b.over }; });
+check(s.hp === 1 && s.used === 2 && !s.over, `Groundium Z: Sturdy saves you twice (${JSON.stringify(s)})`);
+
+// the Quarry
+s = await B(async () => {
+  const { SAFARI_AREAS_BY_ID, safariAreasOn, SAFARI_FROM } = await import('/js/data/safari.js');
+  const q = SAFARI_AREAS_BY_ID.quarry;
+  const before = safariAreasOn('2026-10-01').map(a => a.id);
+  const desertBefore = safariAreasOn('2026-10-01').find(a => a.id === 'desert').normals.includes('trapinch');
+  return { n: q.normals.length + q.rares.length, rares: q.rares.join(), stages: q.stages.join(), from: SAFARI_FROM.quarry, before: before.includes('quarry'), desertBefore, drilbur: q.normals.includes('drilbur') };
+});
+check(s.n === 40 && !s.drilbur && s.stages === 'Dig Site,Mudflats,Sinkhole,Fault Line' && !s.before && s.desertBefore, `the Quarry: 40 Pokémon, rares ${s.rares}; a day before ${s.from} keeps them where they were (${JSON.stringify(s)})`);
+
 // every Ground card's art parses, and Trapinch's line's back sprites and cries load
 s = await B(async () => {
   const { GROUND } = await import('/js/card-art-ground.js');
   const broken = Object.entries(GROUND).filter(([, svg]) => new DOMParser().parseFromString(`<svg xmlns="http://www.w3.org/2000/svg">${svg.replaceAll('$', 'x')}</svg>`, 'image/svg+xml').querySelector('parsererror')).map(([id]) => id);
-  const ids = ['trapinch', 'vibrava', 'flygon'];
+  const ids = ['trapinch', 'vibrava', 'flygon', 'rhyhorn', 'rhydon', 'rhyperior'];
   const sizes = await Promise.all(ids.flatMap(id => [`${id}-back`, `${id}-shiny-back`]).map(f => new Promise(res => { const i = new Image(); i.onload = () => res(i.naturalWidth); i.onerror = () => res(0); i.src = `/assets/pokemon/${f}.gif`; })));
   const cries = await Promise.all(ids.map(async id => (await fetch(`/assets/audio/cries/${id}.mp3`)).ok));
   return { n: Object.keys(GROUND).length, broken, sizes, cries };
 });
-check(s.n === 38 && !s.broken.length && s.sizes.every(w => w > 0) && s.cries.every(Boolean), `${s.n} Ground arts parse${s.broken.length ? ` (broken: ${s.broken.join(', ')})` : ''}; back GIFs ${s.sizes.join(' ')}px; cries ${s.cries.join(' ')}`);
+check(s.n === 74 && !s.broken.length && s.sizes.every(w => w > 0) && s.cries.every(Boolean), `${s.n} Ground arts parse${s.broken.length ? ` (broken: ${s.broken.join(', ')})` : ''}; back GIFs ${s.sizes.join(' ')}px; cries ${s.cries.join(' ')}`);
 
 const bad = errors.filter(e => !/favicon|net::|Failed to load resource|cloud|firebase|gstatic/i.test(e));
 check(!bad.length, `no console errors${bad.length ? `: ${bad.slice(0, 3).join(' | ')}` : ''}`);

@@ -611,9 +611,9 @@ export function beginSafari(daily = safariDaily(), pair = null) {
   // a Duo Run (js/duoprep.js): a replay with two starters of your own, whoever you picked first out first; it never
   // spends the day's free try (only ?duorun can start one before it)
   const duo = pair && newDuo(pair);
-  // ?powerplant / ?icecave / ?dojomountain: a Duo Run whose first area is the Power Plant, the Ice Cave or Dojo Mountain,
-  // before its day (several: the first ones, in that order); a playtest, and a Duo Run is never posted
-  const lent = duo ? ['powerplant', 'icecave', 'dojomountain'].filter(id => new URLSearchParams(location.search).has(id)) : [];
+  // ?powerplant / ?icecave / ?dojomountain / ?quarry: a Duo Run whose first area is the Power Plant, the Ice Cave, Dojo
+  // Mountain or the Quarry, before its day (several: the first ones, in that order); a playtest, and a Duo Run is never posted
+  const lent = duo ? ['powerplant', 'icecave', 'dojomountain', 'quarry'].filter(id => new URLSearchParams(location.search).has(id)) : [];
   if (lent.length) {
     daily = { ...daily, areas: [...lent.map(id => SAFARI_AREAS_BY_ID[id]), ...daily.areas.filter(a => !lent.includes(a.id))].slice(0, daily.areas.length) };
   }

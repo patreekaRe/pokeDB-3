@@ -829,6 +829,85 @@ Ground sits with them on Fire, Grass and Water and ~10 under on Electric and Ice
 sixth of their runs at the first area's boss (Ground fears Grass, Water and Ice wilds; Electric fears Ground ones): for
 the balance pass (session 15).
 
+#### Ground's second session: its other cards (session 10, 2026-10-20)
+
+Written here before the code, as Fighting's second was. The other 36 pool cards (10 common, 18 uncommon, 8 rare),
+**defence-leaning**: 34 of the 36 block, Weaken or Sap (the first half's 30 are mostly hits and Fault). Ground is then
+whole: 20 common, 32 uncommon, 14 rare and 8 evolution cards (74). Each card is on a StS 1 card at x~1.2 (the last column
+and a comment on its line) with a hand-picked upgrade. Every block below is a Ground card's, so Sandstorm adds +3 to it.
+
+**The new rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- `blockPerUnder` / `blockPerFault`: +N block per card underground / per Fault on the enemy (Trench, Bunker, Rubble
+  Wall), folded into the card's block in `effectsOf()` as Fighting's `blockPerLost` is; `ifFault`: an extra while the
+  enemy has any Fault (Earth Wall, Rumble); `blockFault`: Fault equal to your block once the card's block is in
+  (Groundswell, Body Press's shape).
+- Powers: `digBlock` (whenever a card goes underground, block N: Foxhole), `faultBlock` (whenever you apply Fault, block
+  N: Tectonics), `sandChipBlock` (whenever Sandstorm hurts the enemy, block N: Sand Screen, Polar Vortex's twin),
+  `sandWeak` (... Weak N: Blinding Sand), `sandKeep` (Sandstorm no longer runs out: Endless Sands, Endless Winter's twin).
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Trench | C | 1 | Block 6, +3 per card underground *(up 8, +4)* | Dig | (Dig's Spirit Shield, per card dug) |
+| Bone Club | C | 1 | Deal 7. Surface: block 7 *(up 9, 9)* | Dig | Iron Wave over two turns, the other way round |
+| Hunker Down | C | 0 | Block 2. Surface: block 4 *(up 3, 6)* | Dig | Deflect, split over two turns |
+| Sand Tomb | C | 1 | Weak 2, Fault 4 *(up 3, 5)* | Fault | Leg Sweep-lite, with Fault for its block |
+| Earth Wall | C | 1 | Block 8; if the enemy has Fault, +4 *(up 10, +5)* | Fault | Defend, on a condition |
+| Tremor | C | 1 | Block 5, Weak 1, Fault 2 *(up 7, 1, 3)* | Fault | Iron Wave with Sash Whip's Weak |
+| Dune Wall | C | 1 | Block 5; in Sandstorm, +5 *(up 7, +6)* | Sandstorm | Defend, in the weather |
+| Sand Blast | C | 1 | Deal 7; in Sandstorm, block 7 *(up 9, 9)* | Sandstorm | Iron Wave, in the weather |
+| Sand Cloak | C | 1 | Block 5, Sandstorm 2 *(up 7, 3)* | Sandstorm | Defend with Noxious Fumes' timer (Snowscape's shape) |
+| Embankment | C | 2 | Block 12, Sap 1 *(up 15)* | — | Defend+ with Disarm's Sap |
+| Foxhole | U | 1 | Power: whenever a card goes underground, block 3 *(up 4)* | Dig | (Dig's Feel No Pain) |
+| Dig In | U | 1 | Block 10. Surface: draw 2 *(up 13)* | Dig | Shrug It Off, its draw a turn late |
+| Lie in Wait | U | 1 | Block 6. Surface: block 6, Weak 2 *(up 8, 8)* | Dig | Dodge and Roll with Leg Sweep's Weak |
+| Cave In | U | 2 | Block 12. Surface: deal 12 *(up 15, 15)* | Dig | Iron Wave, big, over two turns |
+| Hibernate | U | 1 | Surface: block 15 *(up 20)* | Dig | Impervious-lite, a turn late |
+| Tectonics | U | 1 | Power: whenever you apply Fault, block 3 *(up 4)* | Fault | (Fault's Feel No Pain) |
+| Ground Lock | U | 1 | Sap 1, Fault 5 *(up 7)* | Fault | Disarm with Deadly Poison |
+| Rubble Wall | U | 2 | Block 8, +1 per Fault on the enemy *(up 11)* | Fault | (Fault's Spirit Shield) |
+| Rumble | U | 1 | Block 7; if the enemy has Fault, Weak 2 *(up 10)* | Fault | Leg Sweep-lite, on a condition |
+| Aftershock | U | 0 | Fault 3, draw 1 *(up Fault 5)* | Fault | Deadly Poison-lite with a draw (a 0-cost Bouncing Flask) |
+| Sand Screen | U | 1 | Power: whenever Sandstorm hurts the enemy, block 4 *(up 6)* | Sandstorm | (Polar Vortex's twin) |
+| Haboob | U | 2 | Sandstorm 3, block 10 *(up 4, 13)* | Sandstorm | Noxious Fumes with a Defend+ |
+| Dust Cloud | U | 1 | Block 4, Weak 1; in Sandstorm, Weak 2 more *(up 6)* | Sandstorm | Leg Sweep-lite, in the weather |
+| Desert Mirage | U | 1 | Block 6; in Sandstorm, draw 2 *(up 9)* | Sandstorm | Backflip, in the weather |
+| Scour | U | 1 | Deal 6; in Sandstorm, Sap 1 *(up 9)* | Sandstorm | Disarm on a Strike, in the weather |
+| Quagmire *(bridge)* | U | 1 | Block 6. Surface: Weak 2, Fault 4 *(up 8, Fault 6)* | Dig/Fault | Spikes' defensive twin |
+| Antlion Pit *(bridge)* | U | 1 | Sandstorm 1. Surface: block 10 *(up 13)* | Dig/Sandstorm | Sinkhole's defensive twin |
+| Mud Armor | U | 1 | Block 7; next turn, block 5 *(up 9, 7)* | — | Dodge and Roll |
+| Endless Sands | R | 3 | Power: Sandstorm 3; Sandstorm no longer runs out *(up cost 2)* | Sandstorm | (Endless Winter's twin) |
+| Bunker | R | 1 | Block 6, +4 per card underground. Surface: draw 1 *(up 8, +5)* | Dig | (Dig's own: block that grows with the pit) |
+| Groundswell | R | 1 | Block 8, then Fault equal to your block *(up 11)* | Fault | Body Press, as Fault |
+| Chasm | R | 1 | Weak 2, double the enemy's Fault. Exhaust *(up no Exhaust)* | Fault | Catalyst, with a Weak |
+| Desert Fortress | R | 2 | Block 18, Sandstorm 2 *(up 22)* | Sandstorm | Impervious-lite, bringing its weather |
+| Blinding Sand | R | 1 | Power: whenever Sandstorm hurts the enemy, Weak 1 *(up cost 0)* | Sandstorm | (Sandstorm's own: Weak kept up) |
+| Stalagmites *(bridge)* | R | 2 | Block 10. Surface: Fault 12, Weak 2 *(up 13, Fault 16)* | Dig/Fault | (a big Spikes) |
+| Solid Rock | R | 2 | Block 10, Sap 2. Exhaust *(up 14)* | — | Disarm with a Defend+, once |
+
+Ground whole: 20 common (Dig 6, Fault 6, Sandstorm 5, 3 basics), 32 uncommon, 14 rare, 8 evolution = **74**.
+
+**Relics** (`only: 'ground'`, 6 plus its held item, answer 21): **Soft Sand** (`soft-sand`, common: your Ground attacks
+deal +2), **Earth Plate** (common: the enemy starts each battle with Fault 6; Snowball's shape), **Light Clay** (common:
+whenever you apply Fault, gain 2 block), **Shuca Berry** (uncommon: whenever a card goes underground, gain 3 block),
+**Smooth Rock** (uncommon: whenever a Sandstorm starts, it lasts 3 more turns; Icy Rock's, for Sandstorm), **Ground
+Memory** (rare: Fault counts in full on Alphas and bosses), **Groundium Z** (boss: draw 1 more each turn, and Sturdy saves
+you twice a fight; Water Stone's shape: Ground has no stone). **Items**: **Ground Gem** (gain 8 block, Fault 8) and
+**Terrain Extender** (double the enemy's Fault; there's no Ground Drive, so it takes the Drive's place, as Red Card does
+Fighting's).
+
+**Starters**: Rhyhorn (Rhyhorn, Rhydon, Rhyperior), a `DUO_STARTERS` skin of Trapinch's deck (`GROUND_DECK`), as Machop
+is of Timburr's. Catching any stage adds Ground with that look (`DUO_LINES.ground`).
+
+**The Quarry** (`quarry`): Dig Site, Mudflats, Sinkhole, the Fault Line. Its roster is every Ground-typed Safari Pokémon
+(40) but Drilbur (Excadrill is a main-game enemy), the Swinub line (the Ice Cave's) and the Sandile line (Night Alley's,
+Dark's starter): the Desert's 22 (the Trapinch, Rhyhorn, Sandshrew, Diglett, Cubone, Hippopotas, Phanpy, Gligar and Gible
+lines, Baltoy), the Peak's Larvitar line, Geodude line, Onix and Camerupt, the Marsh's Stunfisk, Barboach line,
+Quagsire, Gastrodon and Golett, the Wetland's Wooper and Numel, and the Forest's Nincada, Nidoqueen and Nidoking, moved
+in. Its rare spawns are the ones already rare (Gible, Gabite, Garchomp, Flygon, Rhyperior). Painted as the **Desert
+recoloured** to an open-cut quarry (grey spoil heaps, banded cut walls, scrub, bare snags by a muddy pool, a dusty sky)
+until its art session. **Date-gated** like the others (`SAFARI_FROM`, 2026-10-20 on the branch: move it to the day after
+the branch goes live); from then, 3 of the 10 a day.
+
 ### Flying: Evasion, Tailwind, Unburden
 
 Light and quick: cheap cards, an empty hand, dodging. Hits Grass, Fighting, Bug; fears Electric, Ice, Rock.

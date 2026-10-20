@@ -599,6 +599,34 @@ SAFARI_ART.dojomountain = {
     night: { clouds: { count: 0.4 }, life: ['stars', 'safari'] },
   }),
 };
+/* The Quarry (the duo pool's Ground area, docs/duo-design.md section 5): the Desert's painters as an open-cut quarry, its
+   dunes grey spoil heaps, its mesas banded cut walls, its cacti scrub, its palms bare snags by a muddy pool, under a
+   dusty sky, until its own art session. */
+SAFARI_ART.quarry = {
+  ...SAFARI_ART.desert,
+  paintAs: 'desert',
+  sun: ['#fffff0', '#fff4d0', '#f0dca0'],
+  cloud: ['#ffffff', '#f4efe6', '#e0d6c6', '#c8baa6'], clouds: { count: 0.5 },
+  sky: ['#5a8ac8', '#6c98cc', '#84a8d0', '#9cb8d0', '#b4c6cc', '#cad2c8', '#ddd8c0'],
+  farDunes: ['#c4b8a4', '#b0a490'], dunes: ['#b8aa94', '#9c8e78', '#7e725e'],   // spoil heaps
+  mesas: ['#d8a870', '#b88450', '#94643a', '#6a462a'], farMesas: ['#c4a080', '#b09070'],   // the cut walls
+  ground: ['#d8c8a8', '#d0c09e', '#c6b694', '#bcac8a', '#b2a280', '#a69676'],
+  blade: ['#c8c088', '#9a9058', '#6a6234'], patch: '#b8a880',
+  tall: ['#b8b070', '#908848', '#6a6430', '#3e3a1c'],
+  cactus: ['#8a9858', '#66763e', '#46522a'],   // scrub
+  bone: ['#f4f0e6', '#cec6b4', '#86806e'],   // white stones
+  palm: ['#8a7a64', '#6a5c4a', '#4a4034'], palmTrunk: ['#7a6450', '#5a4836', '#3a2e22'],   // bare snags
+  lake: ['#c8c0a0', '#a89c78', '#8a7c5a', '#6e6244', '#544a34'], glint: ['#f4ecd8'],   // a muddy pool
+  weed: ['#a89a68', '#76683e'],
+  trail: [{ at: 0, style: 'sand', c: ['#e8dcc4', '#d4c4a4', '#b4a080', '#c8b896'], edge: 'stone' }],
+  rock: ['#d0c4b0', '#a49680', '#76685a'],
+  bird: '#3a3028', ember: ['#f4ecd8', '#e0d4bc', '#c8b898'], embers: 0.3,   // dust
+  pad: { style: 'sand', top: '#e0d0b0', mid: '#c8b694', low: '#ac9a78', rim: '#5a4a34', earth: '#8a7656', blade: '#a89a68' },
+  times: safariTimes({
+    dusk: { sky: ['#2c2244', '#4a3054', '#74405a', '#a05a5a', '#c87a5a', '#e0a066', '#ecc47c'] },
+    night: { clouds: { count: 0.3 }, life: ['stars', 'safari'] },
+  }),
+};
 for (const [area, art] of Object.entries(SAFARI_ART)) {
   BIOME_ART[area] = {
     backdrop: 'safari', floor: 'safari', area: art.paintAs ?? area, kin: { meadow: 'clearing', forest: 'shrine', wetland: 'clearing', marsh: 'shrine', peak: 'clearing', desert: 'wastes' }[art.paintAs ?? area],
@@ -1740,6 +1768,7 @@ const WEATHER = {
   powerplant: { dawn: 'drizzle', day: 'drizzle', dusk: 'ash', night: 'drizzle' },
   icecave: 'snow',
   dojomountain: 'leaves',
+  quarry: 'sand',
 };
 const WEATHER_LOOK = {
   drizzle: { colours: ['#d8e6fa', '#8aa2c8'], per: 420, glow: true },

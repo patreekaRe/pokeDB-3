@@ -334,6 +334,9 @@ const ART = {
     <path d="M7 15H21Q23.5 15 23.5 17.5Q23.5 20 21 20H15" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M12.5 9.5V14.5M17.5 9.5V14.5" stroke="#a02818" stroke-width="1.6" stroke-linecap="round"/>
     <path d="M10 11.6Q10.6 10.6 12 10.6" fill="none" stroke="#ffb8a8" stroke-width="1.6" stroke-linecap="round"/>`,
+  ground: `<path d="M3 26L12 9L16.5 16L20 11L29 26Z" fill="#c8964a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M7.5 19.5H24M6 23H26" fill="none" stroke="#8a6430" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M11.6 11.4L9.6 15.2M19.6 13.2L18.6 15" fill="none" stroke="#f0d8a0" stroke-width="1.6" stroke-linecap="round"/>`,
   normal: `<circle cx="16" cy="16" r="12.5" fill="#e4e8f0" stroke="${INK}" stroke-width="2"/>
     <path d="M16 7.4l7.6 13.2H8.4ZM16 24.6L8.4 11.4h15.2Z" fill="#9aa2c8" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`,
   psychic: `<path d="M9 23.5h14l2.4 5H6.6Z" fill="#a8642c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>

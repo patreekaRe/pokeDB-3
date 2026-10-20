@@ -79,6 +79,9 @@ export const ITEMS = [
   // Fighting's (no Fighting Drive exists: Red Card takes its place)
   { id: 'fighting-gem', name: 'Fighting Gem', icon: '🟤', rarity: 'uncommon', only: 'fighting', effects: { block: 8, counter: 8 }, text: 'Gain 8 block. Counter 8.' },
   { id: 'red-card',     name: 'Red Card',     icon: '🟥', rarity: 'uncommon', only: 'fighting', effects: { counterMult: 2 }, text: 'Double your Counter.' },   // Catalyst, the Drives' shape for Counter
+  // Ground's (no Ground Drive exists: Terrain Extender takes its place)
+  { id: 'ground-gem',   name: 'Ground Gem',   icon: '🟫', rarity: 'uncommon', only: 'ground', effects: { block: 8, fault: 8 }, text: 'Gain 8 block. Fault 8.' },
+  { id: 'terrain-extender', name: 'Terrain Extender', icon: '🌋', rarity: 'uncommon', only: 'ground', effects: { faultMult: 2 }, text: 'Double the enemy\'s Fault.' },   // Catalyst, the Drives' shape for Fault
 ];
 
 export const ITEMS_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));

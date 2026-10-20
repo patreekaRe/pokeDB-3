@@ -42,8 +42,8 @@ function lockedCard(card, hideType = false) {
   return node;
 }
 
-// Electric, Ice and Fighting are the Safari duo pool's (docs/duo-design.md section 5): their moves stay ??? until met, like every tab's
-const moveTabs = () => ['fire', 'grass', 'water', 'electric', 'ice', 'fighting', 'normal', getSave().unlocked.includes('mewtwo') ? 'psychic' : 'mystery'];
+// Electric, Ice, Fighting and Ground are the Safari duo pool's (docs/duo-design.md section 5): their moves stay ??? until met, like every tab's
+const moveTabs = () => ['fire', 'grass', 'water', 'electric', 'ice', 'fighting', 'ground', 'normal', getSave().unlocked.includes('mewtwo') ? 'psychic' : 'mystery'];
 
 /* ---------- the Collection device's Moves app (js/device.js): type tabs, the filter and sort, then the cards ---------- */
 

@@ -54,10 +54,10 @@ const ENRAGE_EVERY = 6;   // every this many turns the enemy gets angrier...
 const ENRAGE_BONUS = 2;   // ...and gains this much strength (so you can't stall behind block forever)
 const CRY_WAIT_MAX = 3000;   // ms: the intro never waits longer than this for one cry
 const BOSS_PRELUDE_LINES = { clearing: 'The Ancient Tree stirs...', shrine: 'The shrine lanterns answer...', ruins: 'The water round the altar begins to churn...', wastes: 'The crater rumbles...', thornwood: 'The Heart Tree\'s roots begin to writhe...', savanna: 'The air above Sun Rock begins to blaze...', depths: 'The crystals hum with a terrible energy...' };
-const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...', powerplant: 'The generators begin to roar...', icecave: 'The frozen lake begins to crack...', dojomountain: 'A gong sounds across the summit...' };
+const SAFARI_PRELUDE_LINES = { meadow: 'The Lone Tree shudders in the wind...', forest: 'Light pours into the glade...', wetland: 'The lake begins to heave...', marsh: 'Something looms in the mist...', peak: 'The summit trembles...', desert: 'The air shimmers...', powerplant: 'The generators begin to roar...', icecave: 'The frozen lake begins to crack...', dojomountain: 'A gong sounds across the summit...', quarry: 'The ground begins to split...' };
 
 /** Relics that boost attacks of one type, by the type of your starter. */
-const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water', electric: 'bar-magnet', ice: 'never-melt-ice', fighting: 'expert-belt' };
+const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-water', electric: 'bar-magnet', ice: 'never-melt-ice', fighting: 'expert-belt', ground: 'soft-sand' };
 
 /** The current battle, or null when no battle is running. */
 let battle = null;
@@ -156,7 +156,8 @@ const battleTypes = () => battle.duo?.types ?? [battle.starter.type];
 function abilityFor(type, relics, aug) {
   const base = ABILITIES[type] ?? null;
   const stone = base?.id === 'torrent' && relics.includes('water-stone') ? 2 : base?.id === 'overgrow' && relics.includes('leaf-stone') ? 7
-    : base?.id === 'static' && relics.includes('thunder-stone') ? 2 : base?.id === 'snow-warning' && relics.includes('ice-stone') ? 2 : base?.id === 'guts' && relics.includes('fightinium-z') ? 3 : 0;
+    : base?.id === 'static' && relics.includes('thunder-stone') ? 2 : base?.id === 'snow-warning' && relics.includes('ice-stone') ? 2 : base?.id === 'guts' && relics.includes('fightinium-z') ? 3
+    : base?.id === 'sturdy' && relics.includes('groundium-z') ? 1 : 0;
   return base && (aug.abilityAdd || aug.abilityMult || stone) ? { ...base, amount: (base.amount + stone + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
 }
 /** Battle speed (Settings, js/settings.js): 2x halves the waits of the enemy's turn and your hits; CSS halves their
@@ -283,7 +284,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     attackedNow: false, lostNow: 0,     // this enemy turn: it attacked you, and the HP its attacks took...
     attackedLast: false, lostLast: 0,   // ...and the last one's, which Revenge and Counter read on your turn
     underground: [],   // Ground's dug cards: { card, owner, exhaust }, surfacing at the start of your next turn (surface())
-    sturdy: false,     // Ground's Sturdy has saved you this fight
+    sturdy: 0,         // the times Ground's Sturdy has saved you this fight (Groundium Z: twice)
     bide: null,        // Bide: { turns, stored }, the HP enemy attacks take until it lets go, twice over
     weather: ability?.id === 'snow-warning' ? { kind: 'hail', turns: ability.amount + (run.relics.includes('icy-rock') ? ICY_ROCK : 0) } : null,   // Ice's Hail (Ground's Sandstorm later): one at a time
 
@@ -307,7 +308,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
       static: run.relics.includes('light-ball') ? 3 : 0,   // Electric's meter: at staticCap() it's Paralyzed and loses its move
       paras: 0,                       // times it's been Paralyzed this fight: each raises the next cap by 5
       frostbite: run.relics.includes('snowball') ? 3 : 0,   // Ice's: every hit on it deals +1 a stack, then it thaws by 1 at the end of its turn
-      fault: 0,                       // Ground's: at the start of its turn, HP at or below it (half for Alphas and bosses) knocks it out
+      fault: run.relics.includes('earth-plate') ? 6 : 0,   // Ground's: at the start of its turn, HP at or below it (half for Alphas and bosses) knocks it out
       weak: (aug.startWeak || 0) + (run.relics.includes('sachet') ? 2 : 0),               // turns left dealing WEAK_MULT damage
       vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
       bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
@@ -681,7 +682,7 @@ function turnDraw() {
   return HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
     + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0)
-    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0) + (hasRelic('ice-stone') ? 1 : 0) + (hasRelic('fightinium-z') ? 1 : 0) + (hailing() ? p.hailDraw || 0 : 0);
+    + (hasRelic('water-stone') ? 1 : 0) + (hasRelic('thunder-stone') ? 1 : 0) + (hasRelic('ice-stone') ? 1 : 0) + (hasRelic('fightinium-z') ? 1 : 0) + (hasRelic('groundium-z') ? 1 : 0) + (hailing() ? p.hailDraw || 0 : 0);
 }
 
 /* The opening hand can't be tapped until it has finished sliding in: a tap meant for the intro, or one landing on a
@@ -816,24 +817,26 @@ function applyFault(n, delay = 0) {
   battle.enemy.fault += n;
   pop('enemy-zone', `🌋 Fault ${n}`, 'note', 100 + delay);
   statFx('enemy', 'down');
+  if (battle.powers.faultBlock) gainBlock(battle.powers.faultBlock);   // Tectonics
+  if (hasRelic('light-clay')) gainBlock(2);
 }
 
-/** The Fault that counts: Alphas and bosses count half theirs. */
-const faultLine = () => (['elite', 'boss'].includes(battle.kind) ? Math.floor(battle.enemy.fault / 2) : battle.enemy.fault);
+/** The Fault that counts: Alphas and bosses count half theirs (Ground Memory: all of it). */
+const faultLine = () => (['elite', 'boss'].includes(battle.kind) && !hasRelic('ground-memory') ? Math.floor(battle.enemy.fault / 2) : battle.enemy.fault);
 
 /** A Sandstorm is blowing (Ground's weather). */
 const sanding = () => battle.weather?.kind === 'sand';
 
 /** Hail is falling (Ice's weather). */
 const hailing = () => battle.weather?.kind === 'hail';
-/** Icy Rock: the turns a weather gains when it starts. */
+/** Icy Rock: the turns a weather gains when it starts (Smooth Rock: a Sandstorm). */
 const ICY_ROCK = 3;
 
 /** A weather for n more turns: the same kind adds its turns, a new kind replaces the old (Ice's Hail, Ground's
     Sandstorm). */
 function setWeather(kind, n) {
   const b = battle;
-  b.weather = b.weather?.kind === kind ? { kind, turns: b.weather.turns + n } : { kind, turns: n + (hasRelic('icy-rock') ? ICY_ROCK : 0) };
+  b.weather = b.weather?.kind === kind ? { kind, turns: b.weather.turns + n } : { kind, turns: n + (hasRelic('icy-rock') ? ICY_ROCK : 0) + (kind === 'sand' && hasRelic('smooth-rock') ? ICY_ROCK : 0) };
   if (kind === 'hail') pop('enemy-zone', `🌨️ Hail ${n}`, 'note', 100);
   if (kind === 'sand') pop('enemy-zone', `🏜️ Sandstorm ${n}`, 'note', 100);
 }
@@ -1012,6 +1015,7 @@ function effectsOf(card, x = 0) {
   if (e.ifHail && hailing()) addExtras(e, e.ifHail);
   if (e.ifWeather && b.weather) addExtras(e, e.ifWeather);
   if (e.ifSand && sanding()) addExtras(e, e.ifSand);
+  if (e.ifFault && b.enemy.fault > 0) addExtras(e, e.ifFault);
   if (e.ifAfterAttack && followsUp('attack')) addExtras(e, e.ifAfterAttack);
   if (e.ifAfterSkill && followsUp('skill')) addExtras(e, e.ifAfterSkill);
   if (e.ifAttacked && b.attackedLast) addExtras(e, e.ifAttacked);
@@ -1023,6 +1027,8 @@ function effectsOf(card, x = 0) {
   if (e.blockPerStatusHeld) e.block = (e.block || 0) + e.blockPerStatusHeld * statusHeld();   // Grit, Iron Will
   if (e.counterPerStatus) e.counter = (e.counter || 0) + e.counterPerStatus * statusHeld();   // Last Stand
   if (e.counterPerLost) e.counter = (e.counter || 0) + e.counterPerLost * b.lostLast;          // Final Gambit
+  if (e.blockPerUnder) e.block = (e.block || 0) + e.blockPerUnder * b.underground.length;      // Trench, Bunker
+  if (e.blockPerFault) e.block = (e.block || 0) + e.blockPerFault * b.enemy.fault;             // Rubble Wall
   if (e.block && card.type === 'ground' && sanding()) e.block += SAND.bonus;                // Sandstorm: every Ground block
   return e;
 }
@@ -1293,7 +1299,11 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
   // the card goes to its pile once it has done its thing (so its own draw can't shuffle it straight back in)
   if (echo) { /* played again by an augment: it's already on its way to its pile */ }
   else if (card.power) b.exhaust.push(settled(card));  // powers leave the fight, but aren't "exhausted" (no triggers)
-  else if (card.effects.surface) b.underground.push({ card: settled(card), owner: b.duo?.piles ? b.duo.run.out : null, exhaust: !!(card.exhaust || exhaust || corrupts(card) || lumCures(card)) });   // Dig
+  else if (card.effects.surface) {   // Dig (Foxhole, Shuca Berry: block as it goes under)
+    b.underground.push({ card: settled(card), owner: b.duo?.piles ? b.duo.run.out : null, exhaust: !!(card.exhaust || exhaust || corrupts(card) || lumCures(card)) });
+    if (b.powers.digBlock) gainBlock(b.powers.digBlock);
+    if (hasRelic('shuca-berry')) gainBlock(3);
+  }
   else if (card.exhaust || exhaust || corrupts(card) || lumCures(card)) exhaustCard(card);
   else b.discard.push(card.growOnPlay ? grownCopy(settled(card)) : settled(card));
   if (lumCures(card)) draw(1);
@@ -1392,6 +1402,7 @@ function applyEffects(e) {
   if (e.blockPerTide) { const spent = e.tideSpent ?? spendTide(); if (spent) gainBlock(cardBlock(spent * e.blockPerTide)); }
   if (e.blockPerCard) gainBlock(cardBlock(e.blockPerCard * b.hand.length));
   if (e.blockNext)  { b.blockNext += e.blockNext; pop('player-zone', `🛡️ +${e.blockNext} next turn`, 'block', 150); }
+  if (e.blockFault && b.block) applyFault(b.block, 150);   // Groundswell
   if (e.blur)       { b.blur = Math.max(b.blur, e.blur); pop('player-zone', '🛡️ Block stays', 'block', 150); }
   if (e.blockPerExhausted && e.exhausted) gainBlock(cardBlock(e.blockPerExhausted * e.exhausted));
   if (e.guard)      { b.guard = true; pop('player-zone', '✋ Guard up', 'block'); statFx('player'); }
@@ -1790,6 +1801,8 @@ async function itemEffects(e) {
   if (e.frostMult) { b.enemy.frostbite *= e.frostMult; pop('enemy-zone', `❄️ Frostbite ${b.enemy.frostbite}!`, 'note'); }   // Chill Drive
   if (e.counter)  gainCounter(e.counter);   // Fighting Gem
   if (e.counterMult) { b.counter *= e.counterMult; pop('player-zone', `🥊 Counter ${b.counter}!`, 'block'); }   // Red Card
+  if (e.fault)    applyFault(e.fault);   // Ground Gem
+  if (e.faultMult) { b.enemy.fault *= e.faultMult; pop('enemy-zone', `🌋 Fault ${b.enemy.fault}!`, 'note'); }   // Terrain Extender
   if (e.hail)     setWeather('hail', e.hail);   // Ice Gem
   if (e.tide)     gainTide(e.tide);
   if (e.maxHp)    { b.maxHp += e.maxHp; b.hp += e.maxHp; pop('player-zone', `💚 Max HP +${e.maxHp}`, 'heal'); playSound('stat-up'); statFx('player'); }
@@ -2092,8 +2105,8 @@ function hurtPlayer(amount, source = null) {
     through = b.hp - 1;
     pop('player-zone', '🎗️ Focus Sash!', 'note good', 300);
   }
-  if (b.hp - through <= 0 && hasAbility('sturdy') && !b.sturdy && b.hp > 1) {   // Ground's Ability: once a fight
-    b.sturdy = true;
+  if (b.hp - through <= 0 && hasAbility('sturdy') && b.sturdy < b.ability.amount && b.hp > 0) {   // Ground's Ability: once a fight (Groundium Z: twice, the second from 1 HP)
+    b.sturdy += 1;
     through = b.hp - 1;
     pop('player-zone', '⛰️ Sturdy!', 'note good', 300);
     abilityBanner();
@@ -2194,7 +2207,7 @@ async function endTurn() {
   // Weather: Hail chips the enemy through its block, then a turn goes (Ice Age: each chip adds Frostbite)
   if (b.weather) {
     const kind = b.weather.kind;
-    if (!(kind === 'hail' && b.powers.hailKeep)) b.weather.turns -= 1;   // Endless Winter
+    if (!(kind === 'hail' && b.powers.hailKeep) && !(kind === 'sand' && b.powers.sandKeep)) b.weather.turns -= 1;   // Endless Winter, Endless Sands
     if (b.weather.turns <= 0) b.weather = null;
     const hail = kind === 'hail', chip = hail ? HAIL.chip : SAND.chip;
     enemyLoses(chip);
@@ -2206,7 +2219,11 @@ async function endTurn() {
       if (b.powers.hailChipBlock) gainBlock(b.powers.hailChipBlock);   // Polar Vortex
       if (hasRelic('safety-goggles')) gainBlock(3);
       if (b.powers.hailIcicle) addCards({ id: 'icicle', n: b.powers.hailIcicle });   // Icefall
-    } else if (b.powers.sandFault && b.enemy.hp > 0) applyFault(b.powers.sandFault, 200);   // Desert Spirit
+    } else {
+      if (b.powers.sandFault && b.enemy.hp > 0) applyFault(b.powers.sandFault, 200);   // Desert Spirit
+      if (b.powers.sandChipBlock) gainBlock(b.powers.sandChipBlock);   // Sand Screen
+      if (b.powers.sandWeak && b.enemy.hp > 0) applyDebuff('weaken', b.powers.sandWeak);   // Blinding Sand
+    }
     renderAll();
     await pause(450);
     if (battle !== b) return;

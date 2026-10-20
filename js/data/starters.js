@@ -490,6 +490,17 @@ export const DUO_STARTERS = [
     blurb: 'Waits at the bottom of its sand pit. Digs in to strike next turn, opens faults that swallow the weak, and calls up sandstorms.',
     deck: GROUND_DECK,
   },
+  // Trapinch's deck under another look, as Machop is Timburr's (session 10)
+  {
+    id: 'rhyhorn', type: 'ground', duoOnly: true, skinOf: 'trapinch',
+    line: [
+      { id: 'rhyhorn', name: 'Rhyhorn' },
+      { id: 'rhydon', name: 'Rhydon' },
+      { id: 'rhyperior', name: 'Rhyperior' },
+    ],
+    blurb: 'Charges in a straight line until it forgets why. Its hide shrugs off a landslide, and its horn drills through bedrock.',
+    deck: GROUND_DECK,
+  },
 ];
 
 export const STARTERS_BY_ID = Object.fromEntries([...STARTERS, ...DUO_STARTERS].map(s => [s.id, s]));

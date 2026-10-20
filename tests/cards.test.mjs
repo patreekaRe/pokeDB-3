@@ -135,7 +135,8 @@ test('Ground: a full starting deck, its evolution cards, its Ability, and Dig ca
   assert.equal(evolutionCardsFor('ground', 2).length, 4);
   assert.equal(ABILITIES.ground.id, 'sturdy');
   const pool = typePool('ground');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [10, 14, 6]);
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 10
+  assert.equal(STARTERS_BY_ID.rhyhorn.skinOf, 'trapinch');
   // a Dig card's upgrade keeps a Surface part (an upgrade replaces `surface` whole)
   for (const c of [...pool, ...evolutionCardsFor('ground', 1), ...evolutionCardsFor('ground', 2)].filter(c => c.effects.surface)) {
     assert.ok(Object.keys(CARDS_BY_ID[`${c.id}+`].effects.surface).length, c.id);
