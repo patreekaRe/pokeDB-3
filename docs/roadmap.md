@@ -237,7 +237,7 @@ catch box. **Then 14 more duo starter lines as looks** (the user: "add as many a
 enemies allowed): Magnemite; Poliwag, Ralts; Gible, Geodude, Nidoran♂, Nidoran♀; Togepi, Zubat, Hoppip, Dratini, Bagon;
 Larvitar, Seedot (`DUO_LINES`, `DUO_STARTERS`, PokeAPI backs and shinies, 33 cries at -13 LUFS, `SPRITE_FIT` / `BODY_X`).
 Not moved into their type areas (`docs/duo-design.md` section 3). The user misread earlier: two-stage lines aren't
-wanted, so nothing to decide there. **Merged into `main` 2026-10-20** (it had split off before the go-live, so the live site showed the old Duo app). **Waiting on the user**: a playtest.
+wanted, so nothing to decide there. **Merged into `main` 2026-10-20** (it had split off before the go-live, so the live site showed the old Duo app). pokeDB-sim's switch merged into its `main` the same day. The balance pass (session 15) ran before the turn-ending switch; a ~150-a-pair re-check under it is worth one session (▶ CLOUD, effort: high). **Waiting on the user**: a playtest.
 Also fixed (2026-10-20, the user's phone): the Duo app wouldn't scroll (`.cdev-dex`'s `overflow: hidden` beat the app
 panel's `overflow: auto`; `.cdev-app.sp-duo-app` now scrolls).
 **The Duo app's new layout** (2026-10-20, the user's asks from their phone): the window stays up with the picked pair at
