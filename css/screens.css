@@ -5125,7 +5125,7 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 @keyframes blazeAuraInk { 0% { filter: url(#lcd-ink); } 50% { filter: drop-shadow(0 0 3px #000) url(#lcd-ink); } }
 @media (prefers-reduced-motion: reduce) { #map-screen:not(.tower) .run-sprite[data-blaze] { animation: none; } }
 #map-screen:not(.tower) .run-info {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name lv" "bar bar" "ab hp";
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "name name lv" "bar bar bar" "ab ct hp";
   align-items: center; gap: 5px 8px; width: auto;
 }
 #map-screen:not(.tower) .run-foot { display: contents; }
@@ -5137,6 +5137,15 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 #map-screen:not(.tower) .run-bars { grid-area: bar; width: 100%; }
 #map-screen:not(.tower) .run-ability { grid-area: ab; justify-self: start; margin: 0; }
 #map-screen:not(.tower) .run-foot .gb-hp-num { grid-area: hp; justify-self: end; font-size: 0.85rem; }
+/* a Safari run's catches so far, beside the Ability (the user's ask, 2026-10-20: the daily run never said how many) */
+#map-screen:not(.tower) .run-caught { grid-area: ct; justify-self: start; }
+.run-caught { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; padding: 1px 8px 1px 4px; cursor: help;
+  border: 2px solid var(--lcd-ink, #1f3a14); background: none; color: var(--lcd-ink, #1f3a14); }
+.run-caught[hidden] { display: none; }
+.run-caught img { width: 16px; height: 16px; image-rendering: pixelated; }
+.run-caught.bump { animation: caughtBump 0.5s ease-out; }
+@keyframes caughtBump { 40% { transform: scale(1.25); } }
+@media (prefers-reduced-motion: reduce) { .run-caught.bump { animation: none; } }
 #map-screen:not(.tower) .run-money { display: none; }
 @media (max-width: 720px) { #map-screen:not(.tower) { padding-top: 6px; } }
 /* the top bar's floor and coins sit on the run card's LCD at every width (the user's ask, 2026-10-12: on the iPad they

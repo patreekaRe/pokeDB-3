@@ -1075,6 +1075,12 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
+x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
+catching, ~33% longer) over more floors per area (more fights, not more Pokémon). It needs a bot check of the day's win rate
+(a longer run is harder) and fair leaderboard days (a day's areas are seeded; `SAFARI_FROM`-style date gate so no played
+day changes). Waiting on the user's call: 4 areas, longer areas, or as is.
+
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6
 uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS ~42). Every relic added thins the pool
