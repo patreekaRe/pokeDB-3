@@ -1160,6 +1160,12 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   opacity: 0; animation: handHintA 5s ease-in-out infinite;
 }
 .hand-hint > span + span { animation-name: handHintB; }
+.swap-hint { position: absolute; z-index: 3; left: 0; right: 0; top: 18%; display: flex; justify-content: center; pointer-events: none; font-size: 0.75rem; white-space: nowrap; }
+.swap-hint[hidden] { display: none; }
+.swap-hint > span { padding: 2px 10px; line-height: 1.2; color: #ffe680; text-shadow: 1px 1px 0 #181818; background: rgb(16 16 28 / 0.45);
+  border: 1px solid rgb(255 230 128 / 0.35); border-radius: 999px; opacity: 0; animation: swapHint 4s ease-in-out 0.6s infinite; }
+@keyframes swapHint { 0% { opacity: 0; transform: translateY(4px); } 15%, 60% { opacity: 1; transform: none; } 80%, 100% { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .swap-hint > span { animation: none; opacity: 0.85; } }
 @keyframes handHintA { 0% { opacity: 0; } 8%, 42% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes handHintB { 0%, 50% { opacity: 0; transform: translateY(4px); } 58%, 92% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-4px); } }
 .hand {

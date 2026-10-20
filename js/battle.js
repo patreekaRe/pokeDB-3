@@ -681,6 +681,7 @@ function beginPlayerTurn() {
   b.busy = false;
   if (b.turn === 1 && !b.safari) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
   else if (b.turn === HINT_TURNS + 1) hideHandHint();
+  $('swap-hint').hidden = !b.duo || b.turn > HINT_TURNS || b.duo.held;   // a duo's "hold to swap", the hand hint's way
   renderAll();
 }
 
@@ -2959,6 +2960,7 @@ function checkTaunts() {
 /** Things that don't change during a battle (sprites, names). */
 function setupBattleScreen() {
   hideHandHint();
+  $('swap-hint').hidden = true;
   dressPlayer();
   resetIntro();
   setupEnemy();
@@ -3107,7 +3109,8 @@ function armSwitch() {
   if (problem) { log(problem === 'Not now.' ? 'You can switch on your turn.' : problem); playSound('no-pp'); return; }
   playSound('confirm');
   vibrate(20);
-  b.duo.armed = true;
+  b.duo.armed = b.duo.held = true;
+  $('swap-hint').hidden = true;
   renderBench();
 }
 
@@ -3200,6 +3203,7 @@ function switched() {
 function renderBench() {
   const b = battle, go = $('switch-go');
   $('player-zone').classList.toggle('duo', !!b?.duo);
+  if (!b?.duo || b.over) $('swap-hint').hidden = true;
   go.hidden = !b?.duo?.armed;
   if (!b?.duo?.armed) return;
   const mate = STARTERS_BY_ID[b.duo.run.ids[1 - b.duo.run.out]], name = stageName(mate, b.stage);
