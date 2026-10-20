@@ -133,6 +133,9 @@ export const STATIC_CAP = { fight: 7, elite: 11, boss: 15, step: 3 };   // 10 / 
     and Hail's chip at the end of your turn and its bonus on every hit of your Ice attacks. */
 export const ICICLE_STEP = 2;
 export const HAIL = { chip: 3, bonus: 3 };
+/** Ground's Sandstorm (the Weather engine's second kind): its chip at the end of your turn, and what it adds to every
+    block a Ground card gives. */
+export const SAND = { chip: 3, bonus: 3 };
 
 /** StS's Weak and Vulnerable. Both wear off by one at the end of each enemy turn. */
 export const WEAK_MULT = 0.75;
@@ -148,6 +151,7 @@ export const TYPES = {
   electric: { label: 'Electric', icon: '⚡', beats: null,   losesTo: null    },   // the Safari's duo pool: there the real chart decides (js/data/real-types.js)
   ice:      { label: 'Ice',      icon: '❄️', beats: null,   losesTo: null    },
   fighting: { label: 'Fighting', icon: '🥊', beats: null,   losesTo: null    },
+  ground:   { label: 'Ground',   icon: '⛰️', beats: null,   losesTo: null    },
 };
 
 /* Every card is modelled on a Slay the Spire 1 card (named in its comment), at StS's numbers
@@ -726,6 +730,44 @@ const FIGHTING_CARDS = [
   { id: 'body-press',     name: 'Body Press',     type: 'fighting', cost: 2, art: '🏋️', effects: { block: 12, blockDamage: true }, rarity: 'rare', upgrade: { effects: { block: 16 } } },   // Body Slam with the block first
 ];
 
+/* Ground (the Safari's duo pool, docs/duo-design.md section 5): Dig cards go underground when played and surface at
+   the start of your next turn, doing their Surface part then (Phantasmal Killer's delay, Doppelganger), Fault knocks
+   the enemy out at the start of its turn once its HP is at or below it (StS 2's Doom; Alphas and bosses count half), and
+   Sandstorm is the Weather engine's second kind: a chip, and +3 on every block a Ground card gives. Session 9 built 30
+   of its ~66 pool cards and all 8 evolution cards. */
+const GROUND_CARDS = [
+  { id: 'mud-shot',       name: 'Mud Shot',       type: 'ground', cost: 1, art: '🟤', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike
+  { id: 'sand-veil',      name: 'Sand Veil',      type: 'ground', cost: 1, art: '🏜️', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
+  { id: 'bulldoze',       name: 'Bulldoze',       type: 'ground', cost: 2, art: '🚜', effects: { damage: 10, weaken: 2, fault: 5 }, upgrade: { effects: { damage: 12, weaken: 3, fault: 7 } } },   // Bash, Fault for its Vulnerable (+ Weak, as Icy Wind)
+  { id: 'sand-attack',    name: 'Sand Attack',    type: 'ground', cost: 1, art: '💨', effects: { block: 10, fault: 3 }, upgrade: { effects: { block: 13, fault: 4 } } },   // Iron Wave (Frost Armor's shape)
+  { id: 'dig',            name: 'Dig',            type: 'ground', cost: 1, art: '⛏️', effects: { block: 6, surface: { damage: 12 } }, upgrade: { effects: { block: 8, surface: { damage: 15 } } } },   // Iron Wave over two turns
+  { id: 'tunnel',         name: 'Tunnel',         type: 'ground', cost: 0, art: '🕳️', effects: { surface: { damage: 7 } }, upgrade: { effects: { surface: { damage: 10 } } } },   // a free Strike, a turn late (Doppelganger's delay)
+  { id: 'mud-bomb',       name: 'Mud Bomb',       type: 'ground', cost: 1, art: '💣', effects: { damage: 6, fault: 5 }, upgrade: { effects: { damage: 8, fault: 7 } } },   // Poisoned Stab
+  { id: 'bonemerang',     name: 'Bonemerang',     type: 'ground', cost: 1, art: '🦴', effects: { damage: 4, hits: 2, fault: 3 }, upgrade: { effects: { damage: 5, fault: 4 } } },   // Twin Strike
+  { id: 'sandstorm',      name: 'Sandstorm',      type: 'ground', cost: 1, art: '🌪️', effects: { sand: 4 }, upgrade: { cost: 0 } },   // Noxious Fumes, as a timer (Hail's twin)
+  { id: 'mud-slap',       name: 'Mud-Slap',       type: 'ground', cost: 1, art: '🫳', effects: { damage: 7, ifSand: { weaken: 2 } }, upgrade: { effects: { damage: 9, ifSand: { weaken: 3 } } } },   // Sucker Punch
+  { id: 'drill-run',      name: 'Drill Run',      type: 'ground', cost: 1, art: '🌀', effects: { damage: 5, surface: { damage: 10 } }, rarity: 'uncommon', upgrade: { effects: { damage: 7, surface: { damage: 13 } } } },   // Pummel, split over two turns
+  { id: 'earth-power',    name: 'Earth Power',    type: 'ground', cost: 1, art: '🌋', effects: { damage: 6, perUnder: 6 }, rarity: 'uncommon', upgrade: { effects: { damage: 8, perUnder: 8 } } },   // Perfected Strike, per card dug
+  { id: 'shore-up',       name: 'Shore Up',       type: 'ground', cost: 1, art: '🏖️', effects: { block: 7, surface: { block: 7 } }, rarity: 'uncommon', upgrade: { effects: { block: 10, surface: { block: 10 } } } },   // Dodge and Roll
+  { id: 'arena-trap',     name: 'Arena Trap',     type: 'ground', cost: 1, art: '🐜', effects: { surfaceDraw: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // (Dig's Evolve)
+  { id: 'spikes',         name: 'Spikes',         type: 'ground', cost: 1, art: '📌', effects: { block: 5, surface: { fault: 8 } }, rarity: 'uncommon', upgrade: { effects: { block: 7, surface: { fault: 11 } } } },   // a Dig / Fault bridge: Caltrops, laid underground
+  { id: 'sinkhole',       name: 'Sinkhole',       type: 'ground', cost: 1, art: '🫙', effects: { surface: { damage: 10, sand: 2 } }, rarity: 'uncommon', upgrade: { effects: { surface: { damage: 14, sand: 3 } } } },   // a Dig / Sandstorm bridge: a delayed Noxious Fumes with a hit
+  { id: 'earthquake',     name: 'Earthquake',     type: 'ground', cost: 2, art: '🫨', effects: { damage: 12, fault: 6 }, rarity: 'uncommon', upgrade: { effects: { damage: 15, fault: 8 } } },   // Uppercut
+  { id: 'mud-sport',      name: 'Mud Sport',      type: 'ground', cost: 1, art: '🤽', effects: { fault: 8 }, rarity: 'uncommon', upgrade: { effects: { fault: 11 } } },   // Deadly Poison
+  { id: 'stomping-tantrum', name: 'Stomping Tantrum', type: 'ground', cost: 1, art: '🦶', effects: { damage: 6, perFault: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 8 } } },   // Bane, per Fault
+  { id: 'quicksand',      name: 'Quicksand',      type: 'ground', cost: 1, art: '⏬', effects: { faultEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { faultEachTurn: 4 } } },   // Noxious Fumes
+  { id: 'dust-devil',     name: 'Dust Devil',     type: 'ground', cost: 1, art: '🌫️', effects: { sand: 2, fault: 5 }, rarity: 'uncommon', upgrade: { effects: { sand: 3, fault: 7 } } },   // a Sandstorm / Fault bridge: Noxious Fumes + Deadly Poison (Snowscape's shape)
+  { id: 'lands-wrath',    name: 'Land\'s Wrath',  type: 'ground', cost: 2, art: '🗻', effects: { damage: 12, ifSand: { bonus: 8 } }, rarity: 'uncommon', upgrade: { effects: { damage: 15, ifSand: { bonus: 10 } } } },   // Carnage, in the weather
+  { id: 'sand-rush',      name: 'Sand Rush',      type: 'ground', cost: 1, art: '🏃', effects: { draw: 2, ifSand: { energy: 1 } }, rarity: 'uncommon', upgrade: { effects: { draw: 3 } } },   // Adrenaline, in the weather
+  { id: 'sand-force',     name: 'Sand Force',     type: 'ground', cost: 1, art: '💪', effects: { sandAttack: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { sandAttack: 3 } } },   // Inflame, in the weather
+  { id: 'fissure',        name: 'Fissure',        type: 'ground', cost: 2, art: '⚡', effects: { fault: 20 }, exhaust: true, rarity: 'rare', upgrade: { effects: { fault: 28 } } },   // (Fault's Catalyst: one big stack)
+  { id: 'precipice-blades', name: 'Precipice Blades', type: 'ground', cost: 2, art: '🗡️', effects: { damage: 10, faultMult: 2 }, rarity: 'rare', upgrade: { effects: { damage: 14 } } },   // Catalyst, with a hit
+  { id: 'landslide',      name: 'Landslide',      type: 'ground', cost: 2, art: '🏔️', effects: { surface: { damage: 30 } }, rarity: 'rare', upgrade: { effects: { surface: { damage: 38 } } } },   // Bludgeon, a turn late
+  { id: 'excavate',       name: 'Excavate',       type: 'ground', cost: 1, art: '🪏', effects: { surfaceDamage: 7 }, power: true, rarity: 'rare', upgrade: { effects: { surfaceDamage: 10 } } },   // (Dig's Thousand Cuts)
+  { id: 'sand-stream',    name: 'Sand Stream',    type: 'ground', cost: 2, art: '⏳', effects: { sandEachTurn: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Sandstorm's Wraith Form, kept up)
+  { id: 'desert-spirit',  name: 'Desert Spirit',  type: 'ground', cost: 2, art: '🐉', effects: { sandFault: 4 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // a Sandstorm / Fault bridge: Ice Age's twin
+];
+
 /* ============================================================
    EVOLUTION CARDS  -  powerful, signature moves you don't win from
    normal fights. There are two TIERS per type, one per evolution:
@@ -833,6 +875,19 @@ const FIGHTING_EVO_HIGH = [
   { id: 'flying-press',   name: 'Flying Press',   type: 'fighting', cost: 3, art: '🛬', effects: { damage: 34, vulnerable: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42, vulnerable: 3 } } },
 ];
 
+const GROUND_EVO_MID = [
+  { id: 'burrow',         name: 'Burrow',         type: 'ground', cost: 1, art: '⛏️', effects: { block: 8, surface: { damage: 14 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { block: 11, surface: { damage: 18 } } } },   // Dig
+  { id: 'magnitude',      name: 'Magnitude',      type: 'ground', cost: 1, art: '📈', effects: { damage: 8, fault: 8 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 11, fault: 11 } } },   // Fault
+  { id: 'sand-spit',      name: 'Sand Spit',      type: 'ground', cost: 2, art: '🐍', effects: { damage: 14, sand: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18, sand: 3 } } },   // Sandstorm
+  { id: 'high-horsepower', name: 'High Horsepower', type: 'ground', cost: 2, art: '🐎', effects: { damage: 18, weaken: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 23, weaken: 2 } } },
+];
+const GROUND_EVO_HIGH = [
+  { id: 'thousand-arrows', name: 'Thousand Arrows', type: 'ground', cost: 2, art: '🏹', effects: { block: 10, surface: { damage: 24 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { block: 14, surface: { damage: 30 } } } },   // Dig
+  { id: 'thousand-waves', name: 'Thousand Waves', type: 'ground', cost: 1, art: '〰️', effects: { damage: 6, fault: 14 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 8, fault: 19 } } },   // Fault
+  { id: 'sandsear-storm', name: 'Sandsear Storm', type: 'ground', cost: 2, art: '🌪️', effects: { damage: 20, sand: 3 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 26, sand: 4 } } },   // Sandstorm
+  { id: 'headlong-rush',  name: 'Headlong Rush',  type: 'ground', cost: 3, art: '🦏', effects: { damage: 34, block: 8 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42, block: 11 } } },
+];
+
 /* Fight-only cards made by other cards (`addCard`): never offered, not in the Card index, never in your run deck. */
 const TOKEN_CARDS = [
   { id: 'cinder',   name: 'Cinder',   type: 'fire',  cost: 0, art: '🔥', effects: { damage: 4 }, exhaust: true, token: true },   // Shiv
@@ -919,10 +974,11 @@ export const SIGNATURE_FOR = Object.fromEntries(SIGNATURE_CARDS.map(c => [c.from
 /** Every card you can be offered (the Card index lists these), and a lookup by id of every card there is,
     upgraded ones included: CARDS_BY_ID['ember'], CARDS_BY_ID['ember+']. */
 export const ALL_CARDS = [
-  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS, ...ICE_CARDS, ...FIGHTING_CARDS,
+  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS, ...ICE_CARDS, ...FIGHTING_CARDS, ...GROUND_CARDS,
   ...FIRE_EVO_MID, ...FIRE_EVO_HIGH, ...GRASS_EVO_MID, ...GRASS_EVO_HIGH, ...WATER_EVO_MID, ...WATER_EVO_HIGH,
   ...PSYCHIC_EVO_MID, ...PSYCHIC_EVO_HIGH, ...ELECTRIC_EVO_MID, ...ELECTRIC_EVO_HIGH,
   ...ICE_EVO_MID, ...ICE_EVO_HIGH, ...FIGHTING_EVO_MID, ...FIGHTING_EVO_HIGH,
+  ...GROUND_EVO_MID, ...GROUND_EVO_HIGH,
 ];
 
 /* ---------- PP Up: upgraded cards ----------
@@ -935,7 +991,7 @@ export const canUpgrade = (card) => !card.upgraded && !card.status;
 
 /** The default upgrade, StS-sized: +3 damage (less per hit on multi-hits) and +3 block; else +3 heal; else +1 of
     the card's first status or buff; powers +1 on their number; anything else costs 1 less (or stops exhausting). */
-const UPGRADE_STEPS = [['burn', 2], ['seed', 2], ['static', 2], ['frostbite', 2], ['hail', 2], ['counter', 2], ['weaken', 1], ['vulnerable', 1], ['sap', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['flex', 2], ['draw', 1]];
+const UPGRADE_STEPS = [['burn', 2], ['seed', 2], ['static', 2], ['frostbite', 2], ['hail', 2], ['sand', 2], ['fault', 3], ['counter', 2], ['weaken', 1], ['vulnerable', 1], ['sap', 1], ['tide', 1], ['focus', 3], ['strength', 1], ['flex', 2], ['draw', 1]];
 const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, strengthEachTurn: 1, thorns: 2, blaze: 3,
   exhaustBlock: 1, exhaustDraw: 1, discardTide: 1, discardBlock: 1, cardDamage: 1, cardBlock: 1,
   rupture: 1, combust: 2, brutality: 1, drought: 1, cinderDamage: 2, exhaustBurn: 1,
@@ -943,7 +999,8 @@ const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, streng
   healStrength: 1, attackHeal: 1, attackSeed: 1, debuffDamage: 2, weakEachTurn: 1, weakBlock: 2, strengthHeal: 1,
   staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1, thornStatic: 1, energyBlock: 1, switchStatic: 1,
   frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1, thornFrost: 1, hailChipBlock: 2,
-  mixBlock: 1, counterEachTurn: 1, followBlock: 1, followCounter: 2, counterBlock: 1, statusBlock: 2, statusHeldBlock: 1 };
+  mixBlock: 1, counterEachTurn: 1, followBlock: 1, followCounter: 2, counterBlock: 1, statusBlock: 2, statusHeldBlock: 1,
+  faultEachTurn: 1, surfaceDamage: 3, sandAttack: 1, sandFault: 2 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -967,7 +1024,7 @@ const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id
 export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS].map(c => [c.id, c]));
 for (const card of [...ALL_CARDS, ...TOKEN_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
-const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS, fighting: FIGHTING_CARDS };
+const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS, fighting: FIGHTING_CARDS, ground: GROUND_CARDS };
 // Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
 // 2 = your final evolution (high tier).
 const EVO_SETS = {
@@ -978,6 +1035,7 @@ const EVO_SETS = {
   electric: { 1: ELECTRIC_EVO_MID, 2: ELECTRIC_EVO_HIGH },
   ice: { 1: ICE_EVO_MID, 2: ICE_EVO_HIGH },
   fighting: { 1: FIGHTING_EVO_MID, 2: FIGHTING_EVO_HIGH },
+  ground: { 1: GROUND_EVO_MID, 2: GROUND_EVO_HIGH },
 };
 
 /** The cards a starter of this type can win as rewards: its own type + neutral cards. A Duo Run's (`duo`) also offers
@@ -1024,7 +1082,7 @@ export function scaledEffects(card, stage = 0) {
  * on your nameplate while it's switched on (battle.js adds up every power you play).
  */
 /** The Power Lens shown when a power card is played, in the starter's colours (purple for any other type). */
-export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦', fighting: '🟫' };
+export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦', fighting: '🟫', ground: '🟫' };
 
 export const POWERS = {
   blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
@@ -1109,6 +1167,12 @@ export const POWERS = {
   statusBlock:      { icon: '✊', text: (n) => `Whenever a status card is exhausted, gain ${n} block.` },
   statusHeldBlock:  { icon: '😣', text: (n) => `At the start of each turn, gain ${n} block for each status card in your hand.` },
   counterKeep:      { icon: '🪨', flag: true, text: () => 'Your Counter no longer goes away at the start of your turn.' },
+  surfaceDraw:      { icon: '🐜', text: (n) => `Whenever a card surfaces, draw ${plural(n, 'card')}.` },
+  surfaceDamage:    { icon: '🪏', text: (n) => `Whenever a card surfaces, deal ${n} damage.` },
+  faultEachTurn:    { icon: '⏬', text: (n) => `At the start of each turn, Fault ${n}.` },
+  sandAttack:       { icon: '💪', text: (n) => `In Sandstorm, your attacks deal +${n} damage a hit.` },
+  sandEachTurn:     { icon: '⏳', text: (n) => `At the start of each turn, Sandstorm ${n}.` },
+  sandFault:        { icon: '🐉', text: (n) => `Whenever Sandstorm hurts the enemy, Fault ${n}.` },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -1144,6 +1208,8 @@ function sentences(e) {
   if (e.perSwitch)    parts.push(`+${e.perSwitch} for each time you've switched this fight.`);
   if (e.perFrost)     parts.push(`+${e.perFrost} for each Frostbite on the enemy.`);
   if (e.thaw)         parts.push('Then remove all its Frostbite.');
+  if (e.perUnder)     parts.push(`+${e.perUnder} for each card underground.`);
+  if (e.perFault)     parts.push(`+${e.perFault} for each Fault on the enemy.`);
   if (e.perLost)      parts.push(`+${e.perLost} for each HP you lost last enemy turn.`);
   if (e.perStatusHeld) parts.push(`+${e.perStatusHeld} for each status card in your hand.`);
   if (e.hits && !e.damage && !e.blockDamage) parts.push(e.hits > 1 ? `It hits ${e.hits} more times.` : 'It hits once more.');
@@ -1158,6 +1224,9 @@ function sentences(e) {
   if (e.frostbite)    parts.push(`Frostbite ${e.frostbite}.`);
   if (e.frostMult)    parts.push(`${MULT[e.frostMult] ?? `Multiply by ${e.frostMult}`} the enemy's Frostbite.`);
   if (e.hail)         parts.push(`Hail ${e.hail}.`);
+  if (e.sand)         parts.push(`Sandstorm ${e.sand}.`);
+  if (e.fault)        parts.push(`Fault ${e.fault}.`);
+  if (e.faultMult)    parts.push(`${MULT[e.faultMult] ?? `Multiply by ${e.faultMult}`} the enemy's Fault.`);
   if (e.bide)         parts.push(`Store the HP you lose over the next ${e.bide} enemy turns, then deal twice that.`);
   if (e.staticMult)   parts.push(`${MULT[e.staticMult] ?? `Multiply by ${e.staticMult}`} the enemy's Static.`);
   if (e.sap)          parts.push(`Apply ${e.sap} Sap.`);
@@ -1249,6 +1318,8 @@ function sentences(e) {
   if (e.ifAfterAttack) parts.push(`Follow-up (attack): ${sentences(e.ifAfterAttack).join(' ')}`);
   if (e.ifAfterSkill) parts.push(`Follow-up (skill): ${sentences(e.ifAfterSkill).join(' ')}`);
   if (e.ifAttacked)   parts.push(`If the enemy attacked you last turn: ${sentences(e.ifAttacked).join(' ')}`);
+  if (e.ifSand)       parts.push(`In Sandstorm: ${sentences(e.ifSand).join(' ')}`);
+  if (e.surface)      parts.push(`Dig. Surface: ${sentences(e.surface).join(' ')}`);
   return parts;
 }
 
@@ -1298,6 +1369,9 @@ export const TERMS = {
   Icicle: `Each Icicle card you play makes every Icicle card deal +${ICICLE_STEP} this fight.`,
   'Follow-up': 'A bonus if your last card this turn was an attack (or a skill, as it says).',
   Counter: 'Until your next turn, each enemy attack takes that much back.',
+  Dig: 'Goes underground when played. At the start of your next turn it surfaces and does its Surface part.',
+  Fault: 'At the start of its turn, if its HP is at or below its Fault, it\'s knocked out. Alphas and bosses count half.',
+  Sandstorm: `Weather. At the end of your turn the enemy loses ${SAND.chip} HP. Your Ground cards block +${SAND.bonus}. Lasts that many turns.`,
   Hail: `Weather. At the end of your turn the enemy loses ${HAIL.chip} HP. Your Ice attacks deal +${HAIL.bonus} a hit. Lasts that many turns.`,
   Bait: 'Catch odds +50% each, its attacks +3 each. All fight.',
   Rock: 'A wild one may run off on its turn (no reward). A rare one leaves sooner.',
@@ -1362,6 +1436,9 @@ export function cardTerms(card) {
     uses(/^frostbite$|frost/i) && term('Frostbite'),
     (card.icicle || uses(/icicle/i)) && term('Icicle'),
     (uses(/hail|weather/i) || card.freeIn === 'hail') && term('Hail'),
+    uses(/^surface|^perUnder$/) && term('Dig'),
+    uses(/fault/i) && term('Fault'),
+    uses(/^sand|^ifSand$/) && term('Sandstorm'),
     uses(/^ifAfter|^followAlways$|^mixBlock$|^follow(Block|Counter)$/) && term('Follow-up'),
     uses(/^counter|^followCounter$/) && term('Counter'),
     uses(/^perStatusHeld$|^statusDraw$|^statusStrength$|^blockPerStatusHeld$|^counterPerStatus$|^statusBlock$|^statusHeldBlock$/) && ['Status cards', 'Junk in your deck for this fight: Sore, and what enemies add.'],

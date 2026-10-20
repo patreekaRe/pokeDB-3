@@ -422,6 +422,7 @@ export const SPRITE_FIT = {
   'sandshrew-front': [2, 0, 1, 2],
   'diglett-front': [4, 0, 0, 0],
   'cubone-front': [4, 0, 5, 4],
+  'trapinch-back': [1, 0, 0, 2],
   'trapinch-front': [1, 0, 1, 0],
   'sandile-front': [9, 4, 2, 3],
   'hippopotas-front': [1, 0, 2, 0],
@@ -596,6 +597,7 @@ export const SPRITE_FIT = {
   'sandslash-front': [5, 0, 4, 0],
   'dugtrio-front': [1, 0, 0, 0],
   'marowak-front': [5, 4, 1, 2],
+  'vibrava-back': [19, 1, 1, 3],
   'vibrava-front': [16, 0, 0, 0],
   'krokorok-front': [3, 0, 0, 3],
   'hippowdon-front': [0, 1, 0, 2],
@@ -691,6 +693,7 @@ export const SPRITE_FIT = {
   'donphan-front': [3, 4, 4, 5],
   'cranidos-front': [4, 1, 6, 1],
   'shieldon-front': [2, 0, 7, 2],
+  'flygon-back': [10, 2, 2, 13],
   'flygon-front': [9, 2, 11, 0],
   'kabutops-front': [4, 0, 0, 0],
   // batch 5
@@ -982,6 +985,8 @@ export const BODY_X = {
   'machamp-back': -6,
   'timburr-back': -6,
   'gurdurr-back': 4,
+  'trapinch-back': 2,
+  'flygon-back': -2,
 };
 
 /** GIF pixels to add to a sprite's pose-box centring so its body, not its box, stands in the middle. */

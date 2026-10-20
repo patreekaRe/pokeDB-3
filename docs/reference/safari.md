@@ -400,7 +400,14 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   9th area: every Fighting-typed Safari Pokémon, 30, moved in with `was:`, date-gated by `SAFARI_FROM` like the Power
   Plant, painted as the Desert recoloured to a granite mountainside: `SAFARI_ART.dojomountain`, `paintAs: 'desert'`; its
   rares the ones already rare). Playtest a Duo Run in it with `&dojomountain`.
-- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice and Fighting), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+- **Ground's first session** (session 9, 2026-10-20; rules and card table in `docs/duo-design.md` section 5's "Ground's
+  first session"): **Trapinch** (`DUO_STARTERS`, `GROUND_DECK`; back GIFs, `SPRITE_FIT`, `BODY_X`, Vibrava's and Flygon's
+  cries), `DUO_LINES.ground` (catching Trapinch, Vibrava or Flygon adds Ground; they still live in the Desert until the
+  Quarry). In `js/battle.js`: **Dig** (`b.underground`, the ⛏️ badge, `surface()` at your turn's start), **Fault**
+  (`applyFault()`, `enemy.fault`, the 🌋 badge, `faultLine()`), **Sandstorm** (the Weather engine's `'sand'` kind, the 🏜️
+  badge; its chip and Ground blocks' +3) and **Sturdy** (`b.sturdy`, once a fight in `hurtPlayer()`).
+  `tools/ground-probe.mjs` checks them in a real fight.
+- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting and Ground), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 

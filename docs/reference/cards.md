@@ -187,6 +187,16 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `followBlock`, `followCounter`, `counterBlock` (Justified: block next turn), `statusBlock` (in `exhaustCard()`),
   `statusHeldBlock` (after the turn's draw), `counterKeep` (Stand Firm). Expert Belt is Fighting's `TYPE_RELIC` (Black Belt
   was taken).
+- **Ground** (session 9, 2026-10-20; `docs/duo-design.md` section 5's "Ground's first session"): `GROUND_CARDS` /
+  `GROUND_EVO_*` (30 + 8 so far), art in `js/card-art-ground.js`. New keys: `surface` (**Dig**: what's outside it happens
+  when played, then the card goes to `b.underground`, not the discard pile; `surface()` in `js/battle.js` resolves each at
+  your next turn's start, after the draw, and sends it to its own deck's discard pile, a duo partner's included; it isn't a
+  card played; an upgrade replaces `surface` whole, so a Dig card's upgrade spells it out), `perUnder`, `fault`
+  (`enemy.fault`, the 🌋 badge; checked in `enemyTurn()` after Burn and Leech Seed against `faultLine()`, half on Alphas
+  and bosses; `felledBy: 'fault'`), `perFault`, `faultMult`, `sand` (`setWeather('sand', n)`, `sanding()`, `SAND` in
+  `js/data/cards.js`: the chip, and +3 on a Ground card's block in `effectsOf()`), `ifSand`; powers `surfaceDraw`,
+  `surfaceDamage`, `faultEachTurn`, `sandAttack`, `sandEachTurn`, `sandFault`. Hail's own powers and Safety Goggles now
+  read Hail only. Boxes: Dig, Fault, Sandstorm. The Sturdy Ability is in `hurtPlayer()`, after Focus Sash.
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,

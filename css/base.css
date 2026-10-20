@@ -140,6 +140,7 @@ body[data-theme="psychic"] { --accent: #c080f0; --accent-dark: #8a45c0; }
 body[data-theme="electric"] { --accent: #f8c820; --accent-dark: #b88a00; }
 body[data-theme="ice"] { --accent: #66d8f0; --accent-dark: #2a8cb8; }
 body[data-theme="fighting"] { --accent: #e0603c; --accent-dark: #a03420; }
+body[data-theme="ground"] { --accent: #d8a850; --accent-dark: #946a2c; }
 
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }

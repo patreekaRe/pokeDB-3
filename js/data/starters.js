@@ -44,6 +44,8 @@ const ELECTRIC_DECK = ['thunder-shock', 'thunder-shock', 'thunder-shock', 'eerie
 const ICE_DECK = ['powder-snow', 'powder-snow', 'powder-snow', 'frost-armor', 'frost-shield', 'frost-shield', 'frost-shield', 'frost-shield', 'icy-wind', 'ice-shard'];
 // Fire's shape from the start: 3 attacks, an Iron Wave (Vital Throw), 4 blocks, the Bash and a second signature
 const FIGHTING_DECK = ['rock-smash', 'rock-smash', 'rock-smash', 'vital-throw', 'mat-block', 'mat-block', 'mat-block', 'mat-block', 'low-kick', 'mach-punch'];
+// Fire's shape: 3 attacks, an Iron Wave (Sand Attack), 4 blocks, the Bash (Bulldoze) and a second signature (Dig)
+const GROUND_DECK = ['mud-shot', 'mud-shot', 'mud-shot', 'sand-attack', 'sand-veil', 'sand-veil', 'sand-veil', 'sand-veil', 'bulldoze', 'dig'];
 const PSYCHIC_DECK = ['psywave', 'psywave', 'psywave', 'psywave', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-confusion', 'psystrike'];
 
 export const STARTERS = [
@@ -477,6 +479,16 @@ export const DUO_STARTERS = [
     ],
     blurb: 'Trains on the mountain every day it can. More arms each time it evolves, and every one of them punching.',
     deck: FIGHTING_DECK,
+  },
+  {
+    id: 'trapinch', type: 'ground', duoOnly: true,
+    line: [
+      { id: 'trapinch', name: 'Trapinch' },
+      { id: 'vibrava', name: 'Vibrava' },
+      { id: 'flygon', name: 'Flygon' },
+    ],
+    blurb: 'Waits at the bottom of its sand pit. Digs in to strike next turn, opens faults that swallow the weak, and calls up sandstorms.',
+    deck: GROUND_DECK,
   },
 ];
 

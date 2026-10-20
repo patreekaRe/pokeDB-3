@@ -744,6 +744,82 @@ Heavy and patient. Hits Fire, Electric, Poison, Rock, Steel; fears Water, Grass,
 
 Starting deck: Mud Shot x4 (deal 7), Sand Veil x4 (block 7), **Bulldoze** (2: deal 10, Weak 2; Bash), Dig.
 
+#### Ground's first session: its cards (session 9, 2026-10-20)
+
+Written here before the code, as the other types' were. 30 cards in the pools (10 common, 14 uncommon, 6 rare) and all
+8 evolution cards, so a run with Ground is whole; session 10 adds the other ~36, the relics, items, Rhyhorn's look and
+the Quarry. Each card is on a StS 1 card at x~1.2 (its model in the last column and in a comment on its line) with a
+hand-picked upgrade. The deck is Fire's shape (3 attacks, an Iron Wave, 4 blocks, the Bash and a second signature).
+
+**The rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- **Dig** (`surface: { ... }` on a card's effects): what's outside `surface` happens when it's played; then the card
+  goes **underground** (`b.underground`, a ⛏️ badge with the count) instead of to the discard pile. At the start of your
+  next turn, after the hand is drawn, each surfaces in the order dug: its Surface part resolves (its hits through the
+  usual damage, STAB and the chart for whoever is out then), then it goes to its own deck's discard pile (a duo's
+  partner's if it was dug by the partner). It isn't a card played (no Follow-up, no "per card played"). Payoffs:
+  `perUnder` (+N per card underground), powers `surfaceDraw` (Arena Trap), `surfaceDamage` (Excavate).
+- **Fault** (`fault: N`, `enemy.fault`, a 🌋 badge: the Safari's Rock has 🪨): stacks and never wears off. At the start of the enemy's turn,
+  after Burn and Leech Seed, if its HP is at or below its Fault it's knocked out (`felledBy: 'fault'`). Alphas and bosses
+  count half their Fault (the badge shows the number that counts). StS 2's Doom. Payoffs `perFault` (+N per Fault),
+  `faultMult`, powers `faultEachTurn`, `sandFault` (whenever Sandstorm hurts the enemy).
+- **Sandstorm** (the Weather engine's second kind, `setWeather('sand', n)`, a 🏜️ badge): at the end of your turn the
+  enemy loses `SAND.chip` (3) through its block, then a turn goes; while it lasts every block a Ground card gives is
+  +`SAND.bonus` (3), its Surface part's too. Hail's own powers (Ice Age, Polar Vortex, Icefall) read Hail only; Weather
+  Ball's "any weather" reads both. `ifSand` extras, powers `sandAttack` (Sand Force: +2 on every hit in Sandstorm),
+  `sandEachTurn` (Sand Stream).
+- **Sturdy** (the Ability, `ABILITIES.ground`): while Ground is out, once a fight, a hit that would knock you out leaves
+  you at 1 HP (after Focus Sash, which goes first).
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Mud Shot | C | 1 | Deal 8 *(up 11)* | — | Strike |
+| Sand Veil | C | 1 | Block 8 *(up 11)* | — | Defend |
+| Bulldoze | C | 2 | Deal 10, Weak 2, Fault 5 *(up 12, 3, 7)* | Fault | Bash, Fault for its Vulnerable (+ Weak, as Icy Wind) |
+| Sand Attack | C | 1 | Block 10, Fault 3 *(up 13, 4)* | Fault | Iron Wave (Frost Armor's shape) |
+| Dig | C | 1 | Block 6. Surface: deal 12 *(up 8, 15)* | Dig | Iron Wave over two turns |
+| Tunnel | C | 0 | Surface: deal 7 *(up 10)* | Dig | a free Strike, a turn late (Doppelganger's delay) |
+| Mud Bomb | C | 1 | Deal 6, Fault 5 *(up 8, 7)* | Fault | Poisoned Stab |
+| Bonemerang | C | 1 | Deal 4 twice, Fault 3 *(up 5, 4)* | Fault | Twin Strike |
+| Sandstorm | C | 1 | Sandstorm 4 *(up cost 0)* | Sandstorm | Noxious Fumes, as a timer (Hail's twin) |
+| Mud-Slap | C | 1 | Deal 7; in Sandstorm, Weak 2 *(up 9, 3)* | Sandstorm | Sucker Punch |
+| Drill Run | U | 1 | Deal 5. Surface: deal 10 *(up 7, 13)* | Dig | Pummel, split over two turns |
+| Earth Power | U | 1 | Deal 6, +6 per card underground *(up 8, +8)* | Dig | Perfected Strike, per card dug |
+| Shore Up | U | 1 | Block 7. Surface: block 7 *(up 10, 10)* | Dig | Dodge and Roll |
+| Arena Trap | U | 1 | Power: whenever a card surfaces, draw 1 *(up cost 0)* | Dig | (Dig's Evolve) |
+| Spikes *(bridge)* | U | 1 | Block 5. Surface: Fault 8 *(up 7, 11)* | Dig/Fault | Caltrops, laid underground |
+| Sinkhole *(bridge)* | U | 1 | Surface: deal 10, Sandstorm 2 *(up 14, 3)* | Dig/Sandstorm | (a delayed Noxious Fumes with a hit) |
+| Earthquake | U | 2 | Deal 12, Fault 6 *(up 15, 8)* | Fault | Uppercut |
+| Mud Sport | U | 1 | Fault 8 *(up 11)* | Fault | Deadly Poison |
+| Stomping Tantrum | U | 1 | Deal 6, +1 per Fault *(up 8)* | Fault | Bane, per Fault |
+| Quicksand | U | 1 | Power: at the start of each turn, Fault 3 *(up 4)* | Fault | Noxious Fumes |
+| Dust Devil *(bridge)* | U | 1 | Sandstorm 2, Fault 5 *(up 3, 7)* | Sandstorm/Fault | Noxious Fumes + Deadly Poison (Snowscape's shape) |
+| Land's Wrath | U | 2 | Deal 12; in Sandstorm, +8 *(up 15, +10)* | Sandstorm | Carnage, in the weather |
+| Sand Rush | U | 1 | Draw 2; in Sandstorm, +1 PP *(up draw 3)* | Sandstorm | Adrenaline, in the weather |
+| Sand Force | U | 1 | Power: in Sandstorm, your attacks deal +2 a hit *(up 3)* | Sandstorm | Inflame, in the weather |
+| Fissure | R | 2 | Fault 20. Exhaust *(up 28)* | Fault | (Fault's Catalyst: one big stack) |
+| Precipice Blades | R | 2 | Deal 10, double the enemy's Fault *(up 14)* | Fault | Catalyst, with a hit |
+| Landslide | R | 2 | Surface: deal 30 *(up 38)* | Dig | Bludgeon, a turn late |
+| Excavate | R | 1 | Power: whenever a card surfaces, deal 7 *(up 10)* | Dig | (Dig's Thousand Cuts) |
+| Sand Stream | R | 2 | Power: at the start of each turn, Sandstorm 1 *(up cost 1)* | Sandstorm | (Sandstorm's Wraith Form, kept up) |
+| Desert Spirit *(bridge)* | R | 2 | Power: whenever Sandstorm hurts the enemy, Fault 4 *(up cost 1)* | Sandstorm/Fault | (Ice Age's twin) |
+
+Evolution cards (evo-only, 1 copy; one per archetype and one general a tier):
+
+| Card | Tier | Cost | Effect | Arch |
+|---|---|---|---|---|
+| Burrow | 1st | 1 | Block 8. Surface: deal 14 | Dig |
+| Magnitude | 1st | 1 | Deal 8, Fault 8 | Fault |
+| Sand Spit | 1st | 2 | Deal 14, Sandstorm 2 | Sandstorm |
+| High Horsepower | 1st | 2 | Deal 18, Weak 1 | — |
+| Thousand Arrows | final | 2 | Block 10. Surface: deal 24 | Dig |
+| Thousand Waves | final | 1 | Deal 6, Fault 14 | Fault |
+| Sandsear Storm | final | 2 | Deal 20, Sandstorm 3 | Sandstorm |
+| Headlong Rush | final | 3 | Deal 34, block 8 | — |
+
+Ground so far: 10 common, 14 uncommon, 6 rare, 8 evolution = **38**.
+
+**Starting deck**: Mud Shot x3, **Sand Attack**, Sand Veil x4, Bulldoze, Dig.
+
 ### Flying: Evasion, Tailwind, Unburden
 
 Light and quick: cheap cards, an empty hand, dodging. Hits Grass, Fighting, Bug; fears Electric, Ice, Rock.

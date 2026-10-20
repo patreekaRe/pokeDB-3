@@ -207,4 +207,5 @@ export const ABILITIES = {
   electric: { id: 'static', name: 'Static', icon: '⚡', sprite: 'ability-capsule', amount: 2, text: 'Each time the enemy attacks you, it gains 2 Static.' },
   ice: { id: 'snow-warning', name: 'Snow Warning', icon: '🌨️', sprite: 'ability-capsule', amount: 2, text: 'Start each fight in Hail for 2 turns.' },
   fighting: { id: 'guts', name: 'Guts', icon: '💢', sprite: 'ability-capsule', amount: 3, text: 'While a status card is in your hand, your attacks deal +3 damage.' },
+  ground: { id: 'sturdy', name: 'Sturdy', icon: '⛰️', sprite: 'ability-capsule', amount: 1, text: 'Once a fight, a hit that would knock you out leaves you at 1 HP.' },
 };
