@@ -43,6 +43,9 @@ type's starter in its area adds it to your duo pool.
 (and pokeDB-sim's `duo-types`), never pushed to `main` until the user says it goes live. A session starts from
 `duo-types`; a session working alongside another (below) works on its own `duo-types-<part>` branch and merges into
 `duo-types` when done, the later one to finish resolving the merge. Playtest links are githack links on its commit.
+**When it goes live** (one step, not a session's: every area session leaves it): set `SAFARI_FROM` in
+`js/data/safari.js` (the Power Plant, the Ice Cave, Dojo Mountain and any area added since) to **the day after** the merge
+reaches `main` (UTC), in the same push, so no Safari day already played is dealt again. It reads 2026-10-20 on the branch.
 **One at a time from now on** (the user's call, 2026-10-19, after 0 and 2 ran side by side): run the sessions
 below in order, one each; the side-by-side rule that follows stays only in case that changes. **Two at a time** (the user's earlier ask): 2 (real types) can run beside 0 (its rules are settled above and it works with
 today's single starter), on `duo-types-realtypes`; 1 runs after 0, and 15 alone at the end.
@@ -103,8 +106,7 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `SAFARI_FROM`, Peak's painters recoloured). Bot (300 a duo): electric+fire / +grass / +water 64.7 / 43.7 / 36.3, ~7 under
    session 3's Electric, still between Grass and Water as a partner: left for the balance pass (15). Playtest: the
    githack link with `?duorun&duopool&powerplant&coins=500`, or `?area=powerplant`, `?bossfight=powerplant&starter=pichu`.
-   **Waiting on the user**: the playtest; the Quick Powder rename; **`SAFARI_FROM` must move to the day after the branch
-   goes live** (2026-10-20 on the branch).
+   **Waiting on the user**: the playtest; the Quick Powder rename (`SAFARI_FROM`: the branch rule's go-live step).
 5. ~~**Ice's first**~~ done 2026-10-19 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Ice's first
    session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 30 pool cards + 8 evolution cards and the
    Icicle token with art (`js/card-art-ice.js`), Frostbite, Icicle, the Weather engine (Hail), Snow Warning, Vanillite's
@@ -121,8 +123,7 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    ice+fire / +grass / +water / +electric 66.7 / 62.0 / 56.3 / 67.0 vs session 5's Ice (`iceFirst`) 70.7 / 66.7 / 58.3 /
    64.0, solo 78.7 both: level, inside the noise. Playtest: the githack link with `?duorun&duopool&icecave&coins=500`, or
    `?area=icecave`, `?bossfight=icecave&starter=swinub`, `?arena=fight&starter=swinub&cards=shatter,ice-crown,igloo`.
-   **Waiting on the user**: the playtest (the art helper rated Cold Shoulder's picture the weakest); **`SAFARI_FROM`
-   (both areas) must move to the day after the branch goes live**.
+   **Waiting on the user**: the playtest (the art helper rated Cold Shoulder's picture the weakest).
 7. ~~**Fighting's first**~~ done 2026-10-19 on `duo-types` (both repos; game `b4f1bae`+, `docs/duo-design.md` section 5's "Fighting's
    first session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 30 pool cards + 8 evolution cards and
    the Sore status card with art (`js/card-art-fighting.js`), Follow-up (a bonus after an attack / a skill; the card glows
@@ -144,8 +145,7 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    gains, the pairs dip ~5 like Electric's second half, no one part to blame: left for the balance pass (15). Playtest: the githack link with
    `?duorun&duopool&dojomountain&coins=500`, or `?area=dojomountain`, `?bossfight=dojomountain&starter=machop`,
    `?arena=fight&starter=machop&cards=stand-firm,justified,last-stand,gritted-teeth`. **Waiting on the user**: the
-   playtest (whether the Moves app's 8 type tabs still read on a phone); the Expert Belt call; **`SAFARI_FROM` (all three
-   areas) must move to the day after the branch goes live**.
+   playtest (whether the Moves app's 8 type tabs still read on a phone); the Expert Belt call.
 Prompt for session 9, Ground's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
 start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (Ground, the clash check, and
 Ice's and Fighting's session tables and bot checks as the pattern) and 6, docs/reference/safari.md's duo section,
