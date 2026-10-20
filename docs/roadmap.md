@@ -133,7 +133,7 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    Fighting 79.3. Playtest: the githack link with `?duorun&duopool&coins=500` (the Duo key, Electric, Ice and Fighting
    lent), or a solo fight `?arena=fight&starter=timburr&cards=close-combat,reversal,counter,bide`. **Waiting on the user**:
    the playtest, and whether Guts at +3 and Counter's numbers feel right.
-8. ~~**Fighting's second**~~ done 2026-10-20 on `duo-types` (both repos; game COMMIT+, `docs/duo-design.md` section 5's
+8. ~~**Fighting's second**~~ done 2026-10-20 on `duo-types` (both repos; game `7d68336`+, `docs/duo-design.md` section 5's
    "Fighting's second session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 36 more cards
    (defence-leaning, 74 in all) with art, **Expert Belt** as its held item (`black-belt` was the old strength relic, so
    the design doc's Black Belt became Expert Belt, whose art was already in) + 6 relics, Fighting Gem and Red Card (no
