@@ -4229,6 +4229,18 @@ body.scene-peek #backdrop { display: none; }
 .duo-fold[open] { display: flex; flex-direction: column; gap: 4px; }
 .duo-area-count { margin-left: auto; font-size: 0.75rem; }
 .duo-area-head.done .duo-area-count::before { content: '✓ '; }
+.duo-area-head { flex-wrap: wrap; }
+.duo-fares { flex-basis: 100%; display: flex; align-items: center; gap: 6px; padding-left: 26px; font-size: 0.75rem; }
+.duo-fares-types { margin-right: auto; opacity: 0.85; }
+.duo-tri { min-width: 34px; padding: 2px 6px; border: 2px solid currentColor; border-radius: 6px; background: rgba(255, 255, 255, 0.5); font: inherit; font-weight: 700; cursor: pointer; }
+.duo-tri.up { color: #1f8a3a; }
+.duo-tri.down { color: #c0303a; }
+.duo-tri.up.on, .duo-tri.down.on { color: #fff; }
+.duo-tri.up.on { background: #1f8a3a; border-color: #1f8a3a; }
+.duo-tri.down.on { background: #c0303a; border-color: #c0303a; }
+.duo-why { margin: 4px 0 0; padding: 5px 8px; border-left: 4px solid; border-radius: 4px; background: rgba(255, 255, 255, 0.45); font-size: 0.75rem; line-height: 1.35; }
+.duo-why.up { border-color: #1f8a3a; }
+.duo-why.down { border-color: #c0303a; }
 .duo-face-pic { position: absolute; inset: 0; overflow: hidden; border-radius: 50%; }
 .duo-face .duo-face-mon { position: absolute; max-width: none; object-fit: fill; image-rendering: pixelated; }
 .duo-face-type.type-badge { width: 22px; height: 22px; z-index: 1; }
@@ -4245,7 +4257,6 @@ body.scene-peek #backdrop { display: none; }
 .duo-mons { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .duo-mon { width: 36px; height: 36px; object-fit: contain; }
 .duo-mon.unseen { filter: brightness(0) opacity(0.55); }
-.duo-fares { margin: 0; font-size: 0.75rem; }
 .duo-pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
 .duo-pick { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; border-radius: 8px; background: rgba(255, 255, 255, 0.3); border: 2px solid transparent; }
 .duo-pick.on { border-color: #e2a92c; background: rgba(255, 236, 160, 0.55); }

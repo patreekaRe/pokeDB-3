@@ -240,6 +240,8 @@ panel's `overflow: auto`; `.cdev-app.sp-duo-app` now scrolls).
 the gate, updating as you pick; the pool comes first; today's road folds per area (number, name, Safari Dex count); the
 type emoji are round badges (`js/type-badge.js`); the portraits centre their sprite. Detail: `docs/reference/safari.md`'s
 "The Duo key". **Waiting on the user**: the look on a phone (the badges' glyphs were drawn blind, no screenshot).
+Then each area's row shows its main types and a green ▲ / red ▼ count in view, folded or not (the user's pick from the
+categorized mock's road; only that part, the rest stays); a tap on either explains it under the row (`faresLine()`).
 Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
 start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
 docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo
@@ -1166,6 +1168,9 @@ the new-type areas (Power Plant, Ice Cave, Dojo Mountain, ...), so every Duo Run
 own difficulty step (~x6.3 / +29 / boss +40) set by the bot: duos already win less than solo (electric+fire / +grass /
 +water 64.7 / 43.7 / 36.3 against solo ~71), so area 4 may need to be gentler, or come with an extra card reward. Build it
 on `duo-types` (the Duo Run isn't on `main`). **The user's call: wait until the duo types are finished**, then build it.
+The user asked again on 2026-10-20 ("didn't we agree to have 4 biomes for duo run? And aren't the biomes completely
+different from the daily seeded run?"). Not built: today a Duo Run replays the day's three areas on a fresh seed. Open,
+for the user: 4 areas, and whether all four are the Duo Run's own rather than the Daily's.
 
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6

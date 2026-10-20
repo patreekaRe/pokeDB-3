@@ -36,6 +36,7 @@ function poolNow() {
 let host = null, start = null;
 const pick = { order: [], look: {} };   // the types picked, lead first, and the look shown for each type
 const opened = new Set();   // the areas of today's road unfolded, kept across a pick's re-render
+let why = null;   // the ▲ / ▼ explained under its area: { area, kind }
 
 /** An area's main types: the real types most of its wild Pokémon wear, two or three. */
 export function areaTypes(area) {
@@ -48,11 +49,9 @@ export function areaTypes(area) {
 /** How a pair fares in an area: ▲ its main types either of the two hits super effectively, ▼ the ones that hit either. */
 export function fares(types, area) {
   const main = areaTypes(area);
-  return {
-    up: main.filter(t => types.some(mine => realFactor(mine, [t]) > 1)).length,
-    down: main.filter(t => types.some(mine => realFactor(t, [mine]) > 1)).length,
-    of: main.length,
-  };
+  const hit = main.filter(t => types.some(mine => realFactor(mine, [t]) > 1));
+  const hurt = main.filter(t => types.some(mine => realFactor(t, [mine]) > 1));
+  return { up: hit.length, down: hurt.length, of: main.length, hit, hurt };
 }
 
 function chip(t) {
@@ -73,7 +72,7 @@ function road(daily) {
     const page = SAFARI_DEX_PAGES.find(p => p.area === area.id);
     const { caught } = safariProgress(page.ids, getSave().safariDex);
     const head = el('summary', `duo-area-head${caught === page.ids.length ? ' done' : ''}`);
-    head.append(el('span', 'sp-area-no', `${i + 1}`), el('b', '', area.name), el('small', 'duo-area-count', `${caught}/${page.ids.length}`));
+    head.append(el('span', 'sp-area-no', `${i + 1}`), el('b', '', area.name), el('small', 'duo-area-count', `${caught}/${page.ids.length}`), faresLine(area));
     head.title = `${area.name}: ${caught} of ${page.ids.length} caught. Tap for its types and Pokémon.`;
     head.addEventListener('click', () => playSound('confirm'));
     const types = el('span', 'duo-types');
@@ -94,14 +93,44 @@ function road(daily) {
       mons.append(img, el('span', 'map-rare inline', '✦'));
     }
     fold.append(head, types, mons);
-    if (pick.order.length === 2) {
-      const f = fares(pick.order, area);
-      fold.append(el('p', 'duo-fares', `▲ ${f.up}/${f.of} you hit hard · ▼ ${f.down}/${f.of} hit you hard`));
-    }
     li.append(fold);
+    if (why?.area === area.id) li.append(whyLine(area, why.kind));
     box.append(li);
   });
   return box;
+}
+
+const names = (types) => types.map(t => REAL_TYPES[t].label).join(', ');
+
+/** An area's row, always in view: its main types, then ▲ how many of them your picks hit hard (green) and ▼ how many hit
+    you hard (red), each a button that explains itself (the user's ask, 2026-10-20). */
+function faresLine(area) {
+  const line = el('span', 'duo-fares');
+  line.append(el('span', 'duo-fares-types', areaTypes(area).map(t => REAL_TYPES[t].label).join(' · ')));
+  const f = pick.order.length ? fares(pick.order, area) : null;
+  for (const [kind, mark, n] of [['up', '▲', f?.up], ['down', '▼', f?.down]]) {
+    const b = el('button', `duo-tri ${kind}${why?.area === area.id && why.kind === kind ? ' on' : ''}`, `${mark}${f ? n : '–'}`);
+    b.type = 'button';
+    b.setAttribute('aria-label', kind === 'up' ? 'Types you hit hard: what this means' : 'Types that hit you hard: what this means');
+    b.addEventListener('click', (e) => {
+      e.preventDefault();   // inside the row's summary: explain, don't fold
+      e.stopPropagation();
+      playSound('confirm');
+      why = why?.area === area.id && why.kind === kind ? null : { area: area.id, kind };
+      render();
+    });
+    line.append(b);
+  }
+  return line;
+}
+
+function whyLine(area, kind) {
+  const main = areaTypes(area), f = pick.order.length ? fares(pick.order, area) : null;
+  const yours = names(pick.order);
+  const text = !f ? `${kind === 'up' ? '▲' : '▼'} Pick a type below to see how it fares against this area's main types (${names(main)}).`
+    : kind === 'up' ? `▲ ${f.up} of this area's ${f.of} main types (${names(main)}) take super effective hits from ${yours}${f.up ? `: ${names(f.hit)}` : ''}. Higher is better.`
+    : `▼ ${f.down} of this area's ${f.of} main types (${names(main)}) hit ${yours} super effectively${f.down ? `: ${names(f.hurt)}` : ''}. Lower is better.`;
+  return el('p', `duo-why ${kind}`, text);
 }
 
 function portrait(type, pool) {
