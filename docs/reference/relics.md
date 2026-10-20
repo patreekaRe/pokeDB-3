@@ -65,3 +65,11 @@ The sim measured them on solo Electric (150 runs each) and borrows Water's ranks
 Rock (a weather that starts lasts 3 more turns, `ICY_ROCK`; Snow Warning's opening Hail too), Icicle Plate (`b.icicles`
 starts at 2), Ice Memory (no thaw while Hail falls) and Ice Stone (boss: +1 draw, Snow Warning's Hail 4). Items: Ice Gem
 (Hail 3, 8 block) and Chill Drive (Frostbite x2). Measured on solo Ice like Electric's.
+
+**Fighting's** (2026-10-20, Fighting's second session; `docs/duo-design.md` section 5): **Expert Belt** (`expert-belt`,
+its held item in `TYPE_RELIC`: the design doc named Black Belt, but `black-belt` is the old strength relic and a badge),
+Ring Target (Counter 8 on your first turn), Focus Band (3 block whenever a Follow-up happens), Protector (every Counter
+you gain +2, in `gainCounter()`), Weakness Policy (3 block whenever a status card is exhausted), Fighting Memory (your
+Counter halves at your turn's start instead of going) and Fightinium Z (boss: +1 draw, Guts +6; `abilityFor()`'s
+`stone`). Items: Fighting Gem (8 block, Counter 8) and Red Card (Counter x2; there's no Fighting Drive). Measured on solo
+Fighting like Electric's.

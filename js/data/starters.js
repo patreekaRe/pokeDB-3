@@ -467,6 +467,17 @@ export const DUO_STARTERS = [
     blurb: 'Hauls a log into every fight. Chains jabs into throws, hits back when it\'s hit, and fights harder when it hurts.',
     deck: FIGHTING_DECK,
   },
+  // Timburr's deck under another look, as Swinub is Vanillite's (session 8)
+  {
+    id: 'machop', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'machop', name: 'Machop' },
+      { id: 'machoke', name: 'Machoke' },
+      { id: 'machamp', name: 'Machamp' },
+    ],
+    blurb: 'Trains on the mountain every day it can. More arms each time it evolves, and every one of them punching.',
+    deck: FIGHTING_DECK,
+  },
 ];
 
 export const STARTERS_BY_ID = Object.fromEntries([...STARTERS, ...DUO_STARTERS].map(s => [s.id, s]));

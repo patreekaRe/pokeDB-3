@@ -393,6 +393,13 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   and records `attackedNow` / `lostNow`, which become `attackedLast` / `lostLast` at your turn's start), **Bide** (⏳,
   released in `beginPlayerTurn()`), **Sore** and the **Guts** Ability (`statusHeld()`: +3 on attacks while a status card
   is in your hand, the 💢 badge and the lit Ability pill). `tools/fighting-probe.mjs` checks them in a real fight.
+- **Fighting's second session** (session 8, 2026-10-20; `docs/duo-design.md` section 5's "Fighting's second session"):
+  36 more cards (defence-leaning), Expert Belt + 6 relics (Ring Target, Focus Band, Protector, Weakness Policy, Fighting
+  Memory, the boss Fightinium Z in `abilityFor()`), Fighting Gem and Red Card, the Card index's Fighting tab, **Machop**
+  (a `skinOf: 'timburr'` look; `DUO_LINES.fighting.machop`; Machamp's cry new) and **Dojo Mountain** (`dojomountain`, a
+  9th area: every Fighting-typed Safari Pokémon, 30, moved in with `was:`, date-gated by `SAFARI_FROM` like the Power
+  Plant, painted as the Desert recoloured to a granite mountainside: `SAFARI_ART.dojomountain`, `paintAs: 'desert'`; its
+  rares the ones already rare). Playtest a Duo Run in it with `&dojomountain`.
 - **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice and Fighting), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).

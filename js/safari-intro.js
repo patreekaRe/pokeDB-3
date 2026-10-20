@@ -205,6 +205,27 @@ export const SAFARI_INTROS = {
     sounds: ['gust'],
     art: { move: 'crane', house: 'back', far: peakFar, mid: peakMid, back: peakBack, ground: peakGround, fence: false, trail: [{ at: 0, style: 'dirt' }, { at: 2, style: 'snow', key: 'track' }], birds: '#202430', air: ['snow'] },
   }),
+  // the duo pool's Dojo Mountain: the Desert's film on a granite mountainside with maples, until its own art session
+  dojomountain: film('dojomountain', {
+    ink: ['#fff0e4', '#c0603a', '#3a1a10'],
+    land: {
+      far: ['#90a48a', '#a8b8a0'], farMesas: ['#aab0b8', '#98a0aa', '#8a929c'], mesas: ['#b8b4ac', '#948e86', '#726c66', '#524c48'],
+      dunes: ['#8cb070', '#6e9858', '#567c46'],
+      palm: ['#e86a3a', '#c04a28', '#802a18'], palmTrunk: ['#9a7050', '#6a4a32', '#40301e'],
+      lake: ['#d8f4ff', '#a0dcf4', '#74c4ec', '#3a8ac8'], cactus: ['#5a9a5a', '#2e6a3a', '#1a4628'],
+      bone: ['#f4f2ec', '#c8c4bc', '#7a766e'], rock: ['#dcd8d0', '#c8c4bc', '#9a948c', '#68625c'],
+      ground: ['#a8c47c', '#9cba72', '#90ae68', '#84a25e', '#789656', '#6c8a4e'], blade: ['#d0e8a0', '#90b860', '#5a8238'],
+      tall: ['#a8c870', '#78a048', '#2e4a1a'], fore: ['#a0c068', '#78a048', '#507430', '#2e4a1a'],
+      weed: ['#8aa860', '#5a7a3a'], sand: ['#e8dcc4', '#d4c4a4'],
+      flowers: ['#f8f8f0', '#f8a0b8'], trail: ['#e8dcc4', '#d4c4a4', '#b4a080', '#c8b896'],
+      ...ZONE,
+    },
+    glow: { aura: ['#fffff0', '#fff0e0', '#ffd8c0'], glint: ['#ffffff', '#f0f8ff'], firefly: ['#f8f8a0', '#c8e858'], leaf: ['#e86a3a', '#f0a040', '#c04a28'] },
+    stages: nearer(),
+    beats: { PAN: [0, 5200], PULL: [0, 5600], POPS: [3000, 3900], TITLE_AT: 5200, END: 9000 },
+    sounds: ['gust'],
+    art: { move: 'sweep', house: 'back', far: desertFar, mid: desertMid, back: desertBack, ground: desertGround, trail: [{ at: 0, style: 'sand' }], birds: '#2a2a32', air: ['leaves'] },
+  }),
   desert: film('desert', {
     ink: ['#fff4d0', '#c07830', '#4a2408'],
     land: {
@@ -899,7 +920,7 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   // ---- the air ----
   const air = new Set(art.air);
   const clouds = [];
-  const cloudy = art.move === 'drop' || ['meadow', 'wetland', 'peak', 'desert', 'icecave'].includes(art.id);
+  const cloudy = art.move === 'drop' || ['meadow', 'wetland', 'peak', 'desert', 'icecave', 'dojomountain'].includes(art.id);
   if (cloudy) for (let n = 0; n < (art.id === 'desert' ? 3 : 6); n++) clouds.push({ img: cloudImage(Math.round(W * (0.22 + rand() * 0.3)), cloud, rand), x: rand() * W * 1.6 - W * 0.3, y: -H * 0.3 + rand() * hz * 0.9, lift: 0.5, drift: 0.6 + rand() });
   if (!mini && art.move === 'drop') for (let n = 0; n < 3; n++) clouds.push({ img: cloudImage(Math.round(W * (0.7 + rand() * 0.4)), cloud, rand), x: rand() * W - W * 0.3, y: -H * 1.25 + rand() * H * 0.5, lift: 1.7, drift: 2 });
   const motes = Array.from({ length: 40 }, () => ({ x: rand(), y: rand(), speed: 0.5 + rand(), wob: rand() * 6, c: Math.floor(rand() * 3) }));

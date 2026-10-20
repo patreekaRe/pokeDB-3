@@ -181,6 +181,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   enemy turn: `b.attackedLast`, `b.lostLast`), `bide` (`b.bide`), `perStatusHeld`; an extra's `hits` alone reads "It hits
   once more."; powers `mixBlock`, `counterEachTurn`, `hurtStrength`, `statusDraw` (in `draw()`), `statusStrength` (in
   `exhaustCard()`), `followAlways`. Boxes: Follow-up, Counter, Status cards. `TYPES.fighting` is neutral outside the Safari.
+  Session 8 (2026-10-20, "Fighting's second session") brought the other 36 (74 in all): new keys `blockPerLost`,
+  `blockPerStatusHeld`, `counterPerStatus`, `counterPerLost` (all folded into the card's block or Counter in `effectsOf()`);
+  "whenever a Follow-up happens" (`followed` in `resolveCard()`, read before the card's kind is recorded); powers
+  `followBlock`, `followCounter`, `counterBlock` (Justified: block next turn), `statusBlock` (in `exhaustCard()`),
+  `statusHeldBlock` (after the turn's draw), `counterKeep` (Stand Firm). Expert Belt is Fighting's `TYPE_RELIC` (Black Belt
+  was taken).
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,

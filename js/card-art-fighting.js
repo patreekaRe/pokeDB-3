@@ -55,6 +55,18 @@ const swoosh = (d, w = 3) => `<path d="${d}" fill="none" ${line(w + 2.4)}/><path
 const ups = (list, fill = '#ff7a3a') => list.map(([x, y]) => `<path d="M${x} ${y - 7}L${x + 4} ${y - 2}H${x + 1.6}V${y + 3}H${x - 1.6}V${y - 2}H${x - 4}Z" fill="${fill}" ${line(1.6)}/>`).join('');
 const GREY = '#b0b0bc', GREY_LIT = '#d8d8e0';
 
+/** A kite shield face-on on (cx, cy), r its half-width, in `fill`. */
+const kite = (cx, cy, r, fill = '#5a8ad8', rim = '#d8e4f8') => `<path d="M${cx} ${f(cy - r * 1.15)}L${f(cx + r)} ${f(cy - r * 0.7)}V${f(cy + r * 0.1)}Q${f(cx + r)} ${f(cy + r * 0.9)} ${cx} ${f(cy + r * 1.3)}Q${f(cx - r)} ${f(cy + r * 0.9)} ${f(cx - r)} ${f(cy + r * 0.1)}V${f(cy - r * 0.7)}Z" fill="${fill}" ${line(2.4)}/>
+    <path d="M${f(cx - r * 0.62)} ${f(cy - r * 0.45)}V${f(cy + r * 0.1)}" stroke="${rim}" stroke-width="1.6" stroke-linecap="round"/>`;
+/** A drop of sweat on (x, y). */
+const sweat = (x, y, s = 1) => `<path d="M${x} ${f(y - 4 * s)}Q${f(x + 3 * s)} ${y} ${f(x + 2.2 * s)} ${f(y + 2 * s)}Q${x} ${f(y + 4 * s)} ${f(x - 2.2 * s)} ${f(y + 2 * s)}Q${f(x - 3 * s)} ${y} ${x} ${f(y - 4 * s)}Z" fill="#9adcff" ${line(1.4)}/>`;
+/** A sticking plaster across (x, y), turned `rot`. */
+const plaster = (x, y, rot = -30, s = 1) => `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><rect x="-11" y="-4" width="22" height="8" rx="3.5" fill="#f4d4a8" ${line(1.8 / s)}/>
+    <rect x="-4" y="-4" width="8" height="8" fill="#e8b884" ${line(1.2 / s)}/><path d="M-2 -1.5V1.5M2 -1.5V1.5" stroke="#b08050" stroke-width="${f(0.9 / s)}"/></g>`;
+/** A clenched-teeth grin, its middle on (cx, cy). */
+const teeth = (cx, cy, w = 18) => `<rect x="${f(cx - w / 2)}" y="${cy - 4}" width="${w}" height="8" rx="3" fill="#ffffff" ${line(2)}/>
+    <path d="M${cx} ${cy - 4}V${cy + 4}M${f(cx - w / 4)} ${cy - 4}V${cy + 4}M${f(cx + w / 4)} ${cy - 4}V${cy + 4}M${f(cx - w / 2)} ${cy}H${f(cx + w / 2)}" stroke="${INK}" stroke-width="1.2"/>`;
+
 export const FIGHTING = {
   'rock-smash': `<defs>${wood}</defs>
     ${boulder(24, 33, 1.15)}
@@ -239,4 +251,140 @@ export const FIGHTING = {
     <rect x="20" y="21" width="8" height="10" fill="${GREY}" ${line(1.4)}/>
     <path d="M22 24V28M26 24V28" stroke="#8c8c94" stroke-width="1" stroke-linecap="round"/></g>
     <path d="M38 8l3 -3M42 13l4 -1M33 5l0 -4" ${line(2)}/>`,
+
+  // session 8's 36
+  'rolling-kick': `${tube('M10 34A15 15 0 1 1 34 38', 3, '#ffd84a', '#fff')}
+    ${boot(26, 22, 0.9, 30, GLOVE)}${pow(38, 36, 5)}`,
+
+  feint: `<g opacity="0.45">${glove(16, 24, 0.75, -10)}</g>
+    ${glove(30, 26, 0.75, 10)}
+    ${swoosh('M6 40Q18 32 12 18', 2.4)}
+    <text x="38" y="14" font-size="11" font-weight="bold" fill="#ffd84a" stroke="${INK}" stroke-width="1.6" paint-order="stroke">?</text>`,
+
+  'low-sweep': `<path d="M4 42H44" ${line(2.4)}/>
+    ${boot(24, 36, 0.95, 90, GLOVE)}
+    ${swoosh('M4 40Q24 30 44 40', 2.4)}${speed(12, [30, 35], 7)}`,
+
+  retaliate: `${kite(18, 24, 12)}
+    ${arrow('M30 34Q42 30 40 14', 40, 12, -90, '#ff7a3a', 3.4)}`,
+
+  endeavor: `<defs>${wood}</defs>${buckler(22, 26, 14)}
+    ${plaster(22, 26, -35, 0.9)}${sweat(39, 12)}`,
+
+  'vacuum-wave': `${tube(spiral(24, 24, 2.2, 14), 2, '#bfe8ff', '#fff')}
+    ${glove(24, 26, 0.6, -90)}`,
+
+  'wake-up-slap': `${palm(20, 28, 1, -20)}
+    <path d="M34 10l6 -4M37 18l7 0M34 26l6 4" ${line(2.2)}/>
+    ${pow(36, 18, 5)}`,
+
+  'hammer-arm': `<rect x="10" y="12" width="28" height="12" rx="3" fill="url(#$m)" ${line(2.4)}/>
+    <rect x="21" y="24" width="6" height="18" rx="2" fill="url(#$w)" ${line(2.2)}/>
+    <defs>${steel}${wood}</defs>${chips([[8, 34, 3], [40, 36, 3], [14, 42, 2.5]])}`,
+
+  grit: `${teeth(24, 28, 26)}
+    <path d="M10 16L18 19M38 16L30 19" ${line(3)}/>
+    ${sweat(40, 30, 0.9)}${vein(10, 36, 4)}`,
+
+  'shed-skin': `<path d="M6 34Q14 20 24 28T42 18" fill="none" stroke="#d8e4c0" stroke-width="9" stroke-linecap="round"/>
+    <path d="M6 34Q14 20 24 28T42 18" fill="none" ${line(1.6)} stroke-dasharray="3 3"/>
+    <path d="M8 42Q18 30 28 38T44 30" fill="none" stroke="#7ac060" stroke-width="7" stroke-linecap="round"/>
+    <path d="M8 42Q18 30 28 38T44 30" fill="none" ${line(1.4)}/>${sparkle(36, 10, 3.5)}`,
+
+  'inner-focus': `<circle cx="24" cy="24" r="17" fill="#f8e8ff" ${line(2)}/>
+    <circle cx="24" cy="24" r="11" fill="#e0c0ff" ${line(1.6)}/>
+    <circle cx="24" cy="24" r="5" fill="#9a5ad8" ${line(1.6)}/>
+    ${sparkle(10, 10, 3)}${sparkle(39, 38, 3)}`,
+
+  'dual-chop': `${blade(4, 14, 0.85, 30)}${blade(4, 30, 0.85, 10)}
+    ${pow(36, 30, 6)}`,
+
+  'brick-break': `<rect x="8" y="26" width="15" height="9" fill="#d8704a" ${line(2)}/><rect x="25" y="26" width="15" height="9" fill="#d8704a" ${line(2)}/>
+    <rect x="12" y="36" width="24" height="8" fill="#c05a38" ${line(2)}/>
+    ${blade(14, 10, 0.85, 70)}${chips([[24, 24, 2.5], [30, 20, 2]], '#e88a5a')}`,
+
+  kata: `<path d="M24 6V42M10 18H38" stroke="#f0e0c0" stroke-width="2" stroke-dasharray="2 3"/>
+    ${palm(14, 26, 0.75, -20)}${blade(26, 30, 0.75, -30)}
+    <path d="M10 44H38" stroke="#1c1430" stroke-width="5" stroke-linecap="round"/><path d="M12 44H36" stroke="#2a2a2a" stroke-width="2.4" stroke-linecap="round"/>`,
+
+  'jump-kick': `${boot(30, 16, 0.9, -40, GLOVE)}
+    ${speed(16, [26, 32, 38], 9)}
+    <path d="M6 44H42" ${line(2.4)}/>`,
+
+  sidestep: `<g opacity="0.4">${boot(14, 28, 0.7, 0, GLOVE)}</g>
+    ${boot(30, 28, 0.8, 0, GLOVE)}
+    ${arrow('M14 14Q24 8 32 14', 34, 15, 30, '#ffd84a', 2.8)}`,
+
+  brace: `${kite(24, 22, 13, '#a0a8c0')}
+    <path d="M6 44Q24 36 42 44" ${line(3)}/>${vein(38, 10, 4)}`,
+
+  justified: `<path d="M24 8V40M10 14H38" ${line(2.6)}/>
+    <path d="M4 26L10 14L16 26Z" fill="#ffd84a" ${line(1.8)}/><path d="M32 26L38 14L44 26Z" fill="#ffd84a" ${line(1.8)}/>
+    <path d="M14 42H34" ${line(4)}/>${glove(10, 22, 0.35, -90)}`,
+
+  payback: `${arrow('M38 12Q8 12 12 36', 13, 38, 100, '#ff7a3a', 3.6)}
+    ${glove(34, 32, 0.6, 180)}`,
+
+  'arm-lock': `<path d="M6 20Q20 12 30 22Q36 28 42 26" fill="none" stroke="${SKIN}" stroke-width="9" stroke-linecap="round"/>
+    <path d="M6 20Q20 12 30 22Q36 28 42 26" fill="none" ${line(1.4)}/>
+    <path d="M12 38Q20 22 34 16" fill="none" stroke="${SKIN_DARK}" stroke-width="9" stroke-linecap="round"/>
+    <path d="M12 38Q20 22 34 16" fill="none" ${line(1.4)}/>`,
+
+  'guard-stance': `${palm(14, 26, 0.85, -10)}${palm(34, 26, 0.85, 10)}
+    <path d="M6 44H42" ${line(2.4)}/>`,
+
+  reflex: `${glove(16, 30, 0.6, -40)}
+    <path d="M26 6L20 22H28L22 40" fill="none" stroke="#ffd84a" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M26 6L20 22H28L22 40" fill="none" ${line(1.4)}/>${sparkle(38, 14, 3.5)}`,
+
+  'last-stand': `<path d="M14 44V8" ${line(3)}/>
+    <path d="M15 9H40L34 17L40 25H15Z" fill="#f0f0f4" ${line(2.2)}/>
+    ${vein(26, 17, 4)}<path d="M6 44H40" ${line(2.4)}/>`,
+
+  'vital-spirit': `${blaze(24, 8, 40, 26)}
+    ${glove(24, 30, 0.6, -90)}`,
+
+  'iron-will': `<defs>${steel}</defs>${kite(24, 22, 15, 'url(#$m)', '#ffffff')}
+    ${vein(24, 22, 5)}`,
+
+  scrappy: `${glove(14, 22, 0.65, 20)}${glove(34, 22, 0.65, 160)}
+    ${plaster(24, 38, -10, 0.8)}`,
+
+  'grin-and-bear-it': `${teeth(24, 26, 28)}
+    ${sweat(9, 14)}${sweat(41, 16, 0.85)}
+    <path d="M12 38Q24 44 36 38" fill="none" ${line(2)}/>`,
+
+  intimidate: `<path d="M8 22Q16 12 22 20M40 22Q32 12 26 20" fill="none" ${line(3)}/>
+    <circle cx="16" cy="26" r="3.5" fill="#f03a2a" ${line(1.6)}/><circle cx="32" cy="26" r="3.5" fill="#f03a2a" ${line(1.6)}/>
+    <path d="M14 38L18 34L22 38L26 34L30 38L34 34" fill="none" ${line(2.2)}/>`,
+
+  'stand-firm': `${boulder(24, 30, 1.3)}
+    <path d="M10 10L16 16M38 10L32 16M24 4V10" ${line(2.2)}/>`,
+
+  'final-gambit': `<rect x="8" y="14" width="18" height="18" rx="3" fill="#ffffff" ${line(2.2)} transform="rotate(-12 17 23)"/>
+    <circle cx="13" cy="20" r="1.8" fill="${INK}"/><circle cx="21" cy="26" r="1.8" fill="${INK}"/>
+    <rect x="24" y="22" width="17" height="17" rx="3" fill="#f03a2a" ${line(2.2)} transform="rotate(14 32 30)"/>
+    <circle cx="32" cy="30" r="2" fill="#fff"/>`,
+
+  'no-guard': `${palm(14, 30, 0.8, -30)}${palm(34, 30, 0.8, 30)}
+    <circle cx="24" cy="12" r="6" fill="${SKIN}" ${line(2)}/>`,
+
+  'sacred-sword': `<defs>${steel}</defs><path d="M24 4L28 10V34H20V10Z" fill="url(#$m)" ${line(2.2)}/>
+    <path d="M14 34H34" ${line(4)}/><path d="M24 36V44" ${line(4)}/>
+    ${sparkle(12, 14, 4)}${sparkle(37, 20, 3)}`,
+
+  'minds-eye': `<path d="M4 24Q24 6 44 24Q24 42 4 24Z" fill="#ffffff" ${line(2.4)}/>
+    <circle cx="24" cy="24" r="8" fill="#9a5ad8" ${line(1.8)}/><circle cx="24" cy="24" r="3.4" fill="${INK}"/>
+    <circle cx="21.5" cy="21.5" r="1.6" fill="#fff"/>`,
+
+  'gritted-teeth': `${teeth(24, 22, 28)}
+    <defs>${steel}</defs><rect x="8" y="32" width="32" height="8" rx="2" fill="url(#$m)" ${line(2)}/>${vein(40, 10, 4)}`,
+
+  'second-wind': `${puffs([[14, 26, 7], [24, 22, 9], [34, 26, 7]], '#e8f4ff', '#ffffff')}
+    ${swoosh('M6 38Q24 30 42 38', 2.4)}${swoosh('M10 12Q22 6 34 12', 2)}`,
+
+  'body-press': `<defs>${steel}</defs><rect x="6" y="18" width="36" height="5" rx="2" fill="url(#$m)" ${line(2)}/>
+    <rect x="3" y="12" width="7" height="17" rx="2" fill="#4a4a5a" ${line(2)}/><rect x="38" y="12" width="7" height="17" rx="2" fill="#4a4a5a" ${line(2)}/>
+    ${pow(24, 36, 7)}`,
+
 };

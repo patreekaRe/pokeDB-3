@@ -3252,3 +3252,14 @@ status card is in your hand). Timburr is a `DUO_STARTERS` entry with backs, fits
 Fighting (`DUO_LINES.fighting`). `tools/fighting-probe.mjs` checks the rules in a real fight; pokeDB-sim mirrors it all.
 The first draft trailed (solo 43 vs Fire 68); Low Kick's Weak 2 and Vital Throw's block 10 fixed it: fighting+fire 67.0,
 +grass 57.7, +water 49.3, +electric 64.3, +ice 73.0 (300 each), solo 79.3. Numbers in pokeDB-sim's README.
+
+**Duo types, session 8: Fighting's second** (2026-10-20, branch `duo-types`, both repos). Its table went into
+`docs/duo-design.md` first: 36 more cards, defence-leaning (Fighting now 20 / 32 / 14 + 8 evolution), with art and new
+keys (`blockPerLost`, `blockPerStatusHeld`, `counterPerStatus`, `counterPerLost`, "whenever a Follow-up happens"; powers
+`followBlock`, `followCounter`, `counterBlock`, `statusBlock`, `statusHeldBlock`, `counterKeep`). The doc's Black Belt
+became **Expert Belt** (`black-belt` was the old strength relic); Ring Target, Focus Band, Protector, Weakness Policy,
+Fighting Memory, Fightinium Z; Fighting Gem and Red Card. Machop as a `DUO_STARTERS` look on Timburr's deck (backs, fits,
+Machamp's cry). Dojo Mountain: a 9th Safari area holding all 30 Fighting-typed Safari Pokémon, date-gated, on the
+Desert's painters as a granite mountainside. The Card index's Fighting tab. The rare first named Sturdy is Stand Firm
+(Sturdy is Ground's Ability). `tools/fighting-probe.mjs` covers the new rules. Bot: solo 87.3 vs 76.0, the pairs ~5 under
+session 7's Fighting (`fightFirst`), left for the balance pass. Numbers in pokeDB-sim's README.

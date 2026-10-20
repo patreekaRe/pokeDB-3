@@ -330,6 +330,10 @@ const ART = {
   ice: `<path d="M16.0 3.5L16.0 28.5M5.2 9.8L26.8 22.2M5.2 22.2L26.8 9.8M13.6 20.9L16.0 23.6L18.4 20.9M10.5 16.4L9.4 19.8L12.9 20.6M12.9 11.4L9.4 12.2L10.5 15.6M18.4 11.1L16.0 8.4L13.6 11.1M21.5 15.6L22.6 12.2L19.1 11.4M19.1 20.6L22.6 19.8L21.5 16.4" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M16.0 3.5L16.0 28.5M5.2 9.8L26.8 22.2M5.2 22.2L26.8 9.8M13.6 20.9L16.0 23.6L18.4 20.9M10.5 16.4L9.4 19.8L12.9 20.6M12.9 11.4L9.4 12.2L10.5 15.6M18.4 11.1L16.0 8.4L13.6 11.1M21.5 15.6L22.6 12.2L19.1 11.4M19.1 20.6L22.6 19.8L21.5 16.4" fill="none" stroke="#a8ecff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
     <circle cx="16" cy="16" r="2.2" fill="#ffffff"/>`,
+  fighting: `<path d="M7 13.5Q7 9 11 9H22Q26.5 9 26.5 13.5V20Q26.5 27 19.5 27H13Q7 27 7 21Z" fill="#e8402a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M7 15H21Q23.5 15 23.5 17.5Q23.5 20 21 20H15" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12.5 9.5V14.5M17.5 9.5V14.5" stroke="#a02818" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M10 11.6Q10.6 10.6 12 10.6" fill="none" stroke="#ffb8a8" stroke-width="1.6" stroke-linecap="round"/>`,
   normal: `<circle cx="16" cy="16" r="12.5" fill="#e4e8f0" stroke="${INK}" stroke-width="2"/>
     <path d="M16 7.4l7.6 13.2H8.4ZM16 24.6L8.4 11.4h15.2Z" fill="#9aa2c8" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`,
   psychic: `<path d="M9 23.5h14l2.4 5H6.6Z" fill="#a8642c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>

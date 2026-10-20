@@ -133,17 +133,28 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    Fighting 79.3. Playtest: the githack link with `?duorun&duopool&coins=500` (the Duo key, Electric, Ice and Fighting
    lent), or a solo fight `?arena=fight&starter=timburr&cards=close-combat,reversal,counter,bide`. **Waiting on the user**:
    the playtest, and whether Guts at +3 and Counter's numbers feel right.
-Prompt for session 8, Fighting's second, **next** (▶ Run in: CLOUD, effort: medium; attach both pokeDB-3 and pokeDB-sim,
-start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (Fighting, its first session's
-table and bot check, and Ice's second session as the pattern) and 6, docs/reference/safari.md's duo section, cards.md and
-card-design.md. Build Fighting's second session: write its other ~36 cards into the doc first (10 common, 18 uncommon, 8
-rare, defence-leaning like Electric's and Ice's seconds), then the cards with art (js/card-art-fighting.js), Fighting's
-held item (the doc says Black Belt, but `black-belt` is already the strength relic: pick another item or a new id) + 6
-`only: 'fighting'` relics, a Fighting Gem and a Drive, the Card index's Fighting tab, Machop's look (DUO_STARTERS, backs,
-fits, cries, DUO_LINES), and Dojo Mountain: a 9th Safari area with every Fighting-typed Safari Pokémon moved in (`was:`),
-date-gated by SAFARI_FROM like the Power Plant and the Ice Cave, painted as another area recoloured (the Peak and the
-Wetland are taken: the Forest or the Desert). The sim mirror, relic ranks and a bot check against session 7's Fighting (a
-`fightFirst` variant). Push only to duo-types in both repos and give me a githack link."
+8. ~~**Fighting's second**~~ done 2026-10-20 on `duo-types` (both repos; game COMMIT+, `docs/duo-design.md` section 5's
+   "Fighting's second session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 36 more cards
+   (defence-leaning, 74 in all) with art, **Expert Belt** as its held item (`black-belt` was the old strength relic, so
+   the design doc's Black Belt became Expert Belt, whose art was already in) + 6 relics, Fighting Gem and Red Card (no
+   Fighting Drive exists), the Card index's Fighting tab, Machop's look, and **Dojo Mountain** (a 9th area: all 30
+   Fighting-typed Safari Pokémon, date-gated, the Desert painted as a granite mountainside). The rare card first named
+   Sturdy is **Stand Firm**: Sturdy is Ground's Ability. Bot (300 a duo): fighting+fire / +grass / +water / +electric / +ice 62.0 / 51.0 /
+   45.3 / 54.7 / 67.3 vs session 7's Fighting (`fightFirst`) 73.0 / 57.0 / 50.3 / 56.3 / 70.7; solo 87.3 vs 76.0 (150): solo
+   gains, the pairs dip ~5 like Electric's second half, no one part to blame: left for the balance pass (15). Playtest: the githack link with
+   `?duorun&duopool&dojomountain&coins=500`, or `?area=dojomountain`, `?bossfight=dojomountain&starter=machop`,
+   `?arena=fight&starter=machop&cards=stand-firm,justified,last-stand,gritted-teeth`. **Waiting on the user**: the
+   playtest (whether the Moves app's 8 type tabs still read on a phone); the Expert Belt call; **`SAFARI_FROM` (all three
+   areas) must move to the day after the branch goes live**.
+Prompt for session 9, Ground's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
+start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (Ground, the clash check, and
+Ice's and Fighting's session tables and bot checks as the pattern) and 6, docs/reference/safari.md's duo section,
+cards.md and card-design.md. Build Ground's first session: write its ~38-card table into the doc first (30 pool cards:
+10 common, 14 uncommon, 6 rare, and all 8 evolution cards), then Dig (a card underground until your next turn), Fault
+(the execute) and Sandstorm (on Ice's Weather engine), the Sturdy Ability, Trapinch's line (DUO_STARTERS, back GIFs,
+SPRITE_FIT, BODY_X, cries), the cards with art (a js/card-art-ground.js), describe() / cardTerms() lines, the Ground
+theme colours, the sim mirror and a bot check of Ground's pairs against the other six types' numbers. The Quarry's data
+comes in Ground's second session. Push only to duo-types in both repos and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

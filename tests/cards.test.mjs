@@ -119,7 +119,8 @@ test('Fighting: a full starting deck, its evolution cards, its Ability, and Sore
   assert.equal(evolutionCardsFor('fighting', 2).length, 4);
   assert.equal(ABILITIES.fighting.id, 'guts');
   const pool = typePool('fighting');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [10, 14, 6]);
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 8
+  assert.equal(STARTERS_BY_ID.machop.skinOf, 'timburr');
   const sore = CARDS_BY_ID.sore;
   assert.ok(sore.status && sore.unplayable && sore.ethereal);
 });

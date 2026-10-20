@@ -569,6 +569,36 @@ SAFARI_ART.icecave = {
     night: { clouds: { count: 0.5 }, life: ['stars', 'clouds', 'blades', 'safari'] },
   }),
 };
+/* Dojo Mountain (the duo pool's Fighting area, docs/duo-design.md section 5): the Desert's painters as a granite
+   mountainside, its dunes green slopes, its mesas grey crags, its cacti pines, its palms autumn maples by a waterfall
+   pool, until its own art session (the Power Plant borrows the Peak and the Ice Cave the Wetland). */
+SAFARI_ART.dojomountain = {
+  ...SAFARI_ART.desert,
+  paintAs: 'desert',
+  storm: { rain: ['#d8e6fa', '#8aa2c8'], fall: 2.2, count: 1.1, sky: [0.7, 20, 14, 10], ground: [0.8, 14, 10, 8] },   // a mountain shower
+  sun: ['#fffff8', '#fff8d8', '#f8ecb0'],
+  cloud: ['#ffffff', '#f4f6f8', '#dce2ea', '#c0c8d4'], clouds: { count: 0.9 },
+  sky: ['#3a7ad0', '#4e8ad6', '#68a0de', '#86b6e4', '#a6cae8', '#c4dcec', '#e0ecf0'],
+  farDunes: ['#a8b8a0', '#90a48a'], dunes: ['#8cb070', '#6e9858', '#567c46'],   // green slopes
+  mesas: ['#b8b4ac', '#948e86', '#726c66', '#524c48'], farMesas: ['#aab0b8', '#98a0aa'],   // granite crags
+  ground: ['#a8c47c', '#9cba72', '#90ae68', '#84a25e', '#789656', '#6c8a4e'],
+  blade: ['#b8d880', '#78a048', '#486a2a'], patch: '#8aa860',
+  tall: ['#a8c870', '#78a048', '#507430', '#2e4a1a'],
+  cactus: ['#4a8a50', '#2e6a3a', '#1a4628'],   // pines
+  bone: ['#f4f2ec', '#c8c4bc', '#7a766e'],   // white stones
+  palm: ['#e86a3a', '#c04a28', '#802a18'], palmTrunk: ['#9a7050', '#6a4a32', '#40301e'],   // maples
+  lake: ['#d8f4ff', '#a0dcf4', '#74c4ec', '#54a8dc', '#3a8ac8'], glint: ['#ffffff'],
+  weed: ['#8aa860', '#5a7a3a'],
+  trail: [{ at: 0, style: 'sand', c: ['#e8dcc4', '#d4c4a4', '#b4a080', '#c8b896'], edge: 'stone' }],   // a dirt path, stone-edged
+  dead: ['#c8b8a0', '#9a8a74', '#6a5c4c'],
+  rock: ['#c8c4bc', '#9a948c', '#68625c'],
+  bird: '#2a2a32', ember: ['#ffffff', '#f0f4f8', '#d8e2ec'], embers: 0.15,   // waterfall spray
+  pad: { style: 'stone', top: '#d4d0c8', mid: '#b0aaa0', low: '#8c867c', rim: '#4a443c', earth: '#6a6258', moss: '#8ab060' },
+  times: safariTimes({
+    dusk: { sky: ['#2a2450', '#463062', '#6c3e6c', '#9a4e6a', '#c86a62', '#e0905e', '#ecb874'] },
+    night: { clouds: { count: 0.4 }, life: ['stars', 'safari'] },
+  }),
+};
 for (const [area, art] of Object.entries(SAFARI_ART)) {
   BIOME_ART[area] = {
     backdrop: 'safari', floor: 'safari', area: art.paintAs ?? area, kin: { meadow: 'clearing', forest: 'shrine', wetland: 'clearing', marsh: 'shrine', peak: 'clearing', desert: 'wastes' }[art.paintAs ?? area],
@@ -1709,6 +1739,7 @@ const WEATHER = {
   desert: 'sand',
   powerplant: { dawn: 'drizzle', day: 'drizzle', dusk: 'ash', night: 'drizzle' },
   icecave: 'snow',
+  dojomountain: 'leaves',
 };
 const WEATHER_LOOK = {
   drizzle: { colours: ['#d8e6fa', '#8aa2c8'], per: 420, glow: true },

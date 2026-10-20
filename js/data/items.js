@@ -76,6 +76,9 @@ export const ITEMS = [
   // Ice's
   { id: 'ice-gem',      name: 'Ice Gem',      icon: '🔹', rarity: 'uncommon', only: 'ice', effects: { hail: 3, block: 8 }, text: 'Hail 3. Gain 8 block.' },
   { id: 'chill-drive',  name: 'Chill Drive',  icon: '❄️', rarity: 'uncommon', only: 'ice', effects: { frostMult: 2 }, text: 'Double the enemy\'s Frostbite.' },   // Catalyst, Shock Drive's for Frostbite
+  // Fighting's (no Fighting Drive exists: Red Card takes its place)
+  { id: 'fighting-gem', name: 'Fighting Gem', icon: '🟤', rarity: 'uncommon', only: 'fighting', effects: { block: 8, counter: 8 }, text: 'Gain 8 block. Counter 8.' },
+  { id: 'red-card',     name: 'Red Card',     icon: '🟥', rarity: 'uncommon', only: 'fighting', effects: { counterMult: 2 }, text: 'Double your Counter.' },   // Catalyst, the Drives' shape for Counter
 ];
 
 export const ITEMS_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));

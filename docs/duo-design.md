@@ -631,6 +631,101 @@ at 5 43 / 60 / 34, Close Combat for Mach Punch in the deck 42 / 49 / 31, **Low K
 Water 64.7 / 43.7 / 36.3; fire+grass 80, fire+water 56, grass+water 50). Fighting sits with Ice, a good partner for
 Electric; its Water pair trails like every Water pair, for the balance pass (session 15).
 
+#### Fighting's second session: its other cards (session 8, 2026-10-20)
+
+Written here before the code, as Electric's and Ice's seconds were. The other 36 pool cards (10 common, 18 uncommon, 8
+rare), **defence-leaning**: 31 of the 36 block, Weaken, Sap or Counter (the first half's 30 are mostly hits). Fighting is
+then whole: 20 common, 32 uncommon, 14 rare and 8 evolution cards (74), plus the Sore status card. Each card is on a StS
+1 card at x~1.2 (the last column and a comment on its line) with a hand-picked upgrade.
+
+**The new rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- `blockPerLost` / `blockPerStatusHeld`: +N block per HP you lost last enemy turn / per status card in your hand
+  (Endeavor, Grit, Iron Will); `counterPerStatus` / `counterPerLost`: Counter the same way (Last Stand, Final Gambit).
+  All are folded into the card's block or Counter in `effectsOf()`, so the raised card's preview shows them.
+- **"Whenever a Follow-up happens"**: a card whose `ifAfterAttack` / `ifAfterSkill` paid (Iron Fist's too), read before
+  the card's own kind is recorded.
+- Powers: `followBlock` (whenever a Follow-up happens, block N: Inner Focus), `followCounter` (... Counter N: No Guard),
+  `counterBlock` (whenever your Counter hits back, N block next turn: Justified; next turn, as block gained in the enemy's
+  turn would be gone before it mattered), `statusBlock` (whenever a status card is exhausted, block N: Vital Spirit),
+  `statusHeldBlock` (at the start of each turn, after the draw, N block per status card in your hand: Gritted Teeth),
+  `counterKeep` (your Counter no longer goes away at the start of your turn: Stand Firm, not "Sturdy": that is Ground's
+  Ability).
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Rolling Kick | C | 1 | Deal 6; Follow-up (skill): Weak 2 *(up 9)* | Follow-up | Sash Whip, after a skill |
+| Feint | C | 0 | Block 4; Follow-up (attack): Weak 1 *(up 6)* | Follow-up | Deflect with Sash Whip's Weak |
+| Low Sweep | C | 1 | Deal 5, Weak 1; Follow-up (skill): block 6 *(up 7, 8)* | Follow-up | Iron Wave, in a chain |
+| Retaliate | C | 1 | Block 6; if the enemy attacked you last turn, +6 *(up 8, +8)* | Counter | Revenge as block (Bane's condition) |
+| Endeavor | C | 1 | Block 4, +1 per HP you lost last enemy turn *(up 7)* | Counter | (Counter's Spirit Shield, per HP lost) |
+| Vacuum Wave | C | 0 | Deal 3, Counter 3 *(up 4, 5)* | Counter | a Shiv with Flame Barrier's thorns |
+| Wake-Up Slap | C | 1 | Deal 6; if the enemy attacked you last turn, Weak 2 *(up 8, 3)* | Counter | Sucker Punch, on last turn's hit |
+| Hammer Arm | C | 2 | Deal 12, Weak 2, add a Sore to your hand *(up 15)* | Guts | Clothesline, paid with a Sore |
+| Grit | C | 1 | Block 6, +3 per status card in your hand *(up 8, +4)* | Guts | (Guts' Spirit Shield, on status cards) |
+| Shed Skin | C | 1 | Exhaust every status card in your hand. Block 7 *(up 10)* | Guts | Purity with a Defend |
+| Inner Focus | U | 1 | Power: whenever a Follow-up happens, block 3 *(up 4)* | Follow-up | Mental Fortress, on Follow-ups |
+| Dual Chop | U | 1 | Deal 4 twice; Follow-up (skill): Weak 1 *(up 5)* | Follow-up | Twin Strike with Sash Whip's Weak |
+| Brick Break | U | 1 | Deal 7; Follow-up (attack): Sap 1 *(up 10)* | Follow-up | Disarm, in a chain |
+| Kata | U | 1 | Block 8; Follow-up (skill): block 4 *(up 10, 5)* | Follow-up | Defend, chained |
+| Jump Kick | U | 1 | Deal 9; Follow-up (attack): next turn, block 6 *(up 12)* | Follow-up | Dodge and Roll on a Strike, in a chain |
+| Sidestep *(bridge)* | U | 1 | Block 7; Follow-up (attack): Counter 5 *(up 10, 7)* | Follow-up/Counter | Storm Throw's other half |
+| Brace *(bridge)* | U | 1 | Block 10, add a Sore to your hand; Follow-up (attack): draw 1 *(up 13)* | Follow-up/Guts | Power Through, with Sash Whip's condition |
+| Justified | U | 1 | Power: whenever your Counter hits back, 3 block next turn *(up 4)* | Counter | (Counter's Wired: Flame Barrier pays twice) |
+| Payback | U | 1 | Block 7; if the enemy attacked you last turn, Weak 2 *(up 10)* | Counter | Leg Sweep-lite, on last turn's hit |
+| Arm Lock | U | 1 | Weak 2, Counter 5 *(up 3, 7)* | Counter | Blind with Flame Barrier's thorns |
+| Guard Stance | U | 1 | The enemy's attacks deal 5 less this turn, Counter 5 *(up 7, 7)* | Counter | Piercing Wail with thorns |
+| Reflex | U | 0 | Block 3, Counter 3, draw 1 *(up 5, 5)* | Counter | Deflect and Flame Barrier, with a draw |
+| Last Stand *(bridge)* | U | 1 | Counter 4, +3 per status card in your hand *(up 6, +4)* | Counter/Guts | Flame Barrier, per status card |
+| Vital Spirit | U | 1 | Power: whenever a status card is exhausted, block 4 *(up 6)* | Guts | Feel No Pain, on status cards |
+| Iron Will | U | 2 | Block 10, +4 per status card in your hand *(up 13, +5)* | Guts | Grit's big brother |
+| Scrappy | U | 1 | Block 8, Weak 1, add a Sore to your hand *(up 11, 2)* | Guts | Power Through-lite, with a Weak |
+| Grin and Bear It | U | 2 | Block 16, shuffle 2 Sores into your draw pile *(up 20)* | Guts | Power Through |
+| Intimidate | U | 1 | Weak 1, Sap 1 *(up Weak 2)* | — | Disarm-lite, with a Weak |
+| Stand Firm | R | 2 | Power: your Counter no longer goes away at the start of your turn *(up cost 1)* | Counter | (Counter's Barricade) |
+| Final Gambit | R | 1 | Counter twice the HP you lost last enemy turn. Exhaust *(up cost 0)* | Counter | (Counter's own cash-in) |
+| No Guard *(bridge)* | R | 1 | Power: whenever a Follow-up happens, Counter 3 *(up 5)* | Follow-up/Counter | Mental Fortress, as thorns |
+| Sacred Sword | R | 2 | Deal 14, Weak 2; Follow-up (skill): block 12 *(up 18)* | Follow-up | Carnage-lite, with Leg Sweep after a skill |
+| Mind's Eye | R | 0 | Block 4; Follow-up (attack): draw 2; Follow-up (skill): +1 PP *(up 6)* | Follow-up | (Follow-up's own: either order pays) |
+| Gritted Teeth | R | 1 | Power: at the start of each turn, 3 block per status card in your hand *(up 4)* | Guts | (Guts' Metallicize) |
+| Second Wind | R | 1 | Exhaust every status card in your hand; 6 block for each, draw 2 *(up 8)* | Guts | Second Wind, on status cards |
+| Body Press | R | 2 | Block 12, then deal damage equal to your block *(up 16)* | — | Body Slam with the block first |
+
+Fighting whole: 20 common (Follow-up 6, Counter 6, Guts 5, 3 basics), 32 uncommon, 14 rare, 8 evolution = **74**.
+
+**Relics** (`only: 'fighting'`, 6 plus its held item; the user's answer 21). The doc named **Black Belt** the held item,
+but `black-belt` is the old strength relic (and a badge), so the held item is **Expert Belt** (`expert-belt`, common:
+your Fighting attacks deal +2; its PokéSprite art was already in `assets/items/`), and Black Belt stays as it is.
+**Ring Target** (common: you start each battle with Counter 8; Light Ball's shape), **Focus Band** (common: whenever a
+Follow-up happens, gain 3 block), **Protector** (uncommon: whenever you gain Counter, gain 2 more), **Weakness Policy**
+(uncommon: whenever a status card is exhausted, gain 3 block), **Fighting Memory** (rare: at the start of your turn,
+your Counter halves instead of going away), **Fightinium Z** (boss: draw 1 more each turn, and Guts gives +6, not +3;
+Water Stone's shape: Fighting has no evolution stone). **Items**: **Fighting Gem** (gain 8 block, Counter 8) and **Red
+Card** (double your Counter; there's no Fighting Drive, so it takes the Drive's place).
+
+**Starters**: Machop (Machop, Machoke, Machamp), a `DUO_STARTERS` skin of Timburr's deck (`FIGHTING_DECK`), as Swinub
+is of Vanillite's. Catching any stage adds Fighting with that look (`DUO_LINES.fighting`).
+
+**Dojo Mountain** (`dojomountain`): Trailhead, Training Steps, Waterfall Dojo, the Summit Ring. Its roster is every
+Fighting-typed Safari Pokémon (30): the Peak's 18 (the Machop, Mankey, Makuhita, Timburr, Meditite lines, Tyrogue and
+the three Hitmons, Riolu and Lucario), the Forest's Mienfoo line, Throh, Sawk, Breloom, Heracross and Gallade, the
+Marsh's Croagunk line, the Desert's Scraggy line and the Wetland's Poliwrath, moved in. Its rare spawns are the ones
+already rare (Riolu, Lucario, Heracross, Gallade): the Hitmons stay wild, as making them rare would change the days
+before the gate. Painted as the **Desert recoloured** to a granite mountainside under a clear sky until its art session
+(the Power Plant borrows the Peak and the Ice Cave the Wetland). **Date-gated** like them (`SAFARI_FROM`, 2026-10-20 on
+the branch: move it to the day after the branch goes live); from then, 3 of the 9 a day.
+
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`, 300 a cell;
+solo the main game at Level 0, 150), win %: fighting+fire / +grass / +water / +electric / +ice 62.0 / 51.0 / 45.3 / 54.7 /
+67.3, against session 7's Fighting (`fightFirst`: these 36 cards, the 7 relics and 2 items out, the same game files and
+days) 73.0 / 57.0 / 50.3 / 56.3 / 70.7; solo Fighting 87.3 against 76.0. Solo gains, every pair dips: ~5 points on
+average, like Electric's second half (~7), against session 7's own numbers (67.0 / 57.7 / 49.3 / 64.3 / 73.0) ~6.
+Screens at 150 on +fire / +grass: the cards in but the relics and items out (`fightNoRelics`) 74.7 / 55.3, the relics
+and items in but the cards out (`fightNoCards`) 69.3 / 48.0; on +fire alone, without the items 66.7, without the relics
+64.0, everything in 66.7. No one part carries the dip, and most single gaps sit inside a cell's noise (about ±5.5 at
+300, ±8 at 150): left for the balance pass (session 15). Relic ranks (strong bot, solo Fighting, 150 each, prog over
+`none` 18.77): Fightinium Z +3.3, Weakness Policy +2.0, Expert Belt +1.8, Focus Band +1.5, Protector +0.9, Fighting
+Memory +0.5, Ring Target +0.4.
+
 ### Ground: Dig, Fault, Sandstorm
 
 Heavy and patient. Hits Fire, Electric, Poison, Rock, Steel; fears Water, Grass, Ice.
@@ -708,7 +803,7 @@ sessions run side by side does it after merging.
 
 From the ~100 places that read `run.starter.type` today, per type: a `TYPES` entry (label, icon, colour) and the
 real-chart row; its theme (`setTheme()`, the CSS type colours, card frame); `ABILITIES`; `POWER_LENS`; its held-item
-relic in `TYPE_RELIC` (Magnet, Never-Melt Ice, Black Belt, Soft Sand, Sharp Beak, Black Glasses); its `only` relics
+relic in `TYPE_RELIC` (Magnet, Never-Melt Ice, Expert Belt, Soft Sand, Sharp Beak, Black Glasses); its `only` relics
 (**6 a type** to start, not Fire's 13: a duo's pool already holds two types' worth; open 21) and 2 items (a Gem and a
 Drive); `BASICS` (the Unown Tablet); the PC Box; `describe()` and `cardTerms()` lines for each keyword, `TERM_KIND`
 colours; `ART` lines for every card; the starter's front / back / shiny GIFs per stage, `SPRITE_FIT`, `BODY_X`, cries in

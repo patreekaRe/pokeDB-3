@@ -654,8 +654,8 @@ const ICE_CARDS = [
 /* Fighting (the Safari's duo pool, docs/duo-design.md section 5): Follow-up pays when the last card you played this
    turn was an attack / a skill (Watcher's Follow-Up, Sash Whip, Crush Joints), Counter hits back each enemy attack until
    your next turn and its payoffs read the hits you took last enemy turn (Flame Barrier, Caltrops), Guts adds Sore status
-   cards and pays per status card held or exhausted (Wild Strike, Power Through, Evolve). Session 7 built 30 of its ~66
-   pool cards and all 8 evolution cards. */
+   cards and pays per status card held or exhausted (Wild Strike, Power Through, Evolve). Session 7 built 30 of its 66
+   pool cards and all 8 evolution cards, session 8 the other 36. */
 const FIGHTING_CARDS = [
   { id: 'rock-smash',     name: 'Rock Smash',     type: 'fighting', cost: 1, art: '🪨', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike (8, like Thunder Shock)
   { id: 'mat-block',      name: 'Mat Block',      type: 'fighting', cost: 1, art: '🥋', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
@@ -687,6 +687,43 @@ const FIGHTING_CARDS = [
   { id: 'anger-point',    name: 'Anger Point',    type: 'fighting', cost: 2, art: '💥', effects: { hurtStrength: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // a Counter / Guts bridge: Rupture, on the enemy's hits
   { id: 'meteor-assault', name: 'Meteor Assault', type: 'fighting', cost: 2, art: '☄️', effects: { damage: 26, addCard: { id: 'sore', n: 2 } }, rarity: 'rare', upgrade: { effects: { damage: 34 } } },   // Bludgeon, at 2 with two Sores
   { id: 'defiant',        name: 'Defiant',        type: 'fighting', cost: 1, art: '😠', effects: { statusStrength: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // Dark Embrace, as strength
+  // session 8's 36 (docs/duo-design.md section 5, "Fighting's second session"): defence-leaning, the first half being attack-heavy
+  { id: 'rolling-kick',   name: 'Rolling Kick',   type: 'fighting', cost: 1, art: '🦵', effects: { damage: 6, ifAfterSkill: { weaken: 2 } }, upgrade: { effects: { damage: 9 } } },   // Sash Whip, after a skill
+  { id: 'feint',          name: 'Feint',          type: 'fighting', cost: 0, art: '💨', effects: { block: 4, ifAfterAttack: { weaken: 1 } }, upgrade: { effects: { block: 6 } } },   // Deflect with Sash Whip's Weak
+  { id: 'low-sweep',      name: 'Low Sweep',      type: 'fighting', cost: 1, art: '🧹', effects: { damage: 5, weaken: 1, ifAfterSkill: { block: 6 } }, upgrade: { effects: { damage: 7, ifAfterSkill: { block: 8 } } } },   // Iron Wave, in a chain
+  { id: 'retaliate',      name: 'Retaliate',      type: 'fighting', cost: 1, art: '🛡️', effects: { block: 6, ifAttacked: { block: 6 } }, upgrade: { effects: { block: 8, ifAttacked: { block: 8 } } } },   // Revenge as block (Bane's condition)
+  { id: 'endeavor',       name: 'Endeavor',       type: 'fighting', cost: 1, art: '🩹', effects: { block: 4, blockPerLost: 1 }, upgrade: { effects: { block: 7 } } },   // (Counter's Spirit Shield, per HP lost)
+  { id: 'vacuum-wave',    name: 'Vacuum Wave',    type: 'fighting', cost: 0, art: '🌬️', effects: { damage: 3, counter: 3 }, upgrade: { effects: { damage: 4, counter: 5 } } },   // a Shiv with Flame Barrier's thorns
+  { id: 'wake-up-slap',   name: 'Wake-Up Slap',   type: 'fighting', cost: 1, art: '👋', effects: { damage: 6, ifAttacked: { weaken: 2 } }, upgrade: { effects: { damage: 8, ifAttacked: { weaken: 3 } } } },   // Sucker Punch, on last turn's hit
+  { id: 'hammer-arm',     name: 'Hammer Arm',     type: 'fighting', cost: 2, art: '🔨', effects: { damage: 12, weaken: 2, addCard: { id: 'sore' } }, upgrade: { effects: { damage: 15 } } },   // Clothesline, paid with a Sore
+  { id: 'grit',           name: 'Grit',           type: 'fighting', cost: 1, art: '😬', effects: { block: 6, blockPerStatusHeld: 3 }, upgrade: { effects: { block: 8, blockPerStatusHeld: 4 } } },   // (Guts' Spirit Shield, on status cards)
+  { id: 'shed-skin',      name: 'Shed Skin',      type: 'fighting', cost: 1, art: '🐍', effects: { exhaustHand: 'status', block: 7 }, upgrade: { effects: { block: 10 } } },   // Purity with a Defend
+  { id: 'inner-focus',    name: 'Inner Focus',    type: 'fighting', cost: 1, art: '🧠', effects: { followBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { followBlock: 4 } } },   // Mental Fortress, on Follow-ups
+  { id: 'dual-chop',      name: 'Dual Chop',      type: 'fighting', cost: 1, art: '✌️', effects: { damage: 4, hits: 2, ifAfterSkill: { weaken: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 5 } } },   // Twin Strike with Sash Whip's Weak
+  { id: 'brick-break',    name: 'Brick Break',    type: 'fighting', cost: 1, art: '🧱', effects: { damage: 7, ifAfterAttack: { sap: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 10 } } },   // Disarm, in a chain
+  { id: 'kata',           name: 'Kata',           type: 'fighting', cost: 1, art: '🥋', effects: { block: 8, ifAfterSkill: { block: 4 } }, rarity: 'uncommon', upgrade: { effects: { block: 10, ifAfterSkill: { block: 5 } } } },   // Defend, chained
+  { id: 'jump-kick',      name: 'Jump Kick',      type: 'fighting', cost: 1, art: '🦘', effects: { damage: 9, ifAfterAttack: { blockNext: 6 } }, rarity: 'uncommon', upgrade: { effects: { damage: 12 } } },   // Dodge and Roll on a Strike, in a chain
+  { id: 'sidestep',       name: 'Sidestep',       type: 'fighting', cost: 1, art: '↪️', effects: { block: 7, ifAfterAttack: { counter: 5 } }, rarity: 'uncommon', upgrade: { effects: { block: 10, ifAfterAttack: { counter: 7 } } } },   // a Follow-up / Counter bridge: Storm Throw's other half
+  { id: 'brace',          name: 'Brace',          type: 'fighting', cost: 1, art: '🧍', effects: { block: 10, addCard: { id: 'sore' }, ifAfterAttack: { draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 13 } } },   // a Follow-up / Guts bridge: Power Through, with Sash Whip's condition
+  { id: 'justified',      name: 'Justified',      type: 'fighting', cost: 1, art: '⚖️', effects: { counterBlock: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { counterBlock: 4 } } },   // (Counter's Wired: Flame Barrier pays twice)
+  { id: 'payback',        name: 'Payback',        type: 'fighting', cost: 1, art: '🔙', effects: { block: 7, ifAttacked: { weaken: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Leg Sweep-lite, on last turn's hit
+  { id: 'arm-lock',       name: 'Arm Lock',       type: 'fighting', cost: 1, art: '🦾', effects: { weaken: 2, counter: 5 }, rarity: 'uncommon', upgrade: { effects: { weaken: 3, counter: 7 } } },   // Blind with Flame Barrier's thorns
+  { id: 'guard-stance',   name: 'Guard Stance',   type: 'fighting', cost: 1, art: '🙅', effects: { tempSap: 5, counter: 5 }, rarity: 'uncommon', upgrade: { effects: { tempSap: 7, counter: 7 } } },   // Piercing Wail with thorns
+  { id: 'reflex',         name: 'Reflex',         type: 'fighting', cost: 0, art: '⚡', effects: { block: 3, counter: 3, draw: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 5, counter: 5 } } },   // Deflect and Flame Barrier, with a draw
+  { id: 'last-stand',     name: 'Last Stand',     type: 'fighting', cost: 1, art: '🏴', effects: { counter: 4, counterPerStatus: 3 }, rarity: 'uncommon', upgrade: { effects: { counter: 6, counterPerStatus: 4 } } },   // a Counter / Guts bridge: Flame Barrier, per status card
+  { id: 'vital-spirit',   name: 'Vital Spirit',   type: 'fighting', cost: 1, art: '✊', effects: { statusBlock: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { statusBlock: 6 } } },   // Feel No Pain, on status cards
+  { id: 'iron-will',      name: 'Iron Will',      type: 'fighting', cost: 2, art: '🗿', effects: { block: 10, blockPerStatusHeld: 4 }, rarity: 'uncommon', upgrade: { effects: { block: 13, blockPerStatusHeld: 5 } } },   // Grit's big brother
+  { id: 'scrappy',        name: 'Scrappy',        type: 'fighting', cost: 1, art: '🤛', effects: { block: 8, weaken: 1, addCard: { id: 'sore' } }, rarity: 'uncommon', upgrade: { effects: { block: 11, weaken: 2 } } },   // Power Through-lite, with a Weak
+  { id: 'grin-and-bear-it', name: 'Grin and Bear It', type: 'fighting', cost: 2, art: '😁', effects: { block: 16, addCard: { id: 'sore', n: 2, to: 'draw' } }, rarity: 'uncommon', upgrade: { effects: { block: 20 } } },   // Power Through
+  { id: 'intimidate',     name: 'Intimidate',     type: 'fighting', cost: 1, art: '😠', effects: { weaken: 1, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { weaken: 2 } } },   // Disarm-lite, with a Weak
+  { id: 'stand-firm',     name: 'Stand Firm',     type: 'fighting', cost: 2, art: '🪨', effects: { counterKeep: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Counter's Barricade)
+  { id: 'final-gambit',   name: 'Final Gambit',   type: 'fighting', cost: 1, art: '🎲', effects: { counterPerLost: 2 }, exhaust: true, rarity: 'rare', upgrade: { cost: 0 } },   // (Counter's own cash-in)
+  { id: 'no-guard',       name: 'No Guard',       type: 'fighting', cost: 1, art: '🙌', effects: { followCounter: 3 }, power: true, rarity: 'rare', upgrade: { effects: { followCounter: 5 } } },   // a Follow-up / Counter bridge: Mental Fortress, as thorns
+  { id: 'sacred-sword',   name: 'Sacred Sword',   type: 'fighting', cost: 2, art: '🗡️', effects: { damage: 14, weaken: 2, ifAfterSkill: { block: 12 } }, rarity: 'rare', upgrade: { effects: { damage: 18 } } },   // Carnage-lite, with Leg Sweep after a skill
+  { id: 'minds-eye',      name: 'Mind\'s Eye',    type: 'fighting', cost: 0, art: '👁️‍🗨️', effects: { block: 4, ifAfterAttack: { draw: 2 }, ifAfterSkill: { energy: 1 } }, rarity: 'rare', upgrade: { effects: { block: 6 } } },   // (Follow-up's own: either order pays)
+  { id: 'gritted-teeth',  name: 'Gritted Teeth',  type: 'fighting', cost: 1, art: '😣', effects: { statusHeldBlock: 3 }, power: true, rarity: 'rare', upgrade: { effects: { statusHeldBlock: 4 } } },   // (Guts' Metallicize)
+  { id: 'second-wind',    name: 'Second Wind',    type: 'fighting', cost: 1, art: '🌬️', effects: { exhaustHand: 'status', blockPerExhausted: 6, draw: 2 }, rarity: 'rare', upgrade: { effects: { blockPerExhausted: 8 } } },   // Second Wind, on status cards
+  { id: 'body-press',     name: 'Body Press',     type: 'fighting', cost: 2, art: '🏋️', effects: { block: 12, blockDamage: true }, rarity: 'rare', upgrade: { effects: { block: 16 } } },   // Body Slam with the block first
 ];
 
 /* ============================================================
@@ -906,7 +943,7 @@ const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, streng
   healStrength: 1, attackHeal: 1, attackSeed: 1, debuffDamage: 2, weakEachTurn: 1, weakBlock: 2, strengthHeal: 1,
   staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1, thornStatic: 1, energyBlock: 1, switchStatic: 1,
   frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1, thornFrost: 1, hailChipBlock: 2,
-  mixBlock: 1, counterEachTurn: 1 };
+  mixBlock: 1, counterEachTurn: 1, followBlock: 1, followCounter: 2, counterBlock: 1, statusBlock: 2, statusHeldBlock: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -1066,6 +1103,12 @@ export const POWERS = {
   statusDraw:       { icon: '🗿', text: (n) => `Whenever you draw a status card, draw ${plural(n, 'card')}.` },
   statusStrength:   { icon: '😠', text: (n) => `Whenever a status card is exhausted, gain ${n} strength.` },
   followAlways:     { icon: '🦾', flag: true, text: () => 'Every Follow-up happens, whatever you played before it.' },
+  followBlock:      { icon: '🧠', text: (n) => `Whenever a Follow-up happens, gain ${n} block.` },
+  followCounter:    { icon: '🙌', text: (n) => `Whenever a Follow-up happens, Counter ${n}.` },
+  counterBlock:     { icon: '⚖️', text: (n) => `Whenever your Counter hits back, gain ${n} block next turn.` },
+  statusBlock:      { icon: '✊', text: (n) => `Whenever a status card is exhausted, gain ${n} block.` },
+  statusHeldBlock:  { icon: '😣', text: (n) => `At the start of each turn, gain ${n} block for each status card in your hand.` },
+  counterKeep:      { icon: '🪨', flag: true, text: () => 'Your Counter no longer goes away at the start of your turn.' },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -1123,12 +1166,16 @@ function sentences(e) {
   if (e.guard)        parts.push('Block the enemy\'s next attack completely.');
   if (e.block && !e.blockDamage) parts.push(`Gain ${e.block} block.`);
   if (e.counter)      parts.push(`Counter ${e.counter}.`);
+  if (e.counterPerStatus) parts.push(`+${e.counterPerStatus} Counter for each status card in your hand.`);
+  if (e.counterPerLost) parts.push(`Counter ${TIMES[e.counterPerLost] ?? `${e.counterPerLost} times`} the HP you lost last enemy turn.`);
   if (e.blockMult)    parts.push(`${MULT[e.blockMult] ?? `Multiply by ${e.blockMult}`} your block.`);
   if (e.blockPerTide) parts.push(e.perTide ? `Gain ${e.blockPerTide} block per Tide spent.` : `Gain ${e.blockPerTide} block per Tide, then spend all your Tide.`);
   if (e.blockPerStatic) parts.push(`+${e.blockPerStatic} block for each Static on the enemy.`);
   if (e.blockPerSwitch) parts.push(`+${e.blockPerSwitch} block for each time you've switched this fight.`);
   if (e.blockPerFrost) parts.push(`+${e.blockPerFrost} block for each Frostbite on the enemy.`);
   if (e.blockPerIcicle) parts.push(`+${e.blockPerIcicle} block for each Icicle card you've played this fight.`);
+  if (e.blockPerLost) parts.push(`+${e.blockPerLost} block for each HP you lost last enemy turn.`);
+  if (e.blockPerStatusHeld) parts.push(`+${e.blockPerStatusHeld} block for each status card in your hand.`);
   if (e.blockPerCard) parts.push(`Gain ${e.blockPerCard} block for each card in your hand.`);
   if (e.blockNext)    parts.push(`Next turn, gain ${e.blockNext} block.`);
   if (e.blur)         parts.push('Your block doesn\'t wear off at the start of your next turn.');
@@ -1315,9 +1362,9 @@ export function cardTerms(card) {
     uses(/^frostbite$|frost/i) && term('Frostbite'),
     (card.icicle || uses(/icicle/i)) && term('Icicle'),
     (uses(/hail|weather/i) || card.freeIn === 'hail') && term('Hail'),
-    uses(/^ifAfter|^followAlways$|^mixBlock$/) && term('Follow-up'),
-    uses(/^counter/) && term('Counter'),
-    uses(/^perStatusHeld$|^statusDraw$|^statusStrength$/) && ['Status cards', 'Junk in your deck for this fight: Sore, and what enemies add.'],
+    uses(/^ifAfter|^followAlways$|^mixBlock$|^follow(Block|Counter)$/) && term('Follow-up'),
+    uses(/^counter|^followCounter$/) && term('Counter'),
+    uses(/^perStatusHeld$|^statusDraw$|^statusStrength$|^blockPerStatusHeld$|^counterPerStatus$|^statusBlock$|^statusHeldBlock$/) && ['Status cards', 'Junk in your deck for this fight: Sore, and what enemies add.'],
     uses(/^tempSap$/) && ['Charmed', 'Its attacks this turn deal less. Gone after it acts.'],
     uses(/^statusDamage$/) && ['Status cards', 'Junk enemies (and some of your moves) put in your deck, for this fight only.'],
     uses(/^upgradeAll$/) && ['PP Up', 'A card\'s upgraded form (its name gets a +).'],
