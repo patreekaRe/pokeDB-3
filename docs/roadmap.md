@@ -1075,6 +1075,11 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Chansey and Kecleon in two Safari areas each** (2026-10-20, the user asked why). Phase 2 made two new Safari-only rares
+and gave one to each of the first four areas (Chansey: Meadow, Wetland; Kecleon: Forest, Marsh); the Safari Pokédex counts
+by species, so one catch fills both pages. Options put to the user: keep it, or give Wetland and Marsh a rare of their own
+in its place. Waiting on their call.
+
 **A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
 catching, ~33% longer) over more floors per area (more fights, not more Pokémon). It needs a bot check of the day's win rate
