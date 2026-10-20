@@ -127,10 +127,11 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 // tile); moved 2026-10-14 from the user's drawing: the Nietos' house south-east and the Poké Mall south-west, their doors
 // on the low road to the pond (the old road they faced taken out), and the Sealed Gate (once broken) where the mall stood,
 // at the west avenue's end
-// the Nietos' yard round their house's 3 x 3 (off NIETOS_AT): the washing line left (the name board's own tile, [-1, 2],
-// is its place's), the garden either side of the doorstep, the pram and sandbox right; nothing walks through them
-const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
-const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 6, ty: 0 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
+// the Nietos' mansion on its 5 x 4 (off NIETOS_AT; 2026-10-20, the user's ask: a mansion, where a 3 x 3 cottage stood,
+// a tile in off the ring road), its door on the middle column; NIETOS_YARD the iron fence along the row in front, either
+// side of the gate, nothing walking through it; the name board a tile left of the lot's front corner
+const NIETOS_YARD = [[0, 4], [1, 4], [3, 4], [4, 4]];
+const NIETOS_AT = { tx: 22, ty: 16 }, DOJO_AT = { tx: 6, ty: 0 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
 const SEALED_AT = { tx: 2, ty: 10 };
 // the garden gate into the Secret Base's backyard (2026-10-15, the user's ask: its way in from outside, not a back door),
 // in the front of the Ancient Tree's fenced garden, just right of its trunk (moved from 27,3 the same day, the user's drawing)
@@ -166,7 +167,7 @@ const ROADS = [
   { a: [SAFARI_AT.tx - 3, SAFARI_AT.ty + 1.6], b: [4, SAFARI_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
   { a: [PILLAR_AT.tx - 2, PILLAR_AT.ty + 1.6], b: [PILLAR_AT.tx + 2, PILLAR_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
   { a: [MALL_TILE.tx - 0.7, MALL_TILE.ty + 1.6], b: [MALL_TILE.tx - 0.7, POND.y], w: 0.6 },              // the mall's and the Nietos' doorsteps down to the low road
-  { a: [NIETOS_AT.tx + 1, NIETOS_AT.ty + 2.6], b: [NIETOS_AT.tx + 1, POND.y], w: 0.6 },
+  { a: [NIETOS_AT.tx + 2, NIETOS_AT.ty + 3.7], b: [NIETOS_AT.tx + 2, POND.y], w: 0.5 },
   { a: [WORKSHOP_AT.tx + 1, WORKSHOP_AT.ty + 2.6], b: [WORKSHOP_AT.tx + 1, START.y], w: 0.6, towns: true },   // Kurt's doorstep down to the east avenue
 ];
 // round the pond, a ring of stone to walk
@@ -1497,22 +1498,46 @@ function plankArt(w, h, lines, wood = ['#c89a60', '#a8763e', '#7a5226']) {
 }
 
 let duck = null;      // the pond's duck (liveDuck())
-let smoke = null;     // the puffs rising from the Nietos' chimney (liveSmoke())
-let cottage = null;   // the Nietos' house's paintings, painted once
-const BLOOMS = ['#f890b8', '#f8d848', '#ffffff', '#b8a0f0', '#8cc8f8', '#f86880'];
+let nietosFx = null;  // the Nietos' mansion's moving parts: its chimney's smoke, its banners and its flag (liveNietos())
+let mansion = null;   // the mansion's paintings, painted once
+const BLOOMS = ['#f890b8', '#ffffff', '#8cc8f8', '#f86880', '#f8d848', '#b8a0f0'];
 
-/** The Nietos' house's paintings: butter-cream clapboard, scalloped blue shingles, a stone footing, chimney bricks, the
-    door and windows (their glass lit through shine()), a heart-cut shutter, baby Linc's washing and the note on the door. */
-function cottageArt() {
-  if (cottage) return cottage;
+/** A pacifier, the Nietos' emblem (baby Linc's, the Pacifier Badge's): a shield, its ring over it, the teat under it. */
+function pacifier(g, cx, cy, s, col, dark) {
+  g.fillStyle = col; g.strokeStyle = col; g.lineWidth = s * 0.28;
+  g.beginPath(); g.arc(cx, cy - s * 1.05, s * 0.55, 0, Math.PI * 2); g.stroke();
+  g.beginPath(); g.ellipse(cx, cy + s * 0.95, s * 0.36, s * 0.5, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(cx, cy, s * 1.15, s * 0.62, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = dark; g.beginPath(); g.ellipse(cx, cy, s * 0.42, s * 0.26, 0, 0, Math.PI * 2); g.fill();
+}
+
+/** A little crown over an emblem. */
+function crown(g, cx, cy, w, col) {
+  g.fillStyle = col; g.beginPath();
+  g.moveTo(cx - w / 2, cy + w * 0.3); g.lineTo(cx - w / 2, cy - w * 0.2); g.lineTo(cx - w / 4, cy + w * 0.05); g.lineTo(cx, cy - w * 0.3);
+  g.lineTo(cx + w / 4, cy + w * 0.05); g.lineTo(cx + w / 2, cy - w * 0.2); g.lineTo(cx + w / 2, cy + w * 0.3); g.closePath(); g.fill();
+}
+
+/** An arch-topped shape, its springing `w / 2` down from its top. */
+function archPath(g, x, y, w, h) {
+  g.beginPath(); g.moveTo(x, y + h); g.lineTo(x, y + w / 2); g.arc(x + w / 2, y + w / 2, w / 2, Math.PI, 0); g.lineTo(x + w, y + h); g.closePath();
+}
+
+/** The Nietos' mansion's paintings: cream ashlar stucco, the scalloped baby-blue slates, its arched windows (velvet drapes
+    tied back with gold, a chandelier glinting inside) and round dormer lights, the grand door under its fanlight, the
+    frieze with their name, the pediment's crest, their banner and flag, and the note on the door. */
+function mansionArt() {
+  if (mansion) return mansion;
   const rnd = seeded(7);
-  const siding = fine(40, 24, 8);
-  for (let y = 0; y < 24; y += 3) {
-    siding.g.fillStyle = siding.lin(0, y, 0, y + 3, ['#fff8e2', '#fcefcf', '#efdcb2']);
-    siding.g.fillRect(0, y, 40, 3);
-    siding.g.fillStyle = 'rgba(140,100,60,0.4)'; siding.g.fillRect(0, y + 2.7, 40, 0.3);
+  const st = fine(48, 24, 8);
+  st.g.fillStyle = st.lin(0, 0, 0, 24, ['#fffaf0', '#f8eedb', '#f2e4c8']); st.g.fillRect(0, 0, 48, 24);
+  for (let r = 0; r < 8; r++) {
+    const y = r * 3;
+    st.g.fillStyle = 'rgba(150,120,80,0.3)'; st.g.fillRect(0, y + 2.75, 48, 0.25);
+    for (let x = (r % 2) * 4; x < 48; x += 8) st.g.fillRect(x, y, 0.25, 3);
+    for (let x = (r % 2) * 4; x < 48; x += 8) { st.g.fillStyle = `rgba(255,255,255,${0.2 + rnd() * 0.25})`; st.g.fillRect(x + 0.5, y + 0.35, 7, 0.45); }
   }
-  // shingles drawn from the eave up, so each row's scallops lap over the row below
+  // slates drawn from the eave up, so each row's scallops lap over the row below
   const sh = fine(56, 34, 8);
   sh.g.fillStyle = '#2a5690'; sh.g.fillRect(0, 0, 56, 34);
   sh.g.strokeStyle = '#2e5c96'; sh.g.lineWidth = 0.3;
@@ -1524,274 +1549,458 @@ function cottageArt() {
       sh.g.beginPath(); sh.g.arc(x + 2, y + 2.2, 1.85, 0.1, Math.PI - 0.1); sh.g.stroke();
     }
   }
-  const st = fine(52, 6, 8);
-  st.g.fillStyle = '#7a7468'; st.g.fillRect(0, 0, 52, 6);
-  const greys = [['#e8e2d4', '#c8c0ae', '#a8a090'], ['#dcd6c8', '#bcb4a2', '#9c9484'], ['#ece4d0', '#d0c4a8', '#b0a488']];
-  for (const [y, x0] of [[0.3, 0.3], [3.1, -1.5]]) {
-    for (let x = x0; x < 52;) { const w = 2.6 + rnd() * 2.4; st.rr(x, y, w - 0.4, 2.6, 0.9, st.lin(0, y, 0, y + 2.6, greys[Math.floor(rnd() * 3)])); x += w; }
+  // a tall arched window: a white frame, warm light, a chandelier's glints, velvet drapes tied back in gold
+  const wn = fine(16, 30, 8), ws = wn.shine();
+  wn.g.fillStyle = '#ffffff'; archPath(wn.g, 0, 0, 16, 30); wn.g.fill();
+  wn.g.fillStyle = wn.lin(0, 2, 0, 28, ['#fff6d8', '#ffe2a4', '#ffc878']); archPath(wn.g, 1.6, 1.6, 12.8, 26.8); wn.g.fill();
+  ws.fillStyle = '#d8d8d8'; archPath(ws, 1.6, 1.6, 12.8, 26.8); ws.fill();
+  for (const [x, y] of [[8, 9.5], [6.2, 10.6], [9.8, 10.6], [5, 11.6], [11, 11.6], [8, 11.8]]) {
+    for (const c of [wn.g, ws]) { c.fillStyle = '#ffffff'; c.beginPath(); c.arc(x, y, 0.55, 0, Math.PI * 2); c.fill(); }
   }
-  const br = fine(12, 36, 8);
-  br.g.fillStyle = '#d8c8b4'; br.g.fillRect(0, 0, 12, 36);
-  for (let r = 0; r < 18; r++) for (let x = r % 2 ? -2 : 0; x < 12; x += 4) br.rr(x + 0.2, r * 2 + 0.2, 3.6, 1.6, 0.3, ['#c0604a', '#b05040', '#c87458', '#a84a38'][Math.floor(rnd() * 4)]);
-  // the door: four-panelled, a fanlight over it, a brass knob
-  const dr = fine(20, 36, 8), ds = dr.shine();
-  dr.rr(0, 0, 20, 36, 1, '#ffffff');
-  dr.rr(1.6, 1.6, 16.8, 34.4, 1, dr.lin(0, 0, 20, 0, ['#4a86c4', '#3a70b0', '#2e5e98']));
-  const fan = (gg, col) => { gg.fillStyle = col; gg.beginPath(); gg.moveTo(4, 10); gg.arc(10, 10, 6, Math.PI, 0); gg.closePath(); gg.fill(); };
-  fan(dr.g, dr.lin(0, 4, 0, 10, ['#fff4cc', '#ffd890', '#f0b060']));
-  fan(ds, '#d0d0d0');
-  dr.g.strokeStyle = '#ffffff'; dr.g.lineWidth = 0.7;
-  dr.g.beginPath(); dr.g.arc(10, 10, 6, Math.PI, 0); dr.g.moveTo(4, 10); dr.g.lineTo(16, 10);
-  for (const a of [0.25, 0.5, 0.75]) { dr.g.moveTo(10, 10); dr.g.lineTo(10 - Math.cos(a * Math.PI) * 6, 10 - Math.sin(a * Math.PI) * 6); }
-  dr.g.stroke();
-  for (const [x, y, w, hh] of [[4, 13, 5, 9], [11, 13, 5, 9], [4, 24.5, 12, 8.5]]) {
-    dr.rr(x, y, w, hh, 0.6, '#285488');
-    dr.rr(x + 0.5, y + 0.5, w - 1, hh - 1, 0.4, dr.lin(0, y, 0, y + hh, ['#5a96d2', '#3a72b0']));
-  }
-  dr.fill('#f0c040', () => dr.g.arc(15.6, 23.2, 0.9, 0, Math.PI * 2));
-  // a window: pink curtains tied back, a valance, white glazing bars
-  const wn = fine(20, 24, 8), ws = wn.shine();
-  wn.rr(0, 0, 20, 24, 1, '#ffffff');
-  wn.rr(1.8, 1.8, 16.4, 20.4, 0.4, wn.lin(0, 1.8, 0, 22.2, ['#d8f0ff', '#fff2c8', '#ffd890']));
-  ws.fillStyle = '#c8c8c8'; ws.fillRect(1.8, 1.8, 16.4, 20.4);
-  const drape = (gg, s) => {
-    const x0 = s > 0 ? 1.8 : 18.2;
-    gg.beginPath(); gg.moveTo(x0, 1.8); gg.lineTo(x0 + s * 6, 1.8); gg.quadraticCurveTo(x0 + s * 1.6, 12, x0 + s * 3.6, 22.2); gg.lineTo(x0, 22.2); gg.closePath(); gg.fill();
-  };
+  wn.g.strokeStyle = 'rgba(200,150,60,0.8)'; wn.g.lineWidth = 0.35; wn.g.beginPath(); wn.g.ellipse(8, 10.8, 3.2, 1.1, 0, 0, Math.PI); wn.g.stroke();
   for (const s of [1, -1]) {
-    wn.g.fillStyle = wn.lin(0, 0, 0, 22, ['#ffc0d4', '#f088a8']); drape(wn.g, s);
-    ws.fillStyle = '#404040'; drape(ws, s);
-    wn.rr(s > 0 ? 1.6 : 15.6, 12, 2.8, 1.1, 0.5, '#d85880');
+    const x0 = s > 0 ? 1.6 : 14.4;
+    const drape = (gg) => { gg.beginPath(); gg.moveTo(x0, 7); gg.lineTo(x0 + s * 4.6, 7); gg.quadraticCurveTo(x0 + s * 1.1, 17, x0 + s * 2.8, 28.4); gg.lineTo(x0, 28.4); gg.closePath(); gg.fill(); };
+    wn.g.fillStyle = wn.lin(0, 0, 16, 0, s > 0 ? ['#5a96d6', '#9cccf4'] : ['#9cccf4', '#5a96d6']); drape(wn.g);
+    ws.fillStyle = '#2a2a2a'; drape(ws);
+    wn.rr(s > 0 ? 1.3 : 12.5, 17, 2.2, 1, 0.45, '#f0c040');
   }
-  wn.rr(1.8, 1.8, 16.4, 2.6, 0.6, '#f8a0bc');
-  for (let x = 2.8; x < 18; x += 2) wn.fill('#f8a0bc', () => wn.g.arc(x, 4.3, 1, 0, Math.PI));
-  wn.rr(9.4, 4.4, 1.2, 17.8, 0, '#ffffff'); wn.rr(1.8, 11.4, 16.4, 1.2, 0, '#ffffff');
-  const sht = fine(8, 24, 8);
-  sht.rr(0, 0, 8, 24, 0.8, '#3a6ea8');
-  sht.rr(0.7, 0.7, 6.6, 22.6, 0.5, sht.lin(0, 0, 8, 0, ['#a8d4f6', '#7cb4e4']));
-  for (let y = 7.5; y < 22.5; y += 1.6) sht.rr(1.2, y, 5.6, 0.5, 0.25, 'rgba(40,80,140,0.35)');
-  sht.fill('#3a6ea8', () => { sht.g.moveTo(4, 6); sht.g.bezierCurveTo(1.2, 4, 2.2, 1.4, 4, 2.9); sht.g.bezierCurveTo(5.8, 1.4, 6.8, 4, 4, 6); });
-  // baby Linc's washing: two little onesies and a bib, pegged on
-  const onesie = (col, dark) => {
-    const o = fine(10, 11, 10);
-    o.fill(col, () => {
-      const g = o.g;
-      g.moveTo(3, 0.8); g.lineTo(7, 0.8); g.lineTo(9.6, 2.4); g.lineTo(8.6, 4.6); g.lineTo(7.4, 4); g.lineTo(7.4, 7.6);
-      g.quadraticCurveTo(7.4, 10.4, 5.8, 10.4); g.lineTo(4.2, 10.4); g.quadraticCurveTo(2.6, 10.4, 2.6, 7.6); g.lineTo(2.6, 4);
-      g.lineTo(1.4, 4.6); g.lineTo(0.4, 2.4); g.closePath();
-    });
-    o.fill(dark, () => o.g.arc(5, 0.8, 1.4, 0, Math.PI));
-    for (const x of [4.2, 5, 5.8]) o.fill('#ffffff', () => o.g.arc(x, 9.6, 0.35, 0, Math.PI * 2));
-    for (const x of [3.2, 6.8]) o.rr(x - 0.4, 0, 0.8, 1.6, 0.2, '#c89060');
-    return o.c;
-  };
-  const bib = fine(10, 11, 10);
-  bib.fill('#f890b8', () => bib.g.ellipse(5, 6.2, 4.4, 4.6, 0, 0, Math.PI * 2));
-  bib.fill('#ffffff', () => bib.g.ellipse(5, 6.2, 3.7, 3.9, 0, 0, Math.PI * 2));
-  bib.fill('#f890b8', () => bib.g.ellipse(5, 2.2, 1.8, 1.2, 0, 0, Math.PI * 2));
-  bib.fill('#f86880', () => { bib.g.moveTo(5, 8.6); bib.g.bezierCurveTo(2.8, 7, 3.4, 4.8, 5, 6); bib.g.bezierCurveTo(6.6, 4.8, 7.2, 7, 5, 8.6); });
-  for (const x of [2.6, 7.4]) bib.rr(x - 0.4, 0, 0.8, 1.6, 0.2, '#c89060');
+  wn.g.fillStyle = '#5a96d6'; wn.g.fillRect(1.6, 6.2, 12.8, 1.4);
+  for (let x = 2.4; x < 14.4; x += 1.6) wn.fill('#5a96d6', () => wn.g.arc(x, 7.6, 0.8, 0, Math.PI));
+  wn.g.fillStyle = '#f0c040'; wn.g.fillRect(1.6, 6.2, 12.8, 0.35);
+  wn.g.strokeStyle = '#ffffff'; wn.g.lineWidth = 0.7;
+  wn.g.beginPath(); wn.g.moveTo(8, 1.6); wn.g.lineTo(8, 6.2); for (const a of [0.2, 0.4, 0.6, 0.8]) { wn.g.moveTo(8, 8); wn.g.lineTo(8 - Math.cos(a * Math.PI) * 6.4, 8 - Math.sin(a * Math.PI) * 6.4); } wn.g.stroke();
+  // a round dormer light
+  const rd = fine(12, 12, 8), rs = rd.shine();
+  rd.fill('#ffffff', () => rd.g.arc(6, 6, 6, 0, Math.PI * 2));
+  rd.fill(rd.lin(0, 1, 0, 11, ['#fff6d8', '#ffd890']), () => rd.g.arc(6, 6, 4.6, 0, Math.PI * 2));
+  rs.fillStyle = '#d8d8d8'; rs.beginPath(); rs.arc(6, 6, 4.6, 0, Math.PI * 2); rs.fill();
+  rd.g.strokeStyle = '#ffffff'; rd.g.lineWidth = 0.7; rd.g.beginPath(); rd.g.moveTo(1.4, 6); rd.g.lineTo(10.6, 6); rd.g.moveTo(6, 1.4); rd.g.lineTo(6, 10.6); rd.g.stroke();
+  // the grand door: a white arch, a fanlight in it, two tall blue leaves panelled and handled in gold, glass lit above
+  const dr = fine(24, 40, 8), ds = dr.shine();
+  dr.g.fillStyle = '#ffffff'; archPath(dr.g, 0, 0, 24, 40); dr.g.fill();
+  dr.g.fillStyle = dr.lin(0, 2, 0, 12, ['#fff4cc', '#ffd890', '#f0b060']); archPath(dr.g, 2, 2, 20, 11); dr.g.fill();
+  ds.fillStyle = '#d0d0d0'; archPath(ds, 2, 2, 20, 11); ds.fill();
+  dr.g.strokeStyle = '#ffffff'; dr.g.lineWidth = 0.7; dr.g.beginPath();
+  for (const a of [0.17, 0.33, 0.5, 0.67, 0.83]) { dr.g.moveTo(12, 12.4); dr.g.lineTo(12 - Math.cos(a * Math.PI) * 10, 12.4 - Math.sin(a * Math.PI) * 10); }
+  dr.g.stroke();
+  dr.fill('#f0c040', () => dr.g.arc(12, 12.4, 1.6, Math.PI, 0));
+  for (const lx of [2, 12.2]) {
+    dr.rr(lx, 13, 9.8, 27, 0.3, dr.lin(lx, 0, lx + 9.8, 0, ['#4a86c4', '#3a70b0', '#2e5e98']));
+    dr.rr(lx + 1.6, 15, 6.6, 10, 0.6, dr.lin(0, 15, 0, 25, ['#fff2c8', '#ffd890']));
+    ds.fillStyle = '#c0c0c0'; ds.fillRect(lx + 1.6, 15, 6.6, 10);
+    dr.g.strokeStyle = '#f0c040'; dr.g.lineWidth = 0.5;
+    dr.g.strokeRect(lx + 1.6, 15, 6.6, 10); dr.g.strokeRect(lx + 1.6, 27.5, 6.6, 9.5);
+    dr.g.fillStyle = '#ffffff'; dr.g.fillRect(lx + 4.65, 15, 0.5, 10); dr.g.fillRect(lx + 1.6, 19.75, 6.6, 0.5);
+    dr.g.fillStyle = '#f0c040'; dr.g.fillRect(lx + 0.6, 37.8, 8.6, 1.6);
+  }
+  for (const kx of [10.8, 13.4]) dr.fill('#f8d040', () => dr.g.arc(kx, 26.4, 0.9, 0, Math.PI * 2));
+  // the frieze over the columns: their name in gold on royal blue, a rosette at each end
+  const fz = fine(80, 8, 10);
+  fz.g.fillStyle = fz.lin(0, 0, 0, 8, ['#3a6ea8', '#2a5690']); fz.g.fillRect(0, 0, 80, 8);
+  fz.g.fillStyle = '#f0c850'; fz.g.fillRect(0, 0.5, 80, 0.45); fz.g.fillRect(0, 7.05, 80, 0.45);
+  fz.g.textAlign = 'center'; fz.g.textBaseline = 'middle'; fz.g.font = '900 5px "Trebuchet MS", "Arial Black", sans-serif';
+  fz.g.fillStyle = '#ffe48a'; fz.g.fillText('THE  NIETOS', 40, 4.2);
+  for (const rx of [8, 72]) {
+    for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; fz.fill('#f0c850', () => fz.g.ellipse(rx + Math.cos(a) * 1.2, 4 + Math.sin(a) * 1.2, 0.9, 0.5, a, 0, Math.PI * 2)); }
+    fz.fill('#ffe48a', () => fz.g.arc(rx, 4, 0.8, 0, Math.PI * 2));
+  }
+  // the pediment's tympanum: baby blue, a gold medallion with the pacifier under a crown, laurels either side
+  const tp = fine(60, 15, 10);
+  tp.g.fillStyle = tp.lin(0, 0, 0, 15, ['#cfe8fa', '#94c8f0']); tp.g.fillRect(0, 0, 60, 15);
+  for (const s of [-1, 1]) {
+    for (let i = 0; i < 7; i++) {
+      const t = i / 6, lx = 30 + s * (5.5 + t * 13), ly = 11.6 - Math.sin(t * Math.PI * 0.8) * 2.2;
+      tp.fill('#e8b840', () => tp.g.ellipse(lx, ly - 0.9, 1.3, 0.55, s * -0.5, 0, Math.PI * 2));
+      tp.fill('#d8a030', () => tp.g.ellipse(lx, ly + 0.6, 1.3, 0.55, s * 0.5, 0, Math.PI * 2));
+    }
+  }
+  tp.fill(tp.lin(0, 5, 0, 14, ['#ffe48a', '#e0a830']), () => tp.g.arc(30, 9.6, 4.6, 0, Math.PI * 2));
+  tp.fill('#e0f2ff', () => tp.g.arc(30, 9.6, 3.6, 0, Math.PI * 2));
+  pacifier(tp.g, 30, 9.9, 1.5, '#3a6ea8', '#e0f2ff');
+  crown(tp.g, 30, 4.4, 4, '#f0c040');
+  // their banner: baby blue, cut in a swallowtail, a gold border, the crowned pacifier
+  const bn = fine(16, 44, 8);
+  const tail = (gg) => { gg.beginPath(); gg.moveTo(0, 0); gg.lineTo(16, 0); gg.lineTo(16, 42); gg.lineTo(8, 36); gg.lineTo(0, 42); gg.closePath(); };
+  bn.g.fillStyle = bn.lin(0, 0, 16, 0, ['#6aaae4', '#a4d0f4', '#6aaae4']); tail(bn.g); bn.g.fill();
+  bn.g.fillStyle = '#3a6ea8'; bn.g.fillRect(0, 0, 16, 4);
+  bn.g.strokeStyle = '#f0c040'; bn.g.lineWidth = 0.9;
+  bn.g.beginPath(); bn.g.moveTo(1.4, 4); bn.g.lineTo(1.4, 39.4); bn.g.lineTo(8, 34.2); bn.g.lineTo(14.6, 39.4); bn.g.lineTo(14.6, 4); bn.g.stroke();
+  crown(bn.g, 8, 11, 6, '#f0c040');
+  pacifier(bn.g, 8, 21, 3, '#f8d860', '#5a96d6');
+  // the flag on the roof: royal blue over baby blue, the pacifier in gold
+  const fl = fine(24, 16, 8);
+  fl.g.fillStyle = '#88c4f0'; fl.g.fillRect(0, 0, 24, 16);
+  fl.g.fillStyle = '#3a6ea8'; fl.g.fillRect(0, 0, 24, 3); fl.g.fillRect(0, 13, 24, 3);
+  pacifier(fl.g, 12, 8.4, 2.1, '#f8d860', '#88c4f0');
   const note = fine(14, 10, 10);
   note.rr(0.5, 0.8, 13, 8.8, 0.4, '#fffbe8');
   note.rr(5, 0.2, 4, 1.4, 0.2, 'rgba(255,240,180,0.85)');
   note.g.textAlign = 'center'; note.g.textBaseline = 'middle';
   note.g.font = '900 5px "Trebuchet MS", "Arial Black", sans-serif'; note.g.fillStyle = '#d83a30'; note.g.fillText('OUT!', 7, 5.6);
-  cottage = { siding: siding.c, shingles: sh.c, stones: st.c, bricks: br.c, door: dr.c, window: wn.c, shutter: sht.c,
-    washing: [onesie('#8cc8f8', '#5a96d0'), bib.c, onesie('#f8e070', '#e0b030')], note: note.c };
-  return cottage;
+  mansion = { stucco: st.c, slates: sh.c, window: wn.c, round: rd.c, door: dr.c, frieze: fz.c, tympanum: tp.c, banner: bn.c, flag: fl.c, note: note.c };
+  return mansion;
 }
 
-/** The Nietos' house (the user's ask, 2026-10-14; made a storybook cottage the same day, the user's ask: "more aesthetic
-    than a bland house"): butter-cream clapboard on a stone footing under a scalloped baby-blue roof, a brick chimney
-    puffing smoke, a gabled porch over a fanlit blue door with a wreath (and an OUT! note while they're away), shuttered
-    windows with pink curtains and flower boxes, a picket-fenced front garden, the name board and baby Linc's washing on
-    the left, a pram and the sandbox on the right. Everything outside its walls stands on its `NIETOS_YARD` tiles. */
+/** The Nietos' house (the user's ask, 2026-10-14; a storybook cottage that day; an extravagant mansion since 2026-10-20,
+    the user's ask: "an extravagant aesthetic mansion from the outside and inside"): a white château on a stone terrace,
+    two storeys under a mansard of their scalloped baby-blue slates crested in gold, a wing either side and a turret on
+    each front corner flying their banner, a portico of white columns with gilt capitals under a pediment carrying their
+    crowned pacifier, a carpeted stair up to the fanlit door (a note on it while they're out), golden Kangaskhan on the gate
+    piers, a Kangaskhan topiary and baby Linc's gilded pram on the terrace, rose beds behind a gold-tipped iron fence.
+    It stands on its 5 x 4 lot, the fence on NIETOS_YARD. */
 function nietosHouse(g, x, z, home) {
-  const W = 2.5, D = 2.1, H = 1.45, FY = 0.2, E = FY + H, R = 0.95, fz = D / 2;
-  const A = cottageArt(), rnd = seeded(11);
+  const A = mansionArt(), rnd = seeded(11);
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
   const h = new THREE.Group();
   h.position.set(x, 0, z);
   g.add(h);
-  const add = (geo, m, px, py, pz, shadow = true) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = shadow; o.receiveShadow = true; h.add(o); return o; };
-  const box = (w, hh, d, m, px, py, pz, shadow) => add(new THREE.BoxGeometry(w, hh, d), m, px, py, pz, shadow);
-  const trim = std({ color: '#ffffff' }), cream = std({ color: '#fbefcf' }), navy = std({ color: '#2e5e98' }), wood = std({ color: '#8a6038' });
-  const lit = (canvas, k) => { const m = glowing(std({ map: texOf(canvas), roughness: 0.4 }), canvas, null, '#ffd890', k); m.userData.glowMin = 0.15; return m; };
+  const add = (geo, m, px, py, pz, shadow = true, parent = h) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = shadow; o.receiveShadow = true; parent.add(o); return o; };
+  const box = (w, hh, d, m, px, py, pz, shadow, parent) => add(new THREE.BoxGeometry(w, hh, d), m, px, py, pz, shadow, parent);
+  const cyl = (rt, rb, hh, m, px, py, pz, seg = 16, shadow = true) => add(new THREE.CylinderGeometry(rt, rb, hh, seg), m, px, py, pz, shadow);
+  const stucco = std({ map: texOf(A.stucco), roughness: 0.9 }), trim = std({ color: '#ffffff', roughness: 0.6 });
+  const gold = std({ color: '#e8b840', metalness: 0.75, roughness: 0.3, emissive: new THREE.Color('#7a4a10'), emissiveIntensity: 0.35 });
+  const stone = std({ color: '#e8e2d4', roughness: 1 }), iron = std({ color: '#23262e', roughness: 0.5, metalness: 0.4 });
+  const carpet = std({ color: '#3a6ea8', roughness: 1 }), leaf = std({ color: '#3e8a3a', roughness: 1 }), clipped = std({ color: '#2e7a36', roughness: 1 });
+  const soil = std({ color: '#6a4a2e', roughness: 1 }), clay = std({ color: '#c87050' });
+  const slates = texOf(A.slates);
+  slates.wrapS = slates.wrapT = THREE.RepeatWrapping;
+  const slate = std({ map: slates, roughness: 0.7 }), lead = std({ color: '#4a80bc', roughness: 0.7 });
+  const lit = (canvas, k) => { const m = glowing(std({ map: texOf(canvas), roughness: 0.4, alphaTest: 0.5 }), canvas, null, '#ffd890', k); m.userData.glowMin = 0.15; return m; };
+  const win = lit(A.window, 1.1), round = lit(A.round, 1.1);
   const pane = std({ color: '#fff0c0', emissive: new THREE.Color('#ffd890'), roughness: 0.3 });
   pane.userData.glow = 1.2; pane.userData.glowMin = 0.15;
   glowMats.push(pane);
+  const quiet = (o) => { o.raycast = () => {}; return o; };   // moves each frame (liveNietos()), so mergeStill() leaves it be
 
-  // the stone footing, the clapboard walls with white boards at their corners, and a round lit window in each gable
-  box(W + 0.1, FY, D + 0.1, std({ map: texOf(A.stones), roughness: 1 }), 0, FY / 2, 0);
-  box(W, H, D, std({ map: texOf(A.siding) }), 0, FY + H / 2, 0);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(0.08, H, 0.08, trim, sx * W / 2, FY + H / 2, sz * D / 2);
-  const gable = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(-D / 2, 0), new THREE.Vector2(D / 2, 0), new THREE.Vector2(0, R)]), { depth: W - 0.02, bevelEnabled: false });
-  gable.translate(0, 0, -(W - 0.02) / 2); gable.rotateY(Math.PI / 2);
-  add(gable, cream, 0, E, 0);
-  for (const sx of [-1, 1]) {
-    add(new THREE.CircleGeometry(0.15, 24), trim, sx * (W / 2 + 0.004), E + 0.32, 0, false).rotation.y = sx * Math.PI / 2;
-    add(new THREE.CircleGeometry(0.11, 24), pane, sx * (W / 2 + 0.008), E + 0.32, 0, false).rotation.y = sx * Math.PI / 2;
-  }
+  // the lot: the terrace, the main house in the middle (MW x MD, two storeys, eaves at E), a wing either side (WH tall),
+  // a turret on each front corner
+  const P = 0.32, MW = 2.5, MD = 2.2, MZ = -0.5, H1 = 1.05, H2 = 0.9, E = P + H1 + H2, mf = MZ + MD / 2;
+  const WW = 1.0, WD = 1.8, WZ = -0.5, WH = 1.2, WX = MW / 2 + WW / 2, wf = WZ + WD / 2;
+  const TX = 2.2, TZ = wf, TR = 0.3, TH = 2.0;
 
-  // a roof slope: shingles on top, white barge boards down its ends and a fascia along its eave, hung from the ridge
-  // at (px, py, pz) and running down towards `yaw`
-  const slope = (run, rise, over, wide, yaw, px, py, pz, top) => {
-    const s = new THREE.Group(), p = new THREE.Group(), L = Math.hypot(run, rise) + over;
-    s.position.set(px, py, pz); s.rotation.y = yaw; p.rotation.x = Math.atan2(rise, run);
-    s.add(p); h.add(s);
-    const put = (w, hh, d, m, qx, qy, qz) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, hh, d), m); o.position.set(qx, qy, qz); o.castShadow = o.receiveShadow = true; p.add(o); };
-    put(wide, 0.07, L, [navy, navy, top, trim, navy, navy], 0, 0, L / 2);
-    for (const sx of [-1, 1]) put(0.05, 0.11, L, trim, sx * (wide / 2 + 0.025), -0.015, L / 2);
-    put(wide + 0.1, 0.11, 0.05, trim, 0, -0.015, L + 0.025);
-  };
-  const shingle = std({ map: texOf(A.shingles), roughness: 0.75 });
-  for (const yaw of [0, Math.PI]) slope(D / 2, R, 0.32, W + 0.36, yaw, 0, E + R, 0, shingle);
-  box(W + 0.46, 0.08, 0.14, navy, 0, E + R + 0.04, 0);
-  // the chimney, and the smoke it puffs (liveSmoke())
-  const CX = 0.72, CZ = -0.45;
-  box(0.3, 0.95, 0.3, std({ map: texOf(A.bricks), roughness: 1 }), CX, E + 0.72, CZ);
-  box(0.38, 0.07, 0.38, std({ color: '#8a8478', roughness: 1 }), CX, E + 1.23, CZ);
-  add(new THREE.CylinderGeometry(0.06, 0.07, 0.12, 10), std({ color: '#c87050' }), CX, E + 1.32, CZ);
-  const puffGeo = new THREE.SphereGeometry(0.1, 10, 8), puffs = [];
-  for (let i = 0; i < 5; i++) {
-    const o = add(puffGeo, std({ color: '#f4f4f4', roughness: 1, transparent: true, opacity: 0, depthWrite: false }), CX, E + 1.4, CZ, false);
-    o.raycast = () => {};
-    puffs.push(o);
-  }
-  smoke = { puffs, x: CX, y: E + 1.4, z: CZ };
-
-  // the porch: a deck and a step, two posts, a little gabled roof of its own with a round window in its gable
-  const PE = 1.2, PA = 1.5;
-  box(1.24, 0.06, 0.62, std({ color: '#c8925a', roughness: 0.9 }), 0, FY - 0.03, fz + 0.31);
-  box(0.74, 0.1, 0.22, std({ color: '#b8b0a0', roughness: 1 }), 0, 0.05, fz + 0.72);
-  const small = texOf(A.shingles);
-  small.repeat.set(0.26, 0.45);
-  const porchShingle = std({ map: small, roughness: 0.75 });
-  for (const sx of [-1, 1]) {
-    box(0.07, PE - FY, 0.07, trim, sx * 0.52, (PE + FY) / 2, fz + 0.6);
-    slope(0.56, PA - PE, 0.05, 0.74, sx * Math.PI / 2, 0, PA, fz + 0.34, porchShingle);
-  }
-  box(1.12, 0.08, 0.08, trim, 0, PE - 0.04, fz + 0.62);
-  add(new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(-0.56, 0), new THREE.Vector2(0.56, 0), new THREE.Vector2(0, PA - PE)]), { depth: 0.04, bevelEnabled: false }), cream, 0, PE, fz + 0.6);
-  add(new THREE.CircleGeometry(0.085, 20), trim, 0, PE + 0.11, fz + 0.642, false);
-  add(new THREE.CircleGeometry(0.065, 20), pane, 0, PE + 0.11, fz + 0.646, false);
-
-  // the door in its white frame, a wreath on it, the lantern beside it; a note while they're out
-  box(0.5, 0.9, 0.05, [navy, navy, navy, navy, lit(A.door, 1), navy], 0, FY + 0.45, fz + 0.025);
-  box(0.62, 0.07, 0.07, trim, 0, FY + 0.935, fz + 0.035);
-  for (const sx of [-1, 1]) box(0.06, 0.93, 0.07, trim, sx * 0.28, FY + 0.465, fz + 0.035);
-  add(new THREE.TorusGeometry(0.085, 0.03, 6, 16), std({ color: '#3e8a40', roughness: 1 }), 0, FY + 0.62, fz + 0.075);
-  box(0.07, 0.045, 0.02, std({ color: '#e84860' }), 0, FY + 0.535, fz + 0.1, false);
-  if (!home) {
-    const n = add(new THREE.PlaneGeometry(0.16, 0.115), std({ map: texOf(A.note), roughness: 1 }), 0, FY + 0.4, fz + 0.054, false);
-    n.rotation.z = 0.08;
-  }
-  box(0.02, 0.02, 0.07, navy, 0.4, FY + 0.8, fz + 0.035, false);
-  box(0.09, 0.13, 0.09, pane, 0.4, FY + 0.78, fz + 0.09);
-  add(new THREE.ConeGeometry(0.08, 0.07, 4), navy, 0.4, FY + 0.88, fz + 0.09).rotation.y = Math.PI / 4;
-
-  // two windows: blue heart-cut shutters, a sill, a flower box under each
-  const win = lit(A.window, 1.2), shut = std({ map: texOf(A.shutter) }), leaf = std({ color: '#4e9a40', roughness: 1 });
-  const blooms = [], tufts = [];
-  for (const sx of [-1, 1]) {
-    const wx = sx * 0.92;
-    box(0.42, 0.5, 0.04, [trim, trim, trim, trim, win, trim], wx, 0.98, fz + 0.02);
-    box(0.5, 0.04, 0.08, trim, wx, 0.72, fz + 0.04);
-    for (const s of [-1, 1]) box(0.12, 0.5, 0.03, [navy, navy, navy, navy, shut, navy], wx + s * 0.28, 0.98, fz + 0.015);
-    box(0.48, 0.1, 0.12, std({ color: '#a8703e' }), wx, 0.65, fz + 0.07);
-    box(0.44, 0.05, 0.09, leaf, wx, 0.715, fz + 0.07, false);
-    for (let i = 0; i < 6; i++) blooms.push([wx - 0.19 + i * 0.076, 0.75 + (i % 2) * 0.02, fz + 0.05 + (i % 2) * 0.04, BLOOMS[(i + (sx > 0 ? 2 : 0)) % BLOOMS.length]]);
-  }
-
-  // the front garden: white pickets round two flower beds either side of the path, a bush by the porch
-  const F = 2.3, GX = 0.5, SX = 1.45, Z0 = fz + 0.1;
-  const pickets = [];
-  for (const sx of [-1, 1]) {
-    for (let px = GX + 0.09; px <= SX - 0.04; px += 0.12) pickets.push([sx * px, F, 0]);
-    for (let pz = F - 0.12; pz >= Z0; pz -= 0.12) pickets.push([sx * SX, pz, Math.PI / 2]);
-    box(SX - GX, 0.035, 0.02, trim, sx * (GX + SX) / 2, 0.1, F - 0.025);
-    box(SX - GX, 0.035, 0.02, trim, sx * (GX + SX) / 2, 0.24, F - 0.025);
-    box(0.02, 0.035, F - Z0, trim, sx * (SX - 0.025), 0.1, (F + Z0) / 2);
-    box(0.02, 0.035, F - Z0, trim, sx * (SX - 0.025), 0.24, (F + Z0) / 2);
-    for (const px of [GX, SX]) {
-      box(0.07, 0.36, 0.07, trim, sx * px, 0.18, F);
-      add(new THREE.SphereGeometry(0.045, 10, 8), trim, sx * px, 0.4, F);
+  // a mansard: four slates sloping in from w0 x d0 to w1 x d1 over hh, the slates sized by the world (UVs in units),
+  // so every roof shares one material
+  const mansard = (w0, d0, w1, d1, hh, px, py, pz) => {
+    const pos = [], uv = [], c0 = [[-w0, d0], [w0, d0], [w0, -d0], [-w0, -d0]], c1 = [[-w1, d1], [w1, d1], [w1, -d1], [-w1, -d1]];
+    for (let i = 0; i < 4; i++) {
+      const j = (i + 1) % 4, len = Math.hypot(c0[j][0] - c0[i][0], c0[j][1] - c0[i][1]) / 2, top = Math.hypot(c1[j][0] - c1[i][0], c1[j][1] - c1[i][1]) / 2;
+      const off = (len - top) / 2, slant = Math.hypot(hh, off);
+      const v = [[c0[i][0] / 2, 0, c0[i][1] / 2, 0, 0], [c0[j][0] / 2, 0, c0[j][1] / 2, len / 2.8, 0], [c1[j][0] / 2, hh, c1[j][1] / 2, (len - off) / 2.8, slant / 1.7], [c1[i][0] / 2, hh, c1[i][1] / 2, off / 2.8, slant / 1.7]];
+      for (const k of [0, 1, 2, 0, 2, 3]) { pos.push(v[k][0], v[k][1], v[k][2]); uv.push(v[k][3], v[k][4]); }
     }
-    box(SX - 0.66, 0.05, F - Z0 - 0.1, std({ color: '#6a4a2e', roughness: 1 }), sx * (0.62 + SX) / 2, 0.025, (F + Z0) / 2, false);
-    add(new THREE.SphereGeometry(0.17, 14, 10), leaf, sx * 0.82, 0.13, fz + 0.32).scale.set(1.1, 0.85, 0.9);
-    add(new THREE.SphereGeometry(0.13, 14, 10), std({ color: '#5cae4a', roughness: 1 }), sx * 1.22, 0.11, fz + 0.3);
-    for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) {
-      const fx = sx * (0.74 + i * 0.18 + (rnd() - 0.5) * 0.05), fzz = 1.62 + j * 0.2 + (rnd() - 0.5) * 0.05;
-      tufts.push([fx, 0.07, fzz]);
-      blooms.push([fx, 0.14 + rnd() * 0.04, fzz, BLOOMS[Math.floor(rnd() * BLOOMS.length)]]);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.computeVertexNormals();
+    add(geo, slate, px, py, pz);
+    box(w1, 0.04, d1, lead, px, py + hh + 0.02, pz);
+    return [w1, d1, py + hh + 0.04];
+  };
+  // gold cresting round a roof's flat top, and a gold ball on each corner
+  const spikes = [], balls = [];
+  const crest = ([w, d, y], px, pz) => {
+    for (const [ax, az, bx, bz] of [[-w, d, w, d], [w, d, w, -d], [w, -d, -w, -d], [-w, -d, -w, d]]) {
+      const n = Math.max(2, Math.round(Math.hypot(bx - ax, bz - az) / 2 / 0.12));
+      for (let i = 0; i < n; i++) spikes.push([px + (ax + (bx - ax) * i / n) / 2, y + 0.05, pz + (az + (bz - az) * i / n) / 2]);
+      balls.push([px + ax / 2, y + 0.06, pz + az / 2]);
+    }
+  };
+  // a window: the arched painting, a white sill under it, a gold keystone over it
+  const opening = (wx, wy, wz, w, hh) => {
+    add(new THREE.PlaneGeometry(w, hh), win, wx, wy, wz + 0.006, false);
+    box(w + 0.1, 0.035, 0.07, trim, wx, wy - hh / 2 - 0.015, wz + 0.035, false);
+    box(0.06, 0.07, 0.035, gold, wx, wy + hh / 2 - 0.02, wz + 0.02, false);
+  };
+  // a dormer on a mansard's front: a lit round window under a slate-roofed hood with a gold ball on it
+  const hood = new THREE.CylinderGeometry(0.2, 0.2, 0.36, 14, 1, false, 0, Math.PI);
+  hood.rotateZ(Math.PI / 2); hood.rotateY(Math.PI / 2);
+  const dormer = (dx, dy, dz) => {
+    box(0.34, 0.36, 0.32, trim, dx, dy, dz);
+    add(new THREE.CircleGeometry(0.12, 20), round, dx, dy + 0.01, dz + 0.162, false);
+    add(hood, slate, dx, dy + 0.17, dz);
+    add(new THREE.SphereGeometry(0.035, 10, 8), gold, dx, dy + 0.4, dz + 0.1, false);
+  };
+
+  // the terrace: pale stone, a white coping along its front and sides
+  box(4.9, P, 3.5, stone, 0, P / 2, -0.1);
+  box(4.96, 0.06, 0.1, trim, 0, P - 0.02, 1.66);
+  for (const sx of [-1, 1]) box(0.1, 0.06, 3.56, trim, sx * 2.46, P - 0.02, -0.1);
+
+  // the main house: ashlar stucco, white quoins, a belt course between its storeys, a cornice banded in gold
+  box(MW, H1 + H2, MD, stucco, 0, P + (H1 + H2) / 2, MZ);
+  for (const sx of [-1, 1]) box(0.1, H1 + H2, 0.1, trim, sx * MW / 2, P + (H1 + H2) / 2, mf);
+  box(MW + 0.06, 0.07, MD + 0.06, trim, 0, P + H1, MZ);
+  box(MW + 0.2, 0.1, MD + 0.2, trim, 0, E - 0.03, MZ);
+  box(MW + 0.22, 0.03, MD + 0.22, gold, 0, E + 0.035, MZ, false);
+  const top = mansard(MW + 0.14, MD + 0.14, MW - 0.46, MD - 0.46, 0.62, 0, E + 0.05, MZ);
+  crest(top, 0, MZ);
+  for (const sx of [-1, 1]) dormer(sx * 0.95, E + 0.36, mf - 0.1);
+  // two tall chimneys, white with gold bands and terracotta pots; the left one puffs (liveNietos())
+  for (const sx of [-1, 1]) {
+    const cx = sx * 0.75, cz = MZ - 0.45;
+    box(0.26, 0.9, 0.26, trim, cx, E + 0.75, cz);
+    box(0.32, 0.06, 0.32, trim, cx, E + 1.2, cz);
+    box(0.33, 0.025, 0.33, gold, cx, E + 1.15, cz, false);
+    for (const px of [-0.06, 0.06]) cyl(0.04, 0.045, 0.12, clay, cx + px, E + 1.29, cz, 10);
+  }
+  const SX = -0.81, SY = E + 1.4, SZ = MZ - 0.45;
+  const puffGeo = new THREE.SphereGeometry(0.1, 10, 8), puffs = [];
+  for (let i = 0; i < 5; i++) puffs.push(quiet(add(puffGeo, std({ color: '#f4f4f4', roughness: 1, transparent: true, opacity: 0, depthWrite: false }), SX, SY, SZ, false)));
+  const flags = [];
+  // the flag on its gold-tipped pole over the roof
+  box(0.03, 0.95, 0.03, gold, 0, top[2] + 0.47, MZ - 0.25);
+  add(new THREE.SphereGeometry(0.04, 10, 8), gold, 0, top[2] + 0.97, MZ - 0.25, false);
+  const fly = new THREE.Group();
+  fly.position.set(0.015, top[2] + 0.78, MZ - 0.25);
+  h.add(fly);
+  quiet(add(new THREE.PlaneGeometry(0.48, 0.32), std({ map: texOf(A.flag), side: THREE.DoubleSide, roughness: 1 }), 0.24, 0, 0, false, fly));
+  flags.push({ o: fly, axis: 'y', k: 0.28 });
+
+  // the wings: a storey of stucco each, a tall window, a cornice, their own mansard and dormer, crested in gold
+  for (const sx of [-1, 1]) {
+    const wx = sx * WX;
+    box(WW, WH, WD, stucco, wx, P + WH / 2, WZ);
+    box(WW + 0.12, 0.08, WD + 0.12, trim, wx, P + WH - 0.02, WZ);
+    box(WW + 0.14, 0.025, WD + 0.14, gold, wx, P + WH + 0.03, WZ, false);
+    const wt = mansard(WW + 0.1, WD + 0.1, WW - 0.3, WD - 0.3, 0.46, wx, P + WH + 0.04, WZ);
+    crest(wt, wx, WZ);
+    opening(sx * 1.57, P + 0.5, wf, 0.36, 0.78);
+    dormer(sx * 1.57, P + WH + 0.24, wf - 0.08);
+  }
+  // the turrets on the front corners: round, banded, a slate cone with a gold spire, a window low down, a banner high up
+  const cone = new THREE.ConeGeometry(TR + 0.1, 0.95, 24), cloth = std({ map: texOf(A.banner), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.95 });
+  for (const sx of [-1, 1]) {
+    const tx = sx * TX;
+    cyl(TR, TR, TH, stucco, tx, P + TH / 2, TZ, 24);
+    for (const [y, r] of [[P + WH, TR + 0.03], [P + TH - 0.02, TR + 0.05]]) cyl(r, r, 0.08, trim, tx, y, TZ, 24);
+    cyl(TR + 0.06, TR + 0.06, 0.025, gold, tx, P + TH + 0.03, TZ, 24, false);
+    add(cone, slate, tx, P + TH + 0.52, TZ);
+    add(new THREE.SphereGeometry(0.05, 10, 8), gold, tx, P + TH + 1.02, TZ);
+    add(new THREE.ConeGeometry(0.025, 0.22, 8), gold, tx, P + TH + 1.16, TZ);
+    opening(tx, P + 0.52, TZ + TR - 0.004, 0.24, 0.6);
+    box(0.03, 0.03, 0.14, gold, tx, P + TH - 0.14, TZ + TR + 0.06, false);
+    const hang = new THREE.Group();
+    hang.position.set(tx, P + TH - 0.15, TZ + TR + 0.11);
+    h.add(hang);
+    quiet(add(new THREE.PlaneGeometry(0.3, 0.82), cloth, 0, -0.41, 0, false, hang));
+    flags.push({ o: hang, axis: 'x', k: 0.06 });
+  }
+  nietosFx = { puffs, x: SX, y: SY, z: SZ, flags };
+
+  // the front: windows either side of the door, three over them, the middle one on a gilt balconette
+  for (const sx of [-1, 1]) opening(sx * 0.72, P + 0.5, mf, 0.36, 0.7);
+  for (const wx of [-0.72, 0, 0.72]) opening(wx, P + H1 + 0.42, mf, 0.34, 0.6);
+  box(0.62, 0.04, 0.2, trim, 0, P + H1 + 0.08, mf + 0.1);
+  box(0.62, 0.025, 0.025, gold, 0, P + H1 + 0.34, mf + 0.19, false);
+  for (let i = 0; i < 7; i++) box(0.018, 0.24, 0.018, gold, -0.27 + i * 0.09, P + H1 + 0.22, mf + 0.19, false);
+  // the door under its white arch, the gold keystone, a lantern either side, a note while they're out
+  add(new THREE.PlaneGeometry(0.6, 1.0), lit(A.door, 1), 0, P + 0.5, mf + 0.006, false);
+  box(0.08, 0.1, 0.04, gold, 0, P + 1.0, mf + 0.025, false);
+  if (!home) quiet(add(new THREE.PlaneGeometry(0.14, 0.1), std({ map: texOf(A.note), roughness: 1 }), 0, P + 0.42, mf + 0.012, false)).rotation.z = 0.08;
+  for (const sx of [-1, 1]) {
+    box(0.02, 0.02, 0.08, gold, sx * 0.4, P + 0.78, mf + 0.04, false);
+    box(0.08, 0.12, 0.08, pane, sx * 0.4, P + 0.74, mf + 0.09);
+    add(new THREE.ConeGeometry(0.07, 0.07, 4), gold, sx * 0.4, P + 0.83, mf + 0.09).rotation.y = Math.PI / 4;
+  }
+
+  // the portico: four columns, white with gilt bases and capitals, carrying the frieze with their name and the pediment
+  const PZ1 = 1.45, PD = PZ1 - mf, CZ = 1.3, cTop = E - 0.14;
+  for (const cx of [-1.05, -0.4, 0.4, 1.05]) {
+    box(0.2, 0.05, 0.2, trim, cx, P + 0.025, CZ);
+    add(new THREE.TorusGeometry(0.08, 0.02, 6, 16), gold, cx, P + 0.07, CZ, false).rotation.x = Math.PI / 2;
+    cyl(0.068, 0.08, cTop - P - 0.16, trim, cx, (cTop + P) / 2 + 0.02, CZ, 14);
+    cyl(0.11, 0.07, 0.1, gold, cx, cTop - 0.08, CZ, 14);
+    box(0.22, 0.035, 0.22, trim, cx, cTop - 0.015, CZ);
+  }
+  const frieze = std({ map: texOf(A.frieze), roughness: 0.6 });
+  box(MW + 0.1, 0.24, PD + 0.02, [trim, trim, trim, trim, frieze, trim], 0, E - 0.02, mf + PD / 2);
+  box(MW + 0.12, 0.025, 0.025, gold, 0, E - 0.135, PZ1 + 0.012, false);
+  const PW = MW / 2 + 0.08, PR = 0.5, PY = E + 0.1;
+  const tri = new THREE.Shape([new THREE.Vector2(-PW, 0), new THREE.Vector2(PW, 0), new THREE.Vector2(0, PR)]);
+  add(new THREE.ExtrudeGeometry(tri, { depth: PD, bevelEnabled: false }), trim, 0, PY, mf);
+  const ty = new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-PW + 0.16, 0.05), new THREE.Vector2(PW - 0.16, 0.05), new THREE.Vector2(0, PR - 0.07)]));
+  const tuv = ty.attributes.uv, tpos = ty.attributes.position;
+  for (let i = 0; i < tuv.count; i++) tuv.setXY(i, (tpos.getX(i) + PW) / (2 * PW), tpos.getY(i) / PR);
+  add(ty, std({ map: texOf(A.tympanum), roughness: 0.7 }), 0, PY, PZ1 + 0.004, false);
+  const rake = Math.atan2(PR, PW), RL = Math.hypot(PW, PR) + 0.12;
+  for (const sx of [-1, 1]) {
+    const r = box(RL, 0.06, PD + 0.1, lead, sx * PW / 2, PY + PR / 2 + 0.05, mf + PD / 2 + 0.02);
+    r.rotation.z = -sx * rake;
+    const c = box(RL, 0.07, 0.07, trim, sx * PW / 2, PY + PR / 2 + 0.01, PZ1 + 0.04, false);
+    c.rotation.z = -sx * rake;
+    add(new THREE.SphereGeometry(0.05, 10, 8), gold, sx * (PW + 0.02), PY + 0.07, PZ1 + 0.04, false);
+  }
+  box(PW * 2 + 0.12, 0.06, 0.08, trim, 0, PY - 0.01, PZ1 + 0.03, false);
+  add(new THREE.SphereGeometry(0.06, 12, 10), gold, 0, PY + PR + 0.1, PZ1 + 0.02, false);
+  add(new THREE.ConeGeometry(0.035, 0.14, 8), gold, 0, PY + PR + 0.2, PZ1 + 0.02, false);
+
+  // the grand stair: four steps, the carpet down them on gold rods, white cheeks with a lantern on each, and the
+  // carpet on across the portico to the door
+  const SW = 1.3, SN = 4, SD = 0.13, S0 = 1.65;
+  for (let k = 0; k < SN; k++) {
+    const sh = P * (SN - k) / SN, sz = S0 + SD * (k + 0.5);
+    box(SW, sh, SD + 0.002, stone, 0, sh / 2, sz);
+    box(0.62, 0.012, SD, carpet, 0, sh + 0.006, sz, false);
+    add(new THREE.CylinderGeometry(0.008, 0.008, 0.68, 6), gold, 0, sh + 0.014, sz - SD / 2 + 0.01, false).rotation.z = Math.PI / 2;
+  }
+  box(0.62, 0.012, S0 - mf, carpet, 0, P + 0.006, (S0 + mf) / 2, false);
+  for (const sx of [-1, 1]) {
+    box(0.022, 0.014, S0 - mf, gold, sx * 0.32, P + 0.008, (S0 + mf) / 2, false);
+    const cx = sx * (SW / 2 + 0.08);
+    box(0.16, P + 0.12, SN * SD + 0.02, trim, cx, (P + 0.12) / 2, S0 + SN * SD / 2);
+    cyl(0.025, 0.03, 0.4, iron, cx, P + 0.32, S0 + SN * SD - 0.08, 8);
+    box(0.1, 0.14, 0.1, pane, cx, P + 0.58, S0 + SN * SD - 0.08);
+    add(new THREE.ConeGeometry(0.085, 0.08, 4), gold, cx, P + 0.69, S0 + SN * SD - 0.08).rotation.y = Math.PI / 4;
+  }
+
+  // the terrace's balustrade, either side of the stair
+  const balusters = [];
+  for (const sx of [-1, 1]) {
+    const x0 = 0.82, x1 = 2.38, z = 1.58;
+    box(x1 - x0, 0.04, 0.08, trim, sx * (x0 + x1) / 2, P + 0.28, z);
+    box(x1 - x0, 0.03, 0.07, trim, sx * (x0 + x1) / 2, P + 0.03, z, false);
+    for (let bx = x0 + 0.08; bx < x1 - 0.04; bx += 0.1) balusters.push([sx * bx, P + 0.155, z]);
+    for (const px of [x0 + 0.02, x1]) {
+      box(0.09, 0.34, 0.09, trim, sx * px, P + 0.17, z);
+      add(new THREE.SphereGeometry(0.04, 10, 8), gold, sx * px, P + 0.38, z, false);
+    }
+  }
+  // on the terrace: a Kangaskhan clipped in box on the left, baby Linc's gilded pram on the right, a ball tree in a gold
+  // urn by each turret
+  const kanga = (px, py, pz, s, ry, m) => {
+    const k = new THREE.Group();
+    k.position.set(px, py, pz); k.scale.setScalar(s); k.rotation.y = ry;
+    h.add(k);
+    const part = (geo, qx, qy, qz) => add(geo, m, qx, qy, qz, true, k);
+    for (const lx of [-1, 1]) part(new THREE.CylinderGeometry(0.11, 0.13, 0.3, 10), lx * 0.16, 0.15, 0.02);
+    part(new THREE.SphereGeometry(0.3, 16, 12), 0, 0.55, 0).scale.set(1, 1.25, 0.9);
+    part(new THREE.SphereGeometry(0.17, 14, 10), 0, 0.45, 0.2).scale.set(1.1, 0.8, 0.6);
+    part(new THREE.SphereGeometry(0.085, 12, 10), 0, 0.57, 0.26);
+    part(new THREE.SphereGeometry(0.17, 14, 12), 0, 0.98, 0.04).scale.set(1, 0.95, 1.05);
+    part(new THREE.SphereGeometry(0.1, 12, 10), 0, 0.94, 0.17).scale.set(1.1, 0.8, 1);
+    for (const lx of [-1, 1]) {
+      part(new THREE.ConeGeometry(0.05, 0.14, 8), lx * 0.1, 1.13, -0.01).rotation.z = -lx * 0.35;
+      const arm = part(new THREE.CapsuleGeometry(0.05, 0.18, 4, 8), lx * 0.27, 0.66, 0.12);
+      arm.rotation.x = -0.9; arm.rotation.z = lx * 0.3;
+    }
+    part(new THREE.ConeGeometry(0.11, 0.42, 10), 0, 0.24, -0.3).rotation.x = -1.2;
+    return k;
+  };
+  kanga(-1.7, P, 1.05, 0.5, 0.3, clipped);
+  const pram = new THREE.Group();
+  pram.position.set(1.7, P, 1.05); pram.rotation.y = -0.5; pram.scale.setScalar(1.1);
+  h.add(pram);
+  const baby = std({ color: '#8cc8f8' });
+  const pp = (geo, m, px, py, pz) => add(geo, m, px, py, pz, true, pram);
+  pp(new THREE.BoxGeometry(0.4, 0.16, 0.24), baby, 0, 0.22, 0);
+  pp(new THREE.BoxGeometry(0.42, 0.03, 0.26), gold, 0, 0.31, 0);
+  pp(new THREE.SphereGeometry(0.13, 14, 8, 0, Math.PI, 0, Math.PI / 2), std({ color: '#ffffff', side: THREE.DoubleSide }), -0.07, 0.31, 0).rotation.y = -Math.PI / 2;
+  for (const wx of [-0.13, 0.13]) for (const wz of [-0.13, 0.13]) pp(new THREE.TorusGeometry(0.06, 0.014, 6, 16), gold, wx, 0.075, wz);
+  pp(new THREE.BoxGeometry(0.02, 0.24, 0.02), gold, 0.24, 0.4, 0).rotation.z = -0.5;
+  pp(new THREE.BoxGeometry(0.03, 0.03, 0.26), gold, 0.3, 0.5, 0);
+  for (const sx of [-1, 1]) {
+    const ux = sx * 2.2, uz = 1.2;
+    cyl(0.1, 0.07, 0.16, gold, ux, P + 0.08, uz, 14);
+    cyl(0.12, 0.12, 0.03, gold, ux, P + 0.17, uz, 14, false);
+    cyl(0.015, 0.015, 0.14, soil, ux, P + 0.25, uz, 6, false);
+    add(new THREE.SphereGeometry(0.17, 14, 10), clipped, ux, P + 0.44, uz);
+  }
+
+  // the front garden: a rose bed each side of the walk, edged in clipped box, behind an iron fence tipped in gold, its
+  // gate piers carrying golden Kangaskhan
+  const tufts = [], blooms = [];
+  for (const sx of [-1, 1]) {
+    const b0 = 0.92, b1 = 2.32, z0 = 1.78, z1 = 2.44;
+    box(b1 - b0, 0.04, z1 - z0, soil, sx * (b0 + b1) / 2, 0.02, (z0 + z1) / 2, false);
+    box(b1 - b0 + 0.1, 0.13, 0.08, clipped, sx * (b0 + b1) / 2, 0.065, z0 - 0.04);
+    box(b1 - b0 + 0.1, 0.13, 0.08, clipped, sx * (b0 + b1) / 2, 0.065, z1 + 0.04);
+    for (const ex of [b0, b1]) box(0.08, 0.13, z1 - z0, clipped, sx * ex, 0.065, (z0 + z1) / 2);
+    add(new THREE.ConeGeometry(0.14, 0.5, 14), clipped, sx * (b0 + b1) / 2, 0.29, (z0 + z1) / 2);
+    for (let i = 0; i < 6; i++) for (let j = 0; j < 3; j++) {
+      const fx = sx * (b0 + 0.12 + i * 0.235 + (rnd() - 0.5) * 0.05), fzz = z0 + 0.12 + j * 0.21 + (rnd() - 0.5) * 0.04;
+      if (Math.abs(Math.abs(fx) - (b0 + b1) / 2) < 0.18 && Math.abs(fzz - (z0 + z1) / 2) < 0.18) continue;
+      tufts.push([fx, 0.08, fzz]);
+      blooms.push([fx, 0.15 + rnd() * 0.04, fzz, BLOOMS[Math.floor(rnd() * BLOOMS.length)]]);
+    }
+  }
+  const FZ = 2.62, bars = [];
+  for (const sx of [-1, 1]) {
+    box(0.3, 0.75, 0.3, stone, sx * 0.7, 0.375, FZ);
+    box(0.36, 0.06, 0.36, trim, sx * 0.7, 0.78, FZ);
+    box(0.37, 0.025, 0.37, gold, sx * 0.7, 0.74, FZ, false);
+    kanga(sx * 0.7, 0.81, FZ, 0.36, -sx * 0.25, gold);
+    box(0.14, 0.62, 0.14, stone, sx * 2.42, 0.31, FZ);
+    add(new THREE.SphereGeometry(0.06, 10, 8), gold, sx * 2.42, 0.68, FZ, false);
+    const runs = [[0.85, FZ, 2.35, FZ], [2.42, FZ - 0.07, 2.42, 1.72]];
+    for (const [ax, az, bx, bz] of runs) {
+      const len = Math.hypot(bx - ax, bz - az), n = Math.round(len / 0.09);
+      for (const y of [0.08, 0.5]) box(Math.abs(bx - ax) + 0.025, 0.025, Math.abs(bz - az) + 0.025, iron, sx * (ax + bx) / 2, y, (az + bz) / 2, false);
+      for (let i = 0; i <= n; i++) bars.push([sx * (ax + (bx - ax) * i / n), (az + (bz - az) * i / n)]);
     }
   }
   const at = new THREE.Object3D();
   const many = (geo, m, list, shadow, sy = 1) => {
     const im = new THREE.InstancedMesh(geo, m, list.length);
     list.forEach(([px, py, pz, c], i) => {
-      at.position.set(px, py, pz); at.rotation.set(0, typeof c === 'number' ? c : 0, 0); at.scale.set(1, sy, 1); at.updateMatrix();
+      at.position.set(px, py, pz); at.rotation.set(0, 0, 0); at.scale.set(1, sy, 1); at.updateMatrix();
       im.setMatrixAt(i, at.matrix);
       if (typeof c === 'string') im.setColorAt(i, new THREE.Color(c));
     });
     im.castShadow = shadow; im.receiveShadow = true;
     h.add(im);
   };
-  many(new THREE.BoxGeometry(0.05, 0.28, 0.025), trim, pickets.map(([px, pz, a]) => [px, 0.14, pz, a]), true);
-  const tip = new THREE.ConeGeometry(0.036, 0.06, 4); tip.rotateY(Math.PI / 4); tip.scale(1, 1, 0.5);
-  many(tip, trim, pickets.map(([px, pz, a]) => [px, 0.31, pz, a]), false);
-  many(new THREE.SphereGeometry(0.07, 8, 6), leaf, tufts, false, 0.7);
-  many(new THREE.SphereGeometry(0.04, 8, 6), std({ color: '#ffffff', roughness: 0.7 }), blooms, false);
-
-  // the name board on the left is a place of its own (nietosSign()); baby Linc's washing on a line behind it
-  const LZ = -0.4;
-  for (const px of [-2.4, -1.55]) {
-    add(new THREE.CylinderGeometry(0.025, 0.025, 1.1, 6), wood, px, 0.55, LZ);
-    box(0.03, 0.03, 0.2, wood, px, 1.08, LZ);
-  }
-  add(new THREE.CylinderGeometry(0.006, 0.006, 0.85, 4), trim, -1.975, 1.06, LZ, false).rotation.z = Math.PI / 2;
-  A.washing.forEach((art, i) => {
-    const o = add(new THREE.PlaneGeometry(0.22, 0.24), std({ map: texOf(art), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }), -2.22 + i * 0.25, 0.94, LZ);
-    o.rotation.z = (i - 1) * 0.06;
-  });
-
-  // on the right, baby Linc's pram, and the sandbox with a bucket and a ball
-  const pram = new THREE.Group();
-  pram.position.set(1.92, 0, 0); pram.rotation.y = -0.5;
-  h.add(pram);
-  const baby = std({ color: '#8cc8f8' }), tyre = std({ color: '#3a3e48', roughness: 0.6 });
-  const pp = (geo, m, px, py, pz) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = o.receiveShadow = true; pram.add(o); return o; };
-  pp(new THREE.BoxGeometry(0.4, 0.16, 0.24), baby, 0, 0.22, 0);
-  pp(new THREE.BoxGeometry(0.42, 0.03, 0.26), trim, 0, 0.31, 0);
-  pp(new THREE.SphereGeometry(0.13, 14, 8, 0, Math.PI, 0, Math.PI / 2), std({ color: '#5a96d0', side: THREE.DoubleSide }), -0.07, 0.31, 0).rotation.y = -Math.PI / 2;
-  for (const wx of [-0.13, 0.13]) for (const wz of [-0.13, 0.13]) pp(new THREE.TorusGeometry(0.055, 0.016, 6, 14), tyre, wx, 0.07, wz);
-  pp(new THREE.BoxGeometry(0.02, 0.24, 0.02), tyre, 0.24, 0.4, 0).rotation.z = -0.5;
-  pp(new THREE.BoxGeometry(0.03, 0.03, 0.26), tyre, 0.3, 0.5, 0);
-  box(0.62, 0.1, 0.5, std({ color: '#c89a60' }), 1.92, 0.05, 1.0);
-  box(0.54, 0.04, 0.42, std({ color: '#f0dca0' }), 1.92, 0.1, 1.0);
-  add(new THREE.CylinderGeometry(0.06, 0.05, 0.1, 10), std({ color: '#e84838' }), 1.82, 0.17, 0.95);
-  add(new THREE.SphereGeometry(0.09, 12, 8), std({ color: '#f8e048' }), 2.04, 0.21, 1.06);
+  many(new THREE.BoxGeometry(0.018, 0.5, 0.018), iron, bars.map(([px, pz]) => [px, 0.29, pz]), true);
+  const tip = new THREE.ConeGeometry(0.022, 0.07, 6);
+  many(tip, gold, bars.map(([px, pz]) => [px, 0.57, pz]), false);
+  const spike = new THREE.ConeGeometry(0.018, 0.09, 6);
+  many(spike, gold, spikes, false);
+  many(new THREE.SphereGeometry(0.035, 8, 6), gold, balls, false);
+  many(new THREE.CylinderGeometry(0.016, 0.024, 0.21, 8), trim, balusters, true);
+  many(new THREE.SphereGeometry(0.075, 8, 6), leaf, tufts, false, 0.7);
+  many(new THREE.SphereGeometry(0.042, 8, 6), std({ color: '#ffffff', roughness: 0.7 }), blooms, false);
   mergeStill(h);
 }
 
-/** The Nietos' name board, front left of their garden, on two posts under a little roof and turned to the path; tapped,
-    it reads out (the user's ask, 2026-10-14). Its posts stand at its ends behind it and stop under the roof: set inside
-    its width they poked through the board's face. Its own place, so the house's merged meshes don't swallow the tap. */
+/** The Nietos' moving parts: the chimney's puffs rising, swelling and fading in turn, the banners and the flag stirring. */
+function liveNietos(now) {
+  if (!nietosFx) return;
+  const n = nietosFx.puffs.length;
+  nietosFx.puffs.forEach((o, i) => {
+    const t = calm ? (i + 0.5) / n : (now / 3600 + i / n) % 1;
+    o.position.set(nietosFx.x + t * 0.3 + Math.sin(t * 6 + i) * 0.04, nietosFx.y + t * 1.0, nietosFx.z - t * 0.1);
+    o.scale.setScalar(0.55 + t * 1.5);
+    o.material.opacity = 0.6 * Math.sin(Math.PI * t);
+  });
+  nietosFx.flags.forEach((f, i) => { f.o.rotation[f.axis] = calm ? 0 : Math.sin(now / (f.axis === 'y' ? 700 : 1100) + i * 2) * f.k; });
+}
+
+/** The Nietos' name board, front left of their garden, turned to the walk; tapped, it reads out (the user's ask,
+    2026-10-14). White on deep blue, so it reads (pale blue on sky blue couldn't), in a gilt frame since the house became a
+    mansion, on two white posts capped in gold that stand at its ends behind it. Its own place, so the house's merged
+    meshes don't swallow the tap. */
 function nietosSign(g, x, z) {
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
   const s = new THREE.Group();
   s.position.set(x, 0, z); s.rotation.y = 0.3;
   g.add(s);
-  // big white letters on a deep blue board: pale blue on sky blue couldn't be read (the user's ask, 2026-10-14)
-  const b = board(plankArt(36, 15, [['THE NIETOS', 5.6, '#ffffff']], ['#2c5a94', '#234a7e', '#183660']), 0, 0, { s: 0.66, shadow: false });
+  const art = fine(38, 16, 10);
+  art.rr(0.2, 0.2, 37.6, 15.6, 2, art.lin(0, 0, 0, 16, ['#fbe08a', '#e0ac38', '#a87818']));
+  art.rr(1.6, 1.6, 34.8, 12.8, 1.2, art.lin(0, 0, 0, 16, ['#2c5a94', '#234a7e', '#183660']));
+  art.g.strokeStyle = 'rgba(248,220,120,0.85)'; art.g.lineWidth = 0.35; art.g.strokeRect(2.6, 2.6, 32.8, 10.8);
+  art.g.textAlign = 'center'; art.g.textBaseline = 'middle';
+  art.g.font = '900 5.6px "Trebuchet MS", "Arial Black", sans-serif'; art.g.fillStyle = '#ffffff'; art.g.fillText('THE NIETOS', 19, 8.3);
+  const b = board(art.c, 0, 0, { s: 0.66, shadow: false });
   const { width: W, height: H } = b.geometry.parameters, Y = 0.8, RY = Y + H / 2 + 0.04;
   b.position.y = Y;
   s.add(b);
   const add = (geo, m, px, py, pz) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = o.receiveShadow = true; s.add(o); };
-  const wood = std({ color: '#8a6038' });
-  for (const sx of [-1, 1]) add(new THREE.CylinderGeometry(0.035, 0.035, RY, 6), wood, sx * (W / 2 - 0.08), RY / 2, -0.05);
-  add(new THREE.BoxGeometry(W + 0.14, 0.05, 0.18), std({ color: '#2e5e98' }), 0, RY + 0.025, -0.03);
-  return [s, W + 0.14, RY + 0.05];
+  const white = std({ color: '#ffffff', roughness: 0.6 }), gold = std({ color: '#e8b840', metalness: 0.75, roughness: 0.3, emissive: new THREE.Color('#7a4a10'), emissiveIntensity: 0.35 });
+  for (const sx of [-1, 1]) {
+    add(new THREE.BoxGeometry(0.07, RY, 0.07), white, sx * (W / 2 - 0.06), RY / 2, -0.05);
+    add(new THREE.SphereGeometry(0.05, 10, 8), gold, sx * (W / 2 - 0.06), RY + 0.05, -0.05);
+  }
+  return [s, W + 0.14, RY + 0.1];
 }
 
 /** Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): a timber workshop on a stone footing under a mossy
@@ -1942,18 +2151,6 @@ export function mergeStill(root, live = null, keepReceive = false) {
   }
   bakeColours(root, skip);
   mergeStatic(root, live, keepReceive);
-}
-
-/** The Nietos' chimney smoke: puffs rising, swelling and fading in turn. */
-function liveSmoke(now) {
-  if (!smoke) return;
-  const n = smoke.puffs.length;
-  smoke.puffs.forEach((o, i) => {
-    const t = calm ? (i + 0.5) / n : (now / 3600 + i / n) % 1;
-    o.position.set(smoke.x + t * 0.3 + Math.sin(t * 6 + i) * 0.04, smoke.y + t * 1.0, smoke.z - t * 0.1);
-    o.scale.setScalar(0.55 + t * 1.5);
-    o.material.opacity = 0.6 * Math.sin(Math.PI * t);
-  });
 }
 
 /** Into the Nietos' house: to its door, the curtain down, then the house walked in (js/run.js's visitTown()). */
@@ -2424,15 +2621,16 @@ function makePlaces() {
   // the Clearing's own Gym Leaders at home (the user's ask, 2026-10-14): walked in like a town's houses (js/run.js's homeRoom());
   // they're home once Law, Britt or THE NIETOS are beaten at the Gym, and not at all while NIETOS_LIVE is off
   const nietosIn = nietosHome(friendWins(save, 'nietos'));
+  const signX = tileX(NIETOS_AT.tx - 1) + 0.15, signZ = tileZ(NIETOS_AT.ty + 3) + 0.3;
   list.push({
-    id: 'nietos', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx + 1, y: NIETOS_AT.ty + 3 }, tiles: [...rect(NIETOS_AT.tx, NIETOS_AT.ty, NIETOS_AT.tx + 2, NIETOS_AT.ty + 2), ...NIETOS_YARD.map(([dx, dy]) => [NIETOS_AT.tx + dx, NIETOS_AT.ty + dy])], tag: [NIETOS_AT.tx + 1, 3.4, NIETOS_AT.ty + 2], open: true,
-    line: nietosIn ? 'Law, Britt and baby Linc\'s house. The lights are on and something smells like fish sticks.' : 'Law, Britt and baby Linc\'s house. A note on the door: "Out!"',
+    id: 'nietos', name: 'The Nietos\' Mansion', step: { x: NIETOS_AT.tx + 2, y: NIETOS_AT.ty + 4 }, tiles: [...rect(NIETOS_AT.tx, NIETOS_AT.ty, NIETOS_AT.tx + 4, NIETOS_AT.ty + 3), ...NIETOS_YARD.map(([dx, dy]) => [NIETOS_AT.tx + dx, NIETOS_AT.ty + dy])], tag: [NIETOS_AT.tx + 2, 4.2, NIETOS_AT.ty + 3], open: true,
+    line: nietosIn ? 'Law, Britt and baby Linc\'s mansion. The chandeliers are lit and something smells like fish sticks.' : 'Law, Britt and baby Linc\'s mansion. A note on the grand door: "Out!"',
     buttons: [['Go in', () => {}]],
     build: (g) => {
-      nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1), nietosIn);
+      nietosHouse(g, tileX(NIETOS_AT.tx + 2), tileZ(NIETOS_AT.ty + 1.5), nietosIn);
       if (!townsOpen()) return;
       // over their name sign, like every town's leaders (the user's call, 2026-10-14: the sign, not the roof)
-      nietosMark = board(newsArt(), tileX(NIETOS_AT.tx + 1) - 2.15, tileZ(NIETOS_AT.ty + 1) + 1.3, { shadow: false });
+      nietosMark = board(newsArt(), signX, signZ, { shadow: false });
       nietosMark.rotation.x = -PITCH;
       nietosMark.userData.y = 1.75;
       g.add(nietosMark);
@@ -2440,10 +2638,10 @@ function makePlaces() {
     },
   });
   list.push({
-    id: 'nietos-sign', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx - 1, y: NIETOS_AT.ty + 3 }, tiles: [[NIETOS_AT.tx - 1, NIETOS_AT.ty + 2]], tag: [NIETOS_AT.tx - 1, 1.6, NIETOS_AT.ty + 2], open: true,
+    id: 'nietos-sign', name: 'The Nietos\' Mansion', step: { x: NIETOS_AT.tx - 1, y: NIETOS_AT.ty + 4 }, tiles: [[NIETOS_AT.tx - 1, NIETOS_AT.ty + 3]], tag: [NIETOS_AT.tx - 1, 1.6, NIETOS_AT.ty + 3], open: true,
     line: 'THE NIETOS. Law, Britt and baby Linc. Underneath, in crayon: "LINC LIVS HEAR TOO."',
     buttons: [],
-    build: (g) => beckon(g, ...nietosSign(g, tileX(NIETOS_AT.tx + 1) - 2.15, tileZ(NIETOS_AT.ty + 1) + 1.3)),
+    build: (g) => beckon(g, ...nietosSign(g, signX, signZ)),
   });
   // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): walked into like the Nietos' house, only while the towns
   // are on, and shut till the Nietos send you for a Waystone Chime (workshopOpen())
@@ -2616,7 +2814,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -4182,7 +4380,7 @@ function frame(now) {
   drawMon(mon, walker, dt);
   liveWarp(now);
   liveStones(now);
-  liveSmoke(now);
+  liveNietos(now);
   liveDuck(now);
   spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   buddies?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });

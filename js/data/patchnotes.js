@@ -43,10 +43,27 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+];
+
+/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
+export function sectionsOf(p) {
+  if (p.sections) return p.sections;
+  return Object.entries(GROUPS)
+    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
+    .filter(([, , lines]) => lines.length);
+}
+
+export const PATCHES = [
+  {
+    version: '1.28',
+    name: 'Duo Run',
+    date: '2026-10-20',
+    notes: [
   ['runs', 'Materials and Waystone Shards you find on a run now pop up in their own window, big enough to see over the card choices.'],
   ['hub', 'Your Trainers\' buddies in the Plaza wear bigger, clearer name tags, and once one has had its say, its trainer\'s Trainer Card opens.'],
   ['dex', 'Your Trainers page shows friends your Pokédex colour: their page opens in the shell they wear.'],
   ['fixes', 'The Trainers app\'s code, Add a trainer and Plaza boxes are readable again, a room that won\'t load just after an update offers a reload, towns, gyms and ? rooms use less memory, a Safari Alpha or boss greys out Throw to say it can\'t be caught, and a rare spawn shows rustling grass on its room\'s corner, not a shiny\'s star.'],
+  ['hub', 'The Nietos\' cottage is now a mansion: turrets, columns and golden Kangaskhan outside; marble floors, crystal chandeliers and a family portrait inside.'],
   ['mall', 'The Safari Outfitter\'s Ranger Task Board is lit by lanterns, shows your own tasks, and glows and sparkles when one waits to be claimed.'],
   ['mall', 'A Garden catalogue tag floats over Smeargle once you have a backyard, and a Grand catalogue tag over Gardevoir, so you know to tap them.'],
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
@@ -60,17 +77,8 @@ export const NEXT = [
   ['modes', 'Dark joins the Duo Run: catch Deino or Sandile in the new Night Alley, Steal the foe\'s strength and shields, Punish its attacks, and fight in Disguise; Fighting\'s Intimidate is now Stare Down.'],
   ['modes', 'A Safari run\'s map shows how many Pokémon you\'ve caught so far, beside your Ability.'],
   ['modes', 'Every Safari replay with the Day Pass deals new maps, fights and rare spawns on the day\'s areas; the first try stays the same for everyone.'],
-];
-
-/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
-export function sectionsOf(p) {
-  if (p.sections) return p.sections;
-  return Object.entries(GROUPS)
-    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
-    .filter(([, , lines]) => lines.length);
-}
-
-export const PATCHES = [
+    ],
+  },
   {
     version: '1.27',
     name: 'Shiny Exchange',

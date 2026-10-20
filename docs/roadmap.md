@@ -39,7 +39,7 @@ rowboats and jungle). `tools/draw-probe.mjs` measures a place and walks into eve
 "let's add the 6"). The plan and its reasons are in Ideas' "Safari duos, real types and new areas" (the duo, the Duo pass,
 real types in the Safari, why six); the approved rules are `docs/duo-design.md`. Safari only at first: a duo run starts with Fire / Water / Grass, and catching a new
 type's starter in its area adds it to your duo pool.
-**Branch rule** (the user's call, 2026-10-19, like `towns` and `secret-base`): all of it lives on branch **`duo-types`**
+**Live on `main` since 2026-10-20** (after session 15; the new areas from 2026-10-21). Before that, the **branch rule** (the user's call, 2026-10-19, like `towns` and `secret-base`): all of it lives on branch **`duo-types`**
 (and pokeDB-sim's `duo-types`), never pushed to `main` until the user says it goes live. A session starts from
 `duo-types`; a session working alongside another (below) works on its own `duo-types-<part>` branch and merges into
 `duo-types` when done, the later one to finish resolving the merge. Playtest links are githack links on its commit.
@@ -91,8 +91,8 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
 15. ~~**The balance pass**~~ done 2026-10-20 on `claude/balance-36-pairs-b2cpn5` (both repos, off `duo-types`; merge it into
    `duo-types`; `docs/duo-design.md`'s "The balance pass", `docs/roadmap-done.md`). The pairs 38-90 -> 51-74. **Waiting on the
    user**: the playtest; whether Torrent firing each time Water comes back (it bends answer 5) stays; Water's pairs still
-   ~8 under; then **go live** (the branch rule's one step: merge into `main`, `SAFARI_FROM` the next day, cut patch 1.28
-   "Duo Run" from `NEXT`; `IN_THE_GAME` is already counted).
+   ~8 under. **Live 2026-10-20** (the user's call: "push it all"): `duo-types` merged into `main` in both repos, `SAFARI_FROM`
+   2026-10-21 for the six new areas, patch 1.28 "Duo Run" cut from `NEXT`.
 - **The new areas' art** (the user's pick: data first, art after): each new area's scene, intro film, boss prelude and
   arena, one or two areas a session, after the type sessions or beside the balance pass.
 3. ~~**Electric's first**~~ done 2026-10-19 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Electric's
@@ -1344,6 +1344,11 @@ then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict bef
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **The Nietos' mansion** (2026-10-20, branch `claude/nieto-house-extravagant-mansion-sf3f5m`, on `main` too; archive):
+  the cottage is now a white château (turrets, portico, golden Kangaskhan at the gate) and inside a marble-and-gilt hall
+  with chandeliers and a family portrait. Walk up to it in the Clearing (south-east), and go in with `?nietos&gymwins=1`
+  so the family is home; say what to change (too big? colours? anything they'd never own?). ▶ Run in: PLAYTEST ON THE
+  LIVE SITE.
 - **The true ending** (2026-10-18, on `main`; archive): all five Waystones gets a TRUE ENDING (the sealed Well's still,
   Mewtwo thanking the towns, Eternatus gone from the title sky); fewer ends on THE END...? and Eternatus's eye opening.
   Playtest `?bossfight=depths&hp=0.001&shards=5` and `&shards=2` and say if the two feel different enough.
