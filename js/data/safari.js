@@ -39,7 +39,7 @@ const BORROWED = [
 
 /** The day each new area opens (UTC "YYYY-MM-DD"): a day before keeps the areas and rosters it was dealt with, so a launch
     can't change a day already played. Set it to the day after the branch goes live. */
-export const SAFARI_FROM = { powerplant: '2026-10-21', icecave: '2026-10-21', dojomountain: '2026-10-21', quarry: '2026-10-21', windycliffs: '2026-10-21', nightalley: '2026-10-21' };
+export const SAFARI_FROM = { powerplant: '2026-10-20', icecave: '2026-10-20', dojomountain: '2026-10-20', quarry: '2026-10-20', windycliffs: '2026-10-20', nightalley: '2026-10-20' };
 
 /* Each area's places, floors 1-3, 4-6, 7-10 and the boss's (the map's floor sign; js/scene.js paints them), like a
    main biome's `stages`. */
