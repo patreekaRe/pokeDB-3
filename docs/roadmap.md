@@ -1132,6 +1132,13 @@ uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS 
    bot-check at Levels 0/3/5, add a patch-notes line and give me a githack link. Push to main."
 Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` / `cardTerms()` lines and the sim mirror.
 
+**The Duo key's picker in categories** (the user's ask, 2026-10-20: "I want them in categories so it's organized"; a mock,
+not built; ▶ Run in: CLOUD, effort: medium, on `duo-types`). Today `js/duoprep.js` shows one portrait per type with ◀ ▶
+for its looks. The mock (https://claude.ai/artifact/YQMMJCScQXDoPqKtXfqmQq) has LEAD / PARTNER slots on top (swap, clear),
+then three groups: **Starter types** (Fire / Water / Grass), **Caught in the Safari**, **Still to find** (locked, with
+where to catch one). Each type is a card with its Ability and a scrolling row of every owned look (legendaries tagged),
+then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict before building.
+
 **Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
 - **The duo** (built first, Safari only): bring two starters of different types, one out at a time. Switch for 1 PP
   (maybe free once a turn); the one out sets your type for the enemy's hits (the intent shows the move's type, so you
