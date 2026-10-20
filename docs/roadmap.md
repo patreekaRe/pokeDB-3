@@ -1050,7 +1050,7 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**Shut the Shiny Exchange while the duo biomes grow?** (asked 2026-10-20) Recommended no: the duo work stays on `duo-types` till it goes live, each new Safari area gets its machine by itself (`SAFARI_DEX_PAGES`), and a Pokémon not caught yet comes out sealed and opens on its catch, so a pull before an area opens isn't lost. A new area needs only an `EXCHANGE_INK` line (`tests/exchange.test.mjs` now fails without one). Waiting on the user's call.
+**Shut the Shiny Exchange while the duo biomes grow?** (asked 2026-10-20) Recommended no: the duo work stays on `duo-types` till it goes live, each new Safari area gets its machine by itself (`SAFARI_DEX_PAGES`), and a Pokémon not caught yet comes out sealed and opens on its catch, so a pull before an area opens isn't lost. The 46 Electric and Ice Pokémon moving to the Power Plant and Ice Cave (`was`) are fine too: shinies, sealed capsules and catches are kept by Pokémon, not area, so a sealed Meadow Pikachu opens on a Power Plant catch; at launch their capsules just move to the new machines. A new area needs only an `EXCHANGE_INK` line (`tests/exchange.test.mjs` now fails without one). Waiting on the user's call.
 
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6
