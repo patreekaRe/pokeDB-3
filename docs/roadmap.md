@@ -1172,6 +1172,18 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Sky Pillar F100 combo: targeted nerfs, not "nerf everything"** (2026-10-20, a friend's Turtwig climb reached floor 100
+in 366 turns, with a ~12-card deck: Leech Seed, "double strength" (Growth Spurt), "a power giving block by strength"
+(Overgrowth), Lum Berry; augments Pollinate, Risky Climb, Early Bird, Light Pack, Momentum, Sudden Death +4). About 3.7
+turns a fight at floor 100 means the deck snowballs exponentially, faster than the tower's compounding (x1.12 HP a
+flight). Claude's lean, in order: (1) **Growth Spurt+ keeps Exhaust** (upgrade to cost 0 instead): Limit Break+ is safe in
+StS because strength never turns into block, but here Overgrowth, Horn Leech and Hoard turn it into block and healing too,
+and a thin deck replays the doubling every other turn; (2) **Lum Berry loses its draw** (StS's Medical Kit doesn't draw;
+with the draw, every status an enemy adds cycles your deck); (3) maybe Overgrowth+ at x1 (cost 0) instead of x2. Healing
+as a whole: no blanket nerf yet; Fire already reaches floor 100 in 0% of bot climbs, Grass 7%. If healing is still too
+strong after (1)-(2), give the tower its own heal pressure (a `healMult` past floor ~50) rather than cut every heal card.
+Check with the sim's tower climbs on Grass before/after (▶ CLOUD, both repos, effort: high). **Waiting on the user's call.**
+
 **A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
 catching, ~33% longer) over more floors per area (more fights, not more Pokémon). It needs a bot check of the day's win rate
