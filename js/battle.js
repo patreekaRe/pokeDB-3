@@ -32,7 +32,7 @@ import { vibrate, battleFx, calmFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems, syncDecks } from './data/duo.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
-import { spriteFit, bodyX } from './data/sprite-fit.js';
+import { spriteFit, bodyX, headFit } from './data/sprite-fit.js';
 import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog, rareMark } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS } from './data/enemies.js';
@@ -3165,9 +3165,8 @@ function switched() {
 }
 
 const HEAD = 30;   // the bench chip's circle, CSS px
-const HEADS = new Map();   // a sprite's head box, found once
-/** The benched partner's animated sprite zoomed onto its head (the user's call, 2026-10-20: small, its face only): a square
-    half its resting pose's height (SPRITE_FIT) from the top of the pose, centred on that band's pixels in the first frame. */
+/** The benched partner's animated sprite zoomed onto its head (the user's call, 2026-10-20: small, its face only), by
+    HEAD_FIT, measured over its whole loop so a hop or a sway stays in the circle (tools/head-fit.py). */
 function headShot(src) {
   const pic = el('span', 'bench-pic');
   pic.dataset.src = src;
@@ -3175,21 +3174,8 @@ function headShot(src) {
   img.alt = '';
   img.onload = () => {
     const W = img.naturalWidth, H = img.naturalHeight;
-    if (!HEADS.has(src)) {
-      const [top, bottom, left, right] = spriteFit(src);
-      const size = Math.max(8, Math.round(Math.max(W - left - right, H - top - bottom) * 0.5));
-      const c = document.createElement('canvas');
-      c.width = W; c.height = H;
-      const g = c.getContext('2d', { willReadFrequently: true });
-      g.drawImage(img, 0, 0);
-      const px = g.getImageData(0, 0, W, Math.min(H, top + size)).data;
-      let sum = 0, n = 0;
-      for (let y = top; y < Math.min(H, top + size); y++) for (let x = left; x < W - right; x++) {
-        if (px[(y * W + x) * 4 + 3] >= 128) { sum += x; n++; }
-      }
-      HEADS.set(src, { cx: n ? sum / n + 0.5 : W / 2, cy: top + size / 2, size });
-    }
-    const { cx, cy, size } = HEADS.get(src), k = HEAD * 1.05 / size;
+    const [cx, cy, size] = headFit(src) ?? [W / 2, H / 2, Math.max(W, H)];
+    const k = HEAD / size;
     Object.assign(img.style, { width: `${W * k}px`, height: `${H * k}px`, left: `${HEAD / 2 - cx * k}px`, top: `${HEAD / 2 - cy * k}px` });
   };
   img.src = src;

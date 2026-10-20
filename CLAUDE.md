@@ -139,7 +139,7 @@ These used to be buried in the notes. Each one has its detail in the reference f
 - A new flash or shake checks `calmFx()`, and a new battle effect checks `battleFx()` (both in `js/prefs.js`).
 - Replacing an id moves old saves over: `RENAMED_STARTERS`, `RENAMED_FURNITURE`.
 - What a new thing needs:
-  - **Starter**: front / back / shiny GIFs per stage, `SPRITE_FIT` and `BODY_X` lines, and a cry in `CRIES`. A
+  - **Starter**: front / back / shiny GIFs per stage, `SPRITE_FIT`, `BODY_X` and `HEAD_FIT` lines (`tools/head-fit.py`), and a cry in `CRIES`. A
     legendary also needs `tools/legendary-aura.py`. (`starters.md`)
   - **Safari Pokémon**: a signature card, its GIF and a `SPRITE_FIT` line. (`safari.md`)
   - **Badge**: a `LOOK` line in `js/trainercard.js`. (`badges-and-trainer-card.md`)
