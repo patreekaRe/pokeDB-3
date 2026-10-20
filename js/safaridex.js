@@ -127,6 +127,11 @@ function signature(id, got) {
   return box;
 }
 
+/* The banner's rare: the first only this page has, since Chansey and Kecleon spawn in two areas each and every banner
+   showed the same two (the user's report, 2026-10-20) */
+const RARE_PAGES = SAFARI_DEX_PAGES.flatMap(p => p.rare).reduce((n, id) => n.set(id, (n.get(id) ?? 0) + 1), new Map());
+const bannerRare = (page) => page.rare.find(id => RARE_PAGES.get(id) === 1) ?? page.rare[0];
+
 const GROUPS = SAFARI_DEX_PAGES.map(p => {
   const things = p.ids.map(id => ({ id, rare: p.rare.includes(id) }));
   const [b1, b2] = AREA_INK[p.area] ?? ['#9ccf54', '#3e7a24'];
@@ -199,9 +204,9 @@ export const safariDexApp = shelfApp({
     m.title = earned ? `${g.name}: every Pokémon caught` : `${g.name}: catch them all for its reward`;
     return m;
   },
-  bannerArt(g) {   // a wild, the first rare spawn in the middle, another wild, like the Pokédex's three
+  bannerArt(g) {   // a wild, a rare spawn in the middle, another wild, like the Pokédex's three
     const { seen } = record();
-    const ids = [g.page.wild[0], g.page.rare[0] ?? g.page.wild[2], g.page.wild[1]].filter(Boolean);
+    const ids = [g.page.wild[0], bannerRare(g.page) ?? g.page.wild[2], g.page.wild[1]].filter(Boolean);
     const mons = el('span', 'pdx-banner-mons');
     mons.append(...ids.map(id => sprite(id, `pdx-banner-mon${seen.has(id) ? '' : ' unseen'}`)));
     return mons;
