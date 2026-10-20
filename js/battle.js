@@ -3164,8 +3164,41 @@ function switched() {
   if (hasRelic('eject-button')) gainBlock(4);
 }
 
-/** The partner's chip: its portrait in its type's colour (its title says how the coming hit would land on it), and the
-    armed switch's Go pill. */
+const HEAD = 30;   // the bench chip's circle, CSS px
+const HEADS = new Map();   // a sprite's head box, found once
+/** The benched partner's animated sprite zoomed onto its head (the user's call, 2026-10-20: small, its face only): a square
+    half its resting pose's height (SPRITE_FIT) from the top of the pose, centred on that band's pixels in the first frame. */
+function headShot(src) {
+  const pic = el('span', 'bench-pic');
+  pic.dataset.src = src;
+  const img = el('img', 'bench-face pixel');
+  img.alt = '';
+  img.onload = () => {
+    const W = img.naturalWidth, H = img.naturalHeight;
+    if (!HEADS.has(src)) {
+      const [top, bottom, left, right] = spriteFit(src);
+      const size = Math.max(8, Math.round(Math.max(W - left - right, H - top - bottom) * 0.5));
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const g = c.getContext('2d', { willReadFrequently: true });
+      g.drawImage(img, 0, 0);
+      const px = g.getImageData(0, 0, W, Math.min(H, top + size)).data;
+      let sum = 0, n = 0;
+      for (let y = top; y < Math.min(H, top + size); y++) for (let x = left; x < W - right; x++) {
+        if (px[(y * W + x) * 4 + 3] >= 128) { sum += x; n++; }
+      }
+      HEADS.set(src, { cx: n ? sum / n + 0.5 : W / 2, cy: top + size / 2, size });
+    }
+    const { cx, cy, size } = HEADS.get(src), k = HEAD * 1.05 / size;
+    Object.assign(img.style, { width: `${W * k}px`, height: `${H * k}px`, left: `${HEAD / 2 - cx * k}px`, top: `${HEAD / 2 - cy * k}px` });
+  };
+  img.src = src;
+  pic.append(img);
+  return pic;
+}
+
+/** The partner's chip: its animated head in its type's colour, ▲ when the coming hit is super effective on it and ▼ when
+    it's resisted (the intent's own marks are for the one out), and the armed switch's Go pill. */
 function renderBench() {
   const b = battle, chip = $('player-bench'), go = $('switch-go');
   chip.hidden = !b?.duo;
@@ -3175,14 +3208,15 @@ function renderBench() {
   const move = !b.over && currentMove();
   const hits = move && (move.kind === 'attack' || move.kind === 'drain') && !paralyzing();
   const edge = hits ? enemyTypeMultiplier(move, mate.type) : 1;
-  const face = el('img', 'bench-face pixel');
-  face.src = spriteUrl(mate, 'front', b.stage);
-  face.alt = '';
+  const mark = edge > 1 ? '▲' : edge < 1 ? '▼' : '';
+  const src = spriteUrl(mate, 'front', b.stage);
+  // the same animated sprite stays put across re-renders, so its loop never restarts
+  const pic = chip.querySelector('.bench-pic')?.dataset.src === src ? chip.querySelector('.bench-pic') : headShot(src);
   chip.dataset.type = mate.type;
   chip.classList.toggle('armed', b.duo.armed);
   // its own piles: the hand it holds this turn, else its draw pile (it draws a hand the first time it comes out)
   const own = b.duo.piles?.[1 - b.duo.run.out], held = own && b.duo.drew[1 - b.duo.run.out];
-  chip.replaceChildren(face);   // just the portrait: its piles and the coming hit are in its title (the user's call, 2026-10-20)
+  chip.replaceChildren(pic, ...(mark ? [el('b', `bench-mark ${edge > 1 ? 'up' : 'down'}`, mark)] : []));   // its piles are in its title
   const coming = hits ? ` ${move.name} would be ${edge > 1 ? 'super effective' : edge < 1 ? 'not very effective' : 'neutral'} on it.` : '';
   const piles = own ? held ? ` Its hand: ${own.hand.length} cards.` : ` It draws its own hand when it comes out (${own.drawPile.length} in its draw pile).` : '';
   const cost = switchCost(), price = cost ? `${cost} PP` : 'free (Shed Shell)';

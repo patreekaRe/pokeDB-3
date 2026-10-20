@@ -318,5 +318,7 @@ generic class name, grep `css/` and `js/` for it.
 
 
 **A duo's swap button** (2026-10-20, the user's call from their phone): the benched partner's portrait (`#player-bench`)
-sits on the player plate's top-left corner, 44px, layered over its edge (`#player-plate .bench-chip` in `css/screens.css`);
-the name pads past it. The plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.
+sits just outside the player plate's top-left corner, 30px, so the name and the status icons keep their room
+(`#player-plate .bench-chip` in `css/screens.css`). It shows the animated sprite zoomed onto its head (`headShot()` in
+`js/battle.js`: a square half the pose's height from its top, centred on that band's pixels), with the ▲ / ▼ for the
+coming hit on its outer corner; its piles are in its title only. The plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.
