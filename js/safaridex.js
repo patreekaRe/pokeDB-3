@@ -28,6 +28,7 @@ import { sealedCount } from './data/exchange.js';
 import { shelfApp, typed } from './bagdex.js';
 import { REAL_TYPES, speciesTypes } from './data/real-types.js';
 import { still, sceneImg, progressBar } from './pokedex.js';
+import { typeText } from './type-badge.js';
 
 const AREA_ICON = { meadow: '🌼', forest: '🌲', wetland: '💧', marsh: '🍄', peak: '🏔️', desert: '🌵', powerplant: '⚡', icecave: '🧊', dojomountain: '🥋', quarry: '⛏️', windycliffs: '🪶', nightalley: '🌙' };
 // each area's banner and handheld colours, like a biome's
@@ -231,7 +232,7 @@ export const safariDexApp = shelfApp({
     if (known) nodes.push(el('span', `pdx-role${t.rare ? ' sdx-rare' : ''}`, t.rare ? '✦ Rare' : 'Wild'));
     if (record().caught.has(t.id)) {   // its real types, as the Safari's battles use them (js/data/real-types.js)
       const chips = el('span', 'sdx-typechips');
-      chips.append(...speciesTypes(ENEMY_DEFS[t.id]).map(type => el('span', `index-only type-${type}`, `${REAL_TYPES[type].icon} ${REAL_TYPES[type].label}`)));
+      chips.append(...speciesTypes(ENEMY_DEFS[t.id]).map(type => { const c = el('span', `index-only type-${type}`); c.append(typeText(type, REAL_TYPES[type].icon, REAL_TYPES[type].label)); return c; }));
       nodes.push(chips, el('span', 'pdx-caught gold', 'Caught'));
     }
     const level = safariSparkle(t.id), held = sealedOf(t.id);

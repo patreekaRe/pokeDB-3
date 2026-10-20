@@ -22,7 +22,7 @@ import { boardApp, safariTop } from './leaderboard.js';
 import { cloudConfigured } from './cloud.js';
 import { startGate, stopGate } from './safari-lobby.js';
 import { ballsApp } from './shop.js';
-import { duoApp, duoLabel, duoUnlocked } from './duoprep.js';
+import { duoApp, duoLabel, duoUnlocked, duoLooks } from './duoprep.js';
 import { playSound } from './audio.js';
 import { bootDevice } from './device-boot.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -37,7 +37,7 @@ const RULES = [
   ['🔴', `Throw a ball at any wild Pokémon: ${THROW_PP} PP, and it ends your turn. At full HP it's a long shot; the lower its HP, the better.`],
   ['🎯', 'Debuffs on it raise the odds.'],
   ['🆚', 'Wild Pokémon have their real types and moves, on the real Gen 5 chart (no immunities). A ▲ on a card means super effective.'],
-  ['🤝', 'Duo Run: once today\'s Daily run is done, replay it with two of your own starters, switching for 1 PP. Same-type attacks deal 20% more.'],
+  ['🤝', 'Duo Run: once today\'s Daily run is done, play two of your own starters on three areas of its own. Hold your Pokémon to switch: 1 PP, and it ends your turn. Same-type attacks deal 20% more.'],
   ['🍙', 'Bait: better odds, but it hits harder. A card reward after fights, Safari runs only.', 'bait'],
   ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, but it may run off. A card reward after fights, Safari runs only.`, 'rock'],
   ['rare', `A room marked with rustling grass on the map holds a rare Pokémon. It runs off after ${RARE.turns} turns.`],
@@ -87,7 +87,7 @@ const APPS = {
   'sp-dex': { name: 'Safari Dex', cls: 'cdev-dex', app: safariDexApp },
   'sp-board': { name: 'Ranks', cls: 'cdev-dex sp-board-app', app: boardApp('safari') },
   'sp-corner': { name: 'Poké Balls', cls: 'cdev-win cdev-corner', app: ballsApp, a: 'Buy' },
-  'sp-duo': { name: 'Duo Run', cls: 'cdev-dex sp-duo-app', app: duoApp, a: duoLabel },
+  'sp-duo': { name: 'Duo Run', cls: 'cdev-dex sp-duo-app', app: duoApp, a: duoLabel, window: true },   // the window stays: the duo stands at the gate as it's picked
 };
 const SLIDE = { duration: 260, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -141,7 +141,7 @@ function back() {
 /** The window folds away under an app, the lit key is the open app's, the LCD names it and A is its own. */
 function dressKeys() {
   const page = $('sp-page');
-  page.classList.toggle('app-open', !!app);
+  page.classList.toggle('app-open', !!app && !app.def.window);
   for (const id of Object.keys(APPS)) {
     $(id).classList.toggle('on', app?.key === id);
     $(id).setAttribute('aria-pressed', String(app?.key === id));
@@ -157,6 +157,22 @@ function dressKeys() {
     $('sp-start').disabled = false;
     render();   // a buy may have moved the balls
   }
+  dressGate();
+}
+
+/** The Duo app's picks stand at the gate as they're made, lead on the left (the user's ask, 2026-10-20); otherwise the
+    day's starter stands there alone. */
+function dressGate() {
+  const duo = app?.key === 'sp-duo' ? duoLooks() : null;
+  const mon = $('sp-gate-mon'), mon2 = $('sp-gate-mon2'), note = $('sp-gate-note');
+  $('sp-top').classList.toggle('duo-gate', !!duo);
+  mon2.hidden = !duo?.[1];
+  note.hidden = !duo || duo.length === 2;
+  if (!duo) { mon.hidden = false; return; }
+  mon.hidden = !duo[0];
+  if (duo[0]) { mon.src = spriteUrl(duo[0], 'front', 0); mon.alt = duo[0].line[0].name; }
+  if (duo[1]) { mon2.src = spriteUrl(duo[1], 'front', 0); mon2.alt = duo[1].line[0].name; }
+  note.textContent = duo.length ? 'Pick a partner' : 'Pick your duo';
 }
 
 /** The gate in the window: a strip of meadow under the starter, the sky from the window's top. */
