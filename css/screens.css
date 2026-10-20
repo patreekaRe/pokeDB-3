@@ -4211,6 +4211,8 @@ body.scene-peek #backdrop { display: none; }
   translate: -50% calc(4px - 100%); pointer-events: none; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3)); animation: pdxIdle 1.4s ease-in-out infinite; }
 .tdev-keys.sp-keys { grid-template-columns: repeat(5, 1fr); max-width: 400px; }
 #sp-duo.locked .mdex-ico { opacity: 0.5; }
+/* .cdev-dex's overflow: hidden is for the Dex, which scrolls its own list; the Duo app is one long page */
+.cdev-app.sp-duo-app { overflow-y: auto; }
 /* the Duo key's app (js/duoprep.js): today's road, the duo pool's portraits, how the pair fares */
 .duo-app { padding: 10px 12px 18px; display: flex; flex-direction: column; gap: 8px; font-family: var(--pixel-font); color: #1f3a14; }
 .duo-head { margin: 4px 0 0; font-size: 0.85rem; letter-spacing: 0.04em; text-transform: uppercase; }

@@ -234,6 +234,8 @@ enemies allowed): Magnemite; Poliwag, Ralts; Gible, Geodude, Nidoran♂, Nidoran
 Larvitar, Seedot (`DUO_LINES`, `DUO_STARTERS`, PokeAPI backs and shinies, 33 cries at -13 LUFS, `SPRITE_FIT` / `BODY_X`).
 Not moved into their type areas (`docs/duo-design.md` section 3). The user misread earlier: two-stage lines aren't
 wanted, so nothing to decide there. To merge into `duo-types`; **waiting on the user**: a playtest.
+Also fixed (2026-10-20, the user's phone): the Duo app wouldn't scroll (`.cdev-dex`'s `overflow: hidden` beat the app
+panel's `overflow: auto`; `.cdev-app.sp-duo-app` now scrolls).
 Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
 start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
 docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo
@@ -1189,6 +1191,12 @@ for its looks. The mock (https://claude.ai/artifact/YQMMJCScQXDoPqKtXfqmQq) has 
 then three groups: **Starter types** (Fire / Water / Grass), **Caught in the Safari**, **Still to find** (locked, with
 where to catch one). Each type is a card with its Ability and a scrolling row of every owned look (legendaries tagged),
 then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict before building.
+
+**The Safari lobby's area rows with the Duo app's silhouettes** (2026-10-20, the user: "I might want a mix of those
+1/2/3 biome names with number caught mixed with the sprites too"; **not decided**). The Daily lobby's LCD lists today's
+three areas as number, name and Safari Dex count (`js/safariprep.js`). The Duo app's "Today's road" shows the same three
+areas with type chips, four silhouettes and the rare ✦ (`road()` in `js/duoprep.js`). The idea: give each lobby row a
+strip of that area's silhouettes (seen ones in colour) under its name and count, keeping the lobby's top as it is.
 
 **Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
 - **The duo** (built first, Safari only): bring two starters of different types, one out at a time. Switch for 1 PP
