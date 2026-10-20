@@ -1077,8 +1077,14 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 **Chansey and Kecleon in two Safari areas each** (2026-10-20, the user asked why). Phase 2 made two new Safari-only rares
 and gave one to each of the first four areas (Chansey: Meadow, Wetland; Kecleon: Forest, Marsh); the Safari Pokédex counts
-by species, so one catch fills both pages. Options put to the user: keep it, or give Wetland and Marsh a rare of their own
-in its place. Waiting on their call.
+by species, so one catch fills both pages. **The user's call: keep it** (2026-10-20). Nothing to build.
+
+**A fresh seed for each Day Pass replay** (2026-10-20, the user's idea). Today a replay (and a Duo Run) plays the day's
+exact run again: same starter, areas, maps, wilds and rare spawns. Replays never go on the leaderboard, so they needn't
+match anyone's. Claude's lean: the free first try stays the day's shared seed; each replay keeps the day's starter and 3
+areas (the day's identity, and what brings you back tomorrow) but rolls new maps, wilds and rare spawns from a seed of the
+day and the try number (`beginSafari()` in `js/run.js`; still seeded, so a refresh mid-run keeps its map). Open: keep a
+"same run again" choice beside it, or not. Waiting on the user's go.
 
 **A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
