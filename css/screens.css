@@ -430,8 +430,8 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .nameplate-title strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nameplate-title .chip { padding: 0; background: none; font-size: 1rem; line-height: 1; cursor: help; display: inline-flex; gap: 2px; }
 .nameplate-title .chip .type-badge { width: 1.3em; height: 1.3em; }   /* just the type's pixel icon, no pill */
-/* a duo's benched partner on your nameplate (renderBench() in js/battle.js): a portrait in its type's colour, its
-   ▲ / ▼ for the coming hit; a tap arms the switch's Go pill over the plate */
+/* a duo's benched partner on your nameplate (renderBench() in js/battle.js): just its portrait in its type's colour;
+   a tap arms the switch's Go pill over the plate */
 .bench-chip {
   --c1: #9aa0b4; --c2: #4a4e60;
   position: relative; flex: none; margin-left: auto;
@@ -456,18 +456,6 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 #player-plate:has(.bench-chip:not([hidden])) .nameplate-title strong { padding-left: 24px; }
 .bench-chip.armed { box-shadow: 0 0 0 2px #ffd84a, 0 0 8px 2px rgba(255, 216, 74, 0.7); }
 .bench-face { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
-.bench-mark {
-  position: absolute; right: -6px; bottom: -5px;
-  font-size: 0.75rem; line-height: 1; padding: 1px 2px; border-radius: 4px;
-  background: #303038; color: #fff;
-}
-.bench-mark.up { color: #ff7a6b; }
-.bench-mark.down { color: #9fd8ff; }
-/* the partner's own piles (two decks, rule 1): its hand this turn, else its draw pile */
-.bench-cards {
-  position: absolute; left: -10px; bottom: -6px; padding: 1px 3px; border-radius: 4px; background: #303038; color: #fff;
-  font-size: 0.75rem; line-height: 1; white-space: nowrap;
-}
 .switch-go {
   position: absolute; right: 0; bottom: calc(100% + 40px); z-index: 6;
   padding: 7px 12px;

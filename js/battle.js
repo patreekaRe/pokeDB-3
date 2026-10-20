@@ -3164,8 +3164,8 @@ function switched() {
   if (hasRelic('eject-button')) gainBlock(4);
 }
 
-/** The partner's chip: its portrait in its type's colour, with ▲ when the coming hit is super effective on it and ▼
-    when it's resisted (the intent's own marks are for the one out), and the armed switch's Go pill. */
+/** The partner's chip: its portrait in its type's colour (its title says how the coming hit would land on it), and the
+    armed switch's Go pill. */
 function renderBench() {
   const b = battle, chip = $('player-bench'), go = $('switch-go');
   chip.hidden = !b?.duo;
@@ -3175,7 +3175,6 @@ function renderBench() {
   const move = !b.over && currentMove();
   const hits = move && (move.kind === 'attack' || move.kind === 'drain') && !paralyzing();
   const edge = hits ? enemyTypeMultiplier(move, mate.type) : 1;
-  const mark = edge > 1 ? '▲' : edge < 1 ? '▼' : '';
   const face = el('img', 'bench-face pixel');
   face.src = spriteUrl(mate, 'front', b.stage);
   face.alt = '';
@@ -3183,8 +3182,7 @@ function renderBench() {
   chip.classList.toggle('armed', b.duo.armed);
   // its own piles: the hand it holds this turn, else its draw pile (it draws a hand the first time it comes out)
   const own = b.duo.piles?.[1 - b.duo.run.out], held = own && b.duo.drew[1 - b.duo.run.out];
-  const cards = own ? el('b', 'bench-cards', held ? `✋${own.hand.length}` : `📚${own.drawPile.length}`) : null;
-  chip.replaceChildren(face, ...(mark ? [el('b', `bench-mark ${edge > 1 ? 'up' : 'down'}`, mark)] : []), ...(cards ? [cards] : []));
+  chip.replaceChildren(face);   // just the portrait: its piles and the coming hit are in its title (the user's call, 2026-10-20)
   const coming = hits ? ` ${move.name} would be ${edge > 1 ? 'super effective' : edge < 1 ? 'not very effective' : 'neutral'} on it.` : '';
   const piles = own ? held ? ` Its hand: ${own.hand.length} cards.` : ` It draws its own hand when it comes out (${own.drawPile.length} in its draw pile).` : '';
   const cost = switchCost(), price = cost ? `${cost} PP` : 'free (Shed Shell)';
