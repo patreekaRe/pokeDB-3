@@ -3168,3 +3168,8 @@ with a forced failure (No walks out, Reload reloads); tests pass (367). Detail i
 tap Smeargle). GARDEN CATALOGUE floats over Smeargle once you have a backyard, GRAND CATALOGUE over Gardevoir; the Garden
 pond is a rug-layer piece now. Checked headless (sign shown/hidden, no errors) and within the phone budget. Detail in
 `docs/reference/hub-base-mall.md`.
+
+### Safari: say why an Alpha or boss can't be caught (2026-10-20, cloud)
+The user was caught off guard that Alphas aren't catchable (Claude's call in phase 2); their call: keep the rule, explain
+it. In a Safari Alpha or boss fight Throw now shows greyed, its tap logging "Alphas are too strong to catch. Knock it out!"
+(`battle.uncatchable`, `NO_CATCH` in `js/battle.js`). Checked headless at 390x844 on `?bossfight=meadow`.
