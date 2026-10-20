@@ -3297,6 +3297,16 @@ and the Keen Eye Ability. The neutral Tailwind card is Rest (id kept; Flying's c
 in a real fight; pokeDB-sim mirrors it all. Bot: Evasion kept until a hit used it ran 20-30 points over the other types,
 so it fades as Blur does: solo 78.7, pairs 67-82. Numbers in pokeDB-sim's README.
 
+**Duo types, session 12: Flying's second** (2026-10-20, branch `duo-types`, both repos). Its table went into
+`docs/duo-design.md` first: 36 more cards, defence-leaning (Flying now 20 / 32 / 14 + 8 evolution), with art and new keys
+(`blockPerEvasion`, `blockPerTailwind`; powers `evasionBlock`, `evadeWeak`, `evadeSap`, `tailwindBlock`, `tailwindKeep`,
+`unburdenBlock`, `emptyBlock`). Sharp Beak, Sky Plate, Pretty Wing, Coba Berry, Air Balloon, Flying Memory, Flyinium Z
+(Keen Eye draws 2); Flying Gem and Swift Wing. Pidgey and Pidove as `DUO_STARTERS` looks on Starly's deck (backs, fits,
+six cries). The Windy Cliffs: an 11th Safari area holding the 35 birds, date-gated, on the Peak's painters as chalk sea
+cliffs with a `feathers` weather. The Card index's Flying tab. Gale Wings' Weak skips the tick at the end of the turn it
+lands in (`enemy.weakNew`). `tools/flying-probe.mjs` covers the new rules (54 checks). Bot: solo 92.7 vs 78.0; the pairs
+level with session 11's but Ice and Ground (-7), left for the balance pass. Numbers in pokeDB-sim's README.
+
 **Catalogue signs over the mall's shopkeepers, a walkable Garden pond** (2026-10-19, the user's ask: players didn't know to
 tap Smeargle). GARDEN CATALOGUE floats over Smeargle once you have a backyard, GRAND CATALOGUE over Gardevoir; the Garden
 pond is a rug-layer piece now. Checked headless (sign shown/hidden, no errors) and within the phone budget. Detail in

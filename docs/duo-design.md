@@ -1103,6 +1103,16 @@ Alley. Its rare spawns are the ones already rare (Farfetch'd, Togetic, Togekiss,
 wind) until its art session. **Date-gated** like the others (`SAFARI_FROM`, 2026-10-20 on the branch: move it to the day
 after the branch goes live); from then, 3 of the 11 a day.
 
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`, Flying the
+lead, 300 a cell; solo the main game at Level 0, 150), win %: flying+fire / +grass / +water / +electric / +ice /
++fighting / +ground 81.0 / 73.7 / 67.7 / 74.7 / 76.3 / 77.3 / 73.7, against session 11's Flying (`flyFirst`: these 36
+cards, the 7 relics and 2 items out, the same game files and days) 83.3 / 79.7 / 62.7 / 72.3 / 83.7 / 78.0 / 80.3; solo
+Flying 92.7 against 78.0. Solo gains most (it's now the strongest type alone: Ground's second half reached 88.0); the
+pairs are level inside the noise but Ice (-7) and Ground (-7) dipping, as Fighting's and Ground's second halves did: left
+for the balance pass (session 15), with Flying's solo. Relic ranks (strong bot, solo Flying, 150 each, prog over `none`
+19.53): Flyinium Z +2.7, Pretty Wing +1.8, Sharp Beak +0.9, Sky Plate +0.8, Flying Memory +0.6, Air Balloon 0.0, Coba
+Berry -0.2.
+
 ### Dark: Steal, Punish, Illusion
 
 Sly. Hits Psychic and Ghost; fears Fighting and Bug.

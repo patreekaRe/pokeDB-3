@@ -44,7 +44,7 @@ type's starter in its area adds it to your duo pool.
 `duo-types`; a session working alongside another (below) works on its own `duo-types-<part>` branch and merges into
 `duo-types` when done, the later one to finish resolving the merge. Playtest links are githack links on its commit.
 **When it goes live** (one step, not a session's: every area session leaves it): set `SAFARI_FROM` in
-`js/data/safari.js` (the Power Plant, the Ice Cave, Dojo Mountain, the Quarry and any area added since) to **the day after** the merge
+`js/data/safari.js` (the Power Plant, the Ice Cave, Dojo Mountain, the Quarry, the Windy Cliffs and any area added since) to **the day after** the merge
 reaches `main` (UTC), in the same push, so no Safari day already played is dealt again. It reads 2026-10-20 on the branch. The
 branch's `NEXT` patch lines (one per type) are past `RELEASE_AT`: cut that patch in the same merge.
 **One at a time from now on** (the user's call, 2026-10-19, after 0 and 2 ran side by side): run the sessions
@@ -183,13 +183,26 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?arena=fight&starter=starly&cards=peck,acrobatics,tailwind-gust,sky-attack,feather-dance,gale`. **Waiting on the
    user**: the playtest, and whether Evasion fading at your turn and Keen Eye's draw feel right. Two Safari signature
    cards are also named Tailwind (Pelipper's, Whimsicott's), with other text: say if they should be renamed.
-Prompt for session 12, Flying's second, **next** (▶ Run in: CLOUD, effort: high, the user's call: design and engine
+12. ~~**Flying's second**~~ done 2026-10-20 on `duo-types` (both repos; game `aff8789`+, `docs/duo-design.md` section 5's
+   "Flying's second session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 36 more cards
+   (defence-leaning, 74 in all) with art, Sharp Beak + 6 relics (Sky Plate, Pretty Wing, Coba Berry, Air Balloon, Flying
+   Memory, Flyinium Z), Flying Gem and Swift Wing (no Flying Drive exists), the Card index's Flying tab, Pidgey's and
+   Pidove's looks, and **the Windy Cliffs** (an 11th area: the 35 birds, date-gated, the Peak painted as chalk sea cliffs,
+   feathers on the wind; the Dark birds wait for Night Alley). Gale Wings' Weak lasts into the enemy's next turn (StS's
+   rule for a debuff landed on its own turn). Bot (300 a duo): flying+fire / +grass / +water / +electric / +ice /
+   +fighting / +ground 81.0 / 73.7 / 67.7 / 74.7 / 76.3 / 77.3 / 73.7 vs session 11's Flying (`flyFirst`) 83.3 / 79.7 /
+   62.7 / 72.3 / 83.7 / 78.0 / 80.3; solo 92.7 vs 78.0 (150): solo now the strongest type alone, the Ice and Ground pairs
+   dip ~7: both for the balance pass (15). Playtest: the githack link with `?duorun&duopool&windycliffs&coins=500`, or
+   `?area=windycliffs`, `?bossfight=windycliffs&starter=pidgey`,
+   `?arena=fight&starter=pidove&cards=phantom-wing,delta-stream,gale-wings,weightless,preen&relics=pretty-wing`.
+   **Waiting on the user**: the playtest (the Moves app now has 10 type tabs on a phone); whether the Windy Cliffs should
+   take only the birds (35, as built) or every Flying-typed Safari Pokémon (70, the bugs and bats too).
+Prompt for session 13, Dark's first, **next** (▶ Run in: CLOUD, effort: high, the user's call: design and engine
 work; attach both pokeDB-3 and pokeDB-sim, start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md
-sections 5 (Flying's first session, and Ground's second as the pattern) and 7, docs/reference/safari.md's duo section,
-cards.md and card-design.md. Build Flying's second session: write
-its ~36 cards (the defensive half) into the doc first, then the cards with art, its held item, relics and items, the Card
-index's Flying tab, Pidgey's and Pidove's looks, the Windy Cliffs area, the sim mirror and a bot check of its pairs. Push
-only to duo-types in both repos and give me a githack link."
+sections 5 (Dark's plan, and Flying's first session as the pattern) and 7, docs/reference/safari.md's duo section,
+cards.md and card-design.md. Build Dark's first session: write its ~30 cards and 8 evolution cards into the doc first,
+then the cards with art, Steal, Punish and Illusion, the Intimidate Ability, Deino's line (backs, fits, cries), the sim
+mirror and a bot check of its pairs. Push only to duo-types in both repos and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
