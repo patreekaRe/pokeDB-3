@@ -447,6 +447,7 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .bench-chip[data-type="ice"] { --c1: #a8ecff; --c2: #2a8cb8; }
 .bench-chip[data-type="fighting"] { --c1: #f49a70; --c2: #a03420; }
 .bench-chip[data-type="ground"] { --c1: #e8c878; --c2: #8a6430; }
+.bench-chip[data-type="flying"] { --c1: #c8c0ff; --c2: #5a50b0; }
 .bench-chip.armed { box-shadow: 0 0 0 2px #ffd84a, 0 0 8px 2px rgba(255, 216, 74, 0.7); }
 .bench-face { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
 .bench-mark {
@@ -1369,6 +1370,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .run-ability[data-type="ice"] { background-color: #124a5c; color: #d8f6ff; border-color: #78d8f0; }
 .run-ability[data-type="fighting"] { background-color: #5c1c10; color: #ffdccc; border-color: #f08060; }
 .run-ability[data-type="ground"] { background-color: #4a3414; color: #fbe8c0; border-color: #e0b060; }
+.run-ability[data-type="flying"] { background-color: #24205c; color: #e8e4ff; border-color: #a8a0f8; }
 @keyframes abilitySheen { 0%, 55% { transform: translateX(-170%); } 100% { transform: translateX(170%); } }
 @keyframes abilityGlow { 50% { opacity: 1; } }
 .run-ability[data-type="grass"]   { --glow: #62d474; }
@@ -1379,6 +1381,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .run-ability[data-type="ice"] { --glow: #78d8f0; }
 .run-ability[data-type="fighting"] { --glow: #f08060; }
 .run-ability[data-type="ground"] { --glow: #e0b060; }
+.run-ability[data-type="flying"] { --glow: #a8a0f8; }
 .run-ability[data-state="off"] { filter: saturate(0.7) brightness(0.85); }
 .run-ability[data-state="on"] { box-shadow: 0 0 6px #ff5010; animation: blazeCapsule 0.8s steps(2) infinite; }
 .run-ability[data-state="on"]::after { animation: none; }
@@ -2461,6 +2464,7 @@ body.battle-intro { pointer-events: none; }
 .hof-entry.type-ice { border-left-color: #3aa0c8; }
 .hof-entry.type-fighting { border-left-color: #b8442c; }
 .hof-entry.type-ground { border-left-color: #a87c38; }
+.hof-entry.type-flying { border-left-color: #7a70d8; }
 .hof-entry-pic { display: grid; place-items: center; flex: none; width: 96px; height: 96px; }
 .hof-entry-pic img { max-width: 96px; max-height: 96px; image-rendering: pixelated; }
 .hof-entry .hof-plate { flex: 1; min-width: 0; padding: 0; border: 0; background: none; box-shadow: none; }
@@ -2480,6 +2484,7 @@ body.battle-intro { pointer-events: none; }
 .loss-chart.type-ice { --hp: #3aa0c8; }
 .loss-chart.type-fighting { --hp: #b8442c; }
 .loss-chart.type-ground { --hp: #a87c38; }
+.loss-chart.type-flying { --hp: #7a70d8; }
 .loss-plot { position: relative; height: 84px; }
 .loss-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .loss-line { fill: none; stroke: var(--hp); stroke-width: 3px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
@@ -4228,6 +4233,7 @@ body.scene-peek #backdrop { display: none; }
 .duo-pick.type-ice .duo-face { background: radial-gradient(circle at 50% 35%, #eafcff, #8ae0f8); }
 .duo-pick.type-fighting .duo-face { background: radial-gradient(circle at 50% 35%, #ffe0d0, #f49a70); }
 .duo-pick.type-ground .duo-face { background: radial-gradient(circle at 50% 35%, #fff0d0, #e8c878); }
+.duo-pick.type-flying .duo-face { background: radial-gradient(circle at 50% 35%, #f0eeff, #c8c0ff); }
 .duo-face img { width: 100%; height: 100%; object-fit: contain; }
 .duo-face-type { position: absolute; left: -4px; top: -4px; font-size: 0.8rem; }
 .duo-face-no { position: absolute; right: -8px; bottom: -6px; padding: 1px 4px; border-radius: 4px; background: #e2a92c; color: #303038; font-style: normal; font-size: 0.75rem; }
@@ -5500,6 +5506,7 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 .duo-take[data-type="ice"] { --c1: #a8ecff; --c2: #2a8cb8; }
 .duo-take[data-type="fighting"] { --c1: #f49a70; --c2: #a03420; }
 .duo-take[data-type="ground"] { --c1: #e8c878; --c2: #8a6430; }
+.duo-take[data-type="flying"] { --c1: #c8c0ff; --c2: #5a50b0; }
 .duo-take-face { width: 72px; height: 72px; object-fit: contain; }
 #reward-screen:has(> .deck-pick) .reward-bottom { order: 1; position: static; flex: none; margin: 0; align-self: center; }
 #reward-screen:has(> .deck-pick) .reward-log { box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px var(--shell-rim); border-color: var(--shell-rim); }

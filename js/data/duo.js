@@ -30,6 +30,7 @@ export const DUO_LINES = {
   ice: { vanillite: ['vanillite', 'vanillish', 'vanilluxe'], swinub: ['swinub', 'piloswine', 'mamoswine'] },
   fighting: { timburr: ['timburr', 'gurdurr', 'conkeldurr'], machop: ['machop', 'machoke', 'machamp'] },
   ground: { trapinch: ['trapinch', 'vibrava', 'flygon'], rhyhorn: ['rhyhorn', 'rhydon', 'rhyperior'] },
+  flying: { starly: ['starly', 'staravia', 'staraptor'] },
 };
 
 /** The two starters of a duo, lead first. */

@@ -286,6 +286,10 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     attackedLast: false, lostLast: 0,   // ...and the last one's, which Revenge and Counter read on your turn
     underground: [],   // Ground's dug cards: { card, owner, exhaust }, surfacing at the start of your next turn (surface())
     sturdy: 0,         // the times Ground's Sturdy has saved you this fight (Groundium Z: twice)
+    evasion: 0,        // Flying's: each stack halves the next enemy attack on you
+    tailwind: 0,       // Flying's: the turns left that draw 1 more card at their start
+    emptied: false,    // Feather Light has drawn this turn
+    keenTurn: 0,       // the turn Flying's Keen Eye last drew (once a turn)
     bide: null,        // Bide: { turns, stored }, the HP enemy attacks take until it lets go, twice over
     weather: ability?.id === 'snow-warning' ? { kind: 'hail', turns: ability.amount + (run.relics.includes('icy-rock') ? ICY_ROCK : 0) } : null,   // Ice's Hail (Ground's Sandstorm later): one at a time
 
@@ -610,6 +614,9 @@ function beginPlayerTurn() {
   if (p.counterEachTurn) gainCounter(p.counterEachTurn);   // Counterstance
   if (p.faultEachTurn) applyFault(p.faultEachTurn);   // Quicksand
   if (p.sandEachTurn) setWeather('sand', p.sandEachTurn);   // Sand Stream
+  if (p.evasionEachTurn) gainEvasion(p.evasionEachTurn);   // Wind Wall
+  if (b.tailwind && p.tailwindEvasion) gainEvasion(p.tailwindEvasion);   // Wind Dancer
+  if (b.tailwind && p.tailwindDamage) { const d = hurtEnemy(p.tailwindDamage); pop('enemy-zone', d > 0 ? `-${d} 🏄` : 'Blocked', d > 0 ? 'dmg' : 'note', 120); }   // Wind Rider
   if (b.turn === 1 && hasRelic('ring-target')) gainCounter(8);
   if (b.bide && --b.bide.turns <= 0) {   // Bide lets go: twice the HP the enemy's attacks took meanwhile
     const back = b.bide.stored * 2;
@@ -633,8 +640,12 @@ function beginPlayerTurn() {
   if (hasRelic('exp-share')) { playSound('fortify'); pop('player-zone', '🎓 +1 card', 'block', 150); }   // the user's call: his shout every time his relic draws
   if (a.infiniteLoop && b.discard.length) { b.drawPile = shuffle([...b.drawPile, ...b.discard]); b.discard = []; }   // Infinite Loop
   if (b.duo) b.duo.drew = b.duo.drew.map((_, i) => i === b.duo.run.out);
-  draw(turnDraw() + b.drawNext);
+  b.emptied = false;
+  const wind = b.tailwind > 0 ? 1 : 0;   // Tailwind: a turn goes as it draws
+  draw(turnDraw() + b.drawNext + wind);
+  b.tailwind -= wind;
   b.drawNext = 0;
+  if (b.turn === 1 && hasAbility('keen-eye')) keenEye();
   if (p.statusHeldBlock && statusHeld()) gainBlock(p.statusHeldBlock * statusHeld());   // Gritted Teeth, on the hand just drawn
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (a.randomCard) addRandomCards(a.randomCard);
@@ -813,6 +824,28 @@ const followsUp = (kind) => !!battle.powers.followAlways || battle.lastKind === 
 /** Status cards in your hand: Fighting's Guts and Reversal count them. */
 const statusHeld = () => battle.hand.filter(h => h.card.status).length;
 
+/** Evasion on you (Flying's): each stack halves one enemy attack, until a hit uses it. */
+function gainEvasion(n, delay = 0) {
+  battle.evasion += n;
+  pop('player-zone', `🪶 Evasion ${n}`, 'note good', 100 + delay);
+  statFx('player');
+}
+
+/** An enemy hit as Evasion leaves it: halved while you have any. */
+const evaded = (n) => (battle.evasion > 0 ? Math.floor(n / 2) : n);
+
+/** Flying's Keen Eye: it draws as Flying comes out, at most once a turn. */
+function keenEye() {
+  const b = battle;
+  if (b.keenTurn === b.turn) return;
+  b.keenTurn = b.turn;
+  draw(b.ability.amount);
+  abilityBanner();
+}
+
+/** Unburden (Flying's): the card is the last in your hand as it's played. `held` is the hand without it. */
+const unburdened = (held = battle.hand.length) => held === 0;
+
 /** Fault on the enemy (Ground's): it stacks and never wears off. */
 function applyFault(n, delay = 0) {
   battle.enemy.fault += n;
@@ -944,6 +977,7 @@ function costOf(card) {
   if (a.comboFree && (b.played + 1) % a.comboFree === 0) return 0;
   if (a.avatar) return card.unplayable ? card.cost : Math.max(0, 1 - (card.discount || 0));
   if (card.freeIn === 'hail' && hailing()) return 0;   // Blizzard
+  if (card.freeIn === 'tailwind' && b.tailwind > 0) return 0;   // Sky Attack
   const e = card.effects;
   return Math.max(0, card.cost - (e.costDownOnHurt || 0) * battle.timesHurt - (e.costDownOnDiscard || 0) * battle.discarded - (card.discount || 0));
 }
@@ -995,7 +1029,7 @@ function whyNotPlayable(card) {
 
 /** A card's effects as played now: scaled by evolution, plus its per-X part for the X it was played with,
     plus its `ifBurned` / `ifHurt` extras when those hold as it's played. */
-function effectsOf(card, x = 0) {
+function effectsOf(card, x = 0, held = battle.hand.length) {
   const b = battle;
   const e = scaledEffects(card, b.stage);
   if (e.perX) {
@@ -1017,6 +1051,9 @@ function effectsOf(card, x = 0) {
   if (e.ifWeather && b.weather) addExtras(e, e.ifWeather);
   if (e.ifSand && sanding()) addExtras(e, e.ifSand);
   if (e.ifFault && b.enemy.fault > 0) addExtras(e, e.ifFault);
+  if (e.ifEvasion && b.evasion > 0) addExtras(e, e.ifEvasion);
+  if (e.ifTailwind && b.tailwind > 0) addExtras(e, e.ifTailwind);
+  if (e.ifEmpty && unburdened(held)) addExtras(e, e.ifEmpty);
   if (e.ifAfterAttack && followsUp('attack')) addExtras(e, e.ifAfterAttack);
   if (e.ifAfterSkill && followsUp('skill')) addExtras(e, e.ifAfterSkill);
   if (e.ifAttacked && b.attackedLast) addExtras(e, e.ifAttacked);
@@ -1067,6 +1104,8 @@ function damageFor(card, e) {
   if (e.perLost) amount += e.perLost * b.lostLast;                // Counter
   if (e.perUnder) amount += e.perUnder * b.underground.length;    // Earth Power
   if (e.perFault) amount += e.perFault * b.enemy.fault;           // Stomping Tantrum
+  if (e.perEvasion) amount += e.perEvasion * b.evasion;           // Sky Drop
+  if (e.perTailwind) amount += e.perTailwind * b.tailwind;        // Aeroblast
   if (b.powers.sandAttack && sanding()) amount += b.powers.sandAttack;   // Sand Force
   if (e.perStatusHeld) amount += e.perStatusHeld * statusHeld();  // Reversal
   if (hasAbility('guts') && statusHeld()) amount += b.ability.amount;
@@ -1174,6 +1213,7 @@ async function playCard(uid) {
     renderAll();
   }
   if (!b.hand.length && hasRelic('magnet')) { draw(1); pop('player-zone', '🧿 Quick Powder', 'note good'); }
+  if (!b.hand.length && b.powers.emptyDraw && !b.emptied) { b.emptied = true; draw(b.powers.emptyDraw); pop('player-zone', '🎈 Feather Light', 'note good'); }
   b.busy = false;
   renderAll();
 }
@@ -1390,6 +1430,8 @@ function applyEffects(e) {
   if (e.frostMult && b.enemy.frostbite) { b.enemy.frostbite *= e.frostMult; pop('enemy-zone', `❄️ Frostbite ×${e.frostMult}`, 'note', 150); }   // Sheer Cold
   if (e.thaw && b.enemy.frostbite) { b.enemy.frostbite = 0; pop('enemy-zone', '❄️ Shattered', 'note', 150); }   // Shatter, after its hit
   if (e.hail)       setWeather('hail', e.hail);
+  if (e.evasion)    gainEvasion(e.evasion);
+  if (e.tailwind)   { b.tailwind += e.tailwind; pop('player-zone', `🌬️ Tailwind ${e.tailwind}`, 'note good', 100); }
   if (e.sand)       setWeather('sand', e.sand);
   if (e.fault)      applyFault(e.fault);
   if (e.faultMult && b.enemy.fault) { b.enemy.fault *= e.faultMult; pop('enemy-zone', `🌋 Fault ×${e.faultMult}`, 'note', 150); }   // Precipice Blades
@@ -2397,7 +2439,11 @@ async function enemyTurn() {
         const shield = b.block;
         soakShield();
         b.struck = true;
-        const through = hurtPlayer(Math.max(0, damage - (b.aug.hitReduce || 0)), move.name);
+        const dodged = b.evasion > 0 && damage > 0;   // Evasion: half, before your block
+        const hit = evaded(damage);
+        if (dodged) { b.evasion -= 1; pop('player-zone', '🪶 Evaded!', 'block', 100); }
+        const through = hurtPlayer(Math.max(0, hit - (b.aug.hitReduce || 0)), move.name);
+        if (dodged && b.powers.evadeDamage) { const d = hurtEnemy(b.powers.evadeDamage); pop('enemy-zone', d > 0 ? `-${d} 💨` : 'Blocked', d > 0 ? 'dmg' : 'note', 350); }   // Gale
         const effect = enemyTypeMultiplier(move);
         hitSound(through, effect);
         hitEffect('player-sprite');
@@ -2405,7 +2451,7 @@ async function enemyTurn() {
         pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? (effect > 1 ? 'dmg super' : 'dmg') : 'block');
         if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
         if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
-        log(withRevive(`${b.def.name} used ${move.name}! ${damage} damage${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, damage) ? `, ${Math.min(shield, damage)} blocked` : ''}.`));
+        log(withRevive(`${b.def.name} used ${move.name}! ${hit} damage${dodged ? ' (halved by Evasion)' : ''}${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, hit) ? `, ${Math.min(shield, hit)} blocked` : ''}.`));
         if (hasRelic('rocky-helmet')) {
           hurtEnemy(3);
           pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
@@ -2949,6 +2995,7 @@ async function comeOut(b) {
     d.drew[d.run.out] = true;
     draw(turnDraw());
   }
+  if (hasAbility('keen-eye')) keenEye();   // Flying's: each time it comes out, once a turn
   if (!d.came.includes(d.run.out)) {   // a fight-start Ability fires the first time each partner comes out, so switching can't farm it
     d.came.push(d.run.out);
     if (hasAbility('torrent')) { gainTide(b.ability.amount); abilityBanner(); }
@@ -3125,8 +3172,8 @@ function renderIntent() {
     // ▲ means the enemy's type is strong against yours, ▼ means it is weak against yours
     const effect = enemyTypeMultiplier(move);
     const arrow = effect > 1 ? '▲' : effect < 1 ? '▼' : '';
-    value = b.guard ? '✋' : `${attackDamage(move)}${arrow}`;
-    detail = b.guard ? 'will hit your Guard' : `${attackDamage(move)} damage${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
+    value = b.guard ? '✋' : `${evaded(attackDamage(move))}${arrow}${b.evasion ? '🪶' : ''}`;
+    detail = b.guard ? 'will hit your Guard' : `${evaded(attackDamage(move))} damage${b.evasion ? ` (${attackDamage(move)}, halved by Evasion)` : ''}${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
     if (b.safari && !typeless()) detail = `${REAL_TYPES[moveType(move, b.def)].label} move: ${detail}`;   // the real chart: which type is coming
   } else if (move.kind === 'defend') {
     icon = '🛡️'; kind = 'defend'; value = `+${move.amount}`; detail = `+${move.amount} block`;
@@ -3203,6 +3250,8 @@ function renderStatus() {
   if (b.tide)       playerBadges.push(['🌊', b.tide, `Tide ${b.tide}: lasts all fight; a move that says "per Tide" spends it all for a bigger hit`, 'good']);
   if (b.blockNext)  playerBadges.push(['🛡️', `+${b.blockNext}`, `+${b.blockNext} block at the start of your next turn`, 'block']);
   if (b.blur)       playerBadges.push(['🔰', '', 'Your block stays at the start of your next turn', 'block']);
+  if (b.evasion)    playerBadges.push(['🪶', b.evasion, `Evasion ${b.evasion}: the next ${b.evasion > 1 ? `${b.evasion} enemy attacks` : 'enemy attack'} on you deal${b.evasion > 1 ? '' : 's'} half`, 'good']);
+  if (b.tailwind)   playerBadges.push(['🌬️', b.tailwind, `Tailwind ${b.tailwind}: draw 1 more card at the start of your next ${b.tailwind > 1 ? `${b.tailwind} turns` : 'turn'}`, 'good']);
   if (b.underground.length) playerBadges.push(['⛏️', b.underground.length, `Underground: ${b.underground.map(u => u.card.name).join(', ')}. ${b.underground.length > 1 ? 'They surface' : 'It surfaces'} at the start of your next turn`, 'good']);
   if (b.counter)    playerBadges.push(['🥊', b.counter, `Counter ${b.counter}: until your next turn, each enemy attack takes ${b.counter} back`, 'good']);
   if (b.bide)       playerBadges.push(['⏳', b.bide.stored, `Bide: ${b.bide.stored} HP stored so far; in ${b.bide.turns} turn${b.bide.turns > 1 ? 's' : ''} it deals twice that`, 'good']);
@@ -3268,7 +3317,7 @@ function renderHand() {
     }
     node.classList.add('in-hand');
     const e = card.effects;
-    node.classList.toggle('follow-ready', !b.busy && ((!!e.ifAfterAttack && followsUp('attack')) || (!!e.ifAfterSkill && followsUp('skill'))));   // Follow-up: it would pay now
+    node.classList.toggle('follow-ready', !b.busy && ((!!e.ifAfterAttack && followsUp('attack')) || (!!e.ifAfterSkill && followsUp('skill')) || (!!e.ifEmpty && unburdened(b.hand.length - 1))));   // Follow-up, Unburden: it would pay now
     if (choosing) node.classList.toggle('choosable', choosing.only(entry));
     else if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     else if (b.busy) node.classList.add('waiting');
@@ -3544,7 +3593,7 @@ function renderFocus() {
 function showPreview(entry) {
   const b = battle, card = entry.card;
   const x = costOf(card) === 'X' ? b.energy : 0;
-  const e = effectsOf(card, x);
+  const e = effectsOf(card, x, b.hand.length - 1);
   if (e.exhaustHand) {
     e.exhausted = b.hand.filter(h => h !== entry && (e.exhaustHand === 'all' || (e.exhaustHand === 'status' ? h.card.status : !isAttack(h.card)))).length;
   }
@@ -3569,7 +3618,7 @@ function showPreview(entry) {
 function shieldPreview(block, ghost = false) {
   const b = battle, move = currentMove();
   const hits = !b.guard && !b.struck && (move.kind === 'attack' || move.kind === 'drain') && !paralyzing();
-  const incoming = hits ? Math.max(0, attackDamage(move) - (b.aug.hitReduce || 0)) : 0;
+  const incoming = hits ? Math.max(0, evaded(attackDamage(move)) - (b.aug.hitReduce || 0)) : 0;
   return shieldChunk('player', Math.min(block, incoming, b.hp), b.hp, b.maxHp, ghost);
 }
 

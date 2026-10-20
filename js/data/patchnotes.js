@@ -56,6 +56,7 @@ export const NEXT = [
   ['modes', 'Ice joins the Duo Run: catch Vanillite or Swinub in the new Ice Cave, then stack Frostbite on foes, grow your Icicles and call down Hail.'],
   ['modes', 'Fighting joins the Duo Run: catch Timburr or Machop on the new Dojo Mountain, then chain Follow-ups, Counter every hit, and let Guts turn junk cards into power.'],
   ['modes', 'Ground joins the Duo Run: catch Trapinch or Rhyhorn in the new Quarry, then Dig underground, open Faults that swallow weakened foes, and whip up Sandstorms.'],
+  ['modes', 'Flying joins the Duo Run: catch Starly, halve hits with Evasion, ride a Tailwind for extra cards, and hit hardest with your last card; the neutral Tailwind card is now Rest.'],
   ['modes', 'A Safari run\'s map shows how many Pokémon you\'ve caught so far, beside your Ability.'],
   ['modes', 'Every Safari replay with the Day Pass deals new maps, fights and rare spawns on the day\'s areas; the first try stays the same for everyone.'],
 ];

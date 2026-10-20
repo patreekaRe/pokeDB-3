@@ -439,6 +439,7 @@ export const SPRITE_FIT = {
   'bidoof-front': [3, 1, 3, 4],
   'shinx-back': [1, 0, 1, 3],
   'shinx-front': [2, 0, 1, 1],
+  'starly-back': [3, 0, 2, 1],
   'starly-front': [2, 0, 1, 2],
   'kricketot-front': [1, 0, 6, 6],
   'combee-front': [5, 4, 3, 3],
@@ -710,6 +711,7 @@ export const SPRITE_FIT = {
   'delcatty-front': [3, 0, 4, 6],
   'plusle-front': [5, 1, 0, 7],
   'minun-front': [5, 0, 4, 1],
+  'staravia-back': [2, 0, 2, 2],
   'staravia-front': [3, 0, 2, 3],
   'herdier-front': [3, 0, 1, 2],
   'togekiss-front': [4, 4, 5, 4],
@@ -840,6 +842,7 @@ export const SPRITE_FIT = {
   'beldum-front': [4, 5, 0, 6],
   'metang-front': [7, 4, 5, 4],
   'metagross-front': [6, 0, 4, 2],
+  'staraptor-back': [6, 2, 7, 12],
   'staraptor-front': [6, 0, 9, 5],
   'luxio-back': [2, 0, 2, 4],
   'luxio-front': [1, 0, 3, 1],
@@ -995,6 +998,9 @@ export const BODY_X = {
   'rhydon-back': 6,
   'rhyperior-front': -5,
   'rhyperior-back': 6,
+  'starly-back': 2,
+  'staravia-back': 8,
+  'staraptor-back': 10,
 };
 
 /** GIF pixels to add to a sprite's pose-box centring so its body, not its box, stands in the middle. */

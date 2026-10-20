@@ -46,6 +46,8 @@ const ICE_DECK = ['powder-snow', 'powder-snow', 'powder-snow', 'frost-armor', 'f
 const FIGHTING_DECK = ['rock-smash', 'rock-smash', 'rock-smash', 'vital-throw', 'mat-block', 'mat-block', 'mat-block', 'mat-block', 'low-kick', 'mach-punch'];
 // Fire's shape: 3 attacks, an Iron Wave (Sand Attack), 4 blocks, the Bash (Bulldoze) and a second signature (Dig)
 const GROUND_DECK = ['mud-shot', 'mud-shot', 'mud-shot', 'sand-attack', 'sand-veil', 'sand-veil', 'sand-veil', 'sand-veil', 'bulldoze', 'dig'];
+// Fire's shape: 3 attacks, an Iron Wave (Aerial Ace), 4 blocks, the Bash (Wing Attack) and a second signature (Peck)
+const FLYING_DECK = ['gust', 'gust', 'gust', 'aerial-ace', 'feather-guard', 'feather-guard', 'feather-guard', 'feather-guard', 'wing-attack', 'peck'];
 const PSYCHIC_DECK = ['psywave', 'psywave', 'psywave', 'psywave', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-guard', 'psychic-confusion', 'psystrike'];
 
 export const STARTERS = [
@@ -500,6 +502,16 @@ export const DUO_STARTERS = [
     ],
     blurb: 'Charges in a straight line until it forgets why. Its hide shrugs off a landslide, and its horn drills through bedrock.',
     deck: GROUND_DECK,
+  },
+  {
+    id: 'starly', type: 'flying', duoOnly: true,
+    line: [
+      { id: 'starly', name: 'Starly' },
+      { id: 'staravia', name: 'Staravia' },
+      { id: 'staraptor', name: 'Staraptor' },
+    ],
+    blurb: 'Small, loud and never still. Dodges what it can, rides the wind for more cards, and hits hardest with nothing left in hand.',
+    deck: FLYING_DECK,
   },
 ];
 

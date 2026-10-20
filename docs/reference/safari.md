@@ -424,7 +424,13 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   line (left for Dark's Night Alley), 40, moved in with `was:`, date-gated by `SAFARI_FROM`, painted as the Desert
   recoloured to an open-cut quarry: `SAFARI_ART.quarry`, `paintAs: 'desert'`; its rares the ones already rare: Gible,
   Gabite, Garchomp, Flygon, Rhyperior). Playtest a Duo Run in it with `&quarry`.
-- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting and Ground; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
+- **Flying's first session** (session 11, 2026-10-20; rules and card table in `docs/duo-design.md` section 5's "Flying's
+  first session"): **Starly** (`DUO_STARTERS`, `FLYING_DECK`; back GIFs, `SPRITE_FIT`, `BODY_X`, Starly's, Staravia's and
+  Staraptor's cries), `DUO_LINES.flying` (catching Starly, Staravia or Staraptor adds Flying; they still live in the Meadow
+  and the Forest until the Windy Cliffs). In `js/battle.js`: **Evasion** (`gainEvasion()`, `b.evasion`, the 🪶 badge,
+  `evaded()`), **Tailwind** (`b.tailwind`, the 🌬️ badge, its extra card in `beginPlayerTurn()`), **Unburden**
+  (`unburdened()`) and **Keen Eye** (`keenEye()`, `b.keenTurn`). `tools/flying-probe.mjs` checks them in a real fight.
+- **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting, Ground and Flying; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 

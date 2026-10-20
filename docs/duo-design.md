@@ -936,6 +936,80 @@ Light and quick: cheap cards, an empty hand, dodging. Hits Grass, Fighting, Bug;
 
 Starting deck: Gust x4 (deal 7), Feather Guard x4 (block 7), **Wing Attack** (2: deal 10, Evasion 1; Bash), Peck.
 
+#### Flying's first session: its cards (session 11, 2026-10-20)
+
+Written here before the code, as the other types' were. 30 cards in the pools (10 common, 14 uncommon, 6 rare) and all
+8 evolution cards, so a run with Flying is whole; session 12 adds the other ~36, the relics, items, Pidgey's and Pidove's
+looks and the Windy Cliffs. Each card is on a StS 1 card at x~1.2 (its model in the last column and in a comment on its
+line) with a hand-picked upgrade. The deck is Fire's shape (3 attacks, an Iron Wave, 4 blocks, the Bash and a second
+signature). This half leans on attacks and draw; the second half is the defensive one, as Ground's was.
+
+**The rules** (`js/battle.js`, mirrored in pokeDB-sim's `sim/engine.js`):
+- **Evasion** (`evasion: N`, `b.evasion`, a 🪶 badge on you): each of the next N enemy attacks on you deals half (rounded
+  down), before your block; one stack per hit. Stacks last until a hit uses them. The intent and the shield preview show
+  the halved hit. Payoffs `ifEvasion` (an extra while you have any), `perEvasion` (+N per stack), powers `evadeDamage`
+  (Gale: whenever Evasion halves a hit, deal N), `evasionEachTurn` (Wind Wall).
+- **Tailwind** (`tailwind: N`, `b.tailwind`, a 🌬️ badge): you draw 1 more card at the start of each of your next N turns
+  (a turn goes as it draws). Stacks add turns. "In Tailwind" means it's blowing (`ifTailwind`, `freeIn: 'tailwind'`),
+  `perTailwind` (+N per turn left); powers `tailwindDamage` (Wind Rider) and `tailwindEvasion` (Wind Dancer) at the start
+  of a turn in Tailwind, before it drops. The neutral card that was called Tailwind (+1 PP next turn, id `tailwind`
+  kept) is **Rest** (answer 18).
+- **Unburden** (`ifEmpty: { ... }`): a bonus if it's the last card in your hand when you play it (read as it's played,
+  before its own draw). A card whose Unburden would happen glows, as Follow-up's do. Power `emptyDraw` (Feather Light:
+  the first time a card you play leaves your hand empty each turn, draw N).
+- **Keen Eye** (the Ability, `ABILITIES.flying`): when Flying comes out, the fight's start included, draw 1, at most
+  once a turn (a duo's partner coming out again the same turn draws nothing more).
+
+| Card | Rarity | Cost | Effect | Arch | StS |
+|---|---|---|---|---|---|
+| Gust | C | 1 | Deal 8 *(up 11)* | — | Strike |
+| Feather Guard | C | 1 | Block 8 *(up 11)* | — | Defend |
+| Wing Attack | C | 2 | Deal 10, Vulnerable 2, Evasion 1 *(up 12, 3)* | Evasion | Bash, Evasion for Ground's Fault |
+| Aerial Ace | C | 1 | Deal 6, Evasion 1 *(up 9)* | Evasion | Iron Wave, Evasion for its block |
+| Feather Dance | C | 1 | Weak 2, Evasion 1 *(up 3, 2)* | Evasion | Leg Sweep-lite |
+| Air Slash | C | 1 | Deal 7; if you have Evasion, +6 *(up 9, +8)* | Evasion | Sucker Punch |
+| Tailwind | C | 1 | Tailwind 3 *(up cost 0)* | Tailwind | Tools of the Trade, as a timer |
+| Twister | C | 1 | Deal 4 twice; in Tailwind, once more *(up 5)* | Tailwind | Twin Strike |
+| Peck | C | 0 | Deal 4. Unburden: draw 1 *(up 6)* | Unburden | Flash of Steel |
+| Acrobatics | C | 1 | Deal 7. Unburden: +7 *(up 9, +9)* | Unburden | Finisher-lite, on the last card |
+| Fly | U | 2 | Deal 12, Evasion 2 *(up 16)* | Evasion | Dodge and Roll with a Strike |
+| Gale | U | 1 | Power: whenever Evasion halves a hit, deal 6 *(up 9)* | Evasion | Caltrops |
+| Sky Drop | U | 1 | Deal 6, +4 per Evasion *(up 8, +5)* | Evasion | Bane, per stack |
+| Roost | U | 1 | Heal 6, Evasion 1. Exhaust *(up heal 9)* | Evasion | Bandage Up |
+| Hurricane | U | 2 | Deal 6 three times; in Tailwind, once more *(up 8)* | Tailwind | Riddle with Holes-lite |
+| Wind Rider | U | 1 | Power: at the start of each turn in Tailwind, deal 6 *(up 9)* | Tailwind | (Tailwind's Thousand Cuts) |
+| Drill Peck | U | 1 | Deal 9; in Tailwind, +5 *(up 12, +6)* | Tailwind | Carnage-lite, in the wind |
+| Pluck | U | 0 | Deal 4, draw 1. Unburden: +4 *(up 6, +6)* | Unburden | Flash of Steel with a payoff |
+| Feather Light | U | 1 | Power: the first time your hand empties each turn, draw 2 *(up cost 0)* | Unburden | (Unburden's Evolve) |
+| Dual Wingbeat | U | 1 | Deal 5 twice. Unburden: it hits twice more *(up 6)* | Unburden | Twin Strike, doubled on the last card |
+| Glide | U | 1 | Block 7. Unburden: block 7 *(up 10, 10)* | Unburden | Defend, doubled on the last card |
+| Bounce *(bridge)* | U | 0 | Evasion 1. Unburden: draw 2 *(up draw 3)* | Evasion/Unburden | Finesse, with Evasion for its block |
+| Whirlwind *(bridge)* | U | 1 | Tailwind 2, Evasion 1 *(up 3, 2)* | Evasion/Tailwind | (Tools of the Trade + Blur) |
+| Updraft *(bridge)* | U | 0 | Tailwind 1. Unburden: draw 2 *(up Tailwind 2)* | Tailwind/Unburden | Deep Breath-lite |
+| Sky Attack | R | 2 | Deal 24; costs 0 in Tailwind *(up 30)* | Tailwind | Carnage, free in the wind (Blizzard's shape) |
+| Aeroblast | R | 2 | Deal 10, +5 per turn of Tailwind *(up 14, +6)* | Tailwind | Perfected Strike, per turn of wind |
+| Wind Wall | R | 2 | Power: at the start of each turn, Evasion 1 *(up cost 1)* | Evasion | Wraith Form, softened and kept |
+| Brave Bird | R | 1 | Lose 3 HP. Deal 20. Unburden: gain 1 PP *(up 26)* | Unburden | Hemokinesis, refunded on the last card |
+| Beak Blast | R | 1 | Deal 12. Unburden: +12, Vulnerable 2 *(up 15, +15)* | Unburden | (Unburden's Bludgeon) |
+| Wind Dancer *(bridge)* | R | 1 | Power: at the start of each turn in Tailwind, Evasion 1 *(up cost 0)* | Evasion/Tailwind | (Tailwind's Wraith Form) |
+
+Evolution cards (evo-only, 1 copy; one per archetype and one general a tier):
+
+| Card | Tier | Cost | Effect | Arch |
+|---|---|---|---|---|
+| Steel Wing | 1st | 1 | Block 9, Evasion 1 | Evasion |
+| Air Cutter | 1st | 2 | Deal 14, Tailwind 2 | Tailwind |
+| Swoop | 1st | 0 | Deal 6. Unburden: draw 2 | Unburden |
+| Wing Strike | 1st | 2 | Deal 18, Weak 1 | — |
+| Dragon Ascent | final | 2 | Deal 22, Evasion 2 | Evasion |
+| Bleakwind Storm | final | 2 | Deal 7 three times, Tailwind 2 | Tailwind |
+| Supersonic Skystrike | final | 1 | Deal 14. Unburden: it hits once more | Unburden |
+| Sky Fall | final | 3 | Deal 34, Evasion 1 | — |
+
+Flying so far: 10 common, 14 uncommon, 6 rare, 8 evolution = **38**.
+
+**Starting deck**: Gust x3, **Aerial Ace**, Feather Guard x4, Wing Attack, Peck.
+
 ### Dark: Steal, Punish, Illusion
 
 Sly. Hits Psychic and Ghost; fears Fighting and Bug.

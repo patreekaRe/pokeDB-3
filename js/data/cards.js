@@ -152,6 +152,7 @@ export const TYPES = {
   ice:      { label: 'Ice',      icon: '❄️', beats: null,   losesTo: null    },
   fighting: { label: 'Fighting', icon: '🥊', beats: null,   losesTo: null    },
   ground:   { label: 'Ground',   icon: '⛰️', beats: null,   losesTo: null    },
+  flying:   { label: 'Flying',   icon: '🪶', beats: null,   losesTo: null    },
 };
 
 /* Every card is modelled on a Slay the Spire 1 card (named in its comment), at StS's numbers
@@ -165,7 +166,7 @@ const NEUTRAL_CARDS = [
   { id: 'quick-guard',  name: 'Quick Guard',  type: 'normal', cost: 2, art: '✋', sprite: 'protective-pads', effects: { guard: true }, exhaust: true },   // Exhaust since 2026-10-16: a whole enemy turn for 2 PP, every time, topped the bot's card picks for every type
   { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', sprite: 'potion', effects: { heal: 10 }, exhaust: true },      // Bandage Up
   { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', sprite: 'smoke-ball', effects: { weaken: 2 }, exhaust: true },   // Intimidate
-  { id: 'tailwind',     name: 'Tailwind',     type: 'normal', cost: 0, art: '🌬️', sprite: 'air-balloon', effects: { nextEnergy: 1 } },
+  { id: 'tailwind',     name: 'Rest',         type: 'normal', cost: 0, art: '💤', sprite: 'air-balloon', effects: { nextEnergy: 1 } },   // was Tailwind, its id kept: Flying owns Tailwind now (docs/duo-design.md answer 18)
   { id: 'lucky-claw',   name: 'Lucky Claw',   type: 'normal', cost: 0, art: '🍀', sprite: 'razor-claw', effects: { draw: 2 }, exhaust: true, rarity: 'uncommon' },   // Finesse
   { id: 'double-hit',   name: 'Double Hit',   type: 'normal', cost: 1, art: '💥', sprite: 'lucky-punch', effects: { damage: 5, hits: 2 } },     // Twin Strike
   { id: 'swords-dance', name: 'Swords Dance', type: 'normal', cost: 1, art: '⚔️', sprite: 'rusted-sword', effects: { strength: 2 }, exhaust: true, rarity: 'uncommon' },   // Inflame
@@ -805,6 +806,43 @@ const GROUND_CARDS = [
   { id: 'solid-rock',     name: 'Solid Rock',     type: 'ground', cost: 2, art: '🗿', effects: { block: 10, sap: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { block: 14 } } },   // Disarm with a Defend+, once
 ];
 
+/* Flying (the Safari's duo pool, docs/duo-design.md section 5): Evasion halves the enemy's next hits, one stack a hit
+   (Blur and Wraith Form, softened), Tailwind draws 1 more card at the start of each of your next turns (Tools of the
+   Trade, as a timer), and Unburden pays off when the card is the last in your hand (FTL, Finisher, Grand Finale).
+   Session 11 built 30 of its ~66 pool cards and all 8 evolution cards. */
+const FLYING_CARDS = [
+  { id: 'gust',           name: 'Gust',           type: 'flying', cost: 1, art: '🌬️', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike
+  { id: 'feather-guard',  name: 'Feather Guard',  type: 'flying', cost: 1, art: '🪶', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
+  { id: 'wing-attack',    name: 'Wing Attack',    type: 'flying', cost: 2, art: '🦅', effects: { damage: 10, vulnerable: 2, evasion: 1 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },   // Bash, Evasion for Ground's Fault
+  { id: 'aerial-ace',     name: 'Aerial Ace',     type: 'flying', cost: 1, art: '✈️', effects: { damage: 6, evasion: 1 }, upgrade: { effects: { damage: 9 } } },   // Iron Wave, Evasion for its block
+  { id: 'feather-dance',  name: 'Feather Dance',  type: 'flying', cost: 1, art: '💃', effects: { weaken: 2, evasion: 1 }, upgrade: { effects: { weaken: 3, evasion: 2 } } },   // Leg Sweep-lite
+  { id: 'air-slash',      name: 'Air Slash',      type: 'flying', cost: 1, art: '🌀', effects: { damage: 7, ifEvasion: { bonus: 6 } }, upgrade: { effects: { damage: 9, ifEvasion: { bonus: 8 } } } },   // Sucker Punch
+  { id: 'tailwind-gust',  name: 'Tailwind',       type: 'flying', cost: 1, art: '🍃', effects: { tailwind: 3 }, upgrade: { cost: 0 } },   // Tools of the Trade, as a timer
+  { id: 'twister',        name: 'Twister',        type: 'flying', cost: 1, art: '🌪️', effects: { damage: 4, hits: 2, ifTailwind: { hits: 1 } }, upgrade: { effects: { damage: 5 } } },   // Twin Strike
+  { id: 'peck',           name: 'Peck',           type: 'flying', cost: 0, art: '🐦', effects: { damage: 4, ifEmpty: { draw: 1 } }, upgrade: { effects: { damage: 6 } } },   // Flash of Steel
+  { id: 'acrobatics',     name: 'Acrobatics',     type: 'flying', cost: 1, art: '🤸', effects: { damage: 7, ifEmpty: { bonus: 7 } }, upgrade: { effects: { damage: 9, ifEmpty: { bonus: 9 } } } },   // Finisher-lite, on the last card
+  { id: 'fly',            name: 'Fly',            type: 'flying', cost: 2, art: '🕊️', effects: { damage: 12, evasion: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 16 } } },   // Dodge and Roll with a Strike
+  { id: 'gale',           name: 'Gale',           type: 'flying', cost: 1, art: '💨', effects: { evadeDamage: 6 }, power: true, rarity: 'uncommon', upgrade: { effects: { evadeDamage: 9 } } },   // Caltrops
+  { id: 'sky-drop',       name: 'Sky Drop',       type: 'flying', cost: 1, art: '🪂', effects: { damage: 6, perEvasion: 4 }, rarity: 'uncommon', upgrade: { effects: { damage: 8, perEvasion: 5 } } },   // Bane, per stack
+  { id: 'roost',          name: 'Roost',          type: 'flying', cost: 1, art: '🪹', effects: { heal: 6, evasion: 1 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { heal: 9 } } },   // Bandage Up
+  { id: 'hurricane',      name: 'Hurricane',      type: 'flying', cost: 2, art: '🌀', effects: { damage: 6, hits: 3, ifTailwind: { hits: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 8 } } },   // Riddle with Holes-lite
+  { id: 'wind-rider',     name: 'Wind Rider',     type: 'flying', cost: 1, art: '🏄', effects: { tailwindDamage: 6 }, power: true, rarity: 'uncommon', upgrade: { effects: { tailwindDamage: 9 } } },   // (Tailwind's Thousand Cuts)
+  { id: 'drill-peck',     name: 'Drill Peck',     type: 'flying', cost: 1, art: '🌀', effects: { damage: 9, ifTailwind: { bonus: 5 } }, rarity: 'uncommon', upgrade: { effects: { damage: 12, ifTailwind: { bonus: 6 } } } },   // Carnage-lite, in the wind
+  { id: 'pluck',          name: 'Pluck',          type: 'flying', cost: 0, art: '🍒', effects: { damage: 4, draw: 1, ifEmpty: { bonus: 4 } }, rarity: 'uncommon', upgrade: { effects: { damage: 6, ifEmpty: { bonus: 6 } } } },   // Flash of Steel with a payoff
+  { id: 'feather-light',  name: 'Feather Light',  type: 'flying', cost: 1, art: '🎈', effects: { emptyDraw: 2 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // (Unburden's Evolve)
+  { id: 'dual-wingbeat',  name: 'Dual Wingbeat',  type: 'flying', cost: 1, art: '🪽', effects: { damage: 5, hits: 2, ifEmpty: { hits: 2 } }, rarity: 'uncommon', upgrade: { effects: { damage: 6 } } },   // Twin Strike, doubled on the last card
+  { id: 'glide',          name: 'Glide',          type: 'flying', cost: 1, art: '🛩️', effects: { block: 7, ifEmpty: { block: 7 } }, rarity: 'uncommon', upgrade: { effects: { block: 10, ifEmpty: { block: 10 } } } },   // Defend, doubled on the last card
+  { id: 'bounce',         name: 'Bounce',         type: 'flying', cost: 0, art: '🦘', effects: { evasion: 1, ifEmpty: { draw: 2 } }, rarity: 'uncommon', upgrade: { effects: { ifEmpty: { draw: 3 } } } },   // an Evasion / Unburden bridge: Finesse, with Evasion for its block
+  { id: 'whirlwind',      name: 'Whirlwind',      type: 'flying', cost: 1, art: '🌫️', effects: { tailwind: 2, evasion: 1 }, rarity: 'uncommon', upgrade: { effects: { tailwind: 3, evasion: 2 } } },   // an Evasion / Tailwind bridge: Tools of the Trade + Blur
+  { id: 'updraft',        name: 'Updraft',        type: 'flying', cost: 0, art: '🎐', effects: { tailwind: 1, ifEmpty: { draw: 2 } }, rarity: 'uncommon', upgrade: { effects: { tailwind: 2 } } },   // a Tailwind / Unburden bridge: Deep Breath-lite
+  { id: 'sky-attack',     name: 'Sky Attack',     type: 'flying', cost: 2, art: '☄️', effects: { damage: 24 }, freeIn: 'tailwind', rarity: 'rare', upgrade: { effects: { damage: 30 } } },   // Carnage, free in the wind (Blizzard's shape)
+  { id: 'aeroblast',      name: 'Aeroblast',      type: 'flying', cost: 2, art: '🎯', effects: { damage: 10, perTailwind: 5 }, rarity: 'rare', upgrade: { effects: { damage: 14, perTailwind: 6 } } },   // Perfected Strike, per turn of wind
+  { id: 'wind-wall',      name: 'Wind Wall',      type: 'flying', cost: 2, art: '🧱', effects: { evasionEachTurn: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Wraith Form, softened and kept
+  { id: 'brave-bird',     name: 'Brave Bird',     type: 'flying', cost: 1, art: '🔥', effects: { selfDamage: 3, damage: 20, ifEmpty: { energy: 1 } }, rarity: 'rare', upgrade: { effects: { damage: 26 } } },   // Hemokinesis, refunded on the last card
+  { id: 'beak-blast',     name: 'Beak Blast',     type: 'flying', cost: 1, art: '💥', effects: { damage: 12, ifEmpty: { bonus: 12, vulnerable: 2 } }, rarity: 'rare', upgrade: { effects: { damage: 15, ifEmpty: { bonus: 15, vulnerable: 2 } } } },   // (Unburden's Bludgeon)
+  { id: 'wind-dancer',    name: 'Wind Dancer',    type: 'flying', cost: 1, art: '🩰', effects: { tailwindEvasion: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // an Evasion / Tailwind bridge: Tailwind's Wraith Form
+];
+
 /* ============================================================
    EVOLUTION CARDS  -  powerful, signature moves you don't win from
    normal fights. There are two TIERS per type, one per evolution:
@@ -925,6 +963,19 @@ const GROUND_EVO_HIGH = [
   { id: 'headlong-rush',  name: 'Headlong Rush',  type: 'ground', cost: 3, art: '🦏', effects: { damage: 34, block: 8 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42, block: 11 } } },
 ];
 
+const FLYING_EVO_MID = [
+  { id: 'steel-wing',     name: 'Steel Wing',     type: 'flying', cost: 1, art: '🛡️', effects: { block: 9, evasion: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { block: 12, evasion: 2 } } },   // Evasion
+  { id: 'air-cutter',     name: 'Air Cutter',     type: 'flying', cost: 2, art: '🔪', effects: { damage: 14, tailwind: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18, tailwind: 3 } } },   // Tailwind
+  { id: 'swoop',          name: 'Swoop',          type: 'flying', cost: 0, art: '🦉', effects: { damage: 6, ifEmpty: { draw: 2 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 9 } } },   // Unburden
+  { id: 'wing-strike',    name: 'Wing Strike',    type: 'flying', cost: 2, art: '🪶', effects: { damage: 18, weaken: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 23, weaken: 2 } } },
+];
+const FLYING_EVO_HIGH = [
+  { id: 'dragon-ascent',  name: 'Dragon Ascent',  type: 'flying', cost: 2, art: '🐲', effects: { damage: 22, evasion: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 28, evasion: 3 } } },   // Evasion
+  { id: 'bleakwind-storm', name: 'Bleakwind Storm', type: 'flying', cost: 2, art: '🌩️', effects: { damage: 7, hits: 3, tailwind: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 9, tailwind: 3 } } },   // Tailwind
+  { id: 'supersonic-skystrike', name: 'Supersonic Skystrike', type: 'flying', cost: 1, art: '🚀', effects: { damage: 14, ifEmpty: { hits: 1 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18 } } },   // Unburden
+  { id: 'sky-fall',       name: 'Sky Fall',       type: 'flying', cost: 3, art: '🌠', effects: { damage: 34, evasion: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 42, evasion: 2 } } },
+];
+
 /* Fight-only cards made by other cards (`addCard`): never offered, not in the Card index, never in your run deck. */
 const TOKEN_CARDS = [
   { id: 'cinder',   name: 'Cinder',   type: 'fire',  cost: 0, art: '🔥', effects: { damage: 4 }, exhaust: true, token: true },   // Shiv
@@ -1011,11 +1062,11 @@ export const SIGNATURE_FOR = Object.fromEntries(SIGNATURE_CARDS.map(c => [c.from
 /** Every card you can be offered (the Card index lists these), and a lookup by id of every card there is,
     upgraded ones included: CARDS_BY_ID['ember'], CARDS_BY_ID['ember+']. */
 export const ALL_CARDS = [
-  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS, ...ICE_CARDS, ...FIGHTING_CARDS, ...GROUND_CARDS,
+  ...NEUTRAL_CARDS, ...FIRE_CARDS, ...GRASS_CARDS, ...WATER_CARDS, ...PSYCHIC_CARDS, ...ELECTRIC_CARDS, ...ICE_CARDS, ...FIGHTING_CARDS, ...GROUND_CARDS, ...FLYING_CARDS,
   ...FIRE_EVO_MID, ...FIRE_EVO_HIGH, ...GRASS_EVO_MID, ...GRASS_EVO_HIGH, ...WATER_EVO_MID, ...WATER_EVO_HIGH,
   ...PSYCHIC_EVO_MID, ...PSYCHIC_EVO_HIGH, ...ELECTRIC_EVO_MID, ...ELECTRIC_EVO_HIGH,
   ...ICE_EVO_MID, ...ICE_EVO_HIGH, ...FIGHTING_EVO_MID, ...FIGHTING_EVO_HIGH,
-  ...GROUND_EVO_MID, ...GROUND_EVO_HIGH,
+  ...GROUND_EVO_MID, ...GROUND_EVO_HIGH, ...FLYING_EVO_MID, ...FLYING_EVO_HIGH,
 ];
 
 /* ---------- PP Up: upgraded cards ----------
@@ -1037,7 +1088,8 @@ const POWER_STEPS = { blockEachTurn: 1, healEachTurn: 1, burnEachTurn: 1, streng
   staticEachTurn: 1, paraEnergy: 1, switchBlock: 2, switchDraw: 1, thornStatic: 1, energyBlock: 1, switchStatic: 1,
   frostEachTurn: 1, zeroBlock: 1, hailBlock: 2, icicleFrost: 1, hailFrost: 1, thornFrost: 1, hailChipBlock: 2,
   mixBlock: 1, counterEachTurn: 1, followBlock: 1, followCounter: 2, counterBlock: 1, statusBlock: 2, statusHeldBlock: 1,
-  faultEachTurn: 1, surfaceDamage: 3, sandAttack: 1, sandFault: 2, digBlock: 1, faultBlock: 1, sandChipBlock: 2, sandWeak: 1 };
+  faultEachTurn: 1, surfaceDamage: 3, sandAttack: 1, sandFault: 2, digBlock: 1, faultBlock: 1, sandChipBlock: 2, sandWeak: 1,
+  evadeDamage: 3, tailwindDamage: 3, emptyDraw: 1 };
 function upgradeOf(card) {
   if (card.upgrade) return { ...card.upgrade, effects: { ...card.effects, ...card.upgrade.effects } };
   const e = { ...card.effects };
@@ -1061,7 +1113,7 @@ const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id
 export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS].map(c => [c.id, c]));
 for (const card of [...ALL_CARDS, ...TOKEN_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
-const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS, fighting: FIGHTING_CARDS, ground: GROUND_CARDS };
+const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS, fighting: FIGHTING_CARDS, ground: GROUND_CARDS, flying: FLYING_CARDS };
 // Keyed by the evolution STAGE you're reaching: 1 = your first evolution (mid tier),
 // 2 = your final evolution (high tier).
 const EVO_SETS = {
@@ -1073,6 +1125,7 @@ const EVO_SETS = {
   ice: { 1: ICE_EVO_MID, 2: ICE_EVO_HIGH },
   fighting: { 1: FIGHTING_EVO_MID, 2: FIGHTING_EVO_HIGH },
   ground: { 1: GROUND_EVO_MID, 2: GROUND_EVO_HIGH },
+  flying: { 1: FLYING_EVO_MID, 2: FLYING_EVO_HIGH },
 };
 
 /** The cards a starter of this type can win as rewards: its own type + neutral cards. A Duo Run's (`duo`) also offers
@@ -1119,7 +1172,7 @@ export function scaledEffects(card, stage = 0) {
  * on your nameplate while it's switched on (battle.js adds up every power you play).
  */
 /** The Power Lens shown when a power card is played, in the starter's colours (purple for any other type). */
-export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦', fighting: '🟫', ground: '🟫' };
+export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦', fighting: '🟫', ground: '🟫', flying: '🟦' };
 
 export const POWERS = {
   blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
@@ -1215,6 +1268,11 @@ export const POWERS = {
   sandChipBlock:    { icon: '🧱', text: (n) => `Whenever Sandstorm hurts the enemy, gain ${n} block.` },
   sandWeak:         { icon: '😵', text: (n) => `Whenever Sandstorm hurts the enemy, apply ${n} Weak.` },
   sandKeep:         { icon: '♾️', flag: true, text: () => 'Sandstorm no longer runs out.' },
+  evadeDamage:      { icon: '💨', text: (n) => `Whenever Evasion halves a hit, deal ${n} damage.` },
+  evasionEachTurn:  { icon: '🧱', text: (n) => `At the start of each turn, Evasion ${n}.` },
+  tailwindDamage:   { icon: '🏄', text: (n) => `At the start of each turn in Tailwind, deal ${n} damage.` },
+  tailwindEvasion:  { icon: '🩰', text: (n) => `At the start of each turn in Tailwind, Evasion ${n}.` },
+  emptyDraw:        { icon: '🎈', text: (n) => `The first time your hand empties each turn, draw ${plural(n, 'card')}.` },
   regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
@@ -1251,6 +1309,8 @@ function sentences(e) {
   if (e.perFrost)     parts.push(`+${e.perFrost} for each Frostbite on the enemy.`);
   if (e.thaw)         parts.push('Then remove all its Frostbite.');
   if (e.perUnder)     parts.push(`+${e.perUnder} for each card underground.`);
+  if (e.perEvasion)   parts.push(`+${e.perEvasion} for each Evasion you have.`);
+  if (e.perTailwind)  parts.push(`+${e.perTailwind} for each turn of Tailwind left.`);
   if (e.perFault)     parts.push(`+${e.perFault} for each Fault on the enemy.`);
   if (e.perLost)      parts.push(`+${e.perLost} for each HP you lost last enemy turn.`);
   if (e.perStatusHeld) parts.push(`+${e.perStatusHeld} for each status card in your hand.`);
@@ -1267,6 +1327,8 @@ function sentences(e) {
   if (e.frostMult)    parts.push(`${MULT[e.frostMult] ?? `Multiply by ${e.frostMult}`} the enemy's Frostbite.`);
   if (e.hail)         parts.push(`Hail ${e.hail}.`);
   if (e.sand)         parts.push(`Sandstorm ${e.sand}.`);
+  if (e.evasion)      parts.push(`Evasion ${e.evasion}.`);
+  if (e.tailwind)     parts.push(`Tailwind ${e.tailwind}.`);
   if (e.fault)        parts.push(`Fault ${e.fault}.`);
   if (e.faultMult)    parts.push(`${MULT[e.faultMult] ?? `Multiply by ${e.faultMult}`} the enemy's Fault.`);
   if (e.bide)         parts.push(`Store the HP you lose over the next ${e.bide} enemy turns, then deal twice that.`);
@@ -1366,6 +1428,9 @@ function sentences(e) {
   if (e.ifSand)       parts.push(`In Sandstorm: ${sentences(e.ifSand).join(' ')}`);
   if (e.ifFault)      parts.push(`If the enemy has Fault: ${sentences(e.ifFault).join(' ')}`);
   if (e.surface)      parts.push(`Dig. Surface: ${sentences(e.surface).join(' ')}`);
+  if (e.ifEvasion)    parts.push(`If you have Evasion: ${sentences(e.ifEvasion).join(' ')}`);
+  if (e.ifTailwind)   parts.push(`In Tailwind: ${sentences(e.ifTailwind).join(' ')}`);
+  if (e.ifEmpty)      parts.push(`Unburden: ${sentences(e.ifEmpty).join(' ')}`);
   return parts;
 }
 
@@ -1390,6 +1455,7 @@ export function describe(card, stage = 0) {
   if (card.growOnPlay?.discount) parts.push(`Each time you play it, it costs ${card.growOnPlay.discount} less this fight.`);
   if (card.icicle) parts.push('Icicle.');
   if (card.freeIn === 'hail') parts.push('Costs 0 in Hail.');
+  if (card.freeIn === 'tailwind') parts.push('Costs 0 in Tailwind.');
   if (!parts.length && card.status) parts.push(card.exhaust ? 'Does nothing.' : 'Clogs your hand.');
   return parts.join(' ');
 }
@@ -1418,6 +1484,9 @@ export const TERMS = {
   Dig: 'Goes underground when played. At the start of your next turn it surfaces and does its Surface part.',
   Fault: 'At the start of its turn, if its HP is at or below its Fault, it\'s knocked out. Alphas and bosses count half.',
   Sandstorm: `Weather. At the end of your turn the enemy loses ${SAND.chip} HP. Your Ground cards block +${SAND.bonus}. Lasts that many turns.`,
+  Evasion: 'Each stack halves the next enemy attack on you, before your block.',
+  Tailwind: 'Draw 1 more card at the start of each of your next that many turns.',
+  Unburden: 'A bonus if it\'s the last card in your hand when you play it.',
   Hail: `Weather. At the end of your turn the enemy loses ${HAIL.chip} HP. Your Ice attacks deal +${HAIL.bonus} a hit. Lasts that many turns.`,
   Bait: 'Catch odds +50% each, its attacks +3 each. All fight.',
   Rock: 'A wild one may run off on its turn (no reward). A rare one leaves sooner.',
@@ -1485,6 +1554,9 @@ export function cardTerms(card) {
     uses(/^surface|^perUnder$|^blockPerUnder$|^digBlock$/) && term('Dig'),
     uses(/fault/i) && term('Fault'),
     uses(/^sand|^ifSand$/) && term('Sandstorm'),
+    uses(/evasion|^evadeDamage$/i) && term('Evasion'),
+    (uses(/tailwind/i) || card.freeIn === 'tailwind') && term('Tailwind'),
+    uses(/^ifEmpty$|^emptyDraw$/) && term('Unburden'),
     uses(/^ifAfter|^followAlways$|^mixBlock$|^follow(Block|Counter)$/) && term('Follow-up'),
     uses(/^counter|^followCounter$/) && term('Counter'),
     uses(/^perStatusHeld$|^statusDraw$|^statusStrength$|^blockPerStatusHeld$|^counterPerStatus$|^statusBlock$|^statusHeldBlock$/) && ['Status cards', 'Junk in your deck for this fight: Sore, and what enemies add.'],

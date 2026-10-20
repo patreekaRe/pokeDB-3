@@ -52,10 +52,9 @@ export const NEUTRAL = {
   smokescreen: `${puffs([[14, 30, 9], [26, 26, 11], [36, 32, 8], [20, 18, 7], [32, 16, 6.4], [10, 20, 5]], '#5a5468', '#7a7488')}
     ${puffs([[8, 40, 3], [42, 40, 3.4], [40, 8, 2.4]], '#7a7488', null, 1.1)}`,
 
-  tailwind: `${tube('M4 14C14 14 26 12 34 8C40 6 42 12 38 14', 2.8, '#c8ecff', '#fff')}
-    ${tube('M4 24C16 24 30 22 40 20C46 19 46 26 42 26', 3.2, '#9ad8ff', '#fff')}
-    ${tube('M4 34C14 34 24 34 32 36C38 38 36 44 32 42', 2.8, '#c8ecff', '#fff')}
-    <g transform="rotate(-30 20 30)"><path d="M10 30C14 22 24 22 30 30C24 34 14 34 10 30Z" fill="#fff" ${line(1.8)}/><path d="M10 30H30" ${line(1.4)}/></g>`,
+  tailwind: `<path d="M6 36Q24 28 42 36L40 42H8Z" fill="#c8c4f0" ${line(2.2)}/>
+    <path d="M10 37Q24 32 38 37" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/>
+    <path d="M14 10H22L14 20H22M26 16H32L26 24H32M34 6H38L34 12H38" fill="none" ${line(2.2)}/>`,
 
   'lucky-claw': `<defs>${linear('a', [[0, '#ffffff'], [1, '#c8c4d8']], 1, 1)}</defs>
     ${[0, 1, 2].map((i) => `<path d="M${10 + i * 9} 40C${12 + i * 9} 28 ${18 + i * 9} 16 ${26 + i * 9} 6C${24 + i * 9} 18 ${20 + i * 9} 30 ${16 + i * 9} 42Z" fill="url(#$a)" ${line(2.2)}/>`).join('')}

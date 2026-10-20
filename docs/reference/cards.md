@@ -203,6 +203,17 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   goes underground, in `resolveCard()`), `faultBlock` (in `applyFault()`), `sandChipBlock`, `sandWeak` (on Sandstorm's
   chip in `endTurn()`), `sandKeep` (Endless Sands). Soft Sand is Ground's `TYPE_RELIC`. Sturdy reads `b.ability.amount`
   (2 with Groundium Z), the second save from 1 HP too.
+- **Flying** (session 11, 2026-10-20; `docs/duo-design.md` section 5's "Flying's first session"): `FLYING_CARDS` /
+  `FLYING_EVO_*` (30 + 8 so far), art in `js/card-art-flying.js`. New keys: `evasion` (`b.evasion`, the 🪶 badge: each
+  stack halves the next enemy attack, before block, in `enemyTurn()`; `evaded()` shows the halved hit on the intent and the
+  shield preview), `ifEvasion`, `perEvasion`, `tailwind` (`b.tailwind`, the 🌬️ badge: 1 more card at the start of each
+  of your next N turns, a turn going as it draws in `beginPlayerTurn()`), `ifTailwind`, `perTailwind`, `freeIn: 'tailwind'`
+  (Sky Attack), `ifEmpty` (**Unburden**: `unburdened()`, the last card in your hand as it's played; `effectsOf()` takes the
+  hand's size without the card, so the preview and the glow (`.follow-ready`) read it too); powers `evadeDamage` (Gale),
+  `evasionEachTurn` (Wind Wall), `tailwindDamage` (Wind Rider), `tailwindEvasion` (Wind Dancer), `emptyDraw` (Feather
+  Light, once a turn, after a card in `playCard()`). Boxes: Evasion, Tailwind, Unburden. The **Keen Eye** Ability
+  (`keenEye()`: draw 1 at the fight's start, and as Flying comes out in a duo, once a turn). Flying's Tailwind card is
+  `tailwind-gust`: the neutral card `tailwind` (+1 PP next turn) is named **Rest** now, its id kept (answer 18).
 - **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
   `typeMultiplier()` in `js/battle.js` is the chart; a card
   uses its own `type`. An enemy attack uses the move's `type` if it has one,
