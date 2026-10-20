@@ -72,7 +72,7 @@ function road(daily) {
     const page = SAFARI_DEX_PAGES.find(p => p.area === area.id);
     const { caught } = safariProgress(page.ids, getSave().safariDex);
     const head = el('summary', `duo-area-head${caught === page.ids.length ? ' done' : ''}`);
-    head.append(el('span', 'sp-area-no', `${i + 1}`), el('b', '', area.name), el('small', 'duo-area-count', `${caught}/${page.ids.length}`), faresLine(area));
+    head.append(el('span', 'sp-area-no', `${i + 1}`), el('b', 'duo-area-name', area.name), faresLine(area), el('small', 'duo-area-count', `${caught}/${page.ids.length}`));
     head.title = `${area.name}: ${caught} of ${page.ids.length} caught. Tap for its types and Pokémon.`;
     head.addEventListener('click', () => playSound('confirm'));
     const types = el('span', 'duo-types');
@@ -102,11 +102,10 @@ function road(daily) {
 
 const names = (types) => types.map(t => REAL_TYPES[t].label).join(', ');
 
-/** An area's row, always in view: its main types, then ▲ how many of them your picks hit hard (green) and ▼ how many hit
-    you hard (red), each a button that explains itself (the user's ask, 2026-10-20). */
+/** On an area's row, always in view: ▲ how many of its main types your picks hit hard (green) and ▼ how many hit you
+    hard (red), each a button that explains itself (the user's ask, 2026-10-20; one line, the types inside the fold). */
 function faresLine(area) {
   const line = el('span', 'duo-fares');
-  line.append(el('span', 'duo-fares-types', areaTypes(area).map(t => REAL_TYPES[t].label).join(' · ')));
   const f = pick.order.length ? fares(pick.order, area) : null;
   for (const [kind, mark, n] of [['up', '▲', f?.up], ['down', '▼', f?.down]]) {
     const b = el('button', `duo-tri ${kind}${why?.area === area.id && why.kind === kind ? ' on' : ''}`, `${mark}${f ? n : '–'}`);

@@ -28,8 +28,15 @@ export const DUO_LINES = {
     elekid: ['elekid', 'electabuzz', 'electivire'], tynamo: ['tynamo', 'eelektrik', 'eelektross'],
     magnemite: ['magnemite', 'magneton', 'magnezone'],
   },
-  ice: { vanillite: ['vanillite', 'vanillish', 'vanilluxe'], swinub: ['swinub', 'piloswine', 'mamoswine'] },
-  fighting: { timburr: ['timburr', 'gurdurr', 'conkeldurr'], machop: ['machop', 'machoke', 'machamp'], poliwag: ['poliwag', 'poliwhirl', 'poliwrath'], ralts: ['ralts', 'kirlia', 'gallade'] },
+  ice: {
+    vanillite: ['vanillite', 'vanillish', 'vanilluxe'], swinub: ['swinub', 'piloswine', 'mamoswine'], snorunt: ['snorunt', 'glalie'],
+    snover: ['snover', 'abomasnow'], cubchoo: ['cubchoo', 'beartic'], sneasel: ['sneasel', 'weavile'], seel: ['seel', 'dewgong'], smoochum: ['smoochum', 'jynx'],
+  },
+  fighting: {
+    timburr: ['timburr', 'gurdurr', 'conkeldurr'], machop: ['machop', 'machoke', 'machamp'], ralts: ['ralts', 'kirlia', 'gallade'],
+    riolu: ['riolu', 'lucario'], makuhita: ['makuhita', 'hariyama'], mankey: ['mankey', 'primeape'], meditite: ['meditite', 'medicham'],
+    mienfoo: ['mienfoo', 'mienshao'], hitmonlee: ['hitmonlee'], hitmonchan: ['hitmonchan'],
+  },
   ground: {
     trapinch: ['trapinch', 'vibrava', 'flygon'], rhyhorn: ['rhyhorn', 'rhydon', 'rhyperior'], gible: ['gible', 'gabite', 'garchomp'],
     geodude: ['geodude', 'graveler', 'golem'], nidoranm: ['nidoranm', 'nidorino', 'nidoking'], nidoranf: ['nidoranf', 'nidorina', 'nidoqueen'],
@@ -39,7 +46,11 @@ export const DUO_LINES = {
     togepi: ['togepi', 'togetic', 'togekiss'], zubat: ['zubat', 'golbat', 'crobat'], hoppip: ['hoppip', 'skiploom', 'jumpluff'],
     dratini: ['dratini', 'dragonair', 'dragonite'], bagon: ['bagon', 'shelgon', 'salamence'],
   },
-  dark: { deino: ['deino', 'zweilous', 'hydreigon'], sandile: ['sandile', 'krokorok', 'krookodile'], larvitar: ['larvitar', 'pupitar', 'tyranitar'], seedot: ['seedot', 'nuzleaf', 'shiftry'] },
+  dark: {
+    deino: ['deino', 'zweilous', 'hydreigon'], sandile: ['sandile', 'krokorok', 'krookodile'], larvitar: ['larvitar', 'pupitar', 'tyranitar'],
+    seedot: ['seedot', 'nuzleaf', 'shiftry'], zorua: ['zorua', 'zoroark'], poochyena: ['poochyena', 'mightyena'], houndour: ['houndour', 'houndoom'],
+    pawniard: ['pawniard', 'bisharp'], murkrow: ['murkrow', 'honchkrow'],
+  },
 };
 
 /** The two starters of a duo, lead first. */

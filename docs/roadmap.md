@@ -242,6 +242,10 @@ type emoji are round badges (`js/type-badge.js`); the portraits centre their spr
 "The Duo key". **Waiting on the user**: the look on a phone (the badges' glyphs were drawn blind, no screenshot).
 Then each area's row shows its main types and a green ▲ / red ▼ count in view, folded or not (the user's pick from the
 categorized mock's road; only that part, the rest stays); a tap on either explains it under the row (`faresLine()`).
+Then (same day): each road row is one line (a round number, the name, ▲ ▼, the count; the types inside the fold), and the
+roster grew: Poliwag out, Ice / Fighting / Dark filled to 8 / 10 / 9 with two-stage lines and single Pokémon that power up
+with a legendary's aura (`docs/duo-design.md` section 3). 47 duo looks in all. **Waiting on the user**: a playtest of the
+auras (80 new GIFs, ~8 MB, loaded only for the two starters in a run).
 Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
 start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
 docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo

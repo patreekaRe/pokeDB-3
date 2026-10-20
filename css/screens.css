@@ -4227,12 +4227,12 @@ body.scene-peek #backdrop { display: none; }
 .duo-fold > summary::after { content: '▸'; margin-left: 2px; transition: rotate 0.2s; }
 .duo-fold[open] > summary::after { rotate: 90deg; }
 .duo-fold[open] { display: flex; flex-direction: column; gap: 4px; }
-.duo-area-count { margin-left: auto; font-size: 0.75rem; }
+.duo-area-count { flex: none; min-width: 3.4em; text-align: right; font-size: 0.75rem; }
 .duo-area-head.done .duo-area-count::before { content: '✓ '; }
-.duo-area-head { flex-wrap: wrap; }
-.duo-fares { flex-basis: 100%; display: flex; align-items: center; gap: 6px; padding-left: 26px; font-size: 0.75rem; }
-.duo-fares-types { margin-right: auto; opacity: 0.85; }
-.duo-tri { min-width: 34px; padding: 2px 6px; border: 2px solid currentColor; border-radius: 6px; background: rgba(255, 255, 255, 0.5); font: inherit; font-weight: 700; cursor: pointer; }
+.duo-area-head .sp-area-no { flex: none; width: 20px; height: 20px; border-radius: 50%; }
+.duo-area-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+.duo-fares { flex: none; display: flex; align-items: center; gap: 4px; font-size: 0.75rem; }
+.duo-tri { min-width: 30px; padding: 1px 4px; border: 2px solid currentColor; border-radius: 5px; background: rgba(255, 255, 255, 0.5); font: inherit; font-weight: 700; line-height: 1.2; cursor: pointer; }
 .duo-tri.up { color: #1f8a3a; }
 .duo-tri.down { color: #c0303a; }
 .duo-tri.up.on, .duo-tri.down.on { color: #fff; }

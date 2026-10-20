@@ -474,6 +474,68 @@ export const DUO_STARTERS = [
     blurb: 'Snout down in the snow, it plods on through any blizzard and tusks its way through the rest.',
     deck: ICE_DECK,
   },
+  // two-stage lines and single Pokémon power up at the end instead, a legendary's aura (the user's call, 2026-10-20: Ice,
+  // Fighting and Dark to 8 looks or more)
+  {
+    id: 'snorunt', type: 'ice', duoOnly: true, skinOf: 'vanillite',
+    line: [
+      { id: 'snorunt', name: 'Snorunt' },
+      { id: 'glalie', name: 'Glalie' },
+      { id: 'glalie', name: 'Awakened Glalie', aura: 'awakened' },
+    ],
+    blurb: 'Shelters in snow drifts in twos and threes. It grows a hard shell of ice, then a face that freezes whatever it looks at.',
+    deck: ICE_DECK,
+  },
+  {
+    id: 'snover', type: 'ice', duoOnly: true, skinOf: 'vanillite',
+    line: [
+      { id: 'snover', name: 'Snover' },
+      { id: 'abomasnow', name: 'Abomasnow' },
+      { id: 'abomasnow', name: 'Awakened Abomasnow', aura: 'awakened' },
+    ],
+    blurb: 'Lives where snow falls all year. Calls up a blizzard to hide in, and its frosty berries ripen in the cold.',
+    deck: ICE_DECK,
+  },
+  {
+    id: 'cubchoo', type: 'ice', duoOnly: true, skinOf: 'vanillite',
+    line: [
+      { id: 'cubchoo', name: 'Cubchoo' },
+      { id: 'beartic', name: 'Beartic' },
+      { id: 'beartic', name: 'Awakened Beartic', aura: 'awakened' },
+    ],
+    blurb: 'Its runny nose is where its cold power comes from. It grows into a bear that freezes its own breath into fangs.',
+    deck: ICE_DECK,
+  },
+  {
+    id: 'sneasel', type: 'ice', duoOnly: true, skinOf: 'vanillite',
+    line: [
+      { id: 'sneasel', name: 'Sneasel' },
+      { id: 'weavile', name: 'Weavile' },
+      { id: 'weavile', name: 'Awakened Weavile', aura: 'awakened' },
+    ],
+    blurb: 'Climbs trees to steal eggs and slashes with hooked claws. Its pack carves signs in the ice to talk.',
+    deck: ICE_DECK,
+  },
+  {
+    id: 'seel', type: 'ice', duoOnly: true, skinOf: 'vanillite',
+    line: [
+      { id: 'seel', name: 'Seel' },
+      { id: 'dewgong', name: 'Dewgong' },
+      { id: 'dewgong', name: 'Awakened Dewgong', aura: 'awakened' },
+    ],
+    blurb: 'Loves the freezing sea and naps on ice floes. Its horn breaks the ice for it, and it swims through the coldest water.',
+    deck: ICE_DECK,
+  },
+  {
+    id: 'smoochum', type: 'ice', duoOnly: true, skinOf: 'vanillite',
+    line: [
+      { id: 'smoochum', name: 'Smoochum' },
+      { id: 'jynx', name: 'Jynx' },
+      { id: 'jynx', name: 'Awakened Jynx', aura: 'awakened' },
+    ],
+    blurb: 'Tests everything with its lips first. It grows up to dance in a way that sets the snow swirling round it.',
+    deck: ICE_DECK,
+  },
   {
     id: 'timburr', type: 'fighting', duoOnly: true,
     line: [
@@ -496,16 +558,6 @@ export const DUO_STARTERS = [
     deck: FIGHTING_DECK,
   },
   {
-    id: 'poliwag', type: 'fighting', duoOnly: true, skinOf: 'timburr',
-    line: [
-      { id: 'poliwag', name: 'Poliwag' },
-      { id: 'poliwhirl', name: 'Poliwhirl' },
-      { id: 'poliwrath', name: 'Poliwrath' },
-    ],
-    blurb: 'Its spiral belly sets foes swaying. It swims like a pro, and by the end it punches like one too.',
-    deck: FIGHTING_DECK,
-  },
-  {
     id: 'ralts', type: 'fighting', duoOnly: true, skinOf: 'timburr',
     line: [
       { id: 'ralts', name: 'Ralts' },
@@ -513,6 +565,76 @@ export const DUO_STARTERS = [
       { id: 'gallade', name: 'Gallade' },
     ],
     blurb: 'Senses what its trainer feels and hides behind them. Grows a blade on each arm to guard them instead.',
+    deck: FIGHTING_DECK,
+  },
+  {
+    id: 'riolu', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'riolu', name: 'Riolu' },
+      { id: 'lucario', name: 'Lucario' },
+      { id: 'lucario', name: 'Awakened Lucario', aura: 'awakened' },
+    ],
+    blurb: 'Reads the aura of anything nearby and never tires. It grows to sense a foe\'s every move before it makes it.',
+    deck: FIGHTING_DECK,
+  },
+  {
+    id: 'makuhita', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'makuhita', name: 'Makuhita' },
+      { id: 'hariyama', name: 'Hariyama' },
+      { id: 'hariyama', name: 'Awakened Hariyama', aura: 'awakened' },
+    ],
+    blurb: 'Toughens up by slamming into trees. Grows into a sumo whose open-palm slap can send a truck flying.',
+    deck: FIGHTING_DECK,
+  },
+  {
+    id: 'mankey', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'mankey', name: 'Mankey' },
+      { id: 'primeape', name: 'Primeape' },
+      { id: 'primeape', name: 'Awakened Primeape', aura: 'awakened' },
+    ],
+    blurb: 'Light on its feet and quick to anger. When it loses its temper it stops at nothing until it catches you.',
+    deck: FIGHTING_DECK,
+  },
+  {
+    id: 'meditite', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'meditite', name: 'Meditite' },
+      { id: 'medicham', name: 'Medicham' },
+      { id: 'medicham', name: 'Awakened Medicham', aura: 'awakened' },
+    ],
+    blurb: 'Trains deep in the mountains and skips meals to sharpen its mind. Its kicks land where its foe will be.',
+    deck: FIGHTING_DECK,
+  },
+  {
+    id: 'mienfoo', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'mienfoo', name: 'Mienfoo' },
+      { id: 'mienshao', name: 'Mienshao' },
+      { id: 'mienshao', name: 'Awakened Mienshao', aura: 'awakened' },
+    ],
+    blurb: 'A flurry of chops too fast to follow. It grows long whips on its arms and lashes faster than you can blink.',
+    deck: FIGHTING_DECK,
+  },
+  {
+    id: 'hitmonlee', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'hitmonlee', name: 'Hitmonlee' },
+      { id: 'hitmonlee', name: 'Awakened Hitmonlee', aura: 'awakened' },
+      { id: 'hitmonlee', name: 'Ascendant Hitmonlee', aura: 'ascendant' },
+    ],
+    blurb: 'Its legs stretch to kick a foe from across the ring. Never evolves, it trains, and powers up like a legend.',
+    deck: FIGHTING_DECK,
+  },
+  {
+    id: 'hitmonchan', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'hitmonchan', name: 'Hitmonchan' },
+      { id: 'hitmonchan', name: 'Awakened Hitmonchan', aura: 'awakened' },
+      { id: 'hitmonchan', name: 'Ascendant Hitmonchan', aura: 'ascendant' },
+    ],
+    blurb: 'Throws punches faster than a bullet train and never stops for breath. It powers up instead of evolving.',
     deck: FIGHTING_DECK,
   },
   {
@@ -698,6 +820,56 @@ export const DUO_STARTERS = [
     blurb: 'Hangs from a branch passing for an acorn. Grows a long nose, then leaf fans that whip up storms.',
     deck: DARK_DECK,
   },
+  {
+    id: 'zorua', type: 'dark', duoOnly: true, skinOf: 'deino',
+    line: [
+      { id: 'zorua', name: 'Zorua' },
+      { id: 'zoroark', name: 'Zoroark' },
+      { id: 'zoroark', name: 'Awakened Zoroark', aura: 'awakened' },
+    ],
+    blurb: 'Takes the shape of people and Pokémon to play tricks. Grows into a fox whose illusions fool whole crowds.',
+    deck: DARK_DECK,
+  },
+  {
+    id: 'poochyena', type: 'dark', duoOnly: true, skinOf: 'deino',
+    line: [
+      { id: 'poochyena', name: 'Poochyena' },
+      { id: 'mightyena', name: 'Mightyena' },
+      { id: 'mightyena', name: 'Awakened Mightyena', aura: 'awakened' },
+    ],
+    blurb: 'Chases anything that moves and never lets go. It grows into the head of a pack that follows only a strong trainer.',
+    deck: DARK_DECK,
+  },
+  {
+    id: 'houndour', type: 'dark', duoOnly: true, skinOf: 'deino',
+    line: [
+      { id: 'houndour', name: 'Houndour' },
+      { id: 'houndoom', name: 'Houndoom' },
+      { id: 'houndoom', name: 'Awakened Houndoom', aura: 'awakened' },
+    ],
+    blurb: 'Hunts in packs, howling to call the others. Its fire burns for days, and its howl sends shivers down any spine.',
+    deck: DARK_DECK,
+  },
+  {
+    id: 'pawniard', type: 'dark', duoOnly: true, skinOf: 'deino',
+    line: [
+      { id: 'pawniard', name: 'Pawniard' },
+      { id: 'bisharp', name: 'Bisharp' },
+      { id: 'bisharp', name: 'Awakened Bisharp', aura: 'awakened' },
+    ],
+    blurb: 'Its whole body is blades. It grows up to lead a gang of Pawniard and settle every fight itself.',
+    deck: DARK_DECK,
+  },
+  {
+    id: 'murkrow', type: 'dark', duoOnly: true, skinOf: 'deino',
+    line: [
+      { id: 'murkrow', name: 'Murkrow' },
+      { id: 'honchkrow', name: 'Honchkrow' },
+      { id: 'honchkrow', name: 'Awakened Honchkrow', aura: 'awakened' },
+    ],
+    blurb: 'Thought to bring bad luck, it steals shiny things at night. Grows into a boss that a flock of Murkrow obeys.',
+    deck: DARK_DECK,
+  },
 ];
 
 export const STARTERS_BY_ID = Object.fromEntries([...STARTERS, ...DUO_STARTERS].map(s => [s.id, s]));
@@ -705,7 +877,10 @@ export const STARTERS_BY_ID = Object.fromEntries([...STARTERS, ...DUO_STARTERS].
 /** Path to one of a starter's images at a given evolution stage. kind is 'front' or 'back'. `shiny` defaults to
     whether its shiny colours are switched on (the Game Corner sells them). */
 export function spriteUrl(starter, kind, stage = 0, shiny = shinyOn(starter.id)) {
-  const id = starter.line[stage].id;
+  const { id, aura } = starter.line[stage];
+  // a duo look whose line ends early powers up instead, a legendary's aura on its last form (the user's call, 2026-10-20:
+  // two-stage lines and single Pokémon as Super Saiyans): `aura` names the file
+  if (aura) return `assets/pokemon/${id}${shiny ? '-shiny' : ''}-${aura}-${kind}.gif`;
   // a legendary keeps its sprite and its colours (shiny only if bought), and powers up instead, Super Saiyan style
   // (tools/legendary-aura.py): a flame aura at stage 1 (`-awakened`), bigger with lightning at stage 2 (`-ascendant`)
   if (starter.legendary && stage > 0) {

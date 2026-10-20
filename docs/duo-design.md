@@ -69,10 +69,15 @@ says "Finish today's Daily run to unlock".
 - **Every new starter is a 3-stage line** (the user's call, 2026-10-19: "I only want 3 stage starters"), checked against
   the rules for adding Pokémon: no stage may be a starter skin or a line the user turned down (Spheal). Each plays as its
   deck's type, so a second real type is only its look. **Enemies are allowed** since 2026-10-20 (the user: "I don't care
-  if some are enemies", then "add as many as you think can be starter skins"), which added 14 lines as looks: Magnemite
-  (Electric); Poliwag, Ralts → Gallade (Fighting); Gible, Geodude, both Nidorans (Ground); Togepi, Zubat, Hoppip, Dratini,
-  Bagon (Flying); Larvitar, Seedot (Dark). Left out: the cocoon lines (Caterpie, Weedle, Wurmple), and Ice has no other
-  3-stage line. These 14 were **not** moved into their type's area: each has a stage somewhere in the Safari, and a catch
+  if some are enemies", then "add as many as you think can be starter skins"), which added 13 lines as looks: Magnemite
+  (Electric); Ralts → Gallade (Fighting); Gible, Geodude, both Nidorans (Ground); Togepi, Zubat, Hoppip, Dratini,
+  Bagon (Flying); Larvitar, Seedot (Dark). Poliwag was dropped the same day ("too weird" as Fighting). Left out: the cocoon
+  lines (Caterpie, Weedle, Wurmple). **Two-stage lines and single Pokémon too** (the user's call, 2026-10-20: Ice, Fighting
+  and Dark to at least 8): the last stage of a two-stage line is its second form with a legendary's Awakened aura, and a
+  single Pokémon powers up as a legendary does (Awakened, then Ascendant), by an `aura` field on the line's stage
+  (`spriteUrl()`; GIFs from `tools/legendary-aura.py <id> <type> [awakened]`, which now has Ice, Fighting and Dark
+  palettes). Ice: Snorunt, Snover, Cubchoo, Sneasel, Seel, Smoochum (8 in all). Fighting: Riolu, Makuhita, Mankey,
+  Meditite, Mienfoo, Hitmonlee, Hitmonchan (10). Dark: Zorua, Poochyena, Houndour, Pawniard, Murkrow (9). These 14 were **not** moved into their type's area: each has a stage somewhere in the Safari, and a catch
   anywhere counts.
 - Each new type's **starter lines** live in that type's own new Safari area (section 5), moved there from the areas
   they're in today. **Catching any stage of a starter line** in any Safari run (Daily, Replay or Duo) adds that type to the
