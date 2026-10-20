@@ -382,6 +382,19 @@ house's GOLD STARS chart (Law: "see me."), and Lego scattered everywhere. The ki
 OUT! note on the fridge; from 19:00 on your clock (the home's `nightAt`) Linc sleeps in the crib in his Pikachu suit, z's
 rising, the monitor's bars moving and a night light on, else his plush lies there. The gym posters (`nietosposter`...)
 have no 3D model, so a walk-in room can't hang them.
+**The Nietos' mansion, inside** (2026-10-20, the user's ask: "an extravagant aesthetic mansion from the outside and
+inside"; the outside is in `docs/reference/hub-base-mall.md`). The same room and the same family things, dressed up:
+baby-blue silk damask (gold sprigs) over a white wainscot panelled in gold, a gilt picture rail, a tall window over the
+nursery with royal-blue velvet drapes and a gilt pelmet; a marble floor in a white and baby-blue check set with gold, a
+medallion (a sixteen-point star round the pacifier) before the door; the family in oils over the hearth (Law, Britt,
+Linc in his Pikachu suit, Kangaskhan biggest behind them) in a gilt frame with a shell on top, a gold sconce either side;
+two crystal chandeliers (gold rings of candles, instanced drops, a glow round each) over the nursery side and the lounge,
+swaying a touch (still under calm); the gold rug under the family, the oval medallion rug under the coffee table (both
+`free`: their models would otherwise block the tiles), a gold urn either side of the rug, a gold piano left of the way in
+and the hotel lobby fountain right of it (the tiered one stood 2.5 tall in the foreground). The gaming desks stay plain
+(`golddesk`'s crested gallery stood higher than its writing top, so the monitors floated). `K.merge` (event-3d's
+`mergeStatic`, handed in on the kit) bakes each chandelier's gold and the frame into one mesh. About 350 draws a frame
+inside (was ~310).
 
 **The questlines' dialogue** (session 5 of Towns step 6, 2026-10-14). Each town's `QUESTS` entry carries `talk` (per
 step id: `nudge`, the step's leader's word added to the board's Quest sign while it isn't done, via `stepNudge()`, which

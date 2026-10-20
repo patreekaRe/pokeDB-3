@@ -1185,6 +1185,11 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **The Nietos' mansion** (2026-10-20, branch `claude/nieto-house-extravagant-mansion-sf3f5m`, on `main` too; archive):
+  the cottage is now a white château (turrets, portico, golden Kangaskhan at the gate) and inside a marble-and-gilt hall
+  with chandeliers and a family portrait. Walk up to it in the Clearing (south-east), and go in with `?nietos&gymwins=1`
+  so the family is home; say what to change (too big? colours? anything they'd never own?). ▶ Run in: PLAYTEST ON THE
+  LIVE SITE.
 - **The true ending** (2026-10-18, on `main`; archive): all five Waystones gets a TRUE ENDING (the sealed Well's still,
   Mewtwo thanking the towns, Eternatus gone from the title sky); fewer ends on THE END...? and Eternatus's eye opening.
   Playtest `?bossfight=depths&hp=0.001&shards=5` and `&shards=2` and say if the two feel different enough.

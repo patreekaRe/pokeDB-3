@@ -1039,32 +1039,67 @@ export const LEADER_HOMES = {
     },
   },
 
-  /* THE NIETOS: Law, Britt and baby Linc's house in the Clearing, and Kangaskhan's. Linc's nursery in the corner (the crib
-     Kangaskhan rocks with one foot, the laundry it folds, his toys everywhere and Lego underfoot), two gaming desks side
-     by side (Law's party waiting on him, Britt's Sage, her phone on Pokémon), the very tired couch, fish sticks on the
-     stove, Britt's corner of papers to grade and the house's gold star chart, Law at the bottom. From seven at night
-     (your clock, as the door says) Linc is asleep in his crib in his Pikachu suit and the night light is on. */
+  /* THE NIETOS: Law, Britt and baby Linc's house in the Clearing, and Kangaskhan's; a mansion since 2026-10-20 (the
+     user's ask: "an extravagant aesthetic mansion from the outside and inside"): baby-blue silk damask over a gilt-panelled
+     wainscot, a marble floor in baby blue and white with a gold medallion before the door, two crystal chandeliers, the
+     family in oils over the hearth between gold sconces, a gold piano and a fountain either side of the way in.
+     It's still theirs: Linc's nursery in the corner (the crib Kangaskhan rocks with one foot, the laundry it folds, his
+     toys everywhere and Lego underfoot, marble or not), Law's party waiting on him, Britt's Sage, her phone on Pokémon,
+     the very tired couch they wouldn't part with, fish sticks on the stove, Britt's corner of papers to grade and the
+     house's gold star chart, Law at the bottom. From seven at night (your clock, as the door says) Linc is asleep in his
+     crib in his Pikachu suit and the night light is on. */
   nietos: {
     leaderAt: { x: 6, ty: 3.4 },
     castAt: [[1, 1.3, 0]],
     blocks: [[1, 1, 1, 1]],   // Kangaskhan, by the crib
-    mood: { hemi: ['#fff8ec', '#8a7a68', 1.55], sun: ['#fff2dc', 1.8], bloom: 0.9 },
-    floor: (K, f, W, H, T) => K.planks(f, W, H, T, ['#d4aa74', '#c49a64']),
-    skirt: ['#f4ead8', '#ddceb2', '#a89070'],
+    mood: { hemi: ['#fff8ee', '#8a7a68', 1.6], sun: ['#fff2dc', 1.8], bloom: 1.05 },
+    floor(K, f, W, H, T) {
+      const { g, lin } = f, r = K.seeded(31);
+      // marble, white and baby blue in a check, veined, gold set between the slabs
+      for (let y = 0; y < K.rows; y++) for (let x = 0; x < K.cols; x++) {
+        const pale = (x + y) % 2 === 0;
+        g.fillStyle = lin(x * T, y * T, (x + 1) * T, (y + 1) * T, pale ? ['#fdfbf6', '#eee8dc'] : ['#d6e8f6', '#b4d0ea']); g.fillRect(x * T, y * T, T, T);
+        g.strokeStyle = pale ? 'rgba(160,150,140,0.35)' : 'rgba(90,130,170,0.35)'; g.lineWidth = 0.25;
+        let vx = x * T + r() * T, vy = y * T;
+        g.beginPath(); g.moveTo(vx, vy); for (let k = 0; k < 4; k++) { vx += (r() - 0.5) * 6; vy += T / 4; g.lineTo(vx, vy); } g.stroke();
+      }
+      g.fillStyle = 'rgba(216,172,72,0.9)';
+      for (let x = 0; x <= K.cols; x++) g.fillRect(x * T - 0.25, 0, 0.5, H);
+      for (let y = 0; y <= K.rows; y++) g.fillRect(0, y * T - 0.25, W, 0.5);
+      // the medallion before the door: rings of gold and royal blue, a sixteen-point star, the crowned pacifier
+      const cx = 6.5 * T, cy = 7.6 * T, R = 1.45 * T;
+      g.fillStyle = '#d8ac48'; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#3a6ea8'; g.beginPath(); g.arc(cx, cy, R - 1.2, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#f8f4ea'; g.beginPath(); g.arc(cx, cy, R - 3, 0, Math.PI * 2); g.fill();
+      for (const [n, rr, col] of [[16, R - 3.4, '#88c4f0'], [8, R - 5, '#e8b840']]) {
+        g.fillStyle = col; g.beginPath();
+        for (let i = 0; i <= n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, d = i % 2 ? rr * 0.42 : rr; g.lineTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d); }
+        g.fill();
+      }
+      g.fillStyle = '#3a6ea8'; g.beginPath(); g.arc(cx, cy, 4.2, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#f8d860'; g.fillStyle = '#f8d860'; g.lineWidth = 0.6;
+      g.beginPath(); g.arc(cx, cy - 1.7, 0.9, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.ellipse(cx, cy, 2, 1.1, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.ellipse(cx, cy + 1.5, 0.6, 0.8, 0, 0, Math.PI * 2); g.fill();
+    },
+    skirt: ['#fdfaf2', '#e6dcc4', '#c89a40'],
     paint(K, f, w, { back, x, s }) {
       const { g, lin } = f, ink = GYM_INK.nietos, r = K.seeded((w | 0) + 7);
-      // baby blue over a cream wainscot, soft clouds drifting along the top
-      g.fillStyle = lin(0, 0, 0, wy(1.6), ['#bcdcf6', ink[0]]); g.fillRect(0, 0, w, wy(1.6));
-      g.fillStyle = 'rgba(255,255,255,0.75)';
-      for (let i = 0; i < w / 26; i++) {
-        const cx = 10 + i * 26 + r() * 8, cy = wy(3.2) + r() * 14;
-        g.beginPath(); for (const [dx, dy, rr] of [[0, 0, 4], [4.5, 0.8, 3.2], [-4.5, 1, 3], [1.5, -2.4, 3]]) g.ellipse(cx + dx, cy + dy, rr * 1.2, rr, 0, 0, Math.PI * 2); g.fill();
+      // baby-blue silk, a damask of gold sprigs on it, a gilt picture rail; a white wainscot panelled in gold under it
+      g.fillStyle = lin(0, 0, 0, wy(1.6), ['#cfe6f8', '#a4ccee']); g.fillRect(0, 0, w, wy(1.6));
+      g.fillStyle = 'rgba(214,168,64,0.5)';
+      for (let yy = 4, row = 0; yy < wy(1.75); yy += 13, row++) {
+        for (let xx = (row % 2) * 7; xx < w; xx += 14) {
+          for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; g.beginPath(); g.ellipse(xx + Math.cos(a) * 1.6, yy + Math.sin(a) * 1.6, 1.4, 0.6, a, 0, Math.PI * 2); g.fill(); }
+          g.beginPath(); g.arc(xx, yy, 0.7, 0, Math.PI * 2); g.fill();
+        }
       }
-      g.fillStyle = '#f7f0e2'; g.fillRect(0, wy(1.6), w, wy(0.9) - wy(1.6));
-      g.strokeStyle = 'rgba(150,128,96,0.4)'; g.lineWidth = 0.6;
-      for (let px = 3; px < w - 10; px += 15) g.strokeRect(px, wy(1.48), 12, wy(1.0) - wy(1.48));
-      g.fillStyle = '#ffffff'; g.fillRect(0, wy(1.6) - 1.4, w, 2.6);
-      // Linc's crayon, at his height, all along the wainscot
+      g.fillStyle = '#d8ac48'; g.fillRect(0, wy(3.3), w, 1.6); g.fillStyle = 'rgba(255,240,190,0.7)'; g.fillRect(0, wy(3.3), w, 0.5);
+      g.fillStyle = '#fbf8f0'; g.fillRect(0, wy(1.6), w, wy(0.9) - wy(1.6));
+      g.strokeStyle = 'rgba(200,154,64,0.85)'; g.lineWidth = 0.5;
+      for (let px = 3; px < w - 10; px += 15) { g.strokeRect(px, wy(1.48), 12, wy(1.0) - wy(1.48)); g.strokeRect(px + 1.2, wy(1.48) + 1.2, 9.6, wy(1.0) - wy(1.48) - 2.4); }
+      g.fillStyle = '#d8ac48'; g.fillRect(0, wy(1.6) - 1.4, w, 2.6); g.fillStyle = 'rgba(255,240,190,0.8)'; g.fillRect(0, wy(1.6) - 1.4, w, 0.6);
+      // Linc's crayon, at his height, all along the wainscot (gilt or not)
       for (let i = 0; i < w / 30; i++) {
         const cx = 6 + i * 30 + r() * 12, cy = wy(1.25) + r() * 4;
         g.strokeStyle = ['#e83a3a', '#3a6ae8', '#3aa050', '#f0a020'][i % 4]; g.lineWidth = 0.9; g.globalAlpha = 0.7;
@@ -1072,7 +1107,16 @@ export const LEADER_HOMES = {
       }
       g.globalAlpha = 1;
       if (!back) { text(g, 'LINC', w * 0.3, wy(1.2), 4.2, '#e83a3a', { font: HAND }); return; }
-      sky(K, f, s, x(1.1), x(1.1) + 1.4 * U, 2.6, 1.75, '#ffffff', [ink[1], ink[2]]);
+      // a tall window over the nursery, velvet drapes tied back in gold, a gilt pelmet over it
+      const w0 = x(0.95), w1 = x(0.95) + 1.7 * U;
+      sky(K, f, s, w0, w1, 2.75, 1.75, '#ffffff', null);
+      for (const [d, x0] of [[1, w0 - 3], [-1, w1 + 3]]) {
+        g.fillStyle = lin(x0, 0, x0 + d * 10, 0, ['#3a6ea8', '#6aa4dc', '#3a6ea8']);
+        g.beginPath(); g.moveTo(x0, wy(2.9)); g.lineTo(x0 + d * 9, wy(2.9)); g.quadraticCurveTo(x0 + d * 2, wy(2.3), x0 + d * 6, wy(1.7)); g.lineTo(x0, wy(1.7)); g.closePath(); g.fill();
+        g.fillStyle = '#e8b840'; g.fillRect(x0 + d * 2 - 2, wy(2.35), 4, 1.4);
+      }
+      g.fillStyle = '#d8ac48'; g.fillRect(w0 - 5, wy(2.95), w1 - w0 + 10, 3.2);
+      for (let px = w0 - 3; px < w1 + 4; px += 4) { g.beginPath(); g.arc(px, wy(2.95) + 3.2, 1.6, 0, Math.PI); g.fill(); }
       // bunting over the nursery, L I N C
       g.strokeStyle = '#8a7a6a'; g.lineWidth = 0.4; g.beginPath(); g.moveTo(x(-0.4), wy(3.45)); g.quadraticCurveTo(x(1.6), wy(3.2), x(3.8), wy(3.45)); g.stroke();
       'LINCLINC'.split('').forEach((ch, i) => {
@@ -1097,17 +1141,75 @@ export const LEADER_HOMES = {
       text(g, 'HEAL WALL REZ', x(11.9), wy(2.08), 2.4, '#d8fff4');
     },
     furnish: [['crib', 0, 0], ['dresser', 1, 0], ['blocktoyshelf', 3, 0], ['fireplace', 5, 0, { mid: true }], ['minifridge', 8, 0],
-      ['desk', 9, 0], ['desk', 11, 0], ['laundrypile', 2, 1], ['swivelchair-fire', 9, 1], ['swivelchair-aqua', 11, 1],
+      ['desk', 9, 0], ['desk', 11, 0], ['laundrypile', 2, 1], ['goldurn', 4, 2], ['goldurn', 8, 2], ['swivelchair-fire', 9, 1], ['swivelchair-aqua', 11, 1],
       ['puzzlemat', 1, 2], ['stackrings', 3, 2], ['blocktower', 2, 3], ['toybox', 0, 3], ['rockinghorse', 0, 4], ['bigpikachudoll', 0, 5],
-      ['fluffyrug-aqua', 5, 2, { mid: true }], ['checkbigrug-aqua', 8, 3], ['console', 12, 3],
+      ['goldrug', 5, 2, { free: true }], ['elgrug', 9, 4, { free: true }], ['console', 12, 3], ['goldpiano', 4, 7], ['htlfountain', 7, 7],
       ['sofa-ragged', 8, 4, { turn: Math.PI / 2 }], ['coffeetable', 10, 4, { turn: Math.PI / 2 }], ['tv', 12, 4, { turn: -Math.PI / 2 }],
       ['highchair', 3, 6], ['fridge', 0, 7], ['stove', 1, 7], ['coffeecounter', 2, 7], ['bin', 0, 9],
       ['schoolbag', 9, 7], ['teacherdesk', 10, 7], ['bookcart', 12, 7], ['plant', 12, 9]],
-    hang: [['starmobile', 0], ['kite', 0, { side: 'l', row: 2 }], ['calendar', 0, { side: 'l', row: 5 }], ['firstaid', 0, { side: 'r', row: 1 }]],
+    hang: [['starmobile', 0], ['goldsconce', 4.7], ['goldsconce', 7.3], ['kite', 0, { side: 'l', row: 2 }], ['calendar', 0, { side: 'l', row: 5 }],
+      ['firstaid', 0, { side: 'r', row: 1 }]],
     props(K, P) {
       const T = K.THREE, hour = new Date().getHours(), asleep = !K.away && (hour >= 19 || hour < 6);
-      // the family's photos over the fireplace
-      put(K, 'photowall', 5, -0.5, { free: true, dx: 0.5 });
+      // the family in oils over the hearth, in a gilt frame with a shell on top: Law, Britt, Linc in his Pikachu suit,
+      // and Kangaskhan, biggest, behind them
+      const bz = ez(K, 0), gm = mat(K, '#e8b840', { metalness: 0.8, roughness: 0.28, emissive: new T.Color('#7a4a10'), emissiveIntensity: 0.4 });
+      sheet(K, 84, 60, (f) => {
+        const { g, rr, lin } = f, oval = (col, ox, oy, rx, ry) => { g.fillStyle = col; g.beginPath(); g.ellipse(ox, oy, rx, ry, 0, 0, Math.PI * 2); g.fill(); };
+        g.fillStyle = lin(0, 0, 84, 60, ['#4a5a44', '#2e3a2a', '#1c2418']); g.fillRect(0, 0, 84, 60);
+        g.fillStyle = lin(0, 0, 22, 0, ['#5a1a2a', '#a02e40']); g.beginPath(); g.moveTo(0, 0); g.lineTo(24, 0); g.quadraticCurveTo(10, 22, 15, 60); g.lineTo(0, 60); g.fill();
+        g.fillStyle = '#3e3022'; g.fillRect(0, 50, 84, 10);
+        oval('#8a6a44', 63, 33, 15, 21); oval('#e8d4a4', 61, 40, 9, 12); oval('#8a6a44', 63, 12, 7.5, 7); oval('#a27e54', 66, 15, 4.5, 3.2);
+        for (const ex2 of [58, 67]) oval('#6a4e30', ex2, 6, 1.6, 3);
+        oval('#1a1210', 61.5, 11, 0.8, 0.9); oval('#1a1210', 66, 11, 0.8, 0.9);
+        oval('#f8d030', 58.5, 42, 3.6, 3.2); oval('#f0c8a0', 58.5, 42.6, 2, 1.8);
+        rr(21, 25, 13, 27, 4, '#d84050'); oval('#e8b890', 27.5, 19, 4.8, 5.2); oval('#2a1a14', 27.5, 15.6, 5, 2.6);
+        rr(36, 24, 13, 28, 4, '#d04a8a'); oval('#5a3020', 42.5, 18.6, 5.6, 6.4); oval('#f0c4a0', 42.5, 19.4, 4.4, 4.8);
+        oval('#f8d030', 37, 48, 6.5, 7); oval('#f8d030', 37, 39.5, 5.4, 5.2); oval('#f0c8a0', 37, 40.6, 3.2, 3);
+        for (const sx of [-1, 1]) { g.fillStyle = '#f8d030'; g.beginPath(); g.moveTo(37 + sx * 2.5, 36); g.lineTo(37 + sx * 6.5, 28); g.lineTo(37 + sx * 4.5, 36.5); g.fill(); g.fillStyle = '#2a2a2a'; g.beginPath(); g.moveTo(37 + sx * 5.6, 29.6); g.lineTo(37 + sx * 6.5, 28); g.lineTo(37 + sx * 5.9, 31); g.fill(); oval('#f06050', 37 + sx * 2.2, 41.6, 0.9, 0.7); }
+        rr(29, 53.5, 26, 5, 0.8, '#d8a838'); text(g, 'THE NIETOS', 42, 56.1, 3.4, '#3a2a10');
+      }, 1.56, 1.1, 0, 2.66, bz + 0.09, { k: 5 });
+      const fr = group(K, 0, 0, bz);
+      for (const [w, h, x, y] of [[1.78, 0.11, 0, 3.26], [1.78, 0.11, 0, 2.06], [0.11, 1.31, -0.835, 2.66], [0.11, 1.31, 0.835, 2.66]]) part(K, new T.BoxGeometry(w, h, 0.07), gm, x, y, 0.06, fr);
+      for (const sx of [-1, 1]) for (const y of [2.06, 3.26]) part(K, new T.SphereGeometry(0.055, 10, 8), gm, sx * 0.835, y, 0.1, fr);
+      part(K, new T.SphereGeometry(0.15, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), gm, 0, 3.3, 0.07, fr).scale.set(1.3, 0.9, 0.35);
+      fr.traverse(m => { m.castShadow = false; });
+      K.merge(fr, () => false);
+      quiet(fr);
+      // two crystal chandeliers, gold rings of candles hung with drops, a glow round each; they sway a touch
+      const flame = lit(K, '#fff0b8'), wax = mat(K, '#fbf6ea', { roughness: 0.6 });
+      const crystal = mat(K, '#eef8ff', { roughness: 0.05, metalness: 0.1, emissive: new T.Color('#c8e8ff'), emissiveIntensity: 0.7 });
+      const cup = new T.CylinderGeometry(0.032, 0.026, 0.03, 10), stick = new T.CylinderGeometry(0.013, 0.013, 0.1, 8), tip = new T.SphereGeometry(0.016, 8, 6), drop = new T.OctahedronGeometry(0.024);
+      const swing = [ex(K, 2.8), ex(K, 10.2)].map((cx, n) => {
+        const c = group(K, cx, 2.75, ez(K, 4.6));
+        part(K, new T.CylinderGeometry(0.012, 0.012, 2, 6), gm, 0, 1.05, 0, c);
+        part(K, new T.SphereGeometry(0.06, 12, 10), gm, 0, 0.05, 0, c);
+        part(K, new T.CylinderGeometry(0.02, 0.04, 0.38, 8), gm, 0, -0.12, 0, c);
+        for (const [r, y] of [[0.36, -0.22], [0.21, -0.07]]) part(K, new T.TorusGeometry(r, 0.016, 6, 28), gm, 0, y, 0, c).rotation.x = Math.PI / 2;
+        part(K, new T.SphereGeometry(0.05, 10, 8), gm, 0, -0.34, 0, c);
+        const cups = [], drops = [], o = new T.Object3D();
+        for (const [n2, r, y, cy] of [[8, 0.36, -0.2, -0.29], [5, 0.21, -0.05, -0.14]]) {
+          for (let i = 0; i < n2; i++) {
+            const a = i / n2 * Math.PI * 2 + n * 0.3, b = a + Math.PI / n2;
+            cups.push([Math.cos(a) * r, y, Math.sin(a) * r]);
+            drops.push([Math.cos(b) * r, cy, Math.sin(b) * r], [Math.cos(b) * r * 0.98, cy - 0.06, Math.sin(b) * r * 0.98]);
+          }
+        }
+        drops.push([0, -0.42, 0], [0, -0.48, 0]);
+        const many = (geo, m, list, dy = 0, sy = 1) => {
+          const im = new T.InstancedMesh(geo, m, list.length);
+          list.forEach(([px, py, pz], i) => { o.position.set(px, py + dy, pz); o.scale.set(1, sy, 1); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+          c.add(im);
+        };
+        many(cup, gm, cups); many(stick, wax, cups, 0.065); many(tip, flame, cups, 0.13, 1.6); many(drop, crystal, drops, 0, 1.6);
+        c.traverse(m => { m.castShadow = false; });
+        K.merge(c, () => false);
+        const halo = K.sprite(K.haloArt('rgba(255,226,160,0.9)'), 1.5);
+        halo.visible = true; halo.material.blending = T.AdditiveBlending; halo.material.opacity = NIGHT(K.time) ? 0.55 : 0.3;
+        halo.position.set(cx, 2.55, ez(K, 4.6));
+        return quiet(c);
+      });
+      K.B.ticks.push((now) => { swing.forEach((c, i) => { c.rotation.z = K.calm() ? 0 : Math.sin(now / 2400 + i * 1.7) * 0.012; c.rotation.y = K.calm() ? 0 : now / 30000 + i; }); });
       // the changing table: a pad, a stack of nappies, the baby monitor (its sound bars dancing while he sleeps), the night light
       const dr = P.dresser, dy = topOf(dr), ct = group(K, ex(K, 2), dy, ez(K, 0.5));
       part(K, K.rbox(0.62, 0.08, 0.42, 0.04), mat(K, '#cfe6f8', { roughness: 0.9 }), -0.36, 0.04, 0.02, ct);
