@@ -987,7 +987,9 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
 catching, ~33% longer) over more floors per area (more fights, not more Pokémon). It needs a bot check of the day's win rate
 (a longer run is harder) and fair leaderboard days (a day's areas are seeded; `SAFARI_FROM`-style date gate so no played
-day changes). Waiting on the user's call: 4 areas, longer areas, or as is.
+day changes). The user first picked a 4th area (each area harder: slots 1-3 take the main biomes' hpMult / dmgBonus /
+bossBonus, so a 4th needs its own tier, ~x6.3 / +29 / boss +40, gentler than the Depths'), then said no the same day:
+**keep the Safari at 3 areas** (2026-10-20). Don't build unless they bring it back.
 
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6
