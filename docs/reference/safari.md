@@ -349,7 +349,9 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 - **The duo pool**: `save.duoPool` holds the types caught beyond Fire / Grass / Water (type -> starter ids as looks);
   the base three are every owned starter of the type. `duoNews()` in `js/run.js` (from `creditSafari()`) adds a type
   when a stage of one of its `DUO_LINES` starter lines is in `save.safariDex.caught`, old catches included, with the
-  reward box's "Shinx joined your duo pool! Electric unlocked." `DUO_LINES` is empty until the type sessions.
+  unlock window ("🔓 New duo starter!", 2026-10-20: `duoNews(windows)` feeds `unlockWindow`'s `feat` form; a line in
+  the reward box was easy to miss). 30 lines in all; the 14 added 2026-10-20 (`docs/duo-design.md` section 3) stay in the
+  areas they already lived in.
 - **Electric** (session 3, 2026-10-19; its rules and card table are `docs/duo-design.md` section 5's "Electric's first
   session"): the first new type. **Shinx** (`DUO_STARTERS` in `js/data/starters.js`: looked up by id only, never in
   `STARTERS`, so no character select, Game Corner, statue or "every starter" count sees it; its back GIFs, `SPRITE_FIT`,

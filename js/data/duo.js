@@ -21,17 +21,25 @@ export const STAB = 1.2;
 export const DUO_BASE = ['fire', 'grass', 'water'];
 
 /** A new type's starter lines, type -> { look: [every stage's species id] }: catching any stage adds the type with that
-    look. Each type's sessions fill it (Electric's first brought Shinx's line; its second the other four lines; Ice's first Vanillite's; Fighting's first Timburr's, its second Machop's; Ground's first Trapinch's, its second Rhyhorn's; Flying's first Starly's, its second Pidgey's and Pidove's; Dark's first Deino's, its second Sandile's). */
+    look. Each type's sessions fill it (Electric's first brought Shinx's line; its second the other four lines; Ice's first Vanillite's; Fighting's first Timburr's, its second Machop's; Ground's first Trapinch's, its second Rhyhorn's; Flying's first Starly's, its second Pidgey's and Pidove's; Dark's first Deino's, its second Sandile's; every other 3-stage line that fits joined on 2026-10-20). */
 export const DUO_LINES = {
   electric: {
     shinx: ['shinx', 'luxio', 'luxray'], mareep: ['mareep', 'flaaffy', 'ampharos'], pichu: ['pichu', 'pikachu', 'raichu'],
     elekid: ['elekid', 'electabuzz', 'electivire'], tynamo: ['tynamo', 'eelektrik', 'eelektross'],
+    magnemite: ['magnemite', 'magneton', 'magnezone'],
   },
   ice: { vanillite: ['vanillite', 'vanillish', 'vanilluxe'], swinub: ['swinub', 'piloswine', 'mamoswine'] },
-  fighting: { timburr: ['timburr', 'gurdurr', 'conkeldurr'], machop: ['machop', 'machoke', 'machamp'] },
-  ground: { trapinch: ['trapinch', 'vibrava', 'flygon'], rhyhorn: ['rhyhorn', 'rhydon', 'rhyperior'] },
-  flying: { starly: ['starly', 'staravia', 'staraptor'], pidgey: ['pidgey', 'pidgeotto', 'pidgeot'], pidove: ['pidove', 'tranquill', 'unfezant'] },
-  dark: { deino: ['deino', 'zweilous', 'hydreigon'], sandile: ['sandile', 'krokorok', 'krookodile'] },
+  fighting: { timburr: ['timburr', 'gurdurr', 'conkeldurr'], machop: ['machop', 'machoke', 'machamp'], poliwag: ['poliwag', 'poliwhirl', 'poliwrath'], ralts: ['ralts', 'kirlia', 'gallade'] },
+  ground: {
+    trapinch: ['trapinch', 'vibrava', 'flygon'], rhyhorn: ['rhyhorn', 'rhydon', 'rhyperior'], gible: ['gible', 'gabite', 'garchomp'],
+    geodude: ['geodude', 'graveler', 'golem'], nidoranm: ['nidoranm', 'nidorino', 'nidoking'], nidoranf: ['nidoranf', 'nidorina', 'nidoqueen'],
+  },
+  flying: {
+    starly: ['starly', 'staravia', 'staraptor'], pidgey: ['pidgey', 'pidgeotto', 'pidgeot'], pidove: ['pidove', 'tranquill', 'unfezant'],
+    togepi: ['togepi', 'togetic', 'togekiss'], zubat: ['zubat', 'golbat', 'crobat'], hoppip: ['hoppip', 'skiploom', 'jumpluff'],
+    dratini: ['dratini', 'dragonair', 'dragonite'], bagon: ['bagon', 'shelgon', 'salamence'],
+  },
+  dark: { deino: ['deino', 'zweilous', 'hydreigon'], sandile: ['sandile', 'krokorok', 'krookodile'], larvitar: ['larvitar', 'pupitar', 'tyranitar'], seedot: ['seedot', 'nuzleaf', 'shiftry'] },
 };
 
 /** The two starters of a duo, lead first. */

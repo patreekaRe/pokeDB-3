@@ -229,7 +229,11 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
 **Done 2026-10-20 (branch `claude/new-starters-lists-tkfrt4`, off `duo-types`): the duo starter unlock window.** A catch
 that adds a duo starter now opens the unlock window (`duoNews(windows)` in `js/run.js`, the `feat` form of
 `unlockWindow`: "🔓 New duo starter!", its sprite and cry, whether it opened a type or is a new look), not a line in the
-catch box. To merge into `duo-types`.
+catch box. **Then 14 more duo starter lines as looks** (the user: "add as many as you think can be starter skins";
+enemies allowed): Magnemite; Poliwag, Ralts; Gible, Geodude, Nidoran♂, Nidoran♀; Togepi, Zubat, Hoppip, Dratini, Bagon;
+Larvitar, Seedot (`DUO_LINES`, `DUO_STARTERS`, PokeAPI backs and shinies, 33 cries at -13 LUFS, `SPRITE_FIT` / `BODY_X`).
+Not moved into their type areas (`docs/duo-design.md` section 3). The user misread earlier: two-stage lines aren't
+wanted, so nothing to decide there. To merge into `duo-types`; **waiting on the user**: a playtest.
 Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
 start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
 docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo
@@ -1185,17 +1189,6 @@ for its looks. The mock (https://claude.ai/artifact/YQMMJCScQXDoPqKtXfqmQq) has 
 then three groups: **Starter types** (Fire / Water / Grass), **Caught in the Safari**, **Still to find** (locked, with
 where to catch one). Each type is a card with its Ability and a scrolling row of every owned look (legendaries tagged),
 then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict before building.
-
-**More duo starter lines, and two-stage lines** (2026-10-20, the user: "maybe add some. I don't care if some are
-enemies"; **undecided**, which lines and how two-stage lines play). That drops the "no stage may be a main-game enemy" rule from
-`docs/duo-design.md` section 3. 3-stage lines it opens: Magnemite (Electric), Zubat, Hoppip (Flying), Seedot (Dark),
-Poliwag (Fighting). Also allowed under the old rules but never picked (the new type is only their second, or a late one): Gible,
-Geodude, Larvitar, both Nidorans (Ground), Togepi (Flying), Ralts → Gallade (Fighting); Larvitar could be Dark instead.
-None has back sprites yet, and Spheal stays out (a "no"). Two-stage lines (Zorua, Poochyena, Purrloin, Riolu, Snorunt, Joltik...)
-need no engine change: a starter's `line` holds three stages, so one stage repeats. The options put to the user: (a) evolve at
-the first boss and stay ([Zorua, Zoroark, Zoroark]), (b) evolve at the second boss ([Zorua, Zorua, Zoroark]), or (c) a
-legendary-style power-up aura on the last stage. (a) and (b) need the evolution scene skipped when the look doesn't change
-(the evolution card is still offered).
 
 **Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
 - **The duo** (built first, Safari only): bring two starters of different types, one out at a time. Switch for 1 PP

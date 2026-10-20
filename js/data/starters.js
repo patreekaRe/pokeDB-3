@@ -442,6 +442,17 @@ export const DUO_STARTERS = [
     blurb: 'Slips in and out of the fight like an eel, leaving every foe crackling.',
     deck: ELECTRIC_DECK,
   },
+  // every other 3-stage line that fits a new type, enemies and all (the user's call, 2026-10-20: "add as many as you think can be starter skins")
+  {
+    id: 'magnemite', type: 'electric', duoOnly: true, skinOf: 'shinx',
+    line: [
+      { id: 'magnemite', name: 'Magnemite' },
+      { id: 'magneton', name: 'Magneton' },
+      { id: 'magnezone', name: 'Magnezone' },
+    ],
+    blurb: 'Drifts on its own magnetism, humming near anything with a charge. Join enough of them and they pull the whole fight their way.',
+    deck: ELECTRIC_DECK,
+  },
   {
     id: 'vanillite', type: 'ice', duoOnly: true,
     line: [
@@ -485,6 +496,26 @@ export const DUO_STARTERS = [
     deck: FIGHTING_DECK,
   },
   {
+    id: 'poliwag', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'poliwag', name: 'Poliwag' },
+      { id: 'poliwhirl', name: 'Poliwhirl' },
+      { id: 'poliwrath', name: 'Poliwrath' },
+    ],
+    blurb: 'Its spiral belly sets foes swaying. It swims like a pro, and by the end it punches like one too.',
+    deck: FIGHTING_DECK,
+  },
+  {
+    id: 'ralts', type: 'fighting', duoOnly: true, skinOf: 'timburr',
+    line: [
+      { id: 'ralts', name: 'Ralts' },
+      { id: 'kirlia', name: 'Kirlia' },
+      { id: 'gallade', name: 'Gallade' },
+    ],
+    blurb: 'Senses what its trainer feels and hides behind them. Grows a blade on each arm to guard them instead.',
+    deck: FIGHTING_DECK,
+  },
+  {
     id: 'trapinch', type: 'ground', duoOnly: true,
     line: [
       { id: 'trapinch', name: 'Trapinch' },
@@ -503,6 +534,46 @@ export const DUO_STARTERS = [
       { id: 'rhyperior', name: 'Rhyperior' },
     ],
     blurb: 'Charges in a straight line until it forgets why. Its hide shrugs off a landslide, and its horn drills through bedrock.',
+    deck: GROUND_DECK,
+  },
+  {
+    id: 'gible', type: 'ground', duoOnly: true, skinOf: 'trapinch',
+    line: [
+      { id: 'gible', name: 'Gible' },
+      { id: 'gabite', name: 'Gabite' },
+      { id: 'garchomp', name: 'Garchomp' },
+    ],
+    blurb: 'Lives in warm caves and bites anything that moves. Grows into a land shark that outruns a jet.',
+    deck: GROUND_DECK,
+  },
+  {
+    id: 'geodude', type: 'ground', duoOnly: true, skinOf: 'trapinch',
+    line: [
+      { id: 'geodude', name: 'Geodude' },
+      { id: 'graveler', name: 'Graveler' },
+      { id: 'golem', name: 'Golem' },
+    ],
+    blurb: 'Lies on mountain paths looking like a rock until someone trips on it. Rolls downhill as a boulder by the end.',
+    deck: GROUND_DECK,
+  },
+  {
+    id: 'nidoranm', type: 'ground', duoOnly: true, skinOf: 'trapinch',
+    line: [
+      { id: 'nidoranm', name: 'Nidoran♂' },
+      { id: 'nidorino', name: 'Nidorino' },
+      { id: 'nidoking', name: 'Nidoking' },
+    ],
+    blurb: 'Its ears catch every sound and its horn is poisoned. Grows into a king whose tail can snap a tree.',
+    deck: GROUND_DECK,
+  },
+  {
+    id: 'nidoranf', type: 'ground', duoOnly: true, skinOf: 'trapinch',
+    line: [
+      { id: 'nidoranf', name: 'Nidoran♀' },
+      { id: 'nidorina', name: 'Nidorina' },
+      { id: 'nidoqueen', name: 'Nidoqueen' },
+    ],
+    blurb: 'Small and careful, its barbs keep foes back. Grows into a queen who guards her nest in armour.',
     deck: GROUND_DECK,
   },
   {
@@ -537,6 +608,56 @@ export const DUO_STARTERS = [
     deck: FLYING_DECK,
   },
   {
+    id: 'togepi', type: 'flying', duoOnly: true, skinOf: 'starly',
+    line: [
+      { id: 'togepi', name: 'Togepi' },
+      { id: 'togetic', name: 'Togetic' },
+      { id: 'togekiss', name: 'Togekiss' },
+    ],
+    blurb: 'Hatched full of happiness and shares it with anyone kind. One day it spreads its wings to share it further.',
+    deck: FLYING_DECK,
+  },
+  {
+    id: 'zubat', type: 'flying', duoOnly: true, skinOf: 'starly',
+    line: [
+      { id: 'zubat', name: 'Zubat' },
+      { id: 'golbat', name: 'Golbat' },
+      { id: 'crobat', name: 'Crobat' },
+    ],
+    blurb: 'Has no eyes and finds its way by sound. Flies through dark caves faster with every pair of wings it grows.',
+    deck: FLYING_DECK,
+  },
+  {
+    id: 'hoppip', type: 'flying', duoOnly: true, skinOf: 'starly',
+    line: [
+      { id: 'hoppip', name: 'Hoppip' },
+      { id: 'skiploom', name: 'Skiploom' },
+      { id: 'jumpluff', name: 'Jumpluff' },
+    ],
+    blurb: 'So light the wind carries it off. Rides the breeze and drifts down wherever its spores should grow.',
+    deck: FLYING_DECK,
+  },
+  {
+    id: 'dratini', type: 'flying', duoOnly: true, skinOf: 'starly',
+    line: [
+      { id: 'dratini', name: 'Dratini' },
+      { id: 'dragonair', name: 'Dragonair' },
+      { id: 'dragonite', name: 'Dragonite' },
+    ],
+    blurb: 'Sheds its skin as it grows, and was thought a myth. Ends as a gentle dragon that flies round the world.',
+    deck: FLYING_DECK,
+  },
+  {
+    id: 'bagon', type: 'flying', duoOnly: true, skinOf: 'starly',
+    line: [
+      { id: 'bagon', name: 'Bagon' },
+      { id: 'shelgon', name: 'Shelgon' },
+      { id: 'salamence', name: 'Salamence' },
+    ],
+    blurb: 'Dreams of flying and headbutts cliffs trying. Its wish comes true at last, as a dragon that soars.',
+    deck: FLYING_DECK,
+  },
+  {
     id: 'deino', type: 'dark', duoOnly: true,
     line: [
       { id: 'deino', name: 'Deino' },
@@ -555,6 +676,26 @@ export const DUO_STARTERS = [
       { id: 'krookodile', name: 'Krookodile' },
     ],
     blurb: 'Lies buried in the sand with only its eyes showing. Waits for a foe to swing, then snaps up whatever it dropped.',
+    deck: DARK_DECK,
+  },
+  {
+    id: 'larvitar', type: 'dark', duoOnly: true, skinOf: 'deino',
+    line: [
+      { id: 'larvitar', name: 'Larvitar' },
+      { id: 'pupitar', name: 'Pupitar' },
+      { id: 'tyranitar', name: 'Tyranitar' },
+    ],
+    blurb: 'Eats its way through mountains of soil. By its last form it can knock one down.',
+    deck: DARK_DECK,
+  },
+  {
+    id: 'seedot', type: 'dark', duoOnly: true, skinOf: 'deino',
+    line: [
+      { id: 'seedot', name: 'Seedot' },
+      { id: 'nuzleaf', name: 'Nuzleaf' },
+      { id: 'shiftry', name: 'Shiftry' },
+    ],
+    blurb: 'Hangs from a branch passing for an acorn. Grows a long nose, then leaf fans that whip up storms.',
     deck: DARK_DECK,
   },
 ];

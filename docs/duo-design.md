@@ -67,9 +67,13 @@ says "Finish today's Daily run to unlock".
 
 - The pool starts as Fire / Grass / Water (the free starters, and every owned skin as a look).
 - **Every new starter is a 3-stage line** (the user's call, 2026-10-19: "I only want 3 stage starters"), checked against
-  the rules for adding Pokémon: no stage may be a main-game enemy (so not Drilbur, Magnemite or Zubat: Excadrill,
-  Magnezone and Crobat are), a starter skin, or a line the user turned down (Spheal). Each plays as its deck's type, so
-  a second real type is only its look.
+  the rules for adding Pokémon: no stage may be a starter skin or a line the user turned down (Spheal). Each plays as its
+  deck's type, so a second real type is only its look. **Enemies are allowed** since 2026-10-20 (the user: "I don't care
+  if some are enemies", then "add as many as you think can be starter skins"), which added 14 lines as looks: Magnemite
+  (Electric); Poliwag, Ralts → Gallade (Fighting); Gible, Geodude, both Nidorans (Ground); Togepi, Zubat, Hoppip, Dratini,
+  Bagon (Flying); Larvitar, Seedot (Dark). Left out: the cocoon lines (Caterpie, Weedle, Wurmple), and Ice has no other
+  3-stage line. These 14 were **not** moved into their type's area: each has a stage somewhere in the Safari, and a catch
+  anywhere counts.
 - Each new type's **starter lines** live in that type's own new Safari area (section 5), moved there from the areas
   they're in today. **Catching any stage of a starter line** in any Safari run (Daily, Replay or Duo) adds that type to the
   pool, and that species as a look for it: catching Mareep adds Electric with Mareep's look; Shinx later adds Shinx's. The
