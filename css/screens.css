@@ -1106,8 +1106,9 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .enemy-portrait.ran { transition: transform 1s ease-in, opacity 1s ease-in; transform: translateX(140px); opacity: 0; }
 .catch-star { color: #f8d030; }
 /* a rare spawn's nameplate: a gold rim and a slow shimmer on its name */
-#enemy-plate.rare { box-shadow: 0 0 0 2px #f8d030, 0 0 14px rgba(248, 208, 48, 0.6); }
-#enemy-plate.rare #enemy-name { color: #a07000; }
+/* a rare spawn's rim is grass green, so it isn't mistaken for a shiny's gold (2026-10-20) */
+#enemy-plate.rare { box-shadow: 0 0 0 2px #58c040, 0 0 14px rgba(88, 192, 64, 0.6); }
+#enemy-plate.rare #enemy-name { color: #2a7a20; }
 
 /* PP and End Turn are one size, so the two ends of the controls match (wrap + align-content centres the PP's baseline row).
    Big here, on PCs and phones held sideways; the phone rules shrink them so the hand keeps the room. */
@@ -1725,7 +1726,22 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   50% { translate: 0 -4px; scale: 1 1; }
   75% { scale: 0.55 1; }
 }
-@media (prefers-reduced-motion: reduce) { .map-rare { animation: none; } }
+/* a Safari rare spawn: rustling grass (rareMark() in js/ui.js) in a gold-rimmed badge on its room's top-right corner, like a
+   material's (2026-10-20, the user's ask: the gold ✦ floating above read as a shiny and hung between rooms). It shakes like
+   the games' rustling grass instead of twinkling. .inline is the same badge in the Safari's rules, the Duo Run's areas and a
+   rare's nameplate in battle */
+.rare-mark { display: inline-grid; place-items: center; width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%;
+  border: 2px solid #f8d030; background: radial-gradient(circle, #fffbe0 0 50%, #e8f0b0 100%); box-shadow: 0 0 0 1px #303038;
+  vertical-align: middle; }
+.rare-mark svg { width: 16px; height: auto; image-rendering: pixelated; animation: grassRustle 1.1s steps(1) infinite; }
+.map-grass { margin-top: 0; color: inherit; text-shadow: none; animation: sparkleGlint 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 3px rgba(255, 224, 96, 0.8)); }
+.rare-mark.inline { width: 20px; height: 20px; }
+.rare-mark.inline svg { width: 13px; }
+#enemy-name .rare-mark { width: 18px; height: 18px; border-width: 1px; }
+#enemy-name .rare-mark svg { width: 12px; }
+@keyframes grassRustle { 0%, 100% { transform: none; } 25% { transform: translateX(-1px) rotate(-6deg); } 50% { transform: none; } 75% { transform: translateX(1px) rotate(6deg); } }
+@media (prefers-reduced-motion: reduce) { .map-rare, .rare-mark svg { animation: none; } }
 /* a friend's grave (js/graves.js, drawGraves() in js/map.js): a pixel tombstone by its room's foot, a wisp drifting over
    it till you've left flowers; on the Sky Pillar (.tw-grave) by the door they went through */
 .map-grave, .tw-grave { position: absolute; z-index: 2; padding: 0; border: 0; background: none; cursor: pointer; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.4)); }
@@ -5109,7 +5125,7 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 @keyframes blazeAuraInk { 0% { filter: url(#lcd-ink); } 50% { filter: drop-shadow(0 0 3px #000) url(#lcd-ink); } }
 @media (prefers-reduced-motion: reduce) { #map-screen:not(.tower) .run-sprite[data-blaze] { animation: none; } }
 #map-screen:not(.tower) .run-info {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name lv" "bar bar" "ab hp";
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "name name lv" "bar bar bar" "ab ct hp";
   align-items: center; gap: 5px 8px; width: auto;
 }
 #map-screen:not(.tower) .run-foot { display: contents; }
@@ -5121,6 +5137,15 @@ body[data-screen="map-screen"] .bag-head { margin-bottom: 10px; }
 #map-screen:not(.tower) .run-bars { grid-area: bar; width: 100%; }
 #map-screen:not(.tower) .run-ability { grid-area: ab; justify-self: start; margin: 0; }
 #map-screen:not(.tower) .run-foot .gb-hp-num { grid-area: hp; justify-self: end; font-size: 0.85rem; }
+/* a Safari run's catches so far, beside the Ability (the user's ask, 2026-10-20: the daily run never said how many) */
+#map-screen:not(.tower) .run-caught { grid-area: ct; justify-self: start; }
+.run-caught { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; padding: 1px 8px 1px 4px; cursor: help;
+  border: 2px solid var(--lcd-ink, #1f3a14); background: none; color: var(--lcd-ink, #1f3a14); }
+.run-caught[hidden] { display: none; }
+.run-caught img { width: 16px; height: 16px; image-rendering: pixelated; }
+.run-caught.bump { animation: caughtBump 0.5s ease-out; }
+@keyframes caughtBump { 40% { transform: scale(1.25); } }
+@media (prefers-reduced-motion: reduce) { .run-caught.bump { animation: none; } }
 #map-screen:not(.tower) .run-money { display: none; }
 @media (max-width: 720px) { #map-screen:not(.tower) { padding-top: 6px; } }
 /* the top bar's floor and coins sit on the run card's LCD at every width (the user's ask, 2026-10-12: on the iPad they

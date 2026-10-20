@@ -3286,3 +3286,31 @@ Rhyperior's cries). The Quarry: a 10th Safari area holding 40 Ground-typed Safar
 painters as an open-cut quarry. The Card index's Ground tab. `tools/ground-probe.mjs` covers the new rules. Bot: solo 88.0
 vs 76.0; the pairs level with session 9's but Electric (-11) and Ice (-8), left for the balance pass. pokeDB-sim's ranks
 merge bug (it dropped every unmeasured type) fixed. Numbers in pokeDB-sim's README.
+
+**Catalogue signs over the mall's shopkeepers, a walkable Garden pond** (2026-10-19, the user's ask: players didn't know to
+tap Smeargle). GARDEN CATALOGUE floats over Smeargle once you have a backyard, GRAND CATALOGUE over Gardevoir; the Garden
+pond is a rug-layer piece now. Checked headless (sign shown/hidden, no errors) and within the phone budget. Detail in
+`docs/reference/hub-base-mall.md`.
+
+### Safari: say why an Alpha or boss can't be caught (2026-10-20, cloud)
+The user was caught off guard that Alphas aren't catchable (Claude's call in phase 2); their call: keep the rule, explain
+it. In a Safari Alpha or boss fight Throw now shows greyed, its tap logging "Alphas are too strong to catch. Knock it out!"
+(`battle.uncatchable`, `NO_CATCH` in `js/battle.js`). Checked headless at 390x844 on `?bossfight=meadow`.
+
+### Safari: rare spawns marked with rustling grass (2026-10-20, cloud)
+The user's ask: the rare spawn's gold ✦ floated between rooms and, with the ✨ on its name in battle, read as a shiny. Now
+a shaking pixel grass tuft in a gold-rimmed badge on the room's top-right corner like a material's (`rareMark()` in
+`js/ui.js`, `.map-grass`), the same badge in the Safari rules, the Duo Run's areas and on its name in battle, its plate
+rimmed grass green (a shiny keeps ✨ and gold). Checked headless at 390x844: badge on the corner, the battle mark, no errors.
+
+### Safari: catches so far on the map (2026-10-20, cloud)
+The user's ask: the daily run's map never said how many you'd caught. A Safari Ball chip with `run.tally.caught` sits
+beside the Ability on the run card (`#run-caught`, `showCaught()` in `js/run.js`), bumping when it rises; hidden in other
+runs. Checked headless at 390x844 (fits between the Ability and the HP at 12px, no errors).
+
+### Safari Pokédex banners: no repeated rare (2026-10-20, cloud)
+The user saw two Kecleon and two Chansey silhouettes: each banner showed its first rare, and both spawn in two areas. A
+banner now shows the first rare only its page has (`bannerRare()` in `js/safaridex.js`): Furret, Ambipom, Linoone, Watchog.
+- **Each Safari replay its own seed** (2026-10-20, the user's ask): the day's first try keeps `safariSeed(day)` for the
+  leaderboard; every Day Pass replay (and Duo Run) rolls a fresh seed on the day's areas and starter, so its maps, fights
+  and rare spawns differ (`beginSafari()` in `js/run.js`; `docs/reference/safari.md`'s Day Pass section).

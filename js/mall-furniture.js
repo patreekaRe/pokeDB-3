@@ -82,7 +82,9 @@ export const KEEPERS = {
       'Seats and tables on the left, décor on the right. A place for everything!', 'Build a backyard on your PC\'s House Upgrades, and tap me: I keep a garden catalogue too!',
       'Have you seen the top floor? The Grand Ballroom is for real collectors. Own 40 kinds of furniture and the lift goes up!'],
     // with a backyard, a tap opens the garden catalogue (js/garden-shop.js), the Yard shelf, always in stock
-    special: (done) => import('./garden-shop.js').then(m => m.gardenTap(done)) },
+    special: (done) => import('./garden-shop.js').then(m => m.gardenTap(done)),
+    // floats over it while a tap opens a catalogue (2026-10-19, the user's ask: players didn't know to tap it)
+    sign: (b) => b.house?.yard ? 'Garden catalogue' : '', signIcon: 'flower', ink: '#2a7a5e' },
   2: { id: 'minccino', name: 'Minccino', src: 'assets/pokemon/minccino-front.gif',
     hello: ['Welcome to the Rose Salon! Mind the... no, there\'s no dust. I checked.', 'Oh! A customer! Let me just polish that plinth. There.'],
     chat: ['I dust every plinth twice a day. Three times on Sundays.', 'Eight more pieces up here, every day. All spotless.', 'The chandeliers took me all morning. Worth it!'] },
@@ -90,7 +92,8 @@ export const KEEPERS = {
   3: { id: 'gardevoir', name: 'Gardevoir', src: 'assets/pokemon/gardevoir-front.gif',
     hello: ['Welcome to the Grand Ballroom. Only the finest collectors come this high.', 'Good evening. Every statue here is solid gold. Please, take your time.'],
     chat: ['The stands show a few statues. My catalogue has them all, and the Pokédex shells.', 'Each statue is cast from the Pokémon itself. Well, from its likeness.', 'A statue in your Secret Base says you\'ve truly arrived.'],
-    special: (done) => import('./grand-shop.js').then(m => m.openGrandShop(done)).then(() => true) },
+    special: (done) => import('./grand-shop.js').then(m => m.openGrandShop(done)).then(() => true),
+    sign: () => 'Grand catalogue', signIcon: 'star', ink: '#b08a30' },
 };
 
 const price = (n) => n.toLocaleString();

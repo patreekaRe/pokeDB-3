@@ -38,7 +38,7 @@ import { getSave } from './storage.js';
 // worker can share generateMap() without evaluating UI modules that need document/window.
 const UI = typeof document === 'undefined' ? {} : await import('./ui.js');
 const TRANSITIONS = typeof document === 'undefined' ? {} : await import('./transition.js');
-const { $, el } = UI;
+const { $, el, rareMark } = UI;
 const { preloadBoss } = TRANSITIONS;
 
 /* ---------- the knobs you can turn ---------- */
@@ -800,12 +800,12 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
       const def = ENEMY_DEFS[node.enemyId];
       label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name}`;   // no type badge: elites and bosses are all Normal (the user's call)
     }
-    // a Safari rare spawn (markRares() in js/data/safari.js) shows as a sparkle over its room, like the games' shaking grass
+    // a Safari rare spawn (markRares() in js/data/safari.js) shows rustling grass on its room's corner, like the games' shaking grass
     if (node.rare && !node.visited) {
       const tip = 'A rare Pokémon was sighted here! It runs off after a few turns.';
       label = `${label}: ${tip}`;
       btn.classList.add('rare');
-      floater(box, node, 'map-rare', '✦', tip);
+      floater(box, node, 'map-rare map-grass', '', tip).append(rareMark());
     }
     // a town's material (js/data/satchel.js's markSparkles()) glints by its room till you walk in
     if (node.sparkle && !node.visited) {
@@ -922,9 +922,9 @@ export function graveSvg({ flowers = false, avenged = false } = {}) {
 }
 
 /** A floating icon by its room (a Safari rare spawn's star, a town's material, a Waystone Shard), its own button so a tap
-    says what it is (the user's ask, 2026-10-18). A material's badge and a shard sit on the room's top-right corner, the rare star above it. */
+    says what it is (the user's ask, 2026-10-18). A material's badge, a shard and a rare spawn's grass all sit on the room's top-right corner. */
 function floater(box, node, cls, glyph, tip) {
-  const corner = /map-sparkle|map-shard/.test(cls), off = BUILDINGS.includes(node.type) ? 2 : 1.5;
+  const corner = /map-sparkle|map-shard|map-grass/.test(cls), off = BUILDINGS.includes(node.type) ? 2 : 1.5;
   const btn = el('button', `map-float ${cls}`, glyph);
   btn.type = 'button';
   btn.title = tip;

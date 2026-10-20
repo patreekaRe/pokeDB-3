@@ -20,7 +20,8 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   makes it a grid of three equal columns, each capsule stretched to fill its own, and `.turn-side` `display: contents`; the user's calls
   2026-10-02 and 2026-10-03, when End Turn was squeezed and its label sat low). Normal fights keep PP left, End Turn right.
 - **When**: a Safari run's wild rooms only (`battle.catchable`: `run.safari` and kind `fight`; Alphas and bosses can't be
-  caught), every turn, at any HP (like the games; until 2026-10-02 only once the HP was red, below 25%). The **Throw**
+  caught: there `battle.uncatchable` shows Throw greyed, and a tap says so, `NO_CATCH`; 2026-10-20, the user was caught off guard
+  by the button just missing), every turn, at any HP (like the games; until 2026-10-02 only once the HP was red, below 25%). The **Throw**
   button (`#throw-btn`, green, beside End Turn; on phones on the PP row) shows all fight.
 - **Cost**: a throw costs `THROW_PP` (1 PP) and ends your turn (`whyNotThrow()`: `energy >= THROW_PP`); cards and items
   can be played first, so wear it down, then throw with the PP you kept. A miss runs `endTurn()`, so the enemy acts.
@@ -63,10 +64,13 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 - `markRares()` in `js/data/safari.js`, from `startBiome()` after the wilds are dealt, on the biome's seed: each wild room
   has `RARE.odds` (12%) to hold one of its area's `rares` instead (Chansey, Kecleon and the `rare` lines of `safari-mons.js`
   are Safari-only, the rest are the main game's elite species as plain wilds), with `node.rare` saved on the map.
-- The map shows a gold ✦ over its room (`.map-rare`, its title says so; centred right above the room since 2026-10-02, the user couldn't tell which room it marked from the corner; 22px with a soft glow that swells as
-  it bobs and twinkles, `rareTwinkle`, eased and slow, never flashing, the user's "more obvious but not too obvious"; the
-  prep window's rare-spawn rule shows the same star, `.map-rare.inline`); in battle the name gets a ✨, the nameplate a gold
-  rim (`#enemy-plate.rare`) and a 💨 badge counts the turns left. It runs off at the start of its turn once `turn >=
+- The run card on the map shows the run's catches so far (`#run-caught`, `showCaught()` in `js/run.js`, a Safari Ball and
+  `run.tally.caught`, beside the Ability; it bumps when it went up; the user's ask, 2026-10-20). Hidden outside the Safari.
+- The map shows rustling grass on its room's top-right corner (`rareMark()` in `js/ui.js`, a pixel tuft that shakes in a
+  gold-rimmed badge, `.map-grass`, placed like a material's badge; the user's ask, 2026-10-20: the gold ✦ centred above the
+  room, there since 2026-10-02, read as a shiny and hung between rooms). The prep window's rare-spawn rule and the Duo
+  Run's areas show the same badge (`.rare-mark.inline`); in battle the name gets it too, the nameplate a grass-green
+  rim (`#enemy-plate.rare`; a shiny keeps ✨ and gold) and a 💨 badge counts the turns left. It runs off at the start of its turn once `turn >=
   RARE.turns - rock` (4 of your turns): `runAway()` -> `onEnd({ escaped: true })`, and the map says "ran away. Nothing
   won." Its catch odds are halved (`RARE.mult`).
 
@@ -170,6 +174,11 @@ day turns (`save.safari.pass`, the day bought). `safariAccess(safari, day)` in `
 'locked'; `safariTicket()` in `js/daypass.js` is every way in (the prep window's Start, the result window's again button):
 it lets 'first' and 'pass' through and otherwise offers the pass (or says the coins are short). The prep window's Start
 reads Start 1/1, then "Day Pass 100", then Replay ∞; the title's gem 1/1, 0/1, then ∞. Pinned by `tests/daypass.test.mjs`.
+
+**Each replay its own seed** (the user's call, 2026-10-20): only the first try plays the day's `safariSeed(day)`, the
+same for everyone. Every replay (`beginSafari()` in `js/run.js`, a Duo Run too) keeps the day's areas and starter but
+rolls a fresh `run.safari.seed`, so its maps, fights, rewards and rare spawns differ each time. It's saved in the run, so
+a refresh still replays a room exactly. `?bossfight=<area>` keeps the day's seed.
 
 ## The fair first try
 

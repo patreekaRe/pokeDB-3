@@ -1084,6 +1084,20 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
+x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
+catching, ~33% longer) over more floors per area (more fights, not more Pokémon). It needs a bot check of the day's win rate
+(a longer run is harder) and fair leaderboard days (a day's areas are seeded; `SAFARI_FROM`-style date gate so no played
+day changes). The user first picked a 4th area (each area harder: slots 1-3 take the main biomes' hpMult / dmgBonus /
+bossBonus, so a 4th needs its own tier, ~x6.3 / +29 / boss +40, gentler than the Depths'), then said no the same day:
+**keep the Safari at 3 areas** (2026-10-20). Don't build unless they bring it back.
+Then (same day) the user asked about a 4th area **for Duo Runs only**. Claude's lean: yes. A Duo Run is a replay that
+never goes on the leaderboard, so its length can change without touching any day's fairness. Its 4th area would be one of
+the new-type areas (Power Plant, Ice Cave, Dojo Mountain, ...), so every Duo Run can catch toward the duo pool. It needs its
+own difficulty step (~x6.3 / +29 / boss +40) set by the bot: duos already win less than solo (electric+fire / +grass /
++water 64.7 / 43.7 / 36.3 against solo ~71), so area 4 may need to be gentler, or come with an extra card reward. Build it
+on `duo-types` (the Duo Run isn't on `main`). **The user's call: wait until the duo types are finished**, then build it.
+
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6
 uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS ~42). Every relic added thins the pool
