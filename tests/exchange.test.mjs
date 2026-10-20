@@ -158,3 +158,8 @@ test('ten Lucky Stars pick any caught shiny free, from any area', () => {
   assert.equal(getSave().coins, coins);
   assert.equal(X.luckyPick({}, 9, ['venonat'], 'venonat'), null, 'nine stars pick nothing');
 });
+
+// a new Safari area gets its machine by itself, but its banner needs a colour or the Exchange won't open
+test('every Safari area has a capsule colour', () => {
+  for (const p of SAFARI_DEX_PAGES) assert.ok(X.EXCHANGE_INK[p.area], `EXCHANGE_INK has no line for ${p.area}`);
+});

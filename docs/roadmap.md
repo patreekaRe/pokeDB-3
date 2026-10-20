@@ -1050,6 +1050,8 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Shut the Shiny Exchange while the duo biomes grow?** (asked 2026-10-20) Recommended no: the duo work stays on `duo-types` till it goes live, each new Safari area gets its machine by itself (`SAFARI_DEX_PAGES`), and a Pokémon not caught yet comes out sealed and opens on its catch, so a pull before an area opens isn't lost. A new area needs only an `EXCHANGE_INK` line (`tests/exchange.test.mjs` now fails without one). Waiting on the user's call.
+
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6
 uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS ~42). Every relic added thins the pool
