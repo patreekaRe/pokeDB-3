@@ -354,6 +354,13 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   counts are the one Safari Dex, the same as the lobby's rows. Type chips and the portraits' corners are round badges
   (`typeBadge()` in `js/type-badge.js`, SVG glyphs in the games' icon colours, not the emoji), and each portrait stands
   its sprite by `SPRITE_FIT` / `BODY_X` (`faceSprite()`), not by its GIF's frame.
+- **The Duo Run's own road** (the user's call, 2026-10-20: "keep it 3 biomes but always different than the daily"):
+  `duoRoad(daily)` in `js/data/safari.js` deals three of the day's other areas on `${seed}|duo-areas`, the same all day
+  for everyone, so the Duo app shows it ahead; `beginSafari()` swaps it in for a duo, and each try still rolls a fresh
+  seed for its maps. `?powerplant` and the like still put their area first. Pinned by `tests/duo.test.mjs`.
+- **New duo starters on the map** (2026-10-20): on a Safari map (not a peek), a wild room whose Pokémon is a stage of a
+  duo line you haven't caught (`duoGains()`) shows its type's badge on the room's top-left (`map-duo`, `duoNew` in
+  `tracking()` in `js/run.js`), unnamed like every room; a tap says a new duo starter lives there.
 - **The duo pool**: `save.duoPool` holds the types caught beyond Fire / Grass / Water (type -> starter ids as looks);
   the base three are every owned starter of the type. `duoNews()` in `js/run.js` (from `creditSafari()`) adds a type
   when a stage of one of its `DUO_LINES` starter lines is in `save.safariDex.caught`, old catches included, with the

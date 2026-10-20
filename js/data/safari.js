@@ -101,6 +101,14 @@ export function safariDaily(day = safariDay(), starters = STARTERS) {
   return { day, seed, areas, starter };
 }
 
+/** A Duo Run's three areas (the user's call, 2026-10-20): the day's own, seeded like the Daily's so the Duo app can show
+    them ahead, and never one of the Daily's, so a Duo Run is always somewhere else. Each try still rolls its own maps. */
+export function duoRoad(daily = safariDaily()) {
+  const daily3 = new Set(daily.areas.map(a => a.id));
+  const rest = safariAreasOn(daily.day).filter(a => !daily3.has(a.id));
+  return shuffled(rest, makeRng(hashString(`${daily.seed}|duo-areas`))).slice(0, SAFARI_DAY_AREAS);
+}
+
 /** Every Pokémon a Safari area can hold, wild or rare, without repeats: the ones with a signature card (cards.js). */
 export const SAFARI_ROSTER = [...new Set(SAFARI_AREAS.flatMap(a => [...a.normals, ...a.rares]))];
 

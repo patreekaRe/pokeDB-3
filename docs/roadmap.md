@@ -246,6 +246,8 @@ Then (same day): each road row is one line (a round number, the name, ▲ ▼, t
 roster grew: Poliwag out, Ice / Fighting / Dark filled to 8 / 10 / 9 with two-stage lines and single Pokémon that power up
 with a legendary's aura (`docs/duo-design.md` section 3). 47 duo looks in all. **Waiting on the user**: a playtest of the
 auras (80 new GIFs, ~8 MB, loaded only for the two starters in a run).
+Then the Duo Run's own three areas (`duoRoad()`) and the map's badge on rooms holding a duo starter not caught yet
+(`docs/reference/safari.md`).
 Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
 start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
 docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo
@@ -1175,6 +1177,8 @@ on `duo-types` (the Duo Run isn't on `main`). **The user's call: wait until the 
 The user asked again on 2026-10-20 ("didn't we agree to have 4 biomes for duo run? And aren't the biomes completely
 different from the daily seeded run?"). Not built: today a Duo Run replays the day's three areas on a fresh seed. Open,
 for the user: 4 areas, and whether all four are the Duo Run's own rather than the Daily's.
+**Settled the same day** (the user: "I think we keep it 3 biomes but always different than the daily seed"): built,
+`duoRoad()`; 3 areas, never the Daily's. The 4th area is off.
 
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6

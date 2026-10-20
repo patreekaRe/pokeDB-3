@@ -76,7 +76,7 @@ import { renderTower, hideTower, guardianIntro, towerFall, barReady, setTowerGra
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
-import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
+import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, duoRoad, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
@@ -615,6 +615,7 @@ export function beginSafari(daily = safariDaily(), pair = null) {
   // ?powerplant / ?icecave / ?dojomountain / ?quarry / ?windycliffs / ?nightalley: a Duo Run whose first area is the Power
   // Plant, the Ice Cave, Dojo Mountain, the Quarry, the Windy Cliffs or Night Alley, before its day (several: the first ones, in that order); a playtest,
   // and a Duo Run is never posted
+  if (duo) daily = { ...daily, areas: duoRoad(daily) };
   const lent = duo ? ['powerplant', 'icecave', 'dojomountain', 'quarry', 'windycliffs', 'nightalley'].filter(id => new URLSearchParams(location.search).has(id)) : [];
   if (lent.length) {
     daily = { ...daily, areas: [...lent.map(id => SAFARI_AREAS_BY_ID[id]), ...daily.areas.filter(a => !lent.includes(a.id))].slice(0, daily.areas.length) };
@@ -1798,7 +1799,11 @@ const rubbingReads = () => DEX_RUBBINGS[dexPerk('unown-rubbing')];
 const rubbingUsed = () => Object.values(run.map.byId).filter(n => n.read).length;   // saved with the map's nodes, like the Scope's
 
 /** Tracker's Eye's level and your type, for renderMap() (a peek at the map shows the marks too). */
-const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type });
+const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type, duoNew: isSafari() && !peeking ? duoNew : null });
+
+/** The new duo type a Safari wild would bring if caught (its line's look not in your pool yet), or null: the map marks its
+    room (the user's call, 2026-10-20). */
+const duoNew = (id) => Object.keys(duoGains([id], getSave().duoPool))[0] ?? null;
 
 function drawRubbing(nodes) {
   const total = rubbingReads(), left = total - rubbingUsed();

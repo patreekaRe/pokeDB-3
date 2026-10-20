@@ -1723,6 +1723,8 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   50% { translate: 0 -2px; scale: 1.18; filter: drop-shadow(0 0 7px rgba(170, 240, 255, 1)) drop-shadow(0 0 1px #0c2440); }
 }
 /* a town's Waystone Shard on its Alpha's top-right corner, like a material's badge (2026-10-18: it floated above, between rooms): a crystal in the town's colour (--gem), turning as it bobs */
+.map-duo { margin-top: 0; width: 22px; height: 22px; padding: 0; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 8px 2px rgba(255, 255, 255, 0.8); animation: sparkleGlint 2.2s ease-in-out infinite; }
+.map-duo .type-badge { width: 100%; height: 100%; }
 .map-shard { margin-top: 0; animation-name: shardBob; animation-duration: 2.6s; filter: drop-shadow(0 0 4px var(--gem)) drop-shadow(0 0 1px #fff); }
 .map-shard-gem { display: inline-block; width: 14px; height: 22px; clip-path: polygon(50% 0, 100% 38%, 50% 100%, 0 38%);
   background: linear-gradient(115deg, #fff 0 22%, var(--gem) 23% 58%, color-mix(in srgb, var(--gem) 55%, #102030) 59%); }

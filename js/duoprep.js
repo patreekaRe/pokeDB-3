@@ -5,7 +5,7 @@
    A Duo Run is a replay: it opens once the day's free Daily run is finished, needs the Day Pass and never posts.
    ============================================================ */
 
-import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
+import { safariDaily, duoRoad, SAFARI_AREAS_BY_ID, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { STARTERS, STARTERS_BY_ID, DUO_STARTERS, spriteUrl } from './data/starters.js';
 import { TYPES } from './data/cards.js';
@@ -61,10 +61,17 @@ function chip(t) {
   return c;
 }
 
+/** The Duo Run's road, with ?powerplant and the like put first as beginSafari() does. */
+function areasFor(daily) {
+  const areas = duoRoad(daily);
+  const lent = ['powerplant', 'icecave', 'dojomountain', 'quarry', 'windycliffs', 'nightalley'].filter(id => new URLSearchParams(location.search).has(id));
+  return [...lent.map(id => SAFARI_AREAS_BY_ID[id]), ...areas.filter(a => !lent.includes(a.id))].slice(0, areas.length);
+}
+
 function road(daily) {
   const seen = new Set([...getSave().safariDex.seen, ...getSave().safariDex.caught]);
   const box = el('ol', 'duo-road');
-  daily.areas.forEach((area, i) => {
+  areasFor(daily).forEach((area, i) => {
     const li = el('li', 'duo-area');
     const fold = el('details', 'duo-fold');
     fold.open = opened.has(area.id);
@@ -207,7 +214,7 @@ function render() {
   const grid = el('div', 'duo-pool');
   grid.append(...types.map(t => portrait(t, pool)));
   parts.push(grid);
-  parts.push(el('h3', 'duo-head', "Today's road"), el('p', 'duo-note', "Today's Daily run, the same three areas. Tap one for its types and Pokémon."), road(daily));
+  parts.push(el('h3', 'duo-head', "Today's road"), el('p', 'duo-note', "The Duo Run's own three areas today, never the Daily run's. Tap one for its types and Pokémon."), road(daily));
   if (open) parts.push(el('p', 'duo-note', 'A replay with the Day Pass: perks on, coins as a replay, never on the leaderboard.'));
   host.replaceChildren(...parts);
   host.dispatchEvent(new Event('duo-change', { bubbles: true }));
