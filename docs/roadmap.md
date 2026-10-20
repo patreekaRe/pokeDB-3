@@ -171,13 +171,19 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?duorun&duopool&quarry&coins=500`, or `?area=quarry`, `?bossfight=quarry&starter=rhyhorn`,
    `?arena=fight&starter=rhyhorn&cards=bunker,groundswell,sand-screen,foxhole&relics=shuca-berry`. **Waiting on the
    user**: the playtest (the Moves app now has 9 type tabs on a phone).
-Prompt for session 11, Flying's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
-start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 5 (Flying, and Ground's two
-sessions as the pattern) and 7, docs/reference/safari.md's duo section, cards.md and card-design.md. Build Flying's first
-session: write its ~30 pool cards and 8 evolution cards into the doc first (10 common, 14 uncommon, 6 rare), then the
-cards with art, Evasion, Tailwind (rename the neutral card called Tailwind, keeping its id: open 18) and Unburden, the Keen
-Eye Ability, Starly's line (backs, fits, cries), the sim mirror and a bot check of its pairs. Push only to duo-types in
-both repos and give me a githack link."
+11. **Flying's first**, built 2026-10-20 on `duo-types` (both repos, last commits 1e1ce0f2 / sim 35be59f; `docs/duo-design.md`
+   section 5's "Flying's first session"): 30 pool cards + 8 evolution cards with art, Evasion, Tailwind (the neutral
+   Tailwind card is Rest now, id kept), Unburden, Keen Eye, Starly's line, the sim mirror. Its bot check is open: the
+   first run read 20-30 points over the other types' pairs, and two screens wait in the sim's `variants.js`
+   (`evadeFade`, `keenOnce`). The user's call: nothing to redo; session 12 settles the check first.
+Prompt for session 12, Flying's second, **next** (▶ Run in: CLOUD, effort: high, the user's call: design and engine
+work; attach both pokeDB-3 and pokeDB-sim, start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md
+sections 5 (Flying's first session, and Ground's second as the pattern) and 7, docs/reference/safari.md's duo section,
+cards.md and card-design.md. First finish session 11's bot check: screen `evadeFade` and `keenOnce` against Flying's pairs
+at ~150 a cell, keep what brings Flying in line, confirm at 300 and record it. Then build Flying's second session: write
+its ~36 cards (the defensive half) into the doc first, then the cards with art, its held item, relics and items, the Card
+index's Flying tab, Pidgey's and Pidove's looks, the Windy Cliffs area, the sim mirror and a bot check of its pairs. Push
+only to duo-types in both repos and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
