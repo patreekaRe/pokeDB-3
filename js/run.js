@@ -597,13 +597,14 @@ const starterName = () => stageName(run.starter, run.stage);
 const an = (name) => `${/^[AEIOUX]/.test(name) ? 'an' : 'a'} ${name}`;
 
 /** Today's Safari Zone run: the date's starter and areas at Level 0's rules. Only the day's first try counts for the
-    leaderboard; after it the same seed replays as often as you like. */
+    leaderboard; after it every replay rolls a seed of its own (the user's call, 2026-10-20: the same day's maps and
+    fights over again got dull), on the day's areas and starter. */
 export function beginSafari(daily = safariDaily()) {
   const tries = getSave().safari.day === daily.day ? getSave().safari.tries : 0;
   const days = safariDays(getSave()) + (tries ? 0 : 1);   // the Safari Regular Badge's
   updateSave(d => { d.safari = { day: daily.day, tries: tries + 1, days, pass: d.safari.pass, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
   rangerDay(daily.day);
-  beginRun(daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 });
+  beginRun(daily.starter, 0, null, { day: daily.day, seed: tries === 0 ? daily.seed : (Math.random() * 2 ** 32) >>> 0, areas: daily.areas.map(a => a.id), first: tries === 0 });
   mission('safari');
 }
 

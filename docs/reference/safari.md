@@ -175,6 +175,11 @@ day turns (`save.safari.pass`, the day bought). `safariAccess(safari, day)` in `
 it lets 'first' and 'pass' through and otherwise offers the pass (or says the coins are short). The prep window's Start
 reads Start 1/1, then "Day Pass 100", then Replay ∞; the title's gem 1/1, 0/1, then ∞. Pinned by `tests/daypass.test.mjs`.
 
+**Each replay its own seed** (the user's call, 2026-10-20): only the first try plays the day's `safariSeed(day)`, the
+same for everyone. Every replay (`beginSafari()` in `js/run.js`, a Duo Run too) keeps the day's areas and starter but
+rolls a fresh `run.safari.seed`, so its maps, fights, rewards and rare spawns differ each time. It's saved in the run, so
+a refresh still replays a room exactly. `?bossfight=<area>` keeps the day's seed.
+
 ## The fair first try
 
 The day's first try is the leaderboard's, so `fairTry()` in `js/run.js` turns off every perk for it: `perk(id)` and

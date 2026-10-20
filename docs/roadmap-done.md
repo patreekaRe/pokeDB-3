@@ -3188,3 +3188,6 @@ runs. Checked headless at 390x844 (fits between the Ability and the HP at 12px, 
 ### Safari Pokédex banners: no repeated rare (2026-10-20, cloud)
 The user saw two Kecleon and two Chansey silhouettes: each banner showed its first rare, and both spawn in two areas. A
 banner now shows the first rare only its page has (`bannerRare()` in `js/safaridex.js`): Furret, Ambipom, Linoone, Watchog.
+- **Each Safari replay its own seed** (2026-10-20, the user's ask): the day's first try keeps `safariSeed(day)` for the
+  leaderboard; every Day Pass replay (and Duo Run) rolls a fresh seed on the day's areas and starter, so its maps, fights
+  and rare spawns differ (`beginSafari()` in `js/run.js`; `docs/reference/safari.md`'s Day Pass section).

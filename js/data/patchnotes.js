@@ -51,6 +51,7 @@ export const NEXT = [
   ['mall', 'A Garden catalogue tag floats over Smeargle once you have a backyard, and a Grand catalogue tag over Gardevoir, so you know to tap them.'],
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
   ['modes', 'A Safari run\'s map shows how many Pokémon you\'ve caught so far, beside your Ability.'],
+  ['modes', 'Every Safari replay with the Day Pass deals new maps, fights and rare spawns on the day\'s areas; the first try stays the same for everyone.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
