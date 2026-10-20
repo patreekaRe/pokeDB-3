@@ -908,6 +908,16 @@ recoloured** to an open-cut quarry (grey spoil heaps, banded cut walls, scrub, b
 until its art session. **Date-gated** like the others (`SAFARI_FROM`, 2026-10-20 on the branch: move it to the day after
 the branch goes live); from then, 3 of the 10 a day.
 
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`, 300 a cell;
+solo the main game at Level 0, 150), win %: ground+fire / +grass / +water / +electric / +ice / +fighting 65.3 / 54.7 /
+45.3 / 49.7 / 55.3 / 57.3, against session 9's Ground (`groundFirst`: these 36 cards, the 7 relics and 2 items out, the
+same game files and days) 66.3 / 53.3 / 49.0 / 60.7 / 63.3 / 58.0; solo Ground 88.0 against 76.0. Solo gains, Fire, Grass
+and Fighting level, Water inside the noise, Electric (-11) and Ice (-8) dip: left for the balance pass (session 15), as
+Fighting's and Electric's second halves were. Relic ranks (strong bot, solo Ground, 150 each, prog over `none` 20.27):
+Groundium Z +3.3, Shuca Berry +3.0, Light Clay +2.3, Soft Sand +1.3, Smooth Rock +0.7, Earth Plate +0.6, Ground Memory
++0.5. (The ranks run found a bug in pokeDB-sim's `run-node.mjs`: merging into `ranks.json` kept only the types measured;
+it now keeps every type.)
+
 ### Flying: Evasion, Tailwind, Unburden
 
 Light and quick: cheap cards, an empty hand, dodging. Hits Grass, Fighting, Bug; fears Electric, Ice, Rock.

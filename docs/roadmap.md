@@ -159,16 +159,25 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    githack link with `?duorun&duopool&coins=500` (Ground lent), or a solo fight
    `?arena=fight&starter=trapinch&cards=dig,landslide,mud-sport,stomping-tantrum,sandstorm`. **Waiting on the user**: the
    playtest, and whether Fault at half on Alphas and bosses and Sandstorm's +3 block feel right.
-Prompt for session 10, Ground's second, **next** (▶ Run in: CLOUD, effort: medium; attach both pokeDB-3 and pokeDB-sim,
-start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 5 (Ground, its first session's
-table and bot check, and Fighting's second session as the pattern) and 7, docs/reference/safari.md's duo section,
-cards.md and card-design.md. Build Ground's second session: write its other ~36 cards into the doc first
-(defence-leaning: 10 common, 18 uncommon, 8 rare, 74 in all), then Soft Sand (its held item) + 6 relics (Smooth Rock among
-them), a Ground Gem and a Drive-like item, the Card index's Ground tab (and its Moves app icon), Rhyhorn's look
-(Rhyhorn, Rhydon, Rhyperior: backs, fits, cries) and the Quarry's data (a 10th Safari area: the Ground-typed Safari
-Pokémon moved in with `was:`, date-gated by SAFARI_FROM, the Desert's painters recoloured; Drilbur stays out), the sim
-mirror with Ground's relics ranked, and a bot check of its pairs against session 9's. Push only to duo-types in both
-repos and give me a githack link."
+10. ~~**Ground's second**~~ done 2026-10-20 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Ground's
+   second session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 36 more cards (defence-leaning, 74
+   in all) with art, Soft Sand + 6 relics (Earth Plate, Light Clay, Shuca Berry, Smooth Rock, Ground Memory, Groundium Z),
+   Ground Gem and Terrain Extender (no Ground Drive exists), the Card index's Ground tab, Rhyhorn's look, and **the Quarry**
+   (a 10th area: 40 Ground-typed Safari Pokémon, date-gated; Drilbur, the Swinub line and the Sandile line stay out, the
+   last for Dark's Night Alley; the Desert painted as an open-cut quarry). Bot (300 a duo): ground+fire / +grass / +water /
+   +electric / +ice / +fighting 65.3 / 54.7 / 45.3 / 49.7 / 55.3 / 57.3 vs session 9's Ground (`groundFirst`) 66.3 / 53.3 /
+   49.0 / 60.7 / 63.3 / 58.0; solo 88.0 vs 76.0: the Electric and Ice pairs dip, for the balance pass (15). The sim's
+   `run-node.mjs` ranks merge was wiping every type it didn't measure (fixed). Playtest: the githack link with
+   `?duorun&duopool&quarry&coins=500`, or `?area=quarry`, `?bossfight=quarry&starter=rhyhorn`,
+   `?arena=fight&starter=rhyhorn&cards=bunker,groundswell,sand-screen,foxhole&relics=shuca-berry`. **Waiting on the
+   user**: the playtest (the Moves app now has 9 type tabs on a phone).
+Prompt for session 11, Flying's first, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
+start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 5 (Flying, and Ground's two
+sessions as the pattern) and 7, docs/reference/safari.md's duo section, cards.md and card-design.md. Build Flying's first
+session: write its ~30 pool cards and 8 evolution cards into the doc first (10 common, 14 uncommon, 6 rare), then the
+cards with art, Evasion, Tailwind (rename the neutral card called Tailwind, keeping its id: open 18) and Unburden, the Keen
+Eye Ability, Starly's line (backs, fits, cries), the sim mirror and a bot check of its pairs. Push only to duo-types in
+both repos and give me a githack link."
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

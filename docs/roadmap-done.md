@@ -3276,3 +3276,13 @@ and Vibrava's and Flygon's cries; catching any stage adds Ground (`DUO_LINES.gro
 rules in a real fight, and `tools/duo-probe.mjs --pair=ground,fire` the Duo Run; pokeDB-sim mirrors it all. Bot (300):
 solo 71.3; with Fire / Grass / Water / Electric / Ice / Fighting 66.0 / 55.6 / 51.6 / 50.3 / 57.4 / 55.4. Bulldoze +
 Vulnerable 2 lifted only solo, so it shipped as written. Numbers in pokeDB-sim's README.
+
+**Duo types, session 10: Ground's second** (2026-10-20, branch `duo-types`, both repos). Its table went into
+`docs/duo-design.md` first: 36 more cards, defence-leaning (Ground now 20 / 32 / 14 + 8 evolution), with art and new keys
+(`blockPerUnder`, `blockPerFault`, `ifFault`, `blockFault`; powers `digBlock`, `faultBlock`, `sandChipBlock`, `sandWeak`,
+`sandKeep`). Soft Sand, Earth Plate, Light Clay, Shuca Berry, Smooth Rock, Ground Memory, Groundium Z (Sturdy twice);
+Ground Gem and Terrain Extender. Rhyhorn as a `DUO_STARTERS` look on Trapinch's deck (backs, fits, Rhydon's and
+Rhyperior's cries). The Quarry: a 10th Safari area holding 40 Ground-typed Safari Pokémon, date-gated, on the Desert's
+painters as an open-cut quarry. The Card index's Ground tab. `tools/ground-probe.mjs` covers the new rules. Bot: solo 88.0
+vs 76.0; the pairs level with session 9's but Electric (-11) and Ice (-8), left for the balance pass. pokeDB-sim's ranks
+merge bug (it dropped every unmeasured type) fixed. Numbers in pokeDB-sim's README.
