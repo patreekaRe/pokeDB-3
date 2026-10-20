@@ -4209,8 +4209,11 @@ body.scene-peek #backdrop { display: none; }
 .sp-sky { position: absolute; left: 0; top: 0; pointer-events: none; }
 .sp-gate-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 80%); width: 84px; height: 84px; object-fit: contain; object-position: 50% 100%;
   translate: -50% calc(4px - 100%); pointer-events: none; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3)); animation: pdxIdle 1.4s ease-in-out infinite; }
-.tdev-keys.sp-keys { grid-template-columns: repeat(5, 1fr); max-width: 400px; }
-#sp-duo.locked .mdex-ico { opacity: 0.5; }
+.tdev-keys.sp-keys { grid-template-columns: repeat(4, 1fr); max-width: 330px; }
+/* the Duo key in the window's top right corner (the user's call, 2026-10-20), grey until the day's Daily run is done */
+.sp-window .sp-duo-key { position: absolute; z-index: 2; top: 8px; right: 8px; width: 62px; padding: 7px 0 6px; }
+.sp-window .sp-duo-key .mdex-ico .smooth-icon { width: 26px; height: 26px; }
+#sp-duo.locked { filter: grayscale(1) brightness(0.8); opacity: 0.75; }
 /* the Duo key's app (js/duoprep.js): today's road, the duo pool's portraits, how the pair fares */
 .duo-app { padding: 10px 12px 18px; display: flex; flex-direction: column; gap: 8px; font-family: var(--pixel-font); color: #1f3a14; }
 .duo-head { margin: 4px 0 0; font-size: 0.85rem; letter-spacing: 0.04em; text-transform: uppercase; }

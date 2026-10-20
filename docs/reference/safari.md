@@ -341,7 +341,7 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   cards, against elites and bosses too; the card hint (`markEdge()`) counts it, its title naming the parts. Held-item
   relics (Charcoal...) boost their type whoever's out. Who's out is written into `run.duo.out` as you switch, so the
   next fight starts with whoever was out at the knockout (Overgrow goes by that too).
-- **The Duo key** (`js/duoprep.js`, `duoApp` in the lobby's `APPS`): today's road (each area's main types,
+- **The Duo key** (`js/duoprep.js`, `duoApp` in the lobby's `APPS`; since 2026-10-20, the user's call, in the gate window's top right corner, `.sp-duo-key`, grey until the day's Daily run is done, the four other keys below): today's road (each area's main types,
   `areaTypes()`, 4 of its Pokémon, silhouettes until seen, its rare spawns' ✦), the duo pool's portraits (a tap picks,
   the first is the lead, a tap on a pick drops it, a third pick takes the second's place; ◀ ▶ steps the look through
   your owned starters of the type), how the pair fares in each area (`fares()`), A = Pick 2 / Start Duo / Locked.

@@ -3368,3 +3368,7 @@ Kangaskhan on the gate piers, rose beds behind an iron fence. Inside (`LEADER_HO
 a marble floor with a gold medallion, two crystal chandeliers, the family in oils over the hearth (a gold piano and a
 fountain by the way in came out the same day, the user's call); the nursery, desks, couch and Lego kept. Checked headless: no errors, every tile reachable, the
 Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` and `docs/reference/towns.md`.
+
+### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
+The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
+(`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
