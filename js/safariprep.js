@@ -37,7 +37,7 @@ const RULES = [
   ['🔴', `Throw a ball at any wild Pokémon: ${THROW_PP} PP, and it ends your turn. At full HP it's a long shot; the lower its HP, the better.`],
   ['🎯', 'Debuffs on it raise the odds.'],
   ['🆚', 'Wild Pokémon have their real types and moves, on the real Gen 5 chart (no immunities). A ▲ on a card means super effective.'],
-  ['🤝', 'Duo Run: once today\'s Daily run is done, replay it with two of your own starters, switching for 1 PP. Same-type attacks deal 20% more.'],
+  ['🤝', 'Duo Run: once today\'s Daily run is done, play two of your own starters on three areas of its own. Hold your Pokémon to switch: 1 PP, and it ends your turn. Same-type attacks deal 20% more.'],
   ['🍙', 'Bait: better odds, but it hits harder. A card reward after fights, Safari runs only.', 'bait'],
   ['🧱', `Rock: ${ROCK_HIT} damage and Vulnerable, but it may run off. A card reward after fights, Safari runs only.`, 'rock'],
   ['rare', `A room marked with rustling grass on the map holds a rare Pokémon. It runs off after ${RARE.turns} turns.`],

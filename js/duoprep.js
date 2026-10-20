@@ -209,7 +209,7 @@ function render() {
   const open = duoUnlocked();
   const types = [...new Set([...DUO_BASE, ...Object.keys(pool), ...Object.keys(DUO_LINES)])];
   const parts = [];
-  parts.push(el('h3', 'duo-head', 'Your duo pool'), el('p', 'duo-note', 'Pick two types. The first is out first; switch for 1 PP on your turn.'));
+  parts.push(el('h3', 'duo-head', 'Your duo pool'), el('p', 'duo-note', 'Pick two types. The first is out first; in battle, hold your Pokémon to switch (1 PP, ends your turn).'));
   if (!open) parts.push(el('p', 'duo-lock', "🔒 Finish today's Daily run to unlock the Duo Run (won or lost)."));
   const grid = el('div', 'duo-pool');
   grid.append(...types.map(t => portrait(t, pool)));

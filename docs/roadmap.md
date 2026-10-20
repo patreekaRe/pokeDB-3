@@ -251,6 +251,10 @@ Then the Duo Run's own three areas (`duoRoad()`) and the map's badge on rooms ho
 Then every duo type to 10 looks (60 in all; `docs/duo-design.md` section 3), the type badges everywhere a type was an emoji
 (`typeText()` in `js/type-badge.js`: card faces, the battle's plates, the Pokédex and Stats chips, the Hall of Fame, the
 map's match marks, the crossroads), and the duo's swap button on the plate's top-left corner (`#player-plate .bench-chip`).
+Then the switch reworked (the user's calls, same day): the bench portrait is gone (the Pokémon moved too much to read);
+you **hold your Pokémon** to bring up the Go pill, and **a switch ends your turn** as in the games (1 PP still; a card's
+switch stays free and mid-turn). pokeDB-sim mirrors it (same branch name there); its bot now only switches last, keeping
+the PP back when the coming hit is ▲ on the one out and not the partner. Bot check: see the commit and pokeDB-sim's README.
 Prompt for session 15, the balance pass, **next** (▶ Run in: CLOUD, effort: high; attach both pokeDB-3 and pokeDB-sim,
 start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md sections 1, 5 (every type's bot check) and 7,
 docs/reference/safari.md's duo section and pokeDB-sim's README (the duo sections). Run the balance pass over all 36 duo

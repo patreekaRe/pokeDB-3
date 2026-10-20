@@ -51,7 +51,7 @@ export const NEXT = [
   ['mall', 'A Garden catalogue tag floats over Smeargle once you have a backyard, and a Grand catalogue tag over Gardevoir, so you know to tap them.'],
   ['modes', 'Beat Eternatus with all five Waystones mended for the true ending; with fewer, the Well is only closed, and something stirs after the credits.'],
   ['modes', 'Safari wild Pokémon fight on their real types and moves, on Gen 5\'s type chart; a ▲ on a card means super effective, and Net Balls suit Water and Bug.'],
-  ['modes', 'Duo Run: once the day\'s Safari run is done, play two of your own starters on three areas of its own, each with its own deck and hand; switch for 1 PP.'],
+  ['modes', 'Duo Run: once the day\'s Safari run is done, play two of your own starters on three areas of its own, each with its own deck and hand; hold your Pokémon to switch, for 1 PP and your turn.'],
   ['modes', 'Ten duo starters a type now, Absol to Zorua: the map marks their rooms. Two-stage lines and single Pokémon like Lapras power up like legendaries.'],
   ['look', 'Types now show as round coloured badges everywhere, from cards and battle to the Pokédex and map; a duo\'s swap button sits on your HP box\'s corner.'],
   ['modes', 'Electric joins the Duo Run: catch Shinx, Mareep, Pichu, Elekid or Tynamo in the new Power Plant, then Paralyze foes with Static and Volt Switch out free.'],

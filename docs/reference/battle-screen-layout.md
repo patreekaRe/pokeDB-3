@@ -317,9 +317,9 @@ Before adding a
 generic class name, grep `css/` and `js/` for it.
 
 
-**A duo's swap button** (2026-10-20, the user's call from their phone): the benched partner's portrait (`#player-bench`)
-sits just outside the player plate's top-left corner, 30px, so the name and the status icons keep their room
-(`#player-plate .bench-chip` in `css/screens.css`). It shows the animated sprite zoomed onto its head (`headShot()` in
-`js/battle.js`, by `HEAD_FIT`: measured per starter over every frame by `tools/head-fit.py`, so a Pokémon that hops or
-sways stays in the circle; the user's call, 2026-10-20), with the ▲ / ▼ for the
-coming hit on its outer corner; its piles are in its title only. The plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.
+**A duo's switch** (2026-10-20, the user's calls from their phone): hold your Pokémon (`#player-zone`, `holdStart()` /
+`holdEnd()` in `js/battle.js`, 450 ms; a conic ring fills round it, `.player-zone.duo.holding::after`) and the Go pill
+comes up over your plate: "⇄ Go, Bulbasaur!", "1 PP · ends your turn", and how the enemy's coming hit would land on it
+(▲ / ▼). A tap gives "Hold your Pokémon to switch partners." A tap anywhere else puts the pill away. The bench portrait
+on the plate's corner (and `HEAD_FIT`) came and went the same day: the Pokémon moved too much to read at that size. The
+plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.

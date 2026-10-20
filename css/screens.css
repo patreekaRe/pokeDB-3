@@ -430,38 +430,19 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .nameplate-title strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nameplate-title .chip { padding: 0; background: none; font-size: 1rem; line-height: 1; cursor: help; display: inline-flex; gap: 2px; }
 .nameplate-title .chip .type-badge { width: 1.3em; height: 1.3em; }   /* just the type's pixel icon, no pill */
-/* a duo's benched partner on your nameplate (renderBench() in js/battle.js): just its portrait in its type's colour;
-   a tap arms the switch's Go pill over the plate */
-.bench-chip {
-  --c1: #9aa0b4; --c2: #4a4e60;
-  position: relative; flex: none; margin-left: auto;
-  width: 30px; height: 30px; padding: 0;
-  border: 2px solid #303038; border-radius: 50%;
-  background: radial-gradient(circle at 50% 35%, var(--c1), var(--c2));
-  cursor: pointer; overflow: visible;
-}
-.bench-chip[hidden] { display: none; }
-.bench-chip[data-type="fire"]  { --c1: #ff8f4d; --c2: #b8321a; }
-.bench-chip[data-type="grass"] { --c1: #72dc70; --c2: #257a38; }
-.bench-chip[data-type="water"] { --c1: #5cbcff; --c2: #1d58b8; }
-.bench-chip[data-type="electric"] { --c1: #ffe066; --c2: #b88a00; }
-.bench-chip[data-type="ice"] { --c1: #a8ecff; --c2: #2a8cb8; }
-.bench-chip[data-type="fighting"] { --c1: #f49a70; --c2: #a03420; }
-.bench-chip[data-type="ground"] { --c1: #e8c878; --c2: #8a6430; }
-.bench-chip[data-type="flying"] { --c1: #c8c0ff; --c2: #5a50b0; }
-.bench-chip[data-type="dark"] { --c1: #a8907c; --c2: #3e2e26; }
-/* it sits on the plate's top-left corner, over its edge, where a thumb finds it (the user's call, 2026-10-20) */
-/* outside the plate's top-left corner, so the name and the status icons keep their room */
-#player-plate .bench-chip { position: absolute; left: -24px; top: -24px; z-index: 5; width: 30px; height: 30px; margin: 0;
-  box-shadow: 0 0 0 2px #fff, 2px 3px 0 1px rgba(0, 0, 0, 0.35); }
-.bench-pic { position: absolute; inset: 0; overflow: hidden; border-radius: 50%; }
-.bench-pic .bench-face { position: absolute; max-width: none; border-radius: 0; object-fit: fill; image-rendering: pixelated; }
-.bench-mark { position: absolute; left: -7px; top: -7px; z-index: 1; padding: 1px 2px; border-radius: 4px; background: #303038;
-  font-size: 0.75rem; line-height: 1; }
-.bench-mark.up { color: #ff7a6b; }
-.bench-mark.down { color: #9fd8ff; }
-.bench-chip.armed { box-shadow: 0 0 0 2px #ffd84a, 0 0 8px 2px rgba(255, 216, 74, 0.7); }
-.bench-face { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+/* a duo switches by holding the one out (holdStart() in js/battle.js): a ring fills round it, then the Go pill comes up */
+.player-zone.duo { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.player-zone.duo #player-sprite { -webkit-user-drag: none; }
+.player-zone.duo::after { content: ''; position: absolute; left: 50%; bottom: 14px; width: 120px; height: 120px; translate: -50% 0; border-radius: 50%;
+  background: conic-gradient(#ffd84a calc(var(--hold, 0) * 1%), transparent 0); mask: radial-gradient(circle, transparent 55%, #000 57% 66%, transparent 68%);
+  opacity: 0; pointer-events: none; }
+.player-zone.duo.holding::after { opacity: 1; animation: holdFill 0.45s linear forwards; }
+@property --hold { syntax: '<number>'; inherits: false; initial-value: 0; }
+@keyframes holdFill { from { --hold: 0; } to { --hold: 100; } }
+.switch-go-name, .switch-go-price, .switch-go-edge { display: block; }
+.switch-go-price, .switch-go-edge { font-size: 0.75rem; }
+.switch-go-edge.up { color: #b8201a; }
+.switch-go-edge.down { color: #1d58b8; }
 .switch-go {
   position: absolute; right: 0; bottom: calc(100% + 40px); z-index: 6;
   padding: 7px 12px;
