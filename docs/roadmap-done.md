@@ -3287,6 +3287,16 @@ painters as an open-cut quarry. The Card index's Ground tab. `tools/ground-probe
 vs 76.0; the pairs level with session 9's but Electric (-11) and Ice (-8), left for the balance pass. pokeDB-sim's ranks
 merge bug (it dropped every unmeasured type) fixed. Numbers in pokeDB-sim's README.
 
+**Duo types, session 11: Flying's first** (2026-10-20, branch `duo-types`, both repos). Its table went into
+`docs/duo-design.md` first: 30 pool cards (10 / 14 / 6) and 8 evolution cards with art (`js/card-art-flying.js`). Evasion
+(`b.evasion`, 🪶: each stack halves an enemy attack before block, gone at your turn's start; the intent shows the halved
+hit), Tailwind (`b.tailwind`, 🌬️: a card more at each turn's start, a turn going as it draws; `freeIn: 'tailwind'`),
+Unburden (`ifEmpty`: the last card in hand; the glow), powers Gale, Wind Wall, Wind Rider, Wind Dancer, Feather Light,
+and the Keen Eye Ability. The neutral Tailwind card is Rest (id kept; Flying's card is `tailwind-gust`). Starly is a
+`DUO_STARTERS` entry with backs, fits and cries; catching any stage adds Flying. `tools/flying-probe.mjs` checks the rules
+in a real fight; pokeDB-sim mirrors it all. Bot: Evasion kept until a hit used it ran 20-30 points over the other types,
+so it fades as Blur does: solo 78.7, pairs 67-82. Numbers in pokeDB-sim's README.
+
 **Catalogue signs over the mall's shopkeepers, a walkable Garden pond** (2026-10-19, the user's ask: players didn't know to
 tap Smeargle). GARDEN CATALOGUE floats over Smeargle once you have a backyard, GRAND CATALOGUE over Gardevoir; the Garden
 pond is a rug-layer piece now. Checked headless (sign shown/hidden, no errors) and within the phone budget. Detail in

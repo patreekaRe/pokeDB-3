@@ -171,16 +171,22 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    `?duorun&duopool&quarry&coins=500`, or `?area=quarry`, `?bossfight=quarry&starter=rhyhorn`,
    `?arena=fight&starter=rhyhorn&cards=bunker,groundswell,sand-screen,foxhole&relics=shuca-berry`. **Waiting on the
    user**: the playtest (the Moves app now has 9 type tabs on a phone).
-11. **Flying's first**, built 2026-10-20 on `duo-types` (both repos, last commits 1e1ce0f2 / sim 35be59f; `docs/duo-design.md`
-   section 5's "Flying's first session"): 30 pool cards + 8 evolution cards with art, Evasion, Tailwind (the neutral
-   Tailwind card is Rest now, id kept), Unburden, Keen Eye, Starly's line, the sim mirror. Its bot check is open: the
-   first run read 20-30 points over the other types' pairs, and two screens wait in the sim's `variants.js`
-   (`evadeFade`, `keenOnce`). The user's call: nothing to redo; session 12 settles the check first.
+11. ~~**Flying's first**~~ done 2026-10-20 on `duo-types` (both repos; `docs/duo-design.md` section 5's "Flying's first
+   session", `docs/reference/safari.md`'s duo section; `docs/roadmap-done.md`). 30 pool cards + 8 evolution cards with
+   art (`js/card-art-flying.js`), **Evasion** (🪶: each stack halves an enemy attack until your next turn), **Tailwind**
+   (🌬️: a card more at each of your next N turns' start; the neutral Tailwind card is **Rest** now, id kept), **Unburden**
+   (a bonus on the last card in hand; it glows), the **Keen Eye** Ability (draw 1 as Flying comes out, once a turn),
+   Starly's line (backs, fits, cries), the sim mirror. Bot (300): first built, Evasion kept until used, solo 83.7 and the
+   pairs 75-92; fading (Blur's rule), solo 78.7, flying+fire / +grass / +water / +electric / +ice / +fighting / +ground
+   80.3 / 74.3 / 67.3 / 76.0 / 82.0 / 72.7 / 74.7: a little over the other first sessions, for the balance pass (15).
+   Playtest: the githack link with `?duorun&duopool&coins=500` (Flying lent), or a solo fight
+   `?arena=fight&starter=starly&cards=peck,acrobatics,tailwind-gust,sky-attack,feather-dance,gale`. **Waiting on the
+   user**: the playtest, and whether Evasion fading at your turn and Keen Eye's draw feel right. Two Safari signature
+   cards are also named Tailwind (Pelipper's, Whimsicott's), with other text: say if they should be renamed.
 Prompt for session 12, Flying's second, **next** (▶ Run in: CLOUD, effort: high, the user's call: design and engine
 work; attach both pokeDB-3 and pokeDB-sim, start from branch `duo-types` in both): "Read CLAUDE.md, docs/duo-design.md
 sections 5 (Flying's first session, and Ground's second as the pattern) and 7, docs/reference/safari.md's duo section,
-cards.md and card-design.md. First finish session 11's bot check: screen `evadeFade` and `keenOnce` against Flying's pairs
-at ~150 a cell, keep what brings Flying in line, confirm at 300 and record it. Then build Flying's second session: write
+cards.md and card-design.md. Build Flying's second session: write
 its ~36 cards (the defensive half) into the doc first, then the cards with art, its held item, relics and items, the Card
 index's Flying tab, Pidgey's and Pidove's looks, the Windy Cliffs area, the sim mirror and a bot check of its pairs. Push
 only to duo-types in both repos and give me a githack link."

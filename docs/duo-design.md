@@ -1011,6 +1011,16 @@ Flying so far: 10 common, 14 uncommon, 6 rare, 8 evolution = **38**.
 
 **Starting deck**: Gust x3, **Aerial Ace**, Feather Guard x4, Wing Attack, Peck.
 
+**Bot check** (pokeDB-sim, human bot; duos on Safari days, `safariCfg({ catch: true, catchAt: 0.3, duo })`, Flying the
+lead; solo the main game at Level 0), win %. As first built, Evasion kept until a hit used it: solo **83.7** (solo Fire
+74.0 under the same bot, 150), flying+fire / +grass / +water / +electric / +ice / +fighting / +ground 90.0 / 89.3 / 75.3 /
+92.0 / 88.7 / 90.0 / 86.0, 20-30 over the other types' first sessions. Screens (150): Evasion gone at your turn's start
+(`evadeFade`) solo 68.7, +fire / +water / +ground 81.3 / 64.7 / 75.3; Keen Eye only the first time each fight
+(`keenOnce`) 79.3 / 86.0 / 76.0 / 84.0, inside the noise. So **Evasion fades at your turn's start** (Blur's rule) and Keen
+Eye stays. Confirmed (300, the bot valuing stacks as fading): solo **78.7**, pairs **80.3 / 74.3 / 67.3 / 76.0 / 82.0 /
+72.7 / 74.7**: solo level with Fighting's first session (79.3), the pairs ~5-10 over Fighting's and Ice's first sessions
+on Fire, Grass and Water, for the balance pass (session 15) once the defensive half is in.
+
 ### Dark: Steal, Punish, Illusion
 
 Sly. Hits Psychic and Ghost; fears Fighting and Bug.
