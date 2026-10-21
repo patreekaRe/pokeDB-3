@@ -33,6 +33,7 @@ import { selectSky } from './select-sky.js';
 import { smoothIcon } from './smooth-icons.js';
 import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
 import { HELD_BY_ID, POUCH } from './data/held.js';
+import { typeText } from './type-badge.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
 // Mewtwo (secret) has no portrait here: it is reached by its own doors, the open gate and the Depths camp, straight to
@@ -189,7 +190,7 @@ function show(starter) {
     { title: `Won on Trainer Level 5${wins > 1 ? ` ${wins} times` : ''}` }));
   const hp = BASE_HP + (getSave().passives.hpBoost || 0) * 5;
   $('sel-hp').textContent = `❤️ ${hp}/${hp}`;
-  $('sel-type').textContent = [type.icon, type.label].filter(Boolean).join(' ');
+  $('sel-type').replaceChildren(typeText(hiddenType ? '' : starter.type, type.icon, type.label));
   $('sel-type').className = `chip sel-type${hiddenType ? '' : ` type-${starter.type}`}`;
   const won = winsOf(starter);
   $('sel-wins').hidden = !unlocked;

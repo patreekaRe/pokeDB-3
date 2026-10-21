@@ -20,6 +20,7 @@ import { researchCount, progressBar, still, sceneImg } from './pokedex.js';
 import { el, itemSprite } from './ui.js';
 import { smoothIcon } from './smooth-icons.js';
 import { playCry, playSound } from './audio.js';
+import { typeText } from './type-badge.js';
 
 const DEX_IDS = new Set(DEX_PAGES.flatMap(p => p.ids));   // the Depths' page is counted apart
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -311,7 +312,9 @@ function championsPage(n) {
     const lv = bestLv(st);
     const name = el('b', 'sdx-summary-name', st.line[finalStage(st)].name);
     if (st === crown) name.prepend(el('span', 'sdx-crown', '♛ '));
-    info.append(name, el('span', `index-only type-${st.type}`, `${TYPES[st.type].icon} ${TYPES[st.type].label}`),
+    const typeChip = el('span', `index-only type-${st.type}`);
+    typeChip.append(typeText(st.type, TYPES[st.type].icon, TYPES[st.type].label));
+    info.append(name, typeChip,
       el('span', '', `Wins: ${s.winsBy[st.id]}`),
       el('span', '', lv >= 0 ? `Best: Level ${lv}${(s.level5WinsBy?.[st.id] || 0) ? ' ⭐' : ''}` : 'Best: -'));
     card.replaceChildren(pic, info);

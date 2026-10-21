@@ -3373,6 +3373,28 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
 
+### Duo Run picker: locked types show only ??? (2026-10-20, cloud)
+The user's call: a type not caught yet shows its ??? name and no "Catch X in the Safari" hint, so players find out
+themselves (`hintFor()` gone from `js/duoprep.js`).
+
+### Sky Pillar F100 combo pass: targeted nerfs and a lift (2026-10-21, cloud)
+A friend's ~12-card Turtwig deck climbed to floor 100. Fixes 1-4 of the sweep's lean plus a lift: Growth Spurt+ keeps
+Exhaust (cost 0), Overgrowth+ costs 0 at x1 (not x2), Ice Core and Electric Seed give half a copy, Dark Memory adds only
+to a card's Steal (not Magician's), Lum Berry no longer draws; Flame Wall and Mat Block 9 block (12 upgraded) for Fire and
+Fighting. Bot: Fire 68 / 46 / 24 -> 79 / 55 / 32 (L0 / L3 / L5), Grass and Water unchanged within noise, the 36 Safari pairs
+65.8 -> 67.6 (Fighting +8, Fire +4), a 10-flight Sky Pillar climb's reach to floor 100 Fire 27 -> 40%, Grass 30 -> 23%. Branch `claude/sky-pillar-f100-fixes-jaspxf` (both repos), pushed to `main`. Detail in
+`docs/reference/cards.md`'s last section and pokeDB-sim's README; follow-ups under Ideas ("After the Sky Pillar F100 combo pass").
+
+## A shiny switch in the Duo picker (2026-10-21, the user's ask; branch `claude/choosing-shinies-62dr4q`)
+Each Duo pool portrait wears a ✨ button on its top-right corner when you own the shown look's shiny (first under the
+arrows, moved the same day: it made the cards uneven): the same `save.shiny.on` switch as the character select's ✨ Shiny,
+so the portrait, the gate and the battle follow (`portrait()` in `js/duoprep.js`). Pushed to `main`.
+
+### Moves app: icon-only type tabs (2026-10-21, cloud)
+The user's call from a phone screenshot: the 11 type tabs cut their names to "F…", "G…", so they show only the round
+type badge (`typeBadge()`, as everywhere since 2026-10-20; the name is the tab's tooltip and aria-label). The old
+`smoothIcon` type art had none for Flying or Dark. Branch `claude/top-icon-cleanup-cz0xzz`, also pushed to main.
+
 ### Perf audit: the Clearing, the Safari's new areas and the Duo Run (2026-10-21, cloud)
 The user's ask after the Duo Run and six areas went live: an fps, draw-call and memory check of all of it. Measured headless
 (swiftshader, an iPhone 17 Pro's size): `tools/budget-check.mjs` passed every place (Clearing 257 draws / 125 MB, towns

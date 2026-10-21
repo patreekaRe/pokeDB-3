@@ -210,7 +210,7 @@ const NEUTRAL_CARDS = [
 const FIRE_CARDS = [
   // Common: 20
   { id: 'ember',           name: 'Ember',           type: 'fire', cost: 1, art: '🔥', sprite: 'fire-stone', effects: { damage: 7 }, upgrade: { effects: { damage: 10 } } },                          // Strike
-  { id: 'flame-wall',      name: 'Flame Wall',      type: 'fire', cost: 1, art: '🧱', sprite: 'flame-plate', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },                          // Defend, +2: Fire has the fewest ways to defend
+  { id: 'flame-wall',      name: 'Flame Wall',      type: 'fire', cost: 1, art: '🧱', sprite: 'flame-plate', effects: { block: 9 }, upgrade: { effects: { block: 12 } } },                          // Defend, +3: Fire has the fewest ways to defend (9 since 2026-10-20, Fire's lift)
   { id: 'scorch',          name: 'Scorch',          type: 'fire', cost: 2, art: '☄️', sprite: 'burn-drive', effects: { damage: 10, vulnerable: 2 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },          // Bash
   { id: 'will-o-wisp',     name: 'Will-O-Wisp',     type: 'fire', cost: 1, art: '👻', sprite: 'spell-tag', effects: { burn: 4, weaken: 2 }, upgrade: { effects: { burn: 6 } } },                  // Deadly Poison + Weak, like the move's halved Attack
   { id: 'mystical-fire',   name: 'Mystical Fire',   type: 'fire', cost: 1, art: '✨', sprite: 'wise-glasses', effects: { damage: 6, weaken: 1 }, upgrade: { effects: { damage: 8, weaken: 2 } } },             // Sucker Punch
@@ -347,7 +347,7 @@ const GRASS_CARDS = [
   // Rare: 14
   { id: 'solar-beam',     name: 'Solar Beam',     type: 'grass', cost: 3, art: '🌞', sprite: 'tm-grass', effects: { damage: 36 }, rarity: 'rare', upgrade: { effects: { damage: 46 } } },   // Bludgeon
   { id: 'grassy-terrain', name: 'Grassy Terrain', type: 'grass', cost: 3, art: '🌿', sprite: 'terrain-extender', effects: { strengthEachTurn: 2 }, power: true, rarity: 'rare', upgrade: { effects: { strengthEachTurn: 3 } } },   // Demon Form
-  { id: 'growth-spurt',   name: 'Growth Spurt',   type: 'grass', cost: 1, art: '🌱', sprite: 'rare-candy', effects: { doubleStrength: true }, exhaust: true, rarity: 'rare', upgrade: { exhaust: false } },   // Limit Break
+  { id: 'growth-spurt',   name: 'Growth Spurt',   type: 'grass', cost: 1, art: '🌱', sprite: 'rare-candy', effects: { doubleStrength: true }, exhaust: true, rarity: 'rare', upgrade: { cost: 0 } },   // Limit Break, but the upgrade keeps Exhaust: here strength turns into block and healing too (a ~12-card Sky Pillar deck doubled to floor 100, 2026-10-20)
   { id: 'solar-blade',    name: 'Solar Blade',    type: 'grass', cost: 2, art: '🌞', sprite: 'solganium-z', effects: { damage: 8, strengthMult: 4 }, retain: true, rarity: 'rare', upgrade: { effects: { damage: 12, strengthMult: 5 } } },   // Heavy Blade+, kept for the big turn
   { id: 'harvest',        name: 'Harvest',        type: 'grass', cost: 1, art: '🫐', sprite: 'berry-pots', effects: { strengthHeal: 2 }, power: true, rarity: 'rare', upgrade: { effects: { strengthHeal: 3 } } },   // bridge Growth/Drain
   { id: 'jungle-healing', name: 'Jungle Healing', type: 'grass', cost: 1, art: '💚', sprite: 'max-potion', effects: { damage: 12, feed: 4 }, exhaust: true, rarity: 'rare', upgrade: { effects: { damage: 14, feed: 5 } } },   // Feed
@@ -359,7 +359,7 @@ const GRASS_CARDS = [
   { id: 'pollen-puff',    name: 'Pollen Puff',    type: 'grass', cost: 1, art: '🌸', sprite: 'honey', effects: { drawPerDebuff: 1 }, rarity: 'rare', upgrade: { cost: 0 } },   // Expertise, by debuffs
   { id: 'sap-sipper',     name: 'Sap Sipper',     type: 'grass', cost: 1, art: '💚', sprite: 'yellow-nectar', effects: { weakBlock: 4 }, power: true, rarity: 'rare', upgrade: { effects: { weakBlock: 6 } } },   // Sadistic Nature, as block
   { id: 'bloom-doom',     name: 'Bloom Doom',     type: 'grass', cost: 2, art: '🌺', sprite: 'grassium-z', effects: { seedMult: 3 }, exhaust: true, rarity: 'rare', upgrade: { cost: 1 } },   // Catalyst, for Leech Seed
-  { id: 'overgrowth',     name: 'Overgrowth',     type: 'grass', cost: 1, art: '🌳', sprite: 'rich-mulch', effects: { strengthBlock: 1 }, power: true, rarity: 'rare', upgrade: { effects: { strengthBlock: 2 } } },   // (Growth's defence: Metallicize by strength)
+  { id: 'overgrowth',     name: 'Overgrowth',     type: 'grass', cost: 1, art: '🌳', sprite: 'rich-mulch', effects: { strengthBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 0 } },   // (Growth's defence: Metallicize by strength; + was x2 until 2026-10-20, a deck that outlived any fight)
   { id: 'petal-storm',    name: 'Petal Storm',    type: 'grass', cost: 2, art: '🌸', sprite: 'petal-purple', effects: { damage: 4, hits: 5, vulnerable: 1 }, rarity: 'rare', upgrade: { effects: { damage: 5, vulnerable: 2 } } },   // Glass Knife
 ];
 
@@ -577,7 +577,7 @@ const ELECTRIC_CARDS = [
   { id: 'magnetic-field', name: 'Magnetic Field', type: 'electric', cost: 2, art: '🧭', effects: { blockEachTurn: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { blockEachTurn: 6 } } },   // Metallicize
   { id: 'zap-shield',     name: 'Zap Shield',     type: 'electric', cost: 0, art: '🔰', effects: { block: 4, static: 2 }, rarity: 'uncommon', upgrade: { effects: { block: 6, static: 3 } } },   // Deflect, with Static
   { id: 'static-storm',   name: 'Static Storm',   type: 'electric', cost: 1, art: '⛈️', effects: { staticMult: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { staticMult: 3 } } },   // Catalyst
-  { id: 'electric-seed',  name: 'Electric Seed',  type: 'electric', cost: 2, art: '🌰', effects: { staticBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Static's Metallicize)
+  { id: 'electric-seed',  name: 'Electric Seed',  type: 'electric', cost: 2, art: '🌰', effects: { staticBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Static's Metallicize, at half since 2026-10-20)
   { id: 'max-lightning',  name: 'Max Lightning',  type: 'electric', cost: 2, art: '🌟', effects: { damage: 4, perStatic: 3 }, retain: true, rarity: 'rare', upgrade: { effects: { perStatic: 4 } } },   // Bane's big brother
   { id: 'hadron-engine',  name: 'Hadron Engine',  type: 'electric', cost: 3, art: '🏭', effects: { energyEachTurn: 1, blockEachTurn: 5 }, power: true, rarity: 'rare', upgrade: { cost: 2 } },   // Fusion and Metallicize in one
   { id: 'ion-barrier',    name: 'Ion Barrier',    type: 'electric', cost: 2, art: '🔷', effects: { block: 32 }, exhaust: true, rarity: 'rare', upgrade: { effects: { block: 40 } } },   // Impervious
@@ -650,7 +650,7 @@ const ICE_CARDS = [
   { id: 'icefall',        name: 'Icefall',        type: 'ice', cost: 1, art: '🏔️', effects: { hailIcicle: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Infinite Blades, on Hail's chip: an Icicle / Hail bridge
   { id: 'frost-shard',    name: 'Frost Shard',    type: 'ice', cost: 0, art: '🔷', effects: { block: 3, frostbite: 2 }, icicle: true, rarity: 'uncommon', upgrade: { effects: { block: 4, frostbite: 3 } } },   // Claw, as block and Frostbite: an Icicle / Frostbite bridge
   { id: 'thick-fat',      name: 'Thick Fat',      type: 'ice', cost: 1, art: '🦭', effects: { block: 6, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 9 } } },   // Disarm, with a Defend
-  { id: 'ice-core',       name: 'Ice Core',       type: 'ice', cost: 2, art: '💙', effects: { frostBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Frostbite's Metallicize: Electric Seed's twin)
+  { id: 'ice-core',       name: 'Ice Core',       type: 'ice', cost: 2, art: '💙', effects: { frostBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // (Frostbite's Metallicize: Electric Seed's twin, at half since 2026-10-20: with Cold Snap it outlived any fight)
   { id: 'flash-freeze',   name: 'Flash Freeze',   type: 'ice', cost: 3, art: '🧊', effects: { frostbite: 4, skipEnemy: true }, exhaust: true, rarity: 'rare', upgrade: { cost: 2 } },   // Vault
   { id: 'shatter',        name: 'Shatter',        type: 'ice', cost: 2, art: '💥', effects: { damage: 4, perFrost: 4, thaw: true }, rarity: 'rare', upgrade: { effects: { perFrost: 5 } } },   // (Frostbite cashed in: Catalyst's other end)
   { id: 'ice-crown',      name: 'Ice Crown',      type: 'ice', cost: 2, art: '👑', effects: { icicleEachTurn: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Infinite Blades
@@ -667,7 +667,7 @@ const ICE_CARDS = [
    pool cards and all 8 evolution cards, session 8 the other 36. */
 const FIGHTING_CARDS = [
   { id: 'rock-smash',     name: 'Rock Smash',     type: 'fighting', cost: 1, art: '🪨', effects: { damage: 8 }, upgrade: { effects: { damage: 11 } } },   // Strike (8, like Thunder Shock)
-  { id: 'mat-block',      name: 'Mat Block',      type: 'fighting', cost: 1, art: '🥋', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
+  { id: 'mat-block',      name: 'Mat Block',      type: 'fighting', cost: 1, art: '🥋', effects: { block: 9 }, upgrade: { effects: { block: 12 } } },   // Defend (9 since 2026-10-20, Fighting's lift)
   { id: 'low-kick',       name: 'Low Kick',       type: 'fighting', cost: 2, art: '🦵', effects: { damage: 10, vulnerable: 2, weaken: 2 }, upgrade: { effects: { damage: 12, vulnerable: 3, weaken: 3 } } },   // Bash (+ Weak 2, as Icy Wind: without it Fighting trailed ~25 points, 2026-10-19)
   { id: 'vital-throw',    name: 'Vital Throw',    type: 'fighting', cost: 1, art: '🤼', effects: { block: 10, counter: 4 }, upgrade: { effects: { block: 13, counter: 6 } } },   // Iron Wave, Counter for its hit (Flame Barrier's shape; Frost Armor's block)
   { id: 'mach-punch',     name: 'Mach Punch',     type: 'fighting', cost: 0, art: '👊', effects: { damage: 4, ifAfterAttack: { draw: 1 } }, upgrade: { effects: { damage: 6 } } },   // Follow-Up, at 0 with a draw for its PP
@@ -1304,6 +1304,9 @@ export function scaledEffects(card, stage = 0) {
 /** The Power Lens shown when a power card is played, in the starter's colours (purple for any other type). */
 export const POWER_LENS = { fire: '🟧', grass: '🟩', water: '🟦', psychic: '🟪', electric: '🟨', ice: '🟦', fighting: '🟫', ground: '🟫', flying: '🟦', dark: '⬛' };
 
+/** Electric Seed and Ice Core give half their stack a copy (2026-10-20), so two copies give it whole. */
+const halfOf = (n, what) => (n === 1 ? `half ${what}` : `${what}${n > 2 ? ` x${n / 2}` : ''}`);
+
 export const POWERS = {
   blockEachTurn:    { icon: '🏰', text: (n) => `At the start of each turn, gain ${n} block.` },
   healEachTurn:     { icon: '💚', text: (n) => `At the start of each turn, heal ${n} HP.` },
@@ -1356,7 +1359,7 @@ export const POWERS = {
   switchDraw:       { icon: '⚙️', text: (n) => `Whenever you switch, draw ${plural(n, 'card')}.` },
   switchStrength:   { icon: '➕', text: (n) => `Whenever you switch, your hits deal +${n} all fight.` },
   thornStatic:      { icon: '🪼', text: (n) => `Whenever the enemy attacks you, Static ${n}.` },
-  staticBlock:      { icon: '🌰', text: (n) => `At the start of each turn, gain block equal to the enemy's Static${n > 1 ? ` x${n}` : ''}.` },
+  staticBlock:      { icon: '🌰', text: (n) => `At the start of each turn, gain block equal to ${halfOf(n, "the enemy's Static")}.` },
   energyBlock:      { icon: '🌀', text: (n) => `At the end of your turn, gain ${n} block for each energy left.` },
   switchWeak:       { icon: '🎯', text: (n) => `Whenever you switch, apply ${n} Weak.` },
   switchStatic:     { icon: '🔩', text: (n) => `Whenever you switch, Static ${n}.` },
@@ -1369,7 +1372,7 @@ export const POWERS = {
   hailBlock:        { icon: '⛄', text: (n) => `At the start of each turn in Hail, gain ${n} block.` },
   hailFrost:        { icon: '🦣', text: (n) => `Whenever Hail hurts the enemy, Frostbite ${n}.` },
   thornFrost:       { icon: '🦋', text: (n) => `Whenever the enemy attacks you, Frostbite ${n}.` },
-  frostBlock:       { icon: '💙', text: (n) => `At the start of each turn, gain block equal to the enemy's Frostbite${n > 1 ? ` x${n}` : ''}.` },
+  frostBlock:       { icon: '💙', text: (n) => `At the start of each turn, gain block equal to ${halfOf(n, "the enemy's Frostbite")}.` },
   hailChipBlock:    { icon: '🌀', text: (n) => `Whenever Hail hurts the enemy, gain ${n} block.` },
   hailIcicle:       { icon: '🏔️', text: (n) => `Whenever Hail hurts the enemy, add ${n > 1 ? `${n} Icicles` : 'an Icicle'} to your hand.` },
   icicleEachTurn:   { icon: '👑', text: (n) => `At the start of each turn, add ${n > 1 ? `${n} Icicles` : 'an Icicle'} to your hand.` },

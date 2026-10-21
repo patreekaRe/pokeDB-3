@@ -299,3 +299,24 @@ late-run decks, ranked by how long they last and how hard they hit, with per-car
   Depths' `MEWTWO_MODE.mods[3]` is now bossDmg 4 / bossHp 1.2 / enemyDmg -3 (was 8 / 1.3 / 0): 66.7% (300).
 - **Sky Pillar** (`towerCfg`, 60 climbs of 4 flights a type), reaching floor 40 before -> after: fire 68 -> 70%, grass
   80 -> 78%, water 53 -> 58%: unchanged within noise. Its augments weren't retuned (stacking them is the mode's point).
+
+## The Sky Pillar F100 combo pass (2026-10-20)
+
+A friend's ~12-card Turtwig deck climbed the Sky Pillar to floor 100 (Leech Seed, Growth Spurt+, Overgrowth+, Lum Berry;
+roadmap entry of that name). Targeted fixes, not a blanket nerf, all mirrored in pokeDB-sim (variant `preF100` undoes them):
+- **Growth Spurt+** costs 0 and keeps Exhaust (was: no Exhaust). Here strength turns into block and healing too
+  (Overgrowth, Horn Leech, Hoard), and a thin deck doubled it every other turn: ~390 peak strength in the combo lab, ~22 after.
+- **Overgrowth+** costs 0 at x1 (was x2). **Ice Core** and **Electric Seed** give half the enemy's Frostbite / Static a
+  copy: `frostBlock` / `staticBlock` now count halves (`halfOf()` writes the text; two copies give it whole). Ice Core with
+  Cold Snap outlived the lab's dummy every time; its fuzzer lift fell 13.4 -> 3.8.
+- **Dark Memory** adds 1 only to a card's Steal (`steal(n, byCard)`): not Magician's every turn, Dread Plate's or the Dark
+  Gem's. Magician + Dark Memory lasted ~61 turns against the dummy, ~31 after.
+- **Lum Berry** no longer draws (StS's Medical Kit doesn't): every status an enemy added cycled a thin deck.
+- **Fire's and Fighting's lift** (the sweep's weakest late decks): **Flame Wall** and **Mat Block** 9 block, 12 upgraded
+  (were 8 / 11). Buffing their scaling pieces (Fire Pledge, Burning Bulwark, Fighting Spirit, Counterstance) or their
+  Abilities moved nothing; the starter's block card, in every deck, did.
+- Bot check (human bot, 150 a cell; Fire 300): fire L0 / L3 / L5 68 / 46 / 24 -> 79 / 55 / 32, grass 71 / 54 / 28 -> 68 /
+  54 / 27, water 65 / 45 / 25 -> 67 / 45 / 32; the 36 Safari pairs mean 65.8 -> 67.6 (fighting 67.8 -> 76.1, fire 63.3 ->
+  67.6, the rest within noise). Fire now leads at L0 by ~8 (level at L3 / L5, where it trailed). Sky Pillar (`towerCfg`,
+  10 flights, 60 climbs a type), reach floor 100: fire 27 -> 40%, grass 30 -> 23%, water 27 -> 30% (noisy at 60). Detail:
+  pokeDB-sim's README.

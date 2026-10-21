@@ -24,10 +24,10 @@ keeps its own deck and its own piles in battle; it replaced answer 6's shared 5 
 | Where | Safari runs only (`run.safari`), from the Duo Run screen (section 2). The Daily run stays one dealt starter. |
 | HP | **One HP bar** for the trainer, as now (`BASE_HP` + perks + `HP_PER_STAGE`): no fainting of one partner, every heal and relic works unchanged **(open 1)**. |
 | Stage | Shared: both evolve together at the bosses, like `run.stage` today. The evolution card pick offers both types' evo cards. |
-| Switch | A tap on the benched partner's chip on your nameplate, then a second tap on "⇄ Go, Shinx! 1 PP" (the pile picker's two-tap pattern, no accidental switches). **1 PP**, any number of times on your turn, never on the enemy's; it doesn't end the turn **(open 2; kept for two decks, answer 24)**. A few cards and one relic make it free (Volt Switch, Baton Pass, Shed Shell). |
+| Switch | **Hold the one out** (450 ms, a ring fills round it; the user's call, 2026-10-20, like the Sealed Gate's card) to bring up "⇄ Go, Shinx! 1 PP · ends your turn", then tap it. **1 PP, and it ends your turn** as in the games (the user's call, 2026-10-20; it was any number of times a turn, answer 24): the partner comes out to take the enemy's move, draws no hand till its next turn, and Keen Eye waits for that turn too. A card's switch (Volt Switch, Baton Pass) stays free and mid-turn; Shed Shell makes the held switch free. |
 | Two decks | Each partner's deck is its **own solo starting deck** (10 cards: Charmander's, Squirtle's...), so neither is thinned. In battle each has its own draw, discard and exhaust piles and its own hand; the one out's are live, the other's wait. |
 | Hands | **Two hands a turn** (answer 23). At the start of your turn the one out draws its hand. The first time the partner comes out in that turn it draws its own hand (the same count: Scope Lens and the rest count, Lagging Tail's extra only once); a switch back brings back the hand it left, never a new one. At the end of your turn both hands go to their own discard piles: Ethereal cards fade, Retain cards (all of them under Slowpoke Tail) stay with their owner. Poison, Grip Claw and Still Waters read only the one out's hand. |
-| The bench's piles | **Untouched while it's benched** (answer 25). What the enemy shuffles into "your deck" (Sludge, Confusion...) and every card a card makes goes to the one out's piles; so does Griseous Orb's Sludge at a fight's start. The chip shows the partner's hand this turn (✋5), else its draw pile (📚10). |
+| The bench's piles | **Untouched while it's benched** (answer 25). What the enemy shuffles into "your deck" (Sludge, Confusion...) and every card a card makes goes to the one out's piles; so does Griseous Orb's Sludge at a fight's start. (The bench chip that showed them is gone, 2026-10-20.) |
 | Who's out at a fight's start | Whoever was out when the last fight ended; the first fight, the one you picked first **(open 8)**. |
 | Defending type | The one out's **deck type** (Shinx defends as Electric; a Charizard skin as Fire, not Fire / Flying) **(open 4)**. |
 | STAB | A card of the type that's out deals **x1.2** damage (attack damage only: not block, Burn, Leech Seed, Tide, Static...). Neutral cards never **(open 3)**. |
@@ -37,8 +37,8 @@ keeps its own deck and its own piles in battle; it replaced answer 6's shared 5 
 | Card rewards | Three cards: one of each type, the third either (50/50); Neutral cards come in at their usual share. The Mart's cards, Move Tutor, Metronome and the ? events' type pools are both types' pools together **(open 7)**. **Whose deck** (answer 26): a type's card joins its type's deck, wherever it came from (a reward, the Mart, an event, an evolution card); a Neutral card you'd pick asks "Who learns it?" when you're back on the map; a status card or token goes to the one out. An upgrade or a swap stays in the deck it was in. |
 | Deck picks | The Center's PP Up and Forget, the ? events' picks (Bonfire, Ditto, Day Care, Smeargle, Bill's PC) show **both decks in one picker**, each under its partner's name (answer 27); the pick changes that partner's deck. The Bag's deck window groups them the same way. |
 | Relics and items | The Bag is the trainer's: both types' `only` relics and items are in the pools, and a type's held-item relic (Charcoal, Miracle Seed...) boosts its type's cards whoever is out. |
-| The intent | The bubble shows the move's type icon, with ▲ when it's super effective on the one out and ▼ when resisted; the bench chip shows the same mark for the partner, so you see at a glance whether a switch helps. |
-| Screen | The one out's back sprite on your pad; the partner a small portrait chip on your nameplate (its type colour, its ▲/▼). The switch plays the games' "come back / go" (a red-light recall into a ball, the partner's GIF out) under `battleFx()`, a cut without. |
+| The intent | The bubble shows the move's type icon, with ▲ when it's super effective on the one out and ▼ when resisted; the Go pill shows the same for the partner ("▲ Ice Punch is super effective on it"), so you see whether a switch helps. |
+| Screen | The one out's back sprite on your pad; no partner chip since 2026-10-20 (the user found a moving portrait unreadable): you hold the one out to switch. The switch plays the games' "come back / go" (a red-light recall into a ball, the partner's GIF out) under `battleFx()`, a cut without. |
 | The save | `run.duo = { ids: [a, b], out, decks: [lead's, partner's], loose: [] }` beside `run.starter` (which stays the lead, so the ~100 places reading `run.starter.type` keep working until each is moved to a `runTypes()` / `outType()` helper), and `run.deck` stays the whole deck, both decks in order, so the ~60 places that change it still work: `syncDecks()` carries each change into the right deck (answer 28). A duo saved before the two decks (session 1, the branch only) is dropped. Additive, so no `RUN_SAVE_VERSION` bump. |
 | Off the board | A duo run never posts to the leaderboard; coins as a Replay; catches, signature cards and Safari Pokédex pages count as usual. |
 | The sim | `sim/engine.js` mirrors switching, STAB, the out-only Ability and the two decks' piles. The bot dodges (it switches when the coming hit is ▲ on the one out and not on the partner, with 2+ PP), then fetches the partner's hand (it plays its own keeping 2 PP back, switches and plays the partner's), then guards (with PP left, it switches to whoever the hit isn't ▲ on); a Neutral card goes to the smaller deck. Checked on the 3 pairs against the same bot's solo runs (section 8, answer 24). |
@@ -67,9 +67,20 @@ says "Finish today's Daily run to unlock".
 
 - The pool starts as Fire / Grass / Water (the free starters, and every owned skin as a look).
 - **Every new starter is a 3-stage line** (the user's call, 2026-10-19: "I only want 3 stage starters"), checked against
-  the rules for adding Pokémon: no stage may be a main-game enemy (so not Drilbur, Magnemite or Zubat: Excadrill,
-  Magnezone and Crobat are), a starter skin, or a line the user turned down (Spheal). Each plays as its deck's type, so
-  a second real type is only its look.
+  the rules for adding Pokémon: no stage may be a starter skin or a line the user turned down (Spheal). Each plays as its
+  deck's type, so a second real type is only its look. **Enemies are allowed** since 2026-10-20 (the user: "I don't care
+  if some are enemies", then "add as many as you think can be starter skins"), which added 13 lines as looks: Magnemite
+  (Electric); Ralts → Gallade (Fighting); Gible, Geodude, both Nidorans (Ground); Togepi, Zubat, Hoppip, Dratini,
+  Bagon (Flying); Larvitar, Seedot (Dark). Poliwag was dropped the same day ("too weird" as Fighting). Left out: the cocoon
+  lines (Caterpie, Weedle, Wurmple). **Two-stage lines and single Pokémon too** (the user's call, 2026-10-20: Ice, Fighting
+  and Dark to at least 8): the last stage of a two-stage line is its second form with a legendary's Awakened aura, and a
+  single Pokémon powers up as a legendary does (Awakened, then Ascendant), by an `aura` field on the line's stage
+  (`spriteUrl()`; GIFs from `tools/legendary-aura.py <id> <type> [awakened]`, which now has Ice, Fighting and Dark
+  palettes). Ice: Snorunt, Snover, Cubchoo, Sneasel, Seel, Smoochum (8 in all). Fighting: Riolu, Makuhita, Mankey,
+  Meditite, Mienfoo, Hitmonlee, Hitmonchan (10). Dark: Zorua, Poochyena, Houndour, Pawniard, Murkrow (9). Then every type
+  to 10 (the user's ask, same day): Electric + Electrike, Blitzle, Joltik, Voltorb; Ice + Lapras, Cryogonal (singles);
+  Ground + Cubone, Phanpy, Sandshrew, Drilbur; Flying + Rufflet, Swablu; Dark + Absol (a single). 60 duo looks. These 14 were **not** moved into their type's area: each has a stage somewhere in the Safari, and a catch
+  anywhere counts.
 - Each new type's **starter lines** live in that type's own new Safari area (section 5), moved there from the areas
   they're in today. **Catching any stage of a starter line** in any Safari run (Daily, Replay or Duo) adds that type to the
   pool, and that species as a look for it: catching Mareep adds Electric with Mareep's look; Shinx later adds Shinx's. The
