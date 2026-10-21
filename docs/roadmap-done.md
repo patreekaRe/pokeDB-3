@@ -3384,3 +3384,8 @@ to a card's Steal (not Magician's), Lum Berry no longer draws; Flame Wall and Ma
 Fighting. Bot: Fire 68 / 46 / 24 -> 79 / 55 / 32 (L0 / L3 / L5), Grass and Water unchanged within noise, the 36 Safari pairs
 65.8 -> 67.6 (Fighting +8, Fire +4), a 10-flight Sky Pillar climb's reach to floor 100 Fire 27 -> 40%, Grass 30 -> 23%. Branch `claude/sky-pillar-f100-fixes-jaspxf` (both repos), pushed to `main`. Detail in
 `docs/reference/cards.md`'s last section and pokeDB-sim's README; follow-ups under Ideas ("After the Sky Pillar F100 combo pass").
+
+## A shiny switch in the Duo picker (2026-10-21, the user's ask; branch `claude/choosing-shinies-62dr4q`)
+Each Duo pool portrait shows a ✨ button beside its ◀ ▶ when you own the shown look's shiny: the same `save.shiny.on`
+switch as the character select's ✨ Shiny, so the portrait, the gate and the battle follow (`portrait()` in
+`js/duoprep.js`). Pushed to `main`.

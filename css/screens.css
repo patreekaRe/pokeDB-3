@@ -4269,8 +4269,10 @@ body.scene-peek #backdrop { display: none; }
 .duo-face-type { position: absolute; left: -4px; top: -4px; font-size: 0.8rem; }
 .duo-face-no { position: absolute; right: -8px; bottom: -6px; padding: 1px 4px; border-radius: 4px; background: #e2a92c; color: #303038; font-style: normal; font-size: 0.75rem; }
 .duo-name { font-size: 0.75rem; text-align: center; }
-.duo-look { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; }
+.duo-look { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; font-size: 0.75rem; }
 .duo-arrow { padding: 2px 6px; border: 1px solid #3d5a2a; border-radius: 4px; background: #e8f0d8; font-size: 0.75rem; cursor: pointer; }
+.duo-shiny { filter: grayscale(1); opacity: 0.6; }
+.duo-shiny.on { filter: none; opacity: 1; background: #fff3b0; border-color: #b08a1a; }
 .sp-keys .mdex-btn { position: relative; }
 .sp-tasks-n {   /* Ranger tasks ready to claim (js/safariprep.js's taskCount()) */
   position: absolute; top: -6px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 99px;

@@ -478,6 +478,8 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 
+- **Shinies in the Duo picker** (2026-10-21, the user's ask): a portrait whose shown look's shiny you own gets a ✨ button beside its ◀ ▶, flipping the same `save.shiny.on` as the character select's ✨ Shiny.
+
 ## The areas' scenes (phase 5b, 2026-10-02)
 
 - **One look, six places**: `SAFARI_ART` in `js/scene.js` becomes six `BIOME_ART` entries (ids = the area ids,

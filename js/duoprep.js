@@ -12,10 +12,10 @@ import { TYPES } from './data/cards.js';
 import { REAL_TYPES, speciesTypes, realFactor } from './data/real-types.js';
 import { DUO_BASE, DUO_LINES, duoPool, duoOpen } from './data/duo.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
-import { getSave } from './storage.js';
+import { getSave, updateSave, isShiny } from './storage.js';
 import { typeBadge } from './type-badge.js';
 import { isStarterUnlocked } from './progress.js';
-import { playSound } from './audio.js';
+import { playSound, playCry } from './audio.js';
 import { $, el } from './ui.js';
 
 /** ?duorun opens the Duo Run for the page load without finishing the day's Daily run (a playtest; nothing saved). */
@@ -163,16 +163,33 @@ function portrait(type, pool) {
     render();
   });
   card.append(face, el('small', 'duo-name', have ? look.line[0].name : '???'));
-  if (looks.length > 1) {   // ◀ ▶: any owned starter of the type is its look
-    const step = (d) => () => { playSound('cursor', 'confirm'); pick.look[type] = looks[(looks.indexOf(look.id) + d + looks.length) % looks.length]; render(); };
+  const shinyOwned = have && getSave().shiny.owned.includes(look.id);
+  if (looks.length > 1 || shinyOwned) {   // ◀ ▶: any owned starter of the type is its look; ✨ its shiny, once bought
     const row = el('span', 'duo-look');
-    const prev = el('button', 'duo-arrow', '◀'), next = el('button', 'duo-arrow', '▶');
-    prev.type = next.type = 'button';
-    prev.setAttribute('aria-label', 'Previous look');
-    next.setAttribute('aria-label', 'Next look');
-    prev.addEventListener('click', step(-1));
-    next.addEventListener('click', step(1));
-    row.append(prev, el('span', '', `${looks.indexOf(look.id) + 1}/${looks.length}`), next);
+    if (looks.length > 1) {
+      const step = (d) => () => { playSound('cursor', 'confirm'); pick.look[type] = looks[(looks.indexOf(look.id) + d + looks.length) % looks.length]; render(); };
+      const prev = el('button', 'duo-arrow', '◀'), next = el('button', 'duo-arrow', '▶');
+      prev.type = next.type = 'button';
+      prev.setAttribute('aria-label', 'Previous look');
+      next.setAttribute('aria-label', 'Next look');
+      prev.addEventListener('click', step(-1));
+      next.addEventListener('click', step(1));
+      row.append(prev, el('span', '', `${looks.indexOf(look.id) + 1}/${looks.length}`), next);
+    }
+    if (shinyOwned) {   // the same switch as the character select's ✨ Shiny (the user's ask, 2026-10-21)
+      const on = isShiny(look.id);
+      const sparkle = el('button', `duo-arrow duo-shiny${on ? ' on' : ''}`, '✨');
+      sparkle.type = 'button';
+      sparkle.title = `${look.line[0].name}'s shiny: ${on ? 'on' : 'off'}`;
+      sparkle.setAttribute('aria-label', `Shiny ${look.line[0].name}`);
+      sparkle.setAttribute('aria-pressed', String(on));
+      sparkle.addEventListener('click', () => {
+        updateSave(d => { d.shiny.on = on ? d.shiny.on.filter(x => x !== look.id) : [...d.shiny.on, look.id]; });
+        playCry(look.line[0].id);
+        render();
+      });
+      row.append(sparkle);
+    }
     card.append(row);
   }
   return card;
