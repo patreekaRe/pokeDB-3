@@ -13,6 +13,7 @@ import { newFinds, showBadgeNews } from './trainercard.js';
 import { el, makeCard, zoomable } from './ui.js';
 import { kindOf, costRank } from './deckpreview.js';
 import { smoothIcon } from './smooth-icons.js';
+import { typeBadge } from './type-badge.js';
 
 const TAB_LOOK = { mystery: { label: '???' } };
 const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare']];
@@ -136,11 +137,11 @@ export function movesApp(type) {
         btn.type = 'button';
         btn.dataset.type = t;
         btn.setAttribute('role', 'tab');
-        // icons only: eleven names don't fit a phone's row (they cut to "F…", "G…")
+        // badges only: eleven names don't fit a phone's row (they cut to "F…", "G…")
         const name = (TAB_LOOK[t] || TYPES[t]).label;
         btn.title = name;
         btn.setAttribute('aria-label', name);
-        btn.append(smoothIcon(t === 'mystery' ? 'lock' : t));
+        btn.append(t === 'mystery' ? smoothIcon('lock') : typeBadge(t));
         btn.addEventListener('click', () => show(t));
         return btn;
       }));

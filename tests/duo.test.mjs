@@ -118,3 +118,15 @@ test('the Duo Run opens once the day\'s Daily run is finished', () => {
   assert.equal(duoOpen({ day: '2026-10-19', tries: 1, done: '2026-10-19' }, '2026-10-19'), true);
   assert.equal(duoOpen({ done: '2026-10-18' }, '2026-10-19'), false);
 });
+
+test("a Duo Run's road is the day's own three areas, never one of the Daily run's", async () => {
+  const { safariDaily, duoRoad } = await import('../js/data/safari.js');
+  for (let i = 0; i < 60; i++) {
+    const day = new Date(Date.UTC(2026, 9, 21 + i)).toISOString().slice(0, 10);
+    const daily = safariDaily(day), road = duoRoad(daily);
+    assert.equal(road.length, 3);
+    assert.equal(new Set(road.map(a => a.id)).size, 3);
+    assert.ok(road.every(a => !daily.areas.some(d => d.id === a.id)), day);
+    assert.deepEqual(duoRoad(safariDaily(day)).map(a => a.id), road.map(a => a.id));   // the same all day, on any device
+  }
+});

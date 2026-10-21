@@ -43,7 +43,12 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['dex', 'The Moves app\'s type tabs are clean icons now, with new ones for Flying and Dark, instead of cut-off names.'],
+  ['modes', 'Duo Run: it has three areas of its own, your pair stands at the gate as you pick it, a ✨ on a Pokémon\'s portrait switches its shiny, and you hold your Pokémon to switch, for 1 PP and your turn.'],
+  ['modes', 'Ten duo starters a type now, Absol to Zorua: the map marks their rooms. Two-stage lines and single Pokémon like Lapras power up like legendaries.'],
+  ['look', 'Types now show as round coloured badges everywhere, from cards and battle to the Pokédex and map; a duo\'s swap button sits on your HP box\'s corner.'],
+  ['battle', 'Endless combos trimmed: Growth Spurt+ keeps Exhaust, Overgrowth+ costs 0 instead of doubling, Ice Core and Electric Seed give half, Dark Memory skips Magician, Lum Berry no longer draws.'],
+  ['battle', 'Flame Wall and Mat Block now give 9 block (12 upgraded), a lift for Fire and Fighting.'],
+  ['dex', 'The Moves app\'s type tabs show just their round type badges now, instead of cut-off names.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -76,7 +76,7 @@ import { renderTower, hideTower, guardianIntro, towerFall, barReady, setTowerGra
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
-import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
+import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, duoRoad, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
@@ -615,6 +615,7 @@ export function beginSafari(daily = safariDaily(), pair = null) {
   // ?powerplant / ?icecave / ?dojomountain / ?quarry / ?windycliffs / ?nightalley: a Duo Run whose first area is the Power
   // Plant, the Ice Cave, Dojo Mountain, the Quarry, the Windy Cliffs or Night Alley, before its day (several: the first ones, in that order); a playtest,
   // and a Duo Run is never posted
+  if (duo) daily = { ...daily, areas: duoRoad(daily) };
   const lent = duo ? ['powerplant', 'icecave', 'dojomountain', 'quarry', 'windycliffs', 'nightalley'].filter(id => new URLSearchParams(location.search).has(id)) : [];
   if (lent.length) {
     daily = { ...daily, areas: [...lent.map(id => SAFARI_AREAS_BY_ID[id]), ...daily.areas.filter(a => !lent.includes(a.id))].slice(0, daily.areas.length) };
@@ -1798,7 +1799,11 @@ const rubbingReads = () => DEX_RUBBINGS[dexPerk('unown-rubbing')];
 const rubbingUsed = () => Object.values(run.map.byId).filter(n => n.read).length;   // saved with the map's nodes, like the Scope's
 
 /** Tracker's Eye's level and your type, for renderMap() (a peek at the map shows the marks too). */
-const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type });
+const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type, duoNew: isSafari() && !peeking ? duoNew : null });
+
+/** The new duo type a Safari wild would bring if caught (its line's look not in your pool yet), or null: the map marks its
+    room (the user's call, 2026-10-20). */
+const duoNew = (id) => Object.keys(duoGains([id], getSave().duoPool))[0] ?? null;
 
 function drawRubbing(nodes) {
   const total = rubbingReads(), left = total - rubbingUsed();
@@ -2680,7 +2685,7 @@ function afterFight(node, result) {
     if (!peeking && isSafari()) for (const t of finishedBy(getSave(), rangerInfo(node, result))) dexNews.push(`📋 Ranger task done: ${t.title}! Claim it on the board at the Safari Outfitter.`);
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
   }
-  if (isSafari() && !peeking) dexNews.push(...creditSafari());   // before unlock(): a full Safari Pokédex is Rayquaza's
+  if (isSafari() && !peeking) dexNews.push(...creditSafari(unlocked));   // before unlock(): a full Safari Pokédex is Rayquaza's
   if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
   const drop = gleaning() && !gleaned(gleanKey(node, 'drop')) ? fightDrop(mainBiome().id, node.type, random) : null;   // a material for the Satchel
   if (drop) dexNews.unshift(matLine(drop));   // first: the final boss's window drops a finished Pokédex page's last line
@@ -2951,7 +2956,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
 /** Pays a Safari Pokédex page's reward once, the first won Safari fight after its last Pokémon is caught (any try: the
     coins don't touch the leaderboard; the rare boost waits for a replay, rareOdds()), and marks a full Safari Pokédex,
     Rayquaza's achievement. Returns the reward box's lines. */
-function creditSafari() {
+function creditSafari(windows) {
   const news = safariNews(getSave().safariDex);
   const lines = [];
   for (const area of news.areas) {
@@ -2965,19 +2970,28 @@ function creditSafari() {
     updateSave(d => { d.safariDex.complete = true; });
     lines.push('The Safari Pokédex is complete! Every Safari Pokémon is caught.');
   }
-  lines.push(...duoNews());
+  lines.push(...duoNews(windows));
   return lines;
 }
 
 /** A starter line's stage caught in the Safari adds its type to the duo pool, with that look (js/data/duo.js's
-    DUO_LINES). Catches already in the save count, so this also runs on opening the Duo app. */
-export function duoNews() {
+    DUO_LINES). Catches already in the save count. Given `windows`, each new starter gets the unlock window (the user's ask,
+    2026-10-20: a line in the catch box was easy to miss) instead of a line. */
+export function duoNews(windows) {
   const gains = duoGains(getSave().safariDex.caught, getSave().duoPool);
   const lines = [];
   for (const [type, looks] of Object.entries(gains)) {
     const fresh = !getSave().duoPool?.[type]?.length;
     updateSave(d => { d.duoPool = { ...d.duoPool, [type]: [...(d.duoPool?.[type] || []), ...looks] }; });
-    for (const look of looks) lines.push(`${STARTERS_BY_ID[look].line[0].name} joined your duo pool!${fresh ? ` ${type[0].toUpperCase()}${type.slice(1)} unlocked.` : ''}`);
+    const Type = `${type[0].toUpperCase()}${type.slice(1)}`;
+    looks.forEach((look, i) => {
+      const s = STARTERS_BY_ID[look], name = s.line[0].name, deck = STARTERS_BY_ID[s.skinOf]?.line[0].name;
+      if (!windows) return lines.push(`${name} joined your duo pool!${fresh && !i ? ` ${Type} unlocked.` : ''}`);
+      windows.push({ feat: true, kicker: '🔓 New duo starter!', name, sprite: spriteUrl(s, 'front', 0, false), cry: s.line[0].id,
+        text: fresh && !i ? `${name} joined your duo pool, and ${Type} is unlocked for Safari Duo Runs!`
+          : `${name} joined your duo pool: a new look for your ${Type} partner${deck ? `, playing ${deck}'s deck` : ''}.`,
+        hint: 'Pick it in the Safari lobby, in Duo Run.' });
+    });
   }
   return lines;
 }
