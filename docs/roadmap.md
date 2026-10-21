@@ -21,6 +21,16 @@ a lower `AudioContext` sample rate would halve it, a sound-quality call for the 
 walk-in-rooms.md's 'One side-wall painting'. Run tools/run-probe.mjs, then put a Center or Mart left for the map to sleep
 (sleepGL after putAway), re-run it and the budget check, and push. My phone's reload log says: [paste Settings' list]."
 
+**▶ PLAYTEST ON THE LIVE SITE. Perf audit of the Clearing, the Safari areas and the Duo Run: done 2026-10-21**
+(`docs/roadmap-done.md`; branch `claude/perf-audit-clearing-features-xshrrn`, pushed to `main` too). On a phone: a Duo
+Run's map should feel smoother; its rare-spawn and material badges still glow and bob, reachable rooms still blink.
+**Leads not taken, measured** (▶ Run in: CLOUD, effort medium, only if a phone still lags or reloads): on the map, style
+recalc stays ~100-170 ms a second in headless Chrome with only composited animations running (the coin's `filter:
+brightness` spin is the last repainting one, ~50 ms/s; dropping its flash is a look call for the user); during a run the
+Clearing's vista canvas (`hub-vista.js`, 7.3 MB) and the character select's sky layers (`select-sky.js`, ~6.6 MB, its frame
+loop ticking unseen under the Clearing) stay held; the start screen's A key (`tdevGo`, a box-shadow) and the title's
+`pressBlink` animate while unseen. `NODE_PATH=$(npm root -g) node tools/fps-probe.mjs --only=duo-map,clearing` measures them.
+
 **▶ PLAYTEST ON THE LIVE SITE. Safari shinies everywhere: done 2026-10-19, on `main`, waiting on the user** (the three
 sessions are in `docs/roadmap-done.md`). Look at `?sparkle=3` (every Safari shiny lent at ★3: the Safari Pokédex's ✨
 switch, Secret Base residents with `?base&guests&sparkle=3`), `?lbsample=safari` (the ✨ rows) and the Ranger board's

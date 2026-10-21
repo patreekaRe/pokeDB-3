@@ -211,3 +211,18 @@ export function instrument() {
 
 /* The Clearing's doors, for a probe walking between places in one page: served with js/hub-3d.js only, never shipped. */
 export const HUB_PEEK = (path, body) => path === '/js/hub-3d.js' ? body.toString() + '\nwindow.__hub = { enterBase, enterMall };\n' : body;
+
+/** A Duo Run from the Safari lobby (tools/duo-probe.mjs's steps): `page` already on `?duorun&duopool...`, settled. */
+export async function startDuo(page, pair) {
+  const click = (sel) => page.evaluate(s => { const n = document.querySelector(s); if (!n) return false; n.click(); return true; }, sel);
+  await page.evaluate(() => import('/js/safariprep.js').then(m => m.openSafariPrep()));
+  await page.waitForTimeout(1500);
+  await click('#sp-duo');
+  await page.waitForTimeout(800);
+  for (const t of pair) await click(`.duo-pick.type-${t} .duo-face`);
+  await page.waitForTimeout(400);
+  await click('#sp-start');
+  await page.waitForTimeout(1200);
+  for (let i = 0; i < 3; i++) { await click('#confirm-yes'); await page.waitForTimeout(800); }
+  await page.waitForTimeout(9000);
+}

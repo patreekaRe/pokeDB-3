@@ -3372,3 +3372,17 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Perf audit: the Clearing, the Safari's new areas and the Duo Run (2026-10-21, cloud)
+The user's ask after the Duo Run and six areas went live: an fps, draw-call and memory check of all of it. Measured headless
+(swiftshader, an iPhone 17 Pro's size): `tools/budget-check.mjs` passed every place (Clearing 257 draws / 125 MB, towns
+359-493 draws, three Clearing -> mall -> base trips +1.9 MB, 0 listeners). New `tools/fps-probe.mjs` (JS a frame by the file
+that scheduled it, GC, style and layout, long tasks, animations running unseen): the Clearing ~7 ms of JS a frame, towns
+7-8, the base 2.7; all twelve Safari areas' scenery 0.2-0.7 ms a frame, a boss's storm under 1.3 ms, the six new areas no
+dearer than the old. `tools/run-probe.mjs --duo=fire,water --area=powerplant` (new): eight Duo fights, no leak (flat at
+~150 MB from fight 6 on, once the warmed ? room is built; +5 listeners). Fixed: the map's badges animated a drop-shadow
+(the Safari's new rare-spawn grass and a town's material badge), ~200 ms a second of main thread on a Duo map: now a halo
+fading in and out (`docs/reference/map-screen.md`); a room's blink an opacity ring. Duo map 500 -> 296 ms/s. The Safari and
+Sky Pillar lobbies' backdrops let their canvases go on close (~5 MB each held through a run). The Power Plant and Night
+Alley added to the budget check.
+

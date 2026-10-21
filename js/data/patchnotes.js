@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['fixes', 'The run map is smoother on phones: its glowing badges and blinking rooms no longer repaint every frame.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
