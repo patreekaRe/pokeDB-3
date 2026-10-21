@@ -1172,31 +1172,16 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**Sky Pillar F100 combo: targeted nerfs, not "nerf everything"** (2026-10-20, a friend's Turtwig climb reached floor 100
-in 366 turns, with a ~12-card deck: Leech Seed, "double strength" (Growth Spurt), "a power giving block by strength"
-(Overgrowth), Lum Berry; augments Pollinate, Risky Climb, Early Bird, Light Pack, Momentum, Sudden Death +4). About 3.7
-turns a fight at floor 100 means the deck snowballs exponentially, faster than the tower's compounding (x1.12 HP a
-flight). Claude's lean, in order: (1) **Growth Spurt+ keeps Exhaust** (upgrade to cost 0 instead): Limit Break+ is safe in
-StS because strength never turns into block, but here Overgrowth, Horn Leech and Hoard turn it into block and healing too,
-and a thin deck replays the doubling every other turn; (2) **Lum Berry loses its draw** (StS's Medical Kit doesn't draw;
-with the draw, every status an enemy adds cycles your deck); (3) maybe Overgrowth+ at x1 (cost 0) instead of x2. Healing
-as a whole: no blanket nerf yet; Fire already reaches floor 100 in 0% of bot climbs, Grass 7%. If healing is still too
-strong after (1)-(2), give the tower its own heal pressure (a `healMult` past floor ~50) rather than cut every heal card.
-Check with the sim's tower climbs on Grass before/after (▶ CLOUD, both repos, effort: high). **Waiting on the user's call.**
-Measured the same day (pokeDB-sim's combo lab, the friend's 12-card deck): peak strength ~430 against the dummy, ~30-60 with
-Growth Spurt+ exhausting (cost 0); against Level 5's last bosses the combo won 73% -> 59% with the fix; Overgrowth alone took
-a thin deck from 0% to 58% there (13% with Overgrowth+ at x1, likely too far). Leech Seed decks win 0-3% against those
-bosses (half the heal changed nothing); they only run away in very long fights, i.e. the tower's top floors.
-**The whole-game sweep** (the combo fuzzer, 2000 random late-run decks a type, all ten types; numbers in pokeDB-sim's
-README): the same shape recurs: a power that turns a growing number into block every turn. Overgrowth (strength), **Ice
-Core** (Frostbite; the biggest single-card lift of the sweep, +13), **Electric Seed + Electric Memory** (Static, +8 as a
-pair). Dark is the strongest type against the dummy (best decks last ~58 turns): **Magician** (Steal 1 every turn, below 0:
-a Disarm a turn, StS never gives one) with **Dark Memory** (+8). Psychic: **Safeguard** (Protect, non-exhausting since the
-balance pass for Mewtwo's mode's sake) with Amnesia. Weakest: Fighting (no deck beat the dummy) and Fire. Healing relics
-(Leftovers, Shell Bell) are not outliers anywhere; the energy boss relics top every type, as in StS. Claude's lean for a
-pass: (1) Growth Spurt+ keeps Exhaust; (2) the block-each-turn powers give half (Overgrowth+, Ice Core, Electric Seed at
-x1 of half the stack, or a cap); (3) Magician steals every 2nd turn, or Dark Memory only on cards; (4) Lum Berry loses its
-draw; (5) Fighting and Fire get a lift; then whole-run bot checks (L0/3/5, the Safari pairs) and a 10-flight climb.
+**After the Sky Pillar F100 combo pass** (2026-10-21; the pass is in the archive): left for the user.
+- **Fire leads at Level 0 by ~8** since Flame Wall 9 (human bot, 300 a cell: Fire 79 / 55 / 32 at L0 / L3 / L5 against
+  Grass ~69 / 54 / 28 and Water ~66 / 45 / 28; Fire trailed at L3 before). If Charmander plays too easy, Flame Wall goes
+  back to 8 (only its upgrade at 13 lifted nothing) or Fire gets a lift aimed at L3 / L5. Waiting on the user's playtest.
+- **Duo Runs**: Fighting's pairs now sit with Ground's at the top (~76), while Flying's and Dark's trail (~58, the mean
+  ~68): for the next duo balance pass (▶ CLOUD, both repos, effort: high).
+- Not touched, from the same sweep: Psychic's Safeguard + Amnesia; and if healing still runs away at the tower's top
+  floors, the tower's own heal pressure (a `healMult` past floor ~50) rather than cutting heal cards.
+- Two probes already failed on `main` before the pass: `tools/electric-probe.mjs` clicks `#player-bench` (gone with the
+  turn-ending switch) and `tools/dark-probe.mjs`'s Night Alley day check. A small fix (▶ CLOUD, effort: low).
 
 **A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more

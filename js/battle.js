@@ -618,10 +618,10 @@ function beginPlayerTurn() {
   if (p.focusEachTurn) { b.focus += p.focusEachTurn; pop('player-zone', `🧘 +${p.focusEachTurn} next attack`, 'note good', 120); }   // Meditate
   if (p.weakEachTurn) applyDebuff('weaken', p.weakEachTurn);
   if (p.staticEachTurn) applyStatic(p.staticEachTurn);
-  if (p.staticBlock && b.enemy.static) gainBlock(b.enemy.static * p.staticBlock);   // Electric Seed
+  if (p.staticBlock && b.enemy.static) gainBlock(Math.floor(b.enemy.static * p.staticBlock / 2));   // Electric Seed: half a copy
   if (p.frostEachTurn) applyFrost(p.frostEachTurn);   // Cold Snap
   if (p.hailBlock && hailing()) gainBlock(p.hailBlock);   // Ice Body
-  if (p.frostBlock && b.enemy.frostbite) gainBlock(b.enemy.frostbite * p.frostBlock);   // Ice Core
+  if (p.frostBlock && b.enemy.frostbite) gainBlock(Math.floor(b.enemy.frostbite * p.frostBlock / 2));   // Ice Core: half a copy
   if (p.icicleEachTurn) addCards({ id: 'icicle', n: p.icicleEachTurn });   // Ice Crown
   if (p.counterEachTurn) gainCounter(p.counterEachTurn);   // Counterstance
   if (p.faultEachTurn) applyFault(p.faultEachTurn);   // Quicksand
@@ -669,7 +669,7 @@ function beginPlayerTurn() {
   if (b.turn === 1 && hasAbility('intimidate')) intimidate();
   if (b.turn === 1 && hasRelic('razor-claw')) taunt();
   if (b.turn === 1 && hasRelic('dread-plate')) steal(1);
-  if (p.stealEachTurn) steal(p.stealEachTurn);   // Magician
+  if (p.stealEachTurn) steal(p.stealEachTurn);   // Magician (Dark Memory adds only to a card's Steal)
   if (p.punishDraw && punishing()) { draw(p.punishDraw); pop('player-zone', '🃏 Prankster', 'note good', 150); }
   if (p.intentBlock && punishing()) gainBlock(p.intentBlock);   // Night Watch
   if (p.intentWeak && punishing()) applyDebuff('weaken', p.intentWeak);   // Pressure
@@ -897,10 +897,11 @@ const partnerType = () => battle.duo?.types.find(t => t !== battle.starter.type)
 
 /** Dark's Steal: the enemy loses n strength (below 0 too) and you gain what it had of it; STEAL_BLOCK x n of its block
     becomes yours. (Taking only what it had, Steal did nothing to a foe that hadn't buffed: solo Dark ran 43 to Fire's 71
-    in the bot check, 2026-10-20.) */
-function steal(n) {
+    in the bot check, 2026-10-20.) Dark Memory adds 1 only to a card's: with Magician's every turn too, a deck outlived
+    any fight (2026-10-20). */
+function steal(n, byCard = false) {
   const b = battle, en = b.enemy;
-  n += hasRelic('dark-memory') ? 1 : 0;
+  n += byCard && hasRelic('dark-memory') ? 1 : 0;
   const str = Math.min(n, Math.max(0, en.strength)), shield = Math.min(STEAL_BLOCK * n, en.block);
   en.strength -= n;
   pop('enemy-zone', `🫳 -${n} strength`, 'note', 100);
@@ -1059,11 +1060,11 @@ function markHurt() {
 /** Lum Berry (StS's Medical Kit): status cards can be played for 0 PP, and exhaust. */
 const lumCures = (card) => !!card.status && hasRelic('lum-berry');
 const CURED = new WeakMap();
-/* How a card reads in battle: under Lum Berry a status card says what it really does (0 PP, draw 1, Exhaust), not
+/* How a card reads in battle: under Lum Berry a status card says what it really does (0 PP, Exhaust), not
    "Unplayable" (the user's call, 2026-09-28). The copy is only for show: the hand and piles keep the real card. */
 function asShown(card) {
   if (!lumCures(card)) return card;
-  if (!CURED.has(card)) CURED.set(card, { ...card, cost: 0, unplayable: false, exhaust: true, effects: { ...card.effects, draw: (card.effects.draw || 0) + 1 } });
+  if (!CURED.has(card)) CURED.set(card, { ...card, cost: 0, unplayable: false, exhaust: true });
   return CURED.get(card);
 }
 
@@ -1371,7 +1372,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     e.discardedNow = going.length;
     renderHand();
   }
-  if (e.steal) steal(e.steal);   // before the hit, so a stolen shield lets it through
+  if (e.steal) steal(e.steal, true);   // before the hit, so a stolen shield lets it through
   if (e.blockDamage && e.block) {
     // Aqua Tail: the block comes first, so the hit counts it
     gainBlock(cardBlock(e.block));
@@ -1468,7 +1469,6 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
   }
   else if (card.exhaust || exhaust || corrupts(card) || lumCures(card)) exhaustCard(card);
   else b.discard.push(card.growOnPlay ? grownCopy(settled(card)) : settled(card));
-  if (lumCures(card)) draw(1);
   if (card.power && hasRelic('power-herb')) draw(1);
   if (card.power && hasRelic('shiny-stone') && healPlayer(4)) playSound('heal-hp');   // StS's Bird-Faced Urn
   if (!isAttack(card) && !card.status && (b.skills = (b.skills || 0) + 1) % 3 === 0 && hasRelic('spell-tag') && b.enemy.hp > 0) {   // StS's Letter Opener
