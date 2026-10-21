@@ -228,7 +228,7 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    Electric (-10) and Water (-6) pairs dip, for the balance pass (15). Every type is now whole. Playtest: the githack link
    with `?duorun&duopool&nightalley&coins=500`, or `?area=nightalley`, `?bossfight=nightalley&starter=sandile`,
    `?arena=fight&starter=sandile&cards=turnabout,retribution,ill-gotten-gains,costume-change,phantom-mask&relics=dark-memory`.
-   **Waiting on the user**: the playtest (the Moves app now has 11 type tabs on a phone); whether Night Alley should look
+   **Waiting on the user**: the playtest (the Moves app's 11 tabs went icon-only on 2026-10-21); whether Night Alley should look
    like night at every hour (as built) or follow the clock like the other areas.
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

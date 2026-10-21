@@ -3372,3 +3372,8 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Moves app: icon-only type tabs (2026-10-21, cloud)
+The user's call from a phone screenshot: the 11 type tabs cut their names to "F…", "G…", so they show only an icon
+(the name is the tab's tooltip and aria-label). Flying (a wing) and Dark (a crescent moon) got `smoothIcon`s, and Normal's
+hexagram became a ring, like the cards' "○ Neutral" badge. Branch `claude/top-icon-cleanup-cz0xzz`, also pushed to main.

@@ -875,12 +875,11 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .mv-tabs { display: flex; gap: 5px; }
 .mv-tab {
   --c1: #9aa2c8; --c2: #565d84;
-  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px 5px;
+  flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 7px 0 6px;
   border: 3px solid var(--shell-rim); border-radius: 9px; background: #e4f0cc; color: #1f3a14; cursor: pointer;
   font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 var(--shell-rim);
 }
-.mv-tab .smooth-icon { width: 24px; height: 24px; }
-.mv-tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-tab .smooth-icon { width: 24px; height: 24px; flex: none; }
 .mv-tab.type-fire { --c1: #ff8f4d; --c2: #b8321a; }
 .mv-tab.type-grass { --c1: #72dc70; --c2: #257a38; }
 .mv-tab.type-water { --c1: #5cbcff; --c2: #1d58b8; }

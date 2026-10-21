@@ -136,7 +136,11 @@ export function movesApp(type) {
         btn.type = 'button';
         btn.dataset.type = t;
         btn.setAttribute('role', 'tab');
-        btn.append(smoothIcon(t === 'mystery' ? 'lock' : t), el('span', 'mv-tab-label', (TAB_LOOK[t] || TYPES[t]).label));
+        // icons only: eleven names don't fit a phone's row (they cut to "F…", "G…")
+        const name = (TAB_LOOK[t] || TYPES[t]).label;
+        btn.title = name;
+        btn.setAttribute('aria-label', name);
+        btn.append(smoothIcon(t === 'mystery' ? 'lock' : t));
         btn.addEventListener('click', () => show(t));
         return btn;
       }));

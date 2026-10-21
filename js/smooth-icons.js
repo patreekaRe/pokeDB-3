@@ -338,7 +338,12 @@ const ART = {
     <path d="M7.5 19.5H24M6 23H26" fill="none" stroke="#8a6430" stroke-width="1.6" stroke-linecap="round"/>
     <path d="M11.6 11.4L9.6 15.2M19.6 13.2L18.6 15" fill="none" stroke="#f0d8a0" stroke-width="1.6" stroke-linecap="round"/>`,
   normal: `<circle cx="16" cy="16" r="12.5" fill="#e4e8f0" stroke="${INK}" stroke-width="2"/>
-    <path d="M16 7.4l7.6 13.2H8.4ZM16 24.6L8.4 11.4h15.2Z" fill="#9aa2c8" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/>`,
+    <circle cx="16" cy="16" r="6" fill="none" stroke="#9aa2c8" stroke-width="3.4"/>`,
+  flying: `<path d="M5 26C5 15 12 6 27 4c-.5 3.5-2.5 6-5.5 7.2 2 .3 3.6 0 4.8-.6-1 3.4-3.6 5.8-7 6.6 1.6.6 3 .6 4.2.2-2 4.8-8.6 9-17.5 8.6Z" fill="#e0dcff" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M8 23C11 17 15 12 21 8M10.5 24c3-2.4 6-4.2 9.5-5.6" fill="none" stroke="#7a70c8" stroke-width="1.6" stroke-linecap="round"/>`,
+  dark: `<path d="M13.86 4.19A12 12 0 1 0 27.81 18.14A10 10 0 0 1 13.86 4.19Z" fill="#6a5444" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M9.4 9.6c-2.4 3-2.8 7.4-.8 10.8" fill="none" stroke="#a8907c" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M24 3.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9Z" fill="#ffe680"/>`,
   psychic: `<path d="M9 23.5h14l2.4 5H6.6Z" fill="#a8642c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <circle cx="16" cy="14" r="10.5" fill="#c08af0" stroke="${INK}" stroke-width="2"/>
     <path d="M12 17.6c1.6 2 6 2 8-1.4" fill="none" stroke="#f0d8ff" stroke-width="1.6" stroke-linecap="round"/>
