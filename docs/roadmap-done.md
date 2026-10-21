@@ -3386,6 +3386,6 @@ Fighting. Bot: Fire 68 / 46 / 24 -> 79 / 55 / 32 (L0 / L3 / L5), Grass and Water
 `docs/reference/cards.md`'s last section and pokeDB-sim's README; follow-ups under Ideas ("After the Sky Pillar F100 combo pass").
 
 ## A shiny switch in the Duo picker (2026-10-21, the user's ask; branch `claude/choosing-shinies-62dr4q`)
-Each Duo pool portrait shows a ✨ button beside its ◀ ▶ when you own the shown look's shiny: the same `save.shiny.on`
-switch as the character select's ✨ Shiny, so the portrait, the gate and the battle follow (`portrait()` in
-`js/duoprep.js`). Pushed to `main`.
+Each Duo pool portrait wears a ✨ button on its top-right corner when you own the shown look's shiny (first under the
+arrows, moved the same day: it made the cards uneven): the same `save.shiny.on` switch as the character select's ✨ Shiny,
+so the portrait, the gate and the battle follow (`portrait()` in `js/duoprep.js`). Pushed to `main`.

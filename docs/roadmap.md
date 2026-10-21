@@ -1172,6 +1172,18 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Picking a duo's look and shiny** (2026-10-21, the user's question: "is this the best way to cycle through our
+starters? any other ideas for shiny toggles?"). Built so far: ◀ ▶ under each portrait, and a ✨ on its corner (archive).
+Ideas put to the user, none agreed (▶ CLOUD, effort: medium):
+- **A look sheet** (recommended): tap a portrait's name to open a strip of every owned look of its type as small faces,
+  an owned shiny as a second sparkly face beside its normal one; one tap picks look and colours together. ◀ ▶ could stay
+  for a quick flip, or go.
+- **Swipe the portrait** left / right to change look, in place of the arrows (saves the row; less obvious).
+- **Shinies in the cycle**: ◀ ▶ step through normal and shiny looks alike (Charmander, ✨ Charmander, Cyndaquil...), no
+  separate button.
+- **A 🎲 random look** per portrait, among owned looks and shinies.
+- **An "all shiny" switch** at the pool's head, for every owned shiny at once.
+
 **After the Sky Pillar F100 combo pass** (2026-10-21; the pass is in the archive): left for the user.
 - **Fire leads at Level 0 by ~8** since Flame Wall 9 (human bot, 300 a cell: Fire 79 / 55 / 32 at L0 / L3 / L5 against
   Grass ~69 / 54 / 28 and Water ~66 / 45 / 28; Fire trailed at L3 before). If Charmander plays too easy, Flame Wall goes

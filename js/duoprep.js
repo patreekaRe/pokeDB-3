@@ -162,34 +162,33 @@ function portrait(type, pool) {
     else { pick.order.push(type); if (pick.order.length > 2) pick.order.splice(1, 1); }   // a third pick takes the 2nd's place
     render();
   });
-  card.append(face, el('small', 'duo-name', have ? look.line[0].name : '???'));
-  const shinyOwned = have && getSave().shiny.owned.includes(look.id);
-  if (looks.length > 1 || shinyOwned) {   // ◀ ▶: any owned starter of the type is its look; ✨ its shiny, once bought
+  const box = el('span', 'duo-face-box');
+  box.append(face);
+  if (have && getSave().shiny.owned.includes(look.id)) {   // the character select's ✨ Shiny, on the portrait's corner (the user's ask, 2026-10-21)
+    const shiny = isShiny(look.id);
+    const sparkle = el('button', `duo-shiny${shiny ? ' on' : ''}`, '✨');
+    sparkle.type = 'button';
+    sparkle.title = `${look.line[0].name}'s shiny: ${shiny ? 'on' : 'off'}`;
+    sparkle.setAttribute('aria-label', `Shiny ${look.line[0].name}`);
+    sparkle.setAttribute('aria-pressed', String(shiny));
+    sparkle.addEventListener('click', () => {
+      updateSave(d => { d.shiny.on = shiny ? d.shiny.on.filter(x => x !== look.id) : [...d.shiny.on, look.id]; });
+      playCry(look.line[0].id);
+      render();
+    });
+    box.append(sparkle);
+  }
+  card.append(box, el('small', 'duo-name', have ? look.line[0].name : '???'));
+  if (looks.length > 1) {   // ◀ ▶: any owned starter of the type is its look
+    const step = (d) => () => { playSound('cursor', 'confirm'); pick.look[type] = looks[(looks.indexOf(look.id) + d + looks.length) % looks.length]; render(); };
     const row = el('span', 'duo-look');
-    if (looks.length > 1) {
-      const step = (d) => () => { playSound('cursor', 'confirm'); pick.look[type] = looks[(looks.indexOf(look.id) + d + looks.length) % looks.length]; render(); };
-      const prev = el('button', 'duo-arrow', '◀'), next = el('button', 'duo-arrow', '▶');
-      prev.type = next.type = 'button';
-      prev.setAttribute('aria-label', 'Previous look');
-      next.setAttribute('aria-label', 'Next look');
-      prev.addEventListener('click', step(-1));
-      next.addEventListener('click', step(1));
-      row.append(prev, el('span', '', `${looks.indexOf(look.id) + 1}/${looks.length}`), next);
-    }
-    if (shinyOwned) {   // the same switch as the character select's ✨ Shiny (the user's ask, 2026-10-21)
-      const on = isShiny(look.id);
-      const sparkle = el('button', `duo-arrow duo-shiny${on ? ' on' : ''}`, '✨');
-      sparkle.type = 'button';
-      sparkle.title = `${look.line[0].name}'s shiny: ${on ? 'on' : 'off'}`;
-      sparkle.setAttribute('aria-label', `Shiny ${look.line[0].name}`);
-      sparkle.setAttribute('aria-pressed', String(on));
-      sparkle.addEventListener('click', () => {
-        updateSave(d => { d.shiny.on = on ? d.shiny.on.filter(x => x !== look.id) : [...d.shiny.on, look.id]; });
-        playCry(look.line[0].id);
-        render();
-      });
-      row.append(sparkle);
-    }
+    const prev = el('button', 'duo-arrow', '◀'), next = el('button', 'duo-arrow', '▶');
+    prev.type = next.type = 'button';
+    prev.setAttribute('aria-label', 'Previous look');
+    next.setAttribute('aria-label', 'Next look');
+    prev.addEventListener('click', step(-1));
+    next.addEventListener('click', step(1));
+    row.append(prev, el('span', 'duo-count', `${looks.indexOf(look.id) + 1}/${looks.length}`), next);
     card.append(row);
   }
   return card;

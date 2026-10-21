@@ -478,7 +478,7 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
 
-- **Shinies in the Duo picker** (2026-10-21, the user's ask): a portrait whose shown look's shiny you own gets a ✨ button beside its ◀ ▶, flipping the same `save.shiny.on` as the character select's ✨ Shiny.
+- **Shinies in the Duo picker** (2026-10-21, the user's ask): a portrait whose shown look's shiny you own wears a round ✨ button on its top-right corner (`.duo-shiny`, gold when on), flipping the same `save.shiny.on` as the character select's ✨ Shiny. Not under the arrows: a second row there made the cards uneven (the user's "ew", same day). The ◀ ▶ row never wraps (`.duo-count` a fixed width).
 
 ## The areas' scenes (phase 5b, 2026-10-02)
 

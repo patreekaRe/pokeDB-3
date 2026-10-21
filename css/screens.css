@@ -4269,10 +4269,17 @@ body.scene-peek #backdrop { display: none; }
 .duo-face-type { position: absolute; left: -4px; top: -4px; font-size: 0.8rem; }
 .duo-face-no { position: absolute; right: -8px; bottom: -6px; padding: 1px 4px; border-radius: 4px; background: #e2a92c; color: #303038; font-style: normal; font-size: 0.75rem; }
 .duo-name { font-size: 0.75rem; text-align: center; }
-.duo-look { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; font-size: 0.75rem; }
-.duo-arrow { padding: 2px 6px; border: 1px solid #3d5a2a; border-radius: 4px; background: #e8f0d8; font-size: 0.75rem; cursor: pointer; }
-.duo-shiny { filter: grayscale(1); opacity: 0.6; }
-.duo-shiny.on { filter: none; opacity: 1; background: #fff3b0; border-color: #b08a1a; }
+.duo-look { display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 2px; font-size: 0.75rem; white-space: nowrap; }
+.duo-arrow { flex: none; padding: 2px 4px; border: 1px solid #3d5a2a; border-radius: 4px; background: #e8f0d8; font-size: 0.75rem; cursor: pointer; }
+.duo-count { min-width: 3.4em; text-align: center; }   /* 1/8 and 10/11 the same width, so the arrows never move or wrap */
+.duo-face-box { position: relative; display: block; }
+.duo-shiny {   /* the shown look's shiny, top right of the portrait like the type badge top left */
+  position: absolute; right: -8px; top: -6px; width: 26px; height: 26px; padding: 0; display: grid; place-items: center;
+  border: 2px solid #8a8a90; border-radius: 50%; background: #e4e4e8; font-size: 0.75rem; line-height: 1; cursor: pointer;
+}
+.duo-shiny > * { filter: grayscale(1); opacity: 0.55; }
+.duo-shiny.on { border-color: #b08a1a; background: #fff3b0; box-shadow: 0 0 6px 1px rgba(255, 216, 74, 0.8); }
+.duo-shiny.on > * { filter: none; opacity: 1; }
 .sp-keys .mdex-btn { position: relative; }
 .sp-tasks-n {   /* Ranger tasks ready to claim (js/safariprep.js's taskCount()) */
   position: absolute; top: -6px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 99px;
