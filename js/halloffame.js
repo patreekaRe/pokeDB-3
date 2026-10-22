@@ -20,7 +20,7 @@ import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { CARDS_BY_ID, TYPES } from './data/cards.js';
 import { RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID } from './data/items.js';
-import { MAX_LEVEL, LEVELS } from './data/difficulty.js';
+import { LEVELS, isChampion } from './data/difficulty.js';
 import { paintSummit } from './tower-art.js';
 import { typeText } from './type-badge.js';
 
@@ -86,7 +86,7 @@ export function draftWin(run, shiny) {
   const mewtwo = run.starter.id === 'mewtwo';
   return {
     no: wins.length + 1,
-    fame: !mewtwo && run.level === MAX_LEVEL ? wins.filter(w => w.level === MAX_LEVEL && w.starter !== 'mewtwo').length + 1 : null,
+    fame: !mewtwo && isChampion(run.level) ? wins.filter(w => isChampion(w.level) && w.starter !== 'mewtwo').length + 1 : null,
     champ: mewtwo ? wins.filter(isDepths).length + 1 : null,   // a Champion of the Depths' own number
     ...runRecord(run, shiny),
   };
@@ -134,7 +134,7 @@ const imgOf = (entry) => spriteUrl(starterOf(entry), 'front', entry.stage, entry
 const typeOf = (entry) => TYPES[entry.type] ?? { label: entry.type, icon: '' };
 const pad3 = (n) => String(n).padStart(3, '0');
 /** A Level 5 win's Hall of Fame number (entries saved before every win was recorded were all Level 5: `no`). */
-export const fameNo = (entry) => entry.starter !== 'mewtwo' && entry.level === MAX_LEVEL ? `No.${pad3(entry.fame ?? entry.no)}` : null;
+export const fameNo = (entry) => entry.starter !== 'mewtwo' && isChampion(entry.level) ? `No.${pad3(entry.fame ?? entry.no)}` : null;
 const winNo = (entry) => `Win ${pad3(entry.no)}`;
 /** A Mewtwo win: Eternatus beaten, the Champion of the Depths (v1.0's ending), gold-violet in both books. */
 export const isDepths = (entry) => entry.starter === 'mewtwo';
@@ -314,7 +314,8 @@ const BOOKS = {
 export const bookEntries = (which) => getSave().hallOfFame.filter(BOOKS[which].has);
 
 const newestFirst = (list) => [...list].reverse();
-const LEVEL_COLOURS = [['#6ab04c', '#2a5a1c'], ['#4aa8a0', '#1a5050'], ['#5a8ef0', '#24448a'], ['#f0a040', '#8a4a10'], ['#e86a5a', '#8a2a22'], ['#e8b830', '#6a4a08']];
+const LEVEL_COLOURS = [['#6ab04c', '#2a5a1c'], ['#4aa8a0', '#1a5050'], ['#5a8ef0', '#24448a'], ['#f0a040', '#8a4a10'], ['#e86a5a', '#8a2a22'], ['#e8b830', '#6a4a08'],
+  ['#c05ae8', '#4a1a6a'], ['#5a6ae8', '#1a2260'], ['#e85a9a', '#6a1a40'], ['#40c8e8', '#0a4a5a'], ['#f0f0f0', '#4a4a5a']];
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 /** The Record Book's banners: one per Trainer Level, the Crystal Depths, then the lost runs. */

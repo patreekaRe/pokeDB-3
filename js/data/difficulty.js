@@ -21,6 +21,8 @@ const BASE_MODS = {
   evolveHeal: 1,    // fraction of your missing HP that evolving heals
   prizeMult: 1,     // multiplies the ₽ a won fight pays
   playerDmg: 1,     // multiplies the damage of your attacks (Mewtwo's sprint)
+  healMult: 1,      // multiplies every heal in battle (rounded)
+  maxHpMult: 1,     // multiplies your starting max HP
 };
 
 export const LEVELS = [
@@ -30,9 +32,19 @@ export const LEVELS = [
   { name: 'Rationing', text: 'Pokémon Centers heal only 10% of your HP instead of 35%.', mods: { restHeal: 0.1 } },
   { name: 'Fierce Bosses', text: 'Bosses have 10% more HP and hit 2 harder.', mods: { bossHp: 1.1, bossDmg: 2 } },
   { name: 'Wild Aura', text: 'Every enemy hits 1 harder, and evolving only heals half of your missing HP.', mods: { enemyDmg: 1, evolveHeal: 0.5 } },
+  // 6-10 (2026-10-22, the user won on 5 and found it too easy, healing most of all): StS's Ascension 15-20, in five steps
+  { name: 'Bitter Medicine', text: 'Healing in battle restores 20% less.', mods: { healMult: 0.8 } },
+  { name: 'Worn Out', text: 'You start with 10% less max HP.', mods: { maxHpMult: 0.9 } },
+  { name: 'Seasoned Foes', text: 'Every enemy hits 1 harder again, and elites have 10% more HP again.', mods: { enemyDmg: 2, eliteHp: 1.25 } },
+  { name: 'No Second Wind', text: 'Evolving no longer heals, and Pokémon Centers heal only 5%.', mods: { evolveHeal: 0, restHeal: 0.05 } },
+  { name: 'Champion\'s Trial', text: 'Bosses have 20% more HP and hit 4 harder.', mods: { bossHp: 1.2, bossDmg: 4 } },
 ];
 
 export const MAX_LEVEL = LEVELS.length - 1;
+/** The Level whose wins are a champion's (the Hall of Fame, the gold stars, the Sealed Gate's last blow, the Level 5
+    badges): the top Level until 2026-10-22, when 6-10 were added above it. A win on any Level from here up counts. */
+export const CHAMPION_LEVEL = 5;
+export const isChampion = (level) => level >= CHAMPION_LEVEL;
 
 /** All the rules that apply at a level (the levels below it included). */
 export function modsFor(level) {

@@ -249,6 +249,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
     shiny: Boolean(run.safari) && encounter.kind === 'fight' && Boolean(encounter.shiny),   // a Safari wild in its shiny colours: looks only, the fight is the same (js/data/shinies.js)
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
+    healMult: run.mods?.healMult ?? 1,   // Trainer Level 6's Bitter Medicine
     hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
     phased: false,     // the boss has already risen in its second form
     enemyActing: false,   // the enemy's turn is under way (a second form rising then ends it)
@@ -761,6 +762,7 @@ function healPlayer(amount) {
   const b = battle;
   if (b.aug.noFightHeal) return 0;   // Sudden Death
   if (b.aug.healMult) amount = Math.floor(amount * b.aug.healMult);   // Glutton's set bonus
+  if ((b.healMult ?? 1) !== 1) amount = Math.round(amount * b.healMult);
   const healed = Math.min(amount, b.maxHp - b.hp);
   b.hp += healed;
   if (healed > 0) {

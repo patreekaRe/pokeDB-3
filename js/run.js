@@ -37,7 +37,7 @@ import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunDa
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
 import { openSealed } from './data/exchange.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
-import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
+import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner, BASICS, tabletUps, bonfireGift, flipState, rivalWants } from './data/events.js';
@@ -520,7 +520,7 @@ export function continueRun(saved) {
 export function beginRun(starter, level = 0, peek = null, safari = null, tower = null, pack = null, duo = null) {
   dropNotes();
   const perks = !safari?.first && !tower;   // the Safari's first try of the day and every climb go without perks (fairTry())
-  const startHp = BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0);   // shop passive: Max HP Boost
+  const startHp = Math.round((BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0)) * (runMods(starter, level, 0).maxHpMult ?? 1));   // shop passive: Max HP Boost; Level 7's Worn Out
 
   run = {
     starter,
@@ -1880,7 +1880,7 @@ async function fight(node, { talked = false } = {}) {
   const last = !isTower() && run.biome === finalBiome(run.starter);   // a climb has no last boss
   if (node.type === 'boss' && !last && canEvolve()) preloadEvolution(run.starter, run.stage);
   if (node.type === 'boss' && last) {
-    preloadWinScene(run.starter, isMewtwoRun(run.starter) || run.level === MAX_LEVEL);
+    preloadWinScene(run.starter, isMewtwoRun(run.starter) || isChampion(run.level));
   }
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const intro = isTower() && node.type === 'boss' ? await guardianIntro({ def: ENEMY_DEFS[node.enemyId], floor: floorOf(run.tower.flight, node.floor) }) : null;
@@ -5461,7 +5461,7 @@ function strikeGate(won, atLastBoss) {
     if (scene && sealOn()) return { scene: { ...scene, kind: 'camp' } };
     return scene && getSave().stats.deepestBiome < 4 ? { scene: { ...scene, kind: 'open' } } : null;
   }
-  const hp = won ? Math.max(run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - GATE_HIT[run.level]) : before;
+  const hp = won ? Math.max(isChampion(run.level) ? 0 : GATE_SLIVER, before - GATE_HIT[Math.min(run.level, GATE_HIT.length - 1)]) : before;
   const first = !getSave().gateSeen;
   updateSave(d => { d.gateHp = hp; d.gateSeen = true; });
   const name = stageName(run.starter, run.stage);
@@ -5473,7 +5473,7 @@ function strikeGate(won, atLastBoss) {
   setGateBar(bar, hp);
   const li = el('li', 'gate-line', text);
   li.append(bar, el('span', 'gate-hp', `HP ${hp} / ${GATE_HP}`));
-  const kind = !won ? 'loss' : run.level === MAX_LEVEL ? 'ultimate' : 'win';
+  const kind = !won ? 'loss' : isChampion(run.level) ? 'ultimate' : 'win';
   return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind, level: run.level, first, land: gateLand() } };
 }
 
@@ -5586,7 +5586,7 @@ function endRun(won, atLastBoss = false, loss = null) {
     });
 
     if (streak) streak = streakLine(true);
-    if (!mewtwoRun && run.level === MAX_LEVEL) level5 = level5Rewards();
+    if (!mewtwoRun && isChampion(run.level)) level5 = level5Rewards();
     // every win goes in the Record Book, with its win scene; a Level 5 one also enters the Hall of Fame. The first of each
     // unlocks its card in the Collection (a ??? until then).
     const entry = record = recordWin(run, getSave().shiny.on.includes(run.starter.id));
