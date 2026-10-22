@@ -18,7 +18,6 @@ import { cornerEntries } from './shop.js';
 import { fine, texOf, words, star, mergeStatic, newsArt } from './hub-3d.js';
 import { hallKit } from './mall-hall.js';
 import { calmFx } from './prefs.js';
-import { isMaster, wearsCape } from './data/difficulty.js';
 
 const L = {
   rattan: ['#e8d29a', '#dcc286'], wood: '#9a6a3a', lite: '#c8945a', dark: '#5a3a1e',
@@ -35,7 +34,7 @@ const COLS = 21, ROWS = 13, AISLE = 10, DOOR = { x: AISLE, y: ROWS - 1 };
 const BAYS = [0, 7, 14, 21];
 const STANDS = { great: [2, 4], ultra: [5, 4], luxury: [2, 8], quick: [5, 8], dusk: [15, 4], timer: [18, 4], net: [15, 8], master: [18, 8] };
 const DAIS = { x: AISLE, y: 8 }, BOARD = { x: 17, w: 5, h: 3.1, y: 1.3 };
-const JEEP = { x: 3, y: 1 }, COUNTER = { x: 8, y: 3, w: 5 }, KIOSK = { x: 13, y: 8 }, CAPE = { x: 7, y: 8 };
+const JEEP = { x: 3, y: 1 }, COUNTER = { x: 8, y: 3, w: 5 }, KIOSK = { x: 13, y: 8 };
 const STUMP_H = 0.82, BALL_R = 0.24, SIGN_W = 1.5, SIGN_H = 0.75;
 
 export const OUTFITTER_KEEPER = { id: 'kangaskhan', name: 'Kangaskhan',
@@ -129,71 +128,6 @@ export function passWindow(state = passState()) {
   const today = state === 'pass' ? 'You hold today\'s pass.' : state === 'first' ? 'You still have today\'s free try.' : 'You\'ve had today\'s free try.';
   return { ink: '#c8642e', dept: 'SAFARI DAY PASS', name: 'Replay the Safari all day', price: DAY_PASS,
     note: `${how} ${today}`, held: state === 'pass' ? 'Yours today' : undefined, preview: passPreview };
-}
-
-/* ---------- the Champion's Cape (2026-10-22, the user's pick: a Level 10 win's outfit) ---------- */
-
-const CAPE_RED = '#c41e3a', CAPE_GOLD = '#f0c040';
-
-/** The cape on a dress form, its back to you: a red mantle flaring from a high gold-lined collar, a gold hem and crest.
-    `THREE`'s meshes only; the stand and the window's turntable both build one. */
-function capeForm(THREE, std) {
-  const form = new THREE.Group(), cape = new THREE.Group();
-  const red = std({ color: CAPE_RED, roughness: 0.7, side: THREE.DoubleSide }), gold = std({ color: CAPE_GOLD, metalness: 0.6, roughness: 0.35, side: THREE.DoubleSide });
-  const khaki = std({ color: L.khaki, roughness: 0.9 }), cane = std({ color: L.cane[2], roughness: 0.6 });
-  const part = (parent, geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; };
-  part(form, new THREE.CylinderGeometry(0.035, 0.035, 0.9, 8), cane, 0, 0.45, 0);
-  for (let i = 0; i < 3; i++) part(form, new THREE.CylinderGeometry(0.025, 0.025, 0.4, 6), cane, Math.cos(i * 2.1) * 0.12, 0.12, Math.sin(i * 2.1) * 0.12).rotation.set(Math.sin(i * 2.1) * 0.6, 0, -Math.cos(i * 2.1) * 0.6);
-  const torso = part(form, new THREE.SphereGeometry(0.22, 18, 12), khaki, 0, 1.18, 0);
-  torso.scale.set(1, 1.5, 0.75);
-  part(form, new THREE.CylinderGeometry(0.05, 0.06, 0.14, 10), khaki, 0, 1.55, 0);
-  // the mantle: the back half of a flared cone, open at the front, its hem and the collar gold
-  const back = (r0, r1, h, mat, y) => part(cape, new THREE.CylinderGeometry(r0, r1, h, 24, 1, true, Math.PI / 2 + 0.25, Math.PI - 0.5), mat, 0, y, 0);
-  back(0.27, 0.46, 1.05, red, 0.92);
-  back(0.462, 0.47, 0.06, gold, 0.38);
-  back(0.3, 0.24, 0.2, red, 1.53).scale.set(1.04, 1, 1.04);
-  back(0.305, 0.3, 0.035, gold, 1.64);
-  const crest = part(cape, new THREE.OctahedronGeometry(0.07, 0), gold, 0, 1.12, -0.35);
-  crest.scale.set(1, 1.3, 0.3);
-  form.add(cape);
-  return { form, cape };
-}
-
-const capePreviews = new Map();
-function capePreview(THREE) {
-  if (capePreviews.has('cape')) return capePreviews.get('cape');
-  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
-  const pivot = new THREE.Group(), { form } = capeForm(THREE, std);
-  form.rotation.y = Math.PI;
-  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.62, 0.08, 48), std({ color: '#2a5ab0', roughness: 0.95 }));
-  disc.position.y = 0.04;
-  form.position.y = 0.08;
-  pivot.add(disc, form);
-  const out = { pivot, h: 1.75, r: 0.6 };
-  capePreviews.set('cape', out);
-  return out;
-}
-
-/** The cape stand's window: locked till a Level 10 win (OK only), then Wear it / Take off. */
-export function capeWindow(save = getSave()) {
-  const master = isMaster(save), on = wearsCape(save);
-  const note = !master ? 'Kept for a Pokémon Master. Win a run on Trainer Level 10, the top Level, and it\'s yours to wear.'
-    : on ? 'Your walking buddy wears it in the Clearing, your Secret Base and the mall, and your partner on your Trainer Card.'
-    : 'Folded on its stand. Your walking buddy and your Trainer Card partner can wear it again.';
-  return { ink: CAPE_RED, dept: 'FOR A POKéMON MASTER', name: 'Champion\'s Cape', price: 0, note, preview: capePreview,
-    ...(master ? { tag: on ? 'Worn' : 'Yours', yes: on ? 'Take off' : 'Wear it' } : { held: 'Win Level 10' }) };
-}
-
-/** The stand's little sign: CHAMPION'S CAPE on a red band, and LEVEL 10 / WORN / YOURS. */
-function capeSignArt(save) {
-  const f = fine(72, 36, 8), { g, rr } = f, master = isMaster(save);
-  rr(0, 0, 72, 36, 3, CAPE_GOLD);
-  rr(2.2, 2.2, 67.6, 31.6, 2, '#fbf3dc');
-  rr(2.2, 2.2, 67.6, 10, [2, 2, 0, 0], CAPE_RED);
-  words(g, 'CHAMPION\'S CAPE', 36, 7.6, 6.4, '#fbf3dc');
-  words(g, !master ? 'LEVEL 10' : wearsCape(save) ? 'WORN' : 'YOURS', 36, 21, 11, '#7a0c22');
-  words(g, master ? 'POKéMON MASTER' : 'FOR A POKéMON MASTER', 36, 30.4, 5, '#2a5ab0');
-  return f.c;
 }
 
 /* ---------- the hall's front ---------- */
@@ -1027,35 +961,6 @@ export function buildOutfitter(THREE, size) {
       if (now - shownAt > 2600) { shownAt = now; next(); }
       if (!calm) { cap.rotation.y = now / 1400; cap.position.y = 0.48 + Math.sin(now / 600) * 0.01; }
     });
-  }
-
-  // the Champion's Cape on a dress form left of the Day Pass dais, mirroring the Exchange's kiosk (2026-10-22): shown to
-  // everyone as the top Level's prize, its back to you so the crest shows; while your buddy wears it the form stands bare
-  {
-    const { x, y } = CAPE;
-    const spot = { id: 'cape', kind: 'cape', name: 'Champion\'s Cape', open: true, step: { x, y: y + 1 }, at: { x: tileX(x), y: 0.02, z: tileZ(y) }, ring: 0.62 };
-    spots.push(spot);
-    block(x, y);
-    const k = new THREE.Group();
-    k.position.set(tileX(x), 0, tileZ(y));
-    put(k, new THREE.CylinderGeometry(0.46, 0.5, 0.12, 32), wood, 0, 0.06, 0);
-    put(k, new THREE.CylinderGeometry(0.4, 0.42, 0.06, 32), std({ color: '#2a5ab0', roughness: 1 }), 0, 0.15, 0, false);
-    const { form, cape } = capeForm(THREE, std);
-    form.position.y = 0.18;
-    form.rotation.y = Math.PI - 0.35;
-    k.add(form);
-    const map = texOf(capeSignArt(getSave()));
-    const board = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.55), new THREE.MeshBasicMaterial({ map, toneMapped: false }));
-    board.position.set(0, 0.36, 0.6);
-    board.rotation.x = -0.55;
-    k.add(board);
-    for (const sx of [-0.38, 0.38]) put(k, new THREE.BoxGeometry(0.04, 0.38, 0.04), cane, sx, 0.19, 0.5).rotation.x = -0.3;
-    mergeStatic(k, (o) => o === board || o.parent === cape, true);
-    k.traverse(o => { o.userData.front = spot; });
-    group.add(k);
-    const sync = () => { const save = getSave(); cape.visible = !wearsCape(save); map.image = capeSignArt(save); map.needsUpdate = true; };
-    sync();
-    redraws.push(sync);
   }
 
   // the board in the right bay: today's top catchers, fetched now and then; a tap opens the leaderboard

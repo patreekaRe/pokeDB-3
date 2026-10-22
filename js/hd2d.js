@@ -535,7 +535,6 @@ export async function monBoard(mate, back = true) {
   return {
     group, board, c, g: c.getContext('2d', { willReadFrequently: true }), t, sheets, frame: 0, clock: 0, src: front,
     id: mate.cry ?? front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name, top: (h - bottom - top) * px,
-    cape: mate.cape, box: { x0: left, x1: w - right, y0: top, y1: h - bottom },
   };
 }
 
@@ -549,8 +548,7 @@ function gaps(bmp) {
   return x1 < 0 ? [0, 0, 0, 0] : [y0, h - 1 - y1, x0, w - 1 - x1];
 }
 
-/** The GIF's next frame on its billboard; a sleeping Pokémon breathes at a third of the speed. A buddy whose `cape`
-    says so wears the Champion's Cape: painted behind it facing you, over it walking away. */
+/** The GIF's next frame on its billboard; a sleeping Pokémon breathes at a third of the speed. */
 export function drawMon(m, w, dt) {
   const s = m.sheets[w.facing] || m.sheets.front;
   if (!s.frames.length) return;
@@ -558,52 +556,7 @@ export function drawMon(m, w, dt) {
   const f = s.frames[m.frame % s.frames.length];
   if (m.clock >= f.ms) { m.clock = 0; m.frame = (m.frame + 1) % s.frames.length; }
   const now = s.frames[m.frame % s.frames.length];
-  const caped = !!(typeof m.cape === 'function' ? m.cape() : m.cape);
-  if (m.shown === now && m.caped === caped) return;
-  const back = s === m.sheets.back && s !== m.sheets.front;
-  m.g.clearRect(0, 0, m.c.width, m.c.height);
-  if (caped && !back) paintCape(m.g, m.box, m.c.width, false);
-  m.g.drawImage(now.bmp, 0, 0);
-  if (caped && back) paintCape(m.g, m.box, m.c.width, true);
-  m.t.needsUpdate = true; m.shown = now; m.caped = caped;
-}
-
-/** The Champion's Cape (a Level 10 win's, js/data/difficulty.js's wearsCape()), drawn in the sprite's own pixels: a red
-    cape from the shoulders to the ankles, flaring and swaying a little, a gold hem and edge, and a high collar whose tips
-    show past the head. `box` is the sprite's painted area; `back` draws it over the sprite with a gold crest. Repainted
-    with each GIF frame, so the sway costs no extra upload. */
-function paintCape(g, box, W, back) {
-  const { x0, x1, y0, y1 } = box, bw = x1 - x0, bh = y1 - y0, cx = (x0 + x1) / 2, t = performance.now();
-  if (bw < 8 || bh < 8) return;
-  const top = Math.round(y0 + bh * 0.3), foot = Math.round(y1 - Math.max(1, bh * 0.06)), rows = foot - top;
-  const hwTop = Math.max(3, bw * 0.24), hwFoot = bw * 0.5 + Math.max(2, bw * 0.08);
-  const row = (y, l, r, ink) => { l = Math.max(0, Math.round(l)); r = Math.min(W, Math.round(r)); if (r > l) { g.fillStyle = ink; g.fillRect(l, y, r - l, 1); } };
-  const span = (y) => { const k = (y - top) / rows, hw = hwTop + (hwFoot - hwTop) * k ** 0.8, sway = Math.sin(t / 420 + k * 3) * k * 1.6; return [cx - hw + sway, cx + hw + sway]; };
-  // the collar: a gold-lined band flaring up and out round the neck
-  const collar = Math.max(2, Math.round(bh * 0.12));
-  for (let i = 1; i <= collar; i++) {
-    const hw = hwTop + 1 + i * 0.7;
-    row(top - i, cx - hw, cx + hw, '#f0c040');
-    row(top - i, cx - hw + 1, cx + hw - 1, i === collar ? '#f0c040' : '#a8142e');
-  }
-  for (let y = top; y < foot; y++) {
-    const [l, r] = span(y);
-    row(y, l, r, '#f0c040');
-    row(y, l + 1, r - 1, '#7a0c22');
-    row(y, l + 2, r - 2, '#c41e3a');
-    row(y, cx - (r - l) * 0.12 + (l + r - 2 * cx) / 2, cx + (r - l) * 0.04 + (l + r - 2 * cx) / 2, '#de3a50');
-  }
-  // the hem: gold, scalloped by the sway
-  const [l, r] = span(foot - 1);
-  for (let x = Math.max(0, Math.round(l)); x < Math.min(W, Math.round(r)); x++) {
-    const dip = Math.sin(x * 0.7 + t / 300) > 0.3 ? 1 : 0;
-    g.fillStyle = '#f0c040'; g.fillRect(x, foot - 2 + dip, 1, 2);
-    g.fillStyle = '#9a6a10'; g.fillRect(x, foot + dip, 1, 1);
-  }
-  if (!back) return;
-  // walking away: a gold crest between the shoulders
-  const cy = Math.round(top + rows * 0.38), [cl, cr] = span(cy), mx = Math.round((cl + cr) / 2), k = Math.max(2, Math.round(bw * 0.07));
-  for (let i = -k; i <= k; i++) row(cy + i, mx - (k - Math.abs(i)), mx + (k - Math.abs(i)) + 1, '#f0c040');
+  if (m.shown !== now) { m.g.clearRect(0, 0, m.c.width, m.c.height); m.g.drawImage(now.bmp, 0, 0); m.t.needsUpdate = true; m.shown = now; }
 }
 
 /** Whether a ray's hit on a billboard landed on the sprite itself, a few pixels' slack round it, not its empty corners. */

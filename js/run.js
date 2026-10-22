@@ -5513,7 +5513,7 @@ function level5Rewards() {
     refreshCoins();
     lines.push(`💰 Jackpot for your first win on Trainer Level ${lv}! ${paid}`);
   }
-  if (master) lines.push('👑 You are a POKéMON MASTER! The title is on your Trainer Card, and your walking buddy wears the Champion\'s Cape.');
+  if (master) lines.push('👑 You are a POKéMON MASTER! The title is on your Trainer Card.');
   return lines;
 }
 

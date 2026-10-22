@@ -21,7 +21,7 @@ import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { ALL_CARDS } from './data/cards.js';
 import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
-import { bestWin, starClass, isMaster, wearsCape } from './data/difficulty.js';
+import { bestWin, starClass, isMaster } from './data/difficulty.js';
 import { safariDexCount } from './safaridex.js';
 import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
@@ -420,19 +420,12 @@ export function buddyChoices(save = getSave()) {
 export function buddy(save = getSave()) {
   const all = buddyChoices(save);
   const chosen = save.buddy && all.find(m => m.key === save.buddy);
-  if (chosen) return { ...chosen, cape: capeOn };
+  if (chosen) return chosen;
   const s = save.stats, score = (id) => (s.winsBy?.[id] || 0) + 10 * (s.level5WinsBy?.[id] || 0);
   const plain = all.filter(m => !m.shiny), best = [...plain].sort((a, b) => score(b.id) - score(a.id))[0] ?? plain[0];
   const st = STARTERS_BY_ID[best?.id ?? 'charmander'], shiny = isShiny(st.id) && (save.shiny?.owned || []).includes(st.id);
-  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny, cape: capeOn };
+  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny };
 }
-
-/** Whether the walking buddy wears the Champion's Cape right now: js/hd2d.js's drawMon() asks each frame, so taking it off
-    at the Outfitter shows at once. */
-const capeOn = () => wearsCape(getSave());
-
-/** The Champion's Cape on or off (the Outfitter's stand, the Trainer Card's Cape key). */
-export const setCape = (on) => updateSave(d => { d.cape = on; });
 
 /** The walking buddy as a `save.buddy` key, picked or not. */
 export const buddyKey = (save = getSave()) => { const b = buddy(save); return b.key ?? `starter:${b.id}${b.shiny ? ':shiny' : ''}`; };
@@ -643,7 +636,6 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const img = el('img', 'pixel');
   img.src = mate.src;
   img.alt = '';
-  if (wearsCape(save)) pic.append(el('span', 'tc-cape'));
   pic.append(img, el('span', 'tc-partner-edit', 'Change'));
   pic.addEventListener('click', () => {
     playSound('confirm');
@@ -663,19 +655,6 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
       openTrainerCard(into, { reopen: true });
     });
     frame.append(flip);
-  }
-  if (isMaster(save)) {
-    const on = wearsCape(save), cape = el('button', `tc-shiny tc-cape-key${on ? ' on' : ''}`, on ? '👑 Cape' : 'Cape');
-    cape.type = 'button';
-    cape.title = on ? 'The Champion\'s Cape is on: tap to take it off' : 'Tap to wear the Champion\'s Cape';
-    cape.setAttribute('aria-pressed', String(on));
-    cape.setAttribute('aria-label', 'Champion\'s Cape');
-    cape.addEventListener('click', () => {
-      setCape(!on);
-      playSound('confirm');
-      openTrainerCard(into, { reopen: true });
-    });
-    frame.append(cape);
   }
   info.append(list, frame);
 
