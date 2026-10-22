@@ -16,7 +16,7 @@
 import { STARTERS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES, CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
-import { LEVELS, MAX_LEVEL, MEWTWO_MODE, isMewtwoRun } from './data/difficulty.js';
+import { LEVELS, MAX_LEVEL, MEWTWO_MODE, isMewtwoRun, bestWin, starClass, starName } from './data/difficulty.js';
 import { sealOn, shardsPlaced } from './data/towns.js';
 import { strengthOf } from './data/camp.js';
 import { COIN_LEVEL_BONUS } from './data/shop.js';
@@ -124,6 +124,8 @@ export const pickedStarter = () => picked;
 const inTab = () => listed(tab);
 const usable = (s) => isStarterUnlocked(s) && !s.comingSoon;
 const level5Wins = (s) => getSave().stats.level5WinsBy[s.id] || 0;
+/** A champion's star, tinted by the best Level won with the starter. */
+const starTitle = (s, wins = 0) => { const lv = bestWin(getSave(), s.id); return `${starName(lv)} star: won on Trainer Level ${lv}${wins > 1 ? `, ${wins} wins from Level 5 up` : ''}`; };
 const winsOf = (s) => getSave().stats.winsBy[s.id] || 0;
 
 function pick(starter, quiet = false) {
@@ -163,7 +165,7 @@ function renderStrip() {
     fitThumb(img);
     btn.append(img);
     if (!unlocked) btn.append(el('span', 'sel-lock', '🔒'));
-    if (unlocked && level5Wins(starter)) btn.append(Object.assign(el('span', 'sel-star', '⭐'), { title: 'Won on Trainer Level 5' }));
+    if (unlocked && bestWin(getSave(), starter.id) >= 5) btn.append(Object.assign(el('span', `sel-star ${starClass(bestWin(getSave(), starter.id))}`, '⭐'), { title: starTitle(starter) }));
     if (unlocked && winsOf(starter)) btn.append(Object.assign(el('span', 'sel-thumb-wins', `🏆${winsOf(starter)}`),
       { title: `${winsOf(starter)} run${winsOf(starter) > 1 ? 's' : ''} won` }));
     if (unlocked && getSave().shiny.owned.includes(starter.id)) btn.append(el('span', `sel-sparkle${isShiny(starter.id) ? ' on' : ''}`, '✨'));
@@ -186,8 +188,8 @@ function show(starter) {
 
   $('sel-name').textContent = unlocked ? starter.line[0].name : '???';
   const wins = unlocked ? level5Wins(starter) : 0;
-  if (wins) $('sel-name').append(Object.assign(el('span', 'sel-name-star', '⭐'),
-    { title: `Won on Trainer Level 5${wins > 1 ? ` ${wins} times` : ''}` }));
+  if (unlocked && bestWin(getSave(), starter.id) >= 5) $('sel-name').append(Object.assign(el('span', `sel-name-star ${starClass(bestWin(getSave(), starter.id))}`, '⭐'),
+    { title: starTitle(starter, wins) }));
   const hp = BASE_HP + (getSave().passives.hpBoost || 0) * 5;
   $('sel-hp').textContent = `❤️ ${hp}/${hp}`;
   $('sel-type').replaceChildren(typeText(hiddenType ? '' : starter.type, type.icon, type.label));

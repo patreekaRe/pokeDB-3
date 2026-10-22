@@ -37,7 +37,7 @@ import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunDa
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
 import { openSealed } from './data/exchange.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
-import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion } from './data/difficulty.js';
+import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion, bestWin, starName } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner, BASICS, tabletUps, bonfireGift, flipState, rivalWants } from './data/events.js';
@@ -166,6 +166,8 @@ const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : isTo
 export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 200 };   // winBonus 50 until 2026-09-28, 100 until 2026-10-16 (the user's calls: runs the best way to earn)
 /** PokéCoins for the first Trainer Level 5 win with each type (Coin Finder adds to it). */
 export const LEVEL5_JACKPOT = 500;
+/** PokéCoins for the first win ever on each Trainer Level above 5 (the user's pick, 2026-10-22; Coin Finder adds to it). */
+export const LEVEL_JACKPOT = { 6: 600, 7: 700, 8: 800, 9: 900, 10: 2000 };
 
 /** A coin reward at the run's Trainer Level (COIN_LEVEL_BONUS a level), before the Coin Finder. */
 const levelCoins = (amount) => Math.round(amount * (1 + COIN_LEVEL_BONUS * run.level));
@@ -5485,13 +5487,18 @@ function level5Rewards() {
   const { id, type } = run.starter;
   const name = run.starter.line[0].name;
   const save = getSave();
-  const lines = [`⭐ ${name} earned a gold star for winning on Trainer Level 5!`];
+  const was = bestWin(save, id), lv = run.level;
+  const lines = [lv > was && lv === 5 ? `⭐ ${name} earned a gold star for winning on Trainer Level 5!`
+    : lv > was ? `⭐ ${name}'s star climbs to ${starName(lv)} for winning on Trainer Level ${lv}!`
+    : `⭐ ${name} won on Trainer Level ${lv}! Its star stays ${starName(was)}.`];
   const shiny = !save.shiny.owned.includes(id) && !run.starter.comingSoon;
   const jackpot = !save.stats.level5Jackpot[type];
+  const levelPrize = LEVEL_JACKPOT[lv] && !save.stats.levelJackpot?.[lv] ? LEVEL_JACKPOT[lv] : 0;
   updateSave(d => {
     d.stats.level5WinsBy[id] = (d.stats.level5WinsBy[id] || 0) + 1;
     if (shiny) { d.shiny.owned.push(id); if (!d.shiny.on.includes(id)) d.shiny.on.push(id); }
     if (jackpot) d.stats.level5Jackpot[type] = true;
+    if (levelPrize) d.stats.levelJackpot = { ...d.stats.levelJackpot, [lv]: true };
   });
   if (shiny) lines.push(`✨ Shiny ${name} unlocked, and switched on!`);
   if (jackpot) {
@@ -5499,6 +5506,11 @@ function level5Rewards() {
     const paid = post('league', 'Jackpot!', `Your first Trainer Level 5 win with a ${kind} Pokémon! The League rewards a true champion.`, LEVEL5_JACKPOT);
     refreshCoins();
     lines.push(`💰 Jackpot for your first Level 5 win with a ${kind} Pokémon! ${paid}`);
+  }
+  if (levelPrize) {
+    const paid = post('league', `Level ${lv} Jackpot!`, `Your first win on Trainer Level ${lv}, ${LEVELS[lv].name}! The League rewards a true champion.`, levelPrize);
+    refreshCoins();
+    lines.push(`💰 Jackpot for your first win on Trainer Level ${lv}! ${paid}`);
   }
   return lines;
 }

@@ -1982,3 +1982,12 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tn-welcome .tn-name { letter-spacing: 0.12em; user-select: all; }
 .trn-code { flex-wrap: wrap; }
 .trn-help { margin-left: auto; padding: 6px 10px 5px; }
+
+/* A champion's star climbs with the best Trainer Level won (js/data/difficulty.js's starClass()): gold at 5, then ruby,
+   emerald, sapphire, amethyst, and a rainbow-rimmed star at 10 (still: no repaint a frame). The span tints the ⭐ whether it's the emoji or its smooth icon. */
+.star-lv5, .star-lv6, .star-lv7, .star-lv8, .star-lv9, .star-lv10 { display: inline-block; }
+.star-lv6 { filter: hue-rotate(-50deg) saturate(1.8); }
+.star-lv7 { filter: hue-rotate(80deg) saturate(1.4); }
+.star-lv8 { filter: hue-rotate(170deg) saturate(1.6); }
+.star-lv9 { filter: hue-rotate(235deg) saturate(1.5); }
+.star-lv10 { filter: hue-rotate(300deg) saturate(1.4) drop-shadow(1px 0 0 #ff5a5a) drop-shadow(-1px 0 0 #5ac8ff) drop-shadow(0 1px 0 #6ee86e) drop-shadow(0 -1px 0 #ffd84a); }

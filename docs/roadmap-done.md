@@ -3419,3 +3419,5 @@ Human bot, 150 a cell, grass / fire / water: L5 27.3 / 32.7 / 28.0, L6 19.3 / 34
 meant; the user plays well above this bot (it wins ~30% at Level 5, where the user found the game easy). L10 at 300 a
 cell: 3.0 / 10.3 / 6.3. Grass ends lowest (69% of its losses in biome 1): if it plays too hard at the top, Bitter
 Medicine goes to 15%.
+Rewards (the user: "send it", same day): the climbing star and a first-win jackpot per Level (600-900, 2000 at 10);
+see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, trophies and Master Badges stay on the roadmap.

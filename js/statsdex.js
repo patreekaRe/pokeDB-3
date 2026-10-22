@@ -14,7 +14,7 @@ import { ALL_CARDS, TYPES } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { BIOMES, ENEMY_DEFS } from './data/enemies.js';
-import { MAX_LEVEL } from './data/difficulty.js';
+import { MAX_LEVEL, starClass } from './data/difficulty.js';
 import { DEX_PAGES } from './data/pokedex.js';
 import { researchCount, progressBar, still, sceneImg } from './pokedex.js';
 import { el, itemSprite } from './ui.js';
@@ -316,7 +316,8 @@ function championsPage(n) {
     typeChip.append(typeText(st.type, TYPES[st.type].icon, TYPES[st.type].label));
     info.append(name, typeChip,
       el('span', '', `Wins: ${s.winsBy[st.id]}`),
-      el('span', '', lv >= 0 ? `Best: Level ${lv}${(s.level5WinsBy?.[st.id] || 0) ? ' ⭐' : ''}` : 'Best: -'));
+      el('span', '', lv >= 0 ? `Best: Level ${lv}` : 'Best: -'));
+    if (lv >= 5) info.lastChild.append(' ', el('span', starClass(lv), '⭐'));
     card.replaceChildren(pic, info);
   };
   const box = el('div', 'sdx-box');

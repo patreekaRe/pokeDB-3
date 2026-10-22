@@ -20,7 +20,7 @@ import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { CARDS_BY_ID, TYPES } from './data/cards.js';
 import { RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID } from './data/items.js';
-import { LEVELS, isChampion } from './data/difficulty.js';
+import { LEVELS, isChampion, starClass } from './data/difficulty.js';
 import { paintSummit } from './tower-art.js';
 import { typeText } from './type-badge.js';
 
@@ -366,8 +366,9 @@ const recordBook = () => shelfApp({
   screenCls: (g, e) => (g.id === 'lost' ? 'lost' : isDepths(e) ? 'depths' : ''),
   screen(g, e) {
     const nodes = [el('span', 'pdx-pad'), monImg(e, 'pdx-mon bdx-art'), typeChip(e.type)];
-    const tag = g.id === 'lost' ? '💀 Lost' : fameNo(e) ? `⭐ ${fameNo(e)}` : isDepths(e) ? `💎 ${champNo(e)}` : null;
+    const tag = g.id === 'lost' ? '💀 Lost' : fameNo(e) ? ` ${fameNo(e)}` : isDepths(e) ? `💎 ${champNo(e)}` : null;
     if (tag) nodes.push(el('span', `pdx-role rbk-tag${g.id === 'lost' ? '' : ' gold'}`, tag));
+    if (fameNo(e) && g.id !== 'lost') nodes.at(-1).prepend(el('span', starClass(e.level), '⭐'));
     return nodes;
   },
   lines: (g, e) => [typed(g.id === 'lost' ? 'muted' : '', storyOf(e, g.id === 'lost')), quick(e)],

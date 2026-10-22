@@ -121,6 +121,7 @@ const freshSave = () => ({
     biomesSeen: [],           // every biome a run has walked into, by id (the crossroads' other roads too; the Explorer Badge's)
     level5WinsBy: {},         // Trainer Level 5 wins per starter (a gold star on its portrait); counted from the rewards' release, not seeded
     level5Jackpot: {},        // { fire: true }: the type's first Level 5 win paid LEVEL5_JACKPOT
+    levelJackpot: {},         // { 7: true }: the first win on Trainer Level 6-10 paid LEVEL_JACKPOT
     playMs: 0,                // play time while the page is visible, counted from the Trainer Card's release (initPlayTime())
   },
 });

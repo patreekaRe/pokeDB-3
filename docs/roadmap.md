@@ -1206,11 +1206,11 @@ First question for the user: which Trainer Level they were playing. At Level 0-2
 right?"). Today a win from 5 up counts as a Level 5 win (gold star, Hall of Fame, the gate, badges), coins keep +10% a
 Level (Level 10 pays double) and the Journal pays 2000 for unlocking Level 10. Claude's lean: nothing that makes a run
 easier (it would undo the challenge and leak into the Safari and Sky Pillar); prestige that friends can see, coins, and
-things for the Secret Base. Put to the user, none agreed yet:
-1. **A star that climbs** (recommended first): a starter's gold ⭐ becomes the highest Level won with it, gold at 5 and a
+things for the Secret Base. **The user: "send it"; 1 and 2 built the same day** (archive); 3-5 still open:
+1. ~~**A star that climbs**~~ done: a starter's gold ⭐ becomes the highest Level won with it, gold at 5 and a
    colour per Level up to a rainbow star at 10, on the portrait, the Trainer Card, a friend's Trainers page and the Hall
    of Fame entry. ▶ CLOUD, effort: medium.
-2. **A first-win jackpot per Level**, as Level 5's 500 per type: the League mails 600 / 700 / 800 / 900 for the first
+2. ~~**A first-win jackpot per Level**~~ done:, as Level 5's 500 per type: the League mails 600 / 700 / 800 / 900 for the first
    win on 6-9 and 2000 for 10 (once ever, or once per type at 10). Data and mail only. ▶ CLOUD, effort: low.
 3. **A Level 10 title and look**: "Pokémon Master" on the Trainer Card, a crystal pedestal in the Hall of Fame scene, and
    an Outfitter outfit (a Champion's cape) for the first Level 10 win. ▶ CLOUD, effort: medium.

@@ -46,6 +46,17 @@ export const MAX_LEVEL = LEVELS.length - 1;
 export const CHAMPION_LEVEL = 5;
 export const isChampion = (level) => level >= CHAMPION_LEVEL;
 
+/** The highest Trainer Level won with a starter (-1: none), from the Record Book; a gold star from before it counts as 5. */
+export function bestWin(save, id) {
+  const best = Math.max(-1, ...(save.hallOfFame || []).filter(w => w.starter === id && typeof w.level === 'number').map(w => w.level));
+  return Math.max(best, save.stats?.level5WinsBy?.[id] > 0 ? CHAMPION_LEVEL : -1);
+}
+/** A champion's star climbs with the best Level won (the user's pick, 2026-10-22): gold at 5, a gem's colour at 6-9, a
+    rainbow at 10. `.star-lvN` in css/menus.css tints the ⭐. */
+const STAR_NAMES = ['Gold', 'Ruby', 'Emerald', 'Sapphire', 'Amethyst', 'Rainbow'];
+export const starClass = (level) => (isChampion(level) ? `star-lv${Math.min(level, MAX_LEVEL)}` : '');
+export const starName = (level) => STAR_NAMES[Math.min(level, MAX_LEVEL) - CHAMPION_LEVEL];
+
 /** All the rules that apply at a level (the levels below it included). */
 export function modsFor(level) {
   const mods = { ...BASE_MODS };

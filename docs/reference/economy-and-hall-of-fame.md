@@ -27,7 +27,11 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
 - **Trainer Levels 6-10** (2026-10-22): `CHAMPION_LEVEL` (5) and `isChampion()` in `js/data/difficulty.js` stand for
   "a Level 5 win" everywhere (rewards, Hall of Fame `fame`, the gate's last blow and `GATE_HIT`, badges): a win on any Level
   from 5 up counts. `MAX_LEVEL` (10) is only the cap. New mods: `healMult` (every heal in battle, rounded) and `maxHpMult`
-  (starting max HP), mirrored in pokeDB-sim. Rewards of their own for 6-10 are an open idea on the roadmap.
+  (starting max HP), mirrored in pokeDB-sim. Rewards (the user's picks, 2026-10-22): the star climbs (`bestWin()`,
+  `starClass()` / `.star-lvN` in css/menus.css: gold 5, ruby, emerald, sapphire, amethyst, a rainbow-rimmed 10; on the
+  select screen, the Trainer Card, a friend's Trainers page from their `top`, the Record Book and the Box), and
+  `LEVEL_JACKPOT` in `js/run.js` (600 / 700 / 800 / 900 / 2000, once ever per Level, `stats.levelJackpot`), paid in
+  `level5Rewards()`. A trophy, title, badges and cape are open ideas on the roadmap.
 - **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
   `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
   `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character

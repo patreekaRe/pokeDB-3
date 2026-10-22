@@ -14,6 +14,7 @@ import { TRAINERS, CODES, PLAZA, ADDS, PLAZA_SHOWN, rollCode, isCode, formatCode
   trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, hofDoc, readHof, FRIENDS_MAX, BASE_MAX, NEW_CARD_KEYS, NEWEST_CARD_KEYS } from './data/trainers.js';
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
+import { starClass } from './data/difficulty.js';
 import { pref } from './prefs.js';
 import { trainerName } from './leaderboard.js';
 import { partnerKey, buddyKey, cardTier, badgeArt, shinyTotal, pinnable, TIERS as CARD_TIERS } from './trainercard.js';
@@ -49,6 +50,9 @@ export function myCode(uid = null) {
   const c = readKept();
   return isCode(c.code) && (!uid || c.uid === uid) ? c.code : null;
 }
+
+/** A friend's stars, the ⭐ tinted by the top Level they have won (gold at 5, a rainbow at 10). */
+const starsOf = (c) => { const b = el('b', ''); b.append(el('span', starClass(c.top), '⭐'), `${c.stars}`); return b; };
 
 const TIER_INK = { green: ['#5ad08a', '#1e6a48'], bronze: ['#e09a5a', '#7a3a14'], silver: ['#b8c4d8', '#4a5670'], gold: ['#f0c840', '#7a5208'], violet: ['#b07af0', '#3e1a7a'] };
 
@@ -252,7 +256,7 @@ function cardGrid(c, name) {
   box.append(
     cell('Wins', wins, `Runs ${name} has won, at any Trainer Level, in ${playTime(c.time)} of play.`),
     cell('Dex', el('b', '', `${c.dex}/${c.dexOf}`), `Pokémon ${name} has beaten, on every Pokédex page they have found.`),
-    cell('Stars', el('b', '', c.stars ? `⭐${c.stars}` : '-'), `${fame}A gold star for each starter ${name} has won a Level 5 run with.`),
+    cell('Stars', c.stars ? starsOf(c) : el('b', '', '-'), `${fame}A star for each starter ${name} has won a Level 5 run with, its colour the highest Level they have won: gold at 5, a rainbow at 10.`),
     cell('Top Lv', el('b', '', c.top >= 0 ? `Lv ${c.top}` : '-'), c.top >= 0 ? `The highest Trainer Level ${name} has won a run on.` : `The highest Trainer Level ${name} has won a run on. None yet.`),
     cell('Fave', fave ? monImg(`starter:${c.fave}`, 'trn-fave') : el('b', '', '-'), fave ? `${name}'s favourite: ${fave.name}, the starter they have won the most runs with.` : `The starter ${name} has won the most runs with. None yet.`),
     cell('Pillar', el('b', '', c.pillar ? `${c.pillar}F` : '-'), c.pillar ? `The highest Sky Pillar floor ${name} has reached.` : `The highest Sky Pillar floor ${name} has reached. Not climbed yet.`),

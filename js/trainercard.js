@@ -21,6 +21,7 @@ import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { ALL_CARDS } from './data/cards.js';
 import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
+import { bestWin, starClass } from './data/difficulty.js';
 import { safariDexCount } from './safaridex.js';
 import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
@@ -336,6 +337,16 @@ const playTime = (ms = 0) => {
 
 /* ---------- the window ---------- */
 
+/** STARS: up to three stars, the starters' best first, each tinted by its best Level won (gold at 5, a rainbow at 10). */
+function starRow(save) {
+  const best = Object.keys(save.stats.level5WinsBy || {}).concat((save.hallOfFame || []).map(w => w.starter))
+    .filter((id, i, all) => id !== 'mewtwo' && all.indexOf(id) === i).map(id => bestWin(save, id)).filter(lv => lv >= 5).sort((a, b) => b - a);
+  const dd = el('dd', '');
+  for (const lv of best.slice(0, 3)) dd.append(el('span', starClass(lv), '⭐'));
+  if (best.length > 3) dd.append(`×${best.length}`);
+  return dd;
+}
+
 /** The starter it picks by itself: the one with the most wins (a Level 5 win counts big), else Charmander. */
 function autoPartner(save) {
   const s = save.stats;
@@ -603,7 +614,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     ['SHINIES', safari ? `${shinyTotal(save)}/${SAFARI_ROSTER.length}` : '---', 'Safari Pokémon whose shiny is yours, caught in the wild or pulled at the Shiny Exchange.'],
     ['JOURNAL', journalRank(save).rank.name.toUpperCase(), 'Your rank in the Trainer\'s Journal, from tasks claimed at the Clearing\'s PC.'],
     ['RANGER', safari ? rankOf(save).rank.name.toUpperCase() : '---', 'Your Ranger Rank, from tasks claimed on the Safari Outfitter\'s Ranger Task Board.'],
-    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A gold star for each starter you have won a Level 5 run with.'],
+    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A star for each starter you have won a Level 5 run with: gold at Level 5, a new colour each Level up, a rainbow at 10.'],
     ['TIME', playTime(s.playMs), 'Play time, in hours and minutes.'],
     ...(myCode() ? [['CODE', formatCode(myCode()), 'Your trainer code. A friend types it in the Trainers app to add you.']] : []),
   ];
@@ -611,7 +622,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const list = el('dl', 'tc-lines');
   const redraw = () => openTrainerCard(into, { reopen: true });
   for (const [k, v, tip] of lines) {
-    const dt = el('dt', '', k), dd = k === 'NAME' ? nameField(redraw) : el('dd', '', v);
+    const dt = el('dt', '', k), dd = k === 'NAME' ? nameField(redraw) : k === 'STARS' && stars ? starRow(save) : el('dd', '', v);
     dt.title = tip;
     if (k !== 'NAME') dd.title = tip;
     list.append(dt, dd);
