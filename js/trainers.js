@@ -14,7 +14,7 @@ import { TRAINERS, CODES, PLAZA, ADDS, PLAZA_SHOWN, rollCode, isCode, formatCode
   trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, hofDoc, readHof, FRIENDS_MAX, BASE_MAX, NEW_CARD_KEYS, NEWEST_CARD_KEYS } from './data/trainers.js';
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
-import { starClass } from './data/difficulty.js';
+import { starClass, MAX_LEVEL } from './data/difficulty.js';
 import { pref } from './prefs.js';
 import { trainerName } from './leaderboard.js';
 import { partnerKey, buddyKey, cardTier, badgeArt, shinyTotal, pinnable, TIERS as CARD_TIERS } from './trainercard.js';
@@ -624,7 +624,8 @@ export function trainersApp() {
       lines(g, uid) {
         const doc = docs.get(uid), b = blurbOf(uid), keys = g.friend ? friendKeys(uid) : addKeys(uid, g.id === 'added');
         const walk = sprite(buddyOf(uid));
-        if (doc) return [cardGrid(doc.card, doc.name), ...[showcase(doc.card, doc.name)].filter(Boolean), badgeRow(doc.card, doc.name), typed('', `Walking with ${walk.name}.`), keys,
+        if (doc) return [...(doc.card.top >= MAX_LEVEL ? [typed('', `👑 POKéMON MASTER: ${doc.name} has won a run on Trainer Level ${MAX_LEVEL}.`)] : []),
+          cardGrid(doc.card, doc.name), ...[showcase(doc.card, doc.name)].filter(Boolean), badgeRow(doc.card, doc.name), typed('', `Walking with ${walk.name}.`), keys,
           ...(g.friend ? [typed('muted', doc.base ? 'Visit walks round their Secret Base as they last left it.' : 'No Secret Base to visit yet.')] : [])];
         if (b) return [typed('', g.id === 'added' ? `${b.name} added you ${lastSeen(b.at).replace(/^Seen |^Online /, '')}.` : `${b.name}. ${lastSeen(b.at)}.`), blurbFacts(b), typed('', `Walking with ${walk.name}.`), keys];
         return [typed('muted', 'They haven\'t been on since Trainers came in.'), typed('muted', 'They\'ll show up here once they play signed in.'), keys];

@@ -20,7 +20,7 @@ import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { CARDS_BY_ID, TYPES } from './data/cards.js';
 import { RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID } from './data/items.js';
-import { LEVELS, isChampion, starClass } from './data/difficulty.js';
+import { LEVELS, MAX_LEVEL, isChampion, starClass } from './data/difficulty.js';
 import { paintSummit } from './tower-art.js';
 import { typeText } from './type-badge.js';
 
@@ -138,6 +138,8 @@ export const fameNo = (entry) => entry.starter !== 'mewtwo' && isChampion(entry.
 const winNo = (entry) => `Win ${pad3(entry.no)}`;
 /** A Mewtwo win: Eternatus beaten, the Champion of the Depths (v1.0's ending), gold-violet in both books. */
 export const isDepths = (entry) => entry.starter === 'mewtwo';
+/** A win on the top Trainer Level: a Pokémon Master's, on a crystal pedestal (the user's pick, 2026-10-22). */
+const isMasterWin = (entry) => Boolean(fameNo(entry)) && !entry.summit && entry.level >= MAX_LEVEL;
 /** Its number among them; entries from before part D are numbered by their place. */
 const champNo = (entry) => `Depths ${pad3(entry.champ ?? getSave().hallOfFame.filter(isDepths).indexOf(entry) + 1)}`;
 // the window shows either book: the Hall of Fame numbers its champions, the Record Book every win
@@ -231,7 +233,7 @@ function replay(scene, cls) {
  */
 export async function winScene(entry) {
   const depths = isDepths(entry), summit = Boolean(entry.summit);
-  const fame = Boolean(fameNo(entry)) || depths || summit;
+  const fame = Boolean(fameNo(entry)) || depths || summit, master = isMasterWin(entry);
   book = fame ? 'fame' : 'record';
   const scene = $('hof-scene');
   const img = $('hof-mon');
@@ -241,11 +243,11 @@ export async function winScene(entry) {
   img.src = imgOf(entry);
   img.alt = name;
   const party = fame && !still();
-  setTitle(depths ? 'Champion of the Depths' : summit ? 'Sky Pillar Summit' : fame ? 'Hall of Fame' : 'Victory!', party);
+  setTitle(depths ? 'Champion of the Depths' : summit ? 'Sky Pillar Summit' : master ? 'Pokémon Master' : fame ? 'Hall of Fame' : 'Victory!', party);
   $('hof-plate-slot').replaceChildren(plate(entry));
   extra.replaceChildren(statsPanel(entry));
   $('hof-log').hidden = true;
-  scene.className = `hof-scene${fame ? ' fame' : ''}${depths ? ' depths' : ''}${summit ? ' summit' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
+  scene.className = `hof-scene${fame ? ' fame' : ''}${depths ? ' depths' : ''}${summit ? ' summit' : ''}${master ? ' master' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
   scene.hidden = false;
   const peak = $('hof-summit-bg');
   peak.hidden = !summit;
@@ -277,6 +279,7 @@ export async function winScene(entry) {
   await sceneSay('hof-scene', 'hof-log', depths
     ? ['The Crystal Depths fall quiet.', `${name} is the CHAMPION OF THE DEPTHS!`]
     : summit ? ['Rayquaza bows its head and soars off. Above the summit there is only sky.', `${name} climbed all ${entry.floor} floors of the SKY PILLAR!`]
+    : master ? ['Welcome to the HALL OF FAME!', `${name} won on Trainer Level ${entry.level}, the highest of all!`, `${name} is a POKéMON MASTER!`]
     : fame ? ['Welcome to the HALL OF FAME!', `${name} became a champion on Trainer Level ${entry.level}!`]
     : [`${name} conquered ${conquered(entry.route)} on Trainer Level ${entry.level}!`]);
 
@@ -397,7 +400,7 @@ const hallOfFame = () => shelfApp({
   no: (g, e) => fameNo(e) || champNo(e),
   label: (g, e) => `${nameOf(e)}${e.shiny ? ' ✨' : ''}`,
   art: (g, e) => monImg(e, 'pdx-slot-mon'),
-  screenCls: (g, e) => `hofx${isDepths(e) ? ' depths' : ''}`,
+  screenCls: (g, e) => `hofx${isDepths(e) ? ' depths' : isMasterWin(e) ? ' master' : ''}`,
   screen: (g, e) => [el('span', 'hofx-light'), el('span', 'hofx-pedestal'), monImg(e, 'pdx-mon bdx-art'), typeChip(e.type),
     el('span', 'pdx-role rbk-tag gold', isDepths(e) ? '💎 Depths' : `Lv.${e.level}`)],
   lines(g, e) {
@@ -405,6 +408,7 @@ const hallOfFame = () => shelfApp({
     again.type = 'button';
     again.addEventListener('click', () => ceremony(e));
     return [typed('', isDepths(e) ? `Became the Champion of the Depths, ${dateOf(e.date)}.`
+      : isMasterWin(e) ? `Entered the Hall of Fame on ${dateOf(e.date)}, a Pokémon Master on Trainer Level ${e.level}.`
       : `Entered the Hall of Fame on ${dateOf(e.date)}, a champion on Trainer Level ${e.level}.`), quick(e), again];
   },
   tally: () => 'Champions',

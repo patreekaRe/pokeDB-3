@@ -3421,3 +3421,14 @@ cell: 3.0 / 10.3 / 6.3. Grass ends lowest (69% of its losses in biome 1): if it 
 Medicine goes to 15%.
 Rewards (the user: "send it", same day): the climbing star and a first-win jackpot per Level (600-900, 2000 at 10);
 see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, trophies and Master Badges stay on the roadmap.
+
+## A Pokémon Master: the Level 10 title, crystal pedestal and Champion's Cape (2026-10-22, the roadmap's Level 6-10 reward 3; branch `claude/pokemon-master-title-cape-b33c37`)
+
+- A run won on Trainer Level 10 makes you a Pokémon Master (`isMaster()`, read from the Record Book): a TITLE line on the
+  Trainer Card and a 👑 line on your Trainers page for friends; a crystal pedestal and the title "Pokémon Master" in the
+  Hall of Fame scene and the Collection's handheld; the Champion's Cape, worn by your walking buddy (painted into its sprite
+  in its own pixels by `drawMon()`, behind it facing you and over it with a gold crest walking away) and your Trainer
+  Card partner, with a Cape key on the card and a dress form in the Safari Outfitter to take it off or put it back on.
+  `?master` lends it. Detail: `docs/reference/economy-and-hall-of-fame.md`'s "A Pokémon Master". Checked headless: the
+  stand's window (locked / Worn / Yours), the buddy's cape off and on at once, the card's lines and key, the scene's
+  class, title and pedestal, no page errors; the phone budgets for the Outfitter, the Clearing and the base.

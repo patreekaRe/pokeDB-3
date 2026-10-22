@@ -57,6 +57,21 @@ const STAR_NAMES = ['Gold', 'Ruby', 'Emerald', 'Sapphire', 'Amethyst', 'Rainbow'
 export const starClass = (level) => (isChampion(level) ? `star-lv${Math.min(level, MAX_LEVEL)}` : '');
 export const starName = (level) => STAR_NAMES[Math.min(level, MAX_LEVEL) - CHAMPION_LEVEL];
 
+/** A Pokémon Master: a run won on the top Trainer Level (Mewtwo's and a summit aside), read from the Record Book so an
+    old save proves it. It earns the title on the Trainer Card and the Champion's Cape (the user's pick, 2026-10-22).
+    `?master` lends both for a page load. */
+const LENT_MASTER = typeof location !== 'undefined' && new URLSearchParams(location.search).has('master');
+let masterRead = { list: null, n: -1, yes: false };   // the walking buddy asks every frame: the Record Book is read once per new win
+export function isMaster(save) {
+  if (LENT_MASTER) return true;
+  const list = save.hallOfFame || [];
+  if (masterRead.list !== list || masterRead.n !== list.length) masterRead = { list, n: list.length, yes: list.some(w => w.starter !== 'mewtwo' && !w.summit && w.level >= MAX_LEVEL) };
+  return masterRead.yes;
+}
+/** The Champion's Cape is worn from the first Level 10 win until it's taken off (`save.cape` false: the Outfitter's
+    stand or the Trainer Card puts it back on). */
+export const wearsCape = (save) => isMaster(save) && save.cape !== false;
+
 /** All the rules that apply at a level (the levels below it included). */
 export function modsFor(level) {
   const mods = { ...BASE_MODS };

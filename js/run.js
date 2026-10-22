@@ -37,7 +37,7 @@ import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunDa
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
 import { openSealed } from './data/exchange.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
-import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion, bestWin, starName } from './data/difficulty.js';
+import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion, bestWin, starName, isMaster } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner, BASICS, tabletUps, bonfireGift, flipState, rivalWants } from './data/events.js';
@@ -5494,6 +5494,7 @@ function level5Rewards() {
   const shiny = !save.shiny.owned.includes(id) && !run.starter.comingSoon;
   const jackpot = !save.stats.level5Jackpot[type];
   const levelPrize = LEVEL_JACKPOT[lv] && !save.stats.levelJackpot?.[lv] ? LEVEL_JACKPOT[lv] : 0;
+  const master = lv >= MAX_LEVEL && !isMaster(save);   // read before recordWin() puts this win in the Record Book
   updateSave(d => {
     d.stats.level5WinsBy[id] = (d.stats.level5WinsBy[id] || 0) + 1;
     if (shiny) { d.shiny.owned.push(id); if (!d.shiny.on.includes(id)) d.shiny.on.push(id); }
@@ -5512,6 +5513,7 @@ function level5Rewards() {
     refreshCoins();
     lines.push(`💰 Jackpot for your first win on Trainer Level ${lv}! ${paid}`);
   }
+  if (master) lines.push('👑 You are a POKéMON MASTER! The title is on your Trainer Card, and your walking buddy wears the Champion\'s Cape.');
   return lines;
 }
 

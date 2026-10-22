@@ -355,6 +355,8 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
 - All buys go through `cornerEntries('balls')` / `buyCorner()` in `js/shop.js`, the same as the Safari prep window's Buy
   (`ballsApp`: the Game Corner's screen with only the balls row). The Pokédex's Game Corner app and the top bar's cabinet
   no longer sell balls (2026-10-19, the user's ask): their rows are `SHELF`, skins, perks and shinies.
+- **The Champion's Cape** (2026-10-22) stands on a dress form left of the dais (`CAPE`, 7,8, step in front), a Level 10
+  win's outfit: `docs/reference/economy-and-hall-of-fame.md`'s "A Pokémon Master".
 - **Tapping through your partner**: standing at a stand, `onTap()` takes a tap on your partner as one on the stand it
   stands at when that stand is behind it in the same ray (2026-10-15).
 - **Headless**: under software GL, `ImageDecoder` crawls while the mall draws, so Kangaskhan's 135-frame GIF takes a minute

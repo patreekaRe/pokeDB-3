@@ -14,7 +14,7 @@ import { cornerOpen } from './meowth.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { buddy, deviceNews } from './trainercard.js';
+import { buddy, deviceNews, setCape } from './trainercard.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { openPokedex, openHowto } from './collection.js';
 import { loadThree, dispose, unload, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon, smallNoShadow } from './hd2d.js';
@@ -30,7 +30,8 @@ import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { turner } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { buildArcade } from './mall-arcade.js';
-import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow } from './mall-outfitter.js';
+import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow, capeWindow } from './mall-outfitter.js';
+import { isMaster, wearsCape } from './data/difficulty.js';
 import { safariOpen } from './data/pokedex.js';
 import { safariDaily } from './data/safari.js';
 import { DAY_PASS } from './data/balls.js';
@@ -1024,6 +1025,21 @@ async function passTap(spot) {
   thanks('Here\'s your Day Pass! Replay the Safari as much as you like today.');
 }
 
+/** The Champion's Cape's stand: its window, locked till a Level 10 win; then Wear it / Take off, which your buddy shows at
+    once (js/hd2d.js's drawMon() asks the save each frame). */
+async function capeTap(spot) {
+  pick(spot);
+  const was = wearsCape(getSave());
+  if (!await merchant(capeWindow()) || !isMaster(getSave())) return pick(null);
+  setCape(!was);
+  playSound('confirm');
+  walker.hopUntil = performance.now() + 500;
+  P.keeper.hopUntil = performance.now() + 600;
+  pick(null);
+  P.refresh?.();
+  talk(was ? 'Folded away nicely. It\'ll be right here whenever you want it back.' : 'Ooh, it suits you! Every inch a Pokémon Master.', 4000);
+}
+
 /** After a buy: the till, two happy hops, the tags repainted and the keeper's thanks. */
 function thanks(line) {
   playSound('buy');
@@ -1075,7 +1091,7 @@ async function bayTap(spot) {
     price and no Buy (the Day Pass already bought). Resolves true on Buy; a tap anywhere outside it is a no, like every
     window. */
 function merchant(w) {
-  const coins = getSave().coins ?? 0, short = !w.held && coins < w.price;
+  const tag = w.held ?? w.tag, coins = getSave().coins ?? 0, short = !tag && coins < w.price;
   closeAsk(false);
   clearTimeout(say.t);
   lineEl.classList.remove('on');
@@ -1084,13 +1100,14 @@ function merchant(w) {
   shopEl.querySelector('.mshop-dept').textContent = w.dept;
   shopEl.querySelector('.mshop-name').textContent = w.name;
   shopEl.querySelector('.mshop-note').textContent = w.note;
-  shopEl.querySelector('.mshop-price b').textContent = w.held ?? w.price.toLocaleString();
-  shopEl.querySelector('.mshop-coin').hidden = !!w.held;
-  shopEl.querySelector('.mshop-price small').textContent = w.held ? '' : short ? `You have ${coins.toLocaleString()}: ${(w.price - coins).toLocaleString()} short` : `You have ${coins.toLocaleString()}`;
+  shopEl.querySelector('.mshop-price b').textContent = tag ?? w.price.toLocaleString();
+  shopEl.querySelector('.mshop-coin').hidden = !!tag;
+  shopEl.querySelector('.mshop-price small').textContent = tag ? '' : short ? `You have ${coins.toLocaleString()}: ${(w.price - coins).toLocaleString()} short` : `You have ${coins.toLocaleString()}`;
   shopEl.querySelector('.mall-ask-yes').hidden = !!w.held;
+  shopEl.querySelector('.mall-ask-yes').textContent = w.yes ?? 'Buy';
   shopEl.querySelector('.mall-ask-no').textContent = w.held ? 'OK' : 'Not now';
   shopEl.classList.toggle('short', short);
-  shopEl.classList.toggle('held', !!w.held);
+  shopEl.classList.toggle('held', !!tag);
   shopEl.hidden = false;
   shopEl.classList.remove('b3-say'); void shopEl.offsetWidth; shopEl.classList.add('b3-say');
   turn.show(w.preview);
@@ -1288,6 +1305,7 @@ function say(fr, ms = 2600) {
     : fr.kind === 'prize' ? prizeLine(cornerEntries(fr.row)[fr.i])
     : fr.kind === 'ware' ? prizeLine(wareOf(fr))
     : fr.kind === 'pass' ? `The Day Pass machine: ${passState() === 'pass' ? 'yours for today.' : `${DAY_PASS} PokéCoins.`}`
+    : fr.kind === 'cape' ? (isMaster(getSave()) ? `The Champion's Cape: ${wearsCape(getSave()) ? 'you\'re wearing it.' : 'yours to wear.'}` : 'The Champion\'s Cape: for a Level 10 champion.')
     : fr.kind === 'lift' ? (floorOf() > 1 || loadBase().upstairs ? 'The lift. Tap it to pick a floor.' : 'The lift upstairs is roped off.')
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
     : fr.id === 'furniture' && !fr.open ? shopLine()
@@ -1314,6 +1332,7 @@ function enterFront(fr) {
   if (fr.kind === 'game') return gameTap(fr);
   if (fr.kind === 'ware') return wareTap(fr);
   if (fr.kind === 'pass') return passTap(fr);
+  if (fr.kind === 'cape') return capeTap(fr);
   if (fr.kind === 'door') return throughDoor(fr);
   if (!fr.open) { playSound('cancel'); return say(fr); }
   const r = ribbons.find(r => r.shop === fr && r.group.visible);

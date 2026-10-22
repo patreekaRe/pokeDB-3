@@ -1216,6 +1216,8 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 }
 .depths .hofx-pedestal { background: linear-gradient(90deg, #3e2482, #9a70e0 35%, #e0d0ff 50%, #8a5ad0 65%, #3e2482); }
 .depths .hofx-pedestal::before { background: radial-gradient(ellipse at 50% 40%, #f4ecff, #b48ae8 60%, #5a3a98); box-shadow: 0 2px 0 #d8b048; }
+.hofx.master .hofx-pedestal { background: repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.3) 0 3cqw, transparent 3cqw 8cqw), linear-gradient(90deg, #284a8a, #7ac4ec 35%, #ffffff 50%, #7ac4ec 65%, #284a8a); }
+.hofx.master .hofx-pedestal::before { background: radial-gradient(ellipse at 50% 40%, #ffffff, #b8ecff 55%, #5ab0e0); box-shadow: 0 2px 0 #f8d048, 0 4px 0 #b07af0; }
 .hofx-replay { text-align: center; }
 @media (prefers-reduced-motion: reduce) { .hofx-light { animation: none; } }
 
@@ -1404,6 +1406,16 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tc-pick:hover, .tc-pick:focus-visible { background: rgba(48, 48, 56, 0.18); outline: none; }
 .tc-pick.on, .tc-pick-auto.on { box-shadow: 0 0 0 3px var(--tc2), 0 0 0 5px #303038; }
 .tc-partner img { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; }
+/* A Pokémon Master's title and Champion's Cape (js/data/difficulty.js's isMaster(), a Level 10 win): the title a dark chip with
+   a rainbow underline, like the rainbow star; the cape a red mantle with a gold edge and high collar behind the partner. */
+.tc-lines dd.tc-master { justify-self: end; padding: 3px 7px 4px; border-radius: 4px; color: #f8d048;
+  background: linear-gradient(90deg, #ff5a5a, #ffd84a, #6ee86e, #5ac8ff, #b07af0) 0 100% / 100% 2px no-repeat, #1f3a14; }
+.tc-cape { position: absolute; left: 50%; top: 30px; width: 74px; height: 70px; translate: -50% 0; background: #f0c040; pointer-events: none;
+  clip-path: polygon(4% 0, 30% 16%, 70% 16%, 96% 0, 80% 26%, 100% 100%, 0 100%, 20% 26%); }
+.tc-cape::before { content: ''; position: absolute; inset: 3px 3px 5px; background: linear-gradient(90deg, #7a0c22, #c41e3a 30%, #de3a50 45%, #c41e3a 60%, #7a0c22);
+  clip-path: polygon(4% 0, 30% 16%, 70% 16%, 96% 0, 80% 26%, 100% 100%, 0 100%, 20% 26%); }
+.tc-cape ~ img { position: relative; }
+.tc-cape-key.on { border-color: #a8142e; background: #c41e3a; }
 .tc-case-label { display: block; margin: 14px 0 6px; font-size: 0.75rem; color: #fff; text-shadow: 1px 1px 0 var(--tc3); }
 .tc-case { display: grid; gap: 8px; padding: 10px; border-radius: var(--round-sm); background: #2a3048;
   box-shadow: 0 0 0 3px #181820, inset 0 3px 0 rgba(0, 0, 0, 0.35); }

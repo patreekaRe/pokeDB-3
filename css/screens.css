@@ -2350,6 +2350,20 @@ body.battle-intro { pointer-events: none; }
 .hof-scene.summit .hof-mon img { filter: drop-shadow(0 0 10px rgba(255, 220, 140, 0.7)); }
 @media (max-width: 720px) { .hof-scene.summit .hof-title { font-size: 1rem; } }
 
+/* A Pokémon Master's win (Trainer Level 10, js/halloffame.js's isMasterWin()): a crystal pedestal, ice-clear with a
+   rainbow band like the rainbow star, its facets catching the light, under a prism-tinted spotlight. Still: no frame cost. */
+.hof-scene.master .hof-pedestal {
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.32) 0 6px, transparent 6px 14px, rgba(255, 255, 255, 0.12) 14px 18px, transparent 18px 30px) 0 21px / 100% 15px no-repeat,
+    linear-gradient(90deg, #ff5a5a, #ffd84a, #6ee86e, #5ac8ff, #b07af0, #ff7ad0) 0 12px / 100% 4px no-repeat,
+    linear-gradient(#ffffff 0 4px, #d8f4ff 4px 8px, #a0e0f8 8px 12px, #f8d048 12px 16px, #7ac4ec 16px 21px, #4a90d0 21px 36px, #284a8a 36px);
+}
+.hof-scene.master .hof-light { background: linear-gradient(rgba(220, 245, 255, 0.05), rgba(200, 235, 255, 0.34)); }
+.hof-scene.master .hof-title { color: #ffffff; text-shadow: 2px 0 0 #2a5ab0, -2px 0 0 #2a5ab0, 0 2px 0 #2a5ab0, 0 -2px 0 #2a5ab0, 0 5px 0 #0a0e2c; }
+.hof-scene.master .hof-plate { box-shadow: inset 0 3px 0 rgba(31, 58, 20, 0.14), 0 0 0 5px #a0e0f8, 0 0 0 8px #2a5ab0, 3px 5px 0 8px rgba(0, 0, 0, 0.35); }
+.hof-scene.master .hof-stat { border-color: #a0e0f8; }
+.hof-scene.master .hof-mon img { filter: drop-shadow(0 0 10px rgba(190, 235, 255, 0.75)); }
+
 .hof-credits {
   position: absolute; inset: 0; z-index: 5; overflow: hidden; cursor: pointer;
   background: rgba(8, 2, 20, 0.7); color: #f0e8ff; text-align: center;

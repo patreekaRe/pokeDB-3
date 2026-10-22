@@ -31,7 +31,22 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   `starClass()` / `.star-lvN` in css/menus.css: gold 5, ruby, emerald, sapphire, amethyst, a rainbow-rimmed 10; on the
   select screen, the Trainer Card, a friend's Trainers page from their `top`, the Record Book and the Box), and
   `LEVEL_JACKPOT` in `js/run.js` (600 / 700 / 800 / 900 / 2000, once ever per Level, `stats.levelJackpot`), paid in
-  `level5Rewards()`. A trophy, title, badges and cape are open ideas on the roadmap.
+  `level5Rewards()`. Trophies and Master Badges are open on the roadmap.
+- **A Pokémon Master** (2026-10-22, the roadmap's Level 6-10 reward 3): `isMaster(save)` in `js/data/difficulty.js` is a
+  Record Book win at `MAX_LEVEL` (Mewtwo's and summits aside; read once per new win, as the buddy asks every frame), so an
+  old save proves it; `?master` lends it for a page load. It earns: **the title**, a TITLE line under NAME on the Trainer
+  Card (`.tc-master`: gold on a dark chip, a rainbow underline) and a 👑 line atop a friend's Trainers page (`top` >= 10);
+  **the crystal pedestal**, `isMasterWin()` in `js/halloffame.js` (`.hof-scene.master`: ice bands, a rainbow band and
+  facets, a prism spotlight, the title "Pokémon Master" and "is a POKéMON MASTER!"; the Collection's `.hofx.master`);
+  **the Champion's Cape**, worn from the first Level 10 win (`wearsCape()`: `save.cape` false once taken off). The walking
+  buddy wears it (`buddy()` in `js/trainercard.js` gives the mate `cape: capeOn`; `drawMon()` / `paintCape()` in
+  `js/hd2d.js` paint it into the sprite's own canvas in its pixels, behind the sprite facing you and over it with a gold
+  crest walking away, swaying with each GIF frame: no mesh, no extra upload), so the Clearing, the Secret Base and the
+  mall show it; towns and runs walk your run's starter, uncaped. The Trainer Card's partner wears a CSS one (`.tc-cape`)
+  with a Cape key under Shiny (`setCape()`). The Safari Outfitter shows it on a dress form left of the Day Pass dais
+  (`CAPE` 7,8, mirroring the Exchange's kiosk; `capeForm()`, its sign `capeSignArt()`): before Level 10 its window says
+  "Win Level 10" (OK only), then Wear it / Take off (`capeWindow()`, `capeTap()` in `js/mall-3d.js`; `merchant()` took a
+  `tag` and a `yes` label for it). The form stands bare while you wear it. `level5Rewards()` says the first one.
 - **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
   `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
   `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character
