@@ -3416,4 +3416,6 @@ battle x0.8), 7 Worn Out (starting max HP x0.9), 8 Seasoned Foes (enemies +2 in 
 (`isChampion()`). Apple Acid+ 11 + Vulnerable 2 -> 10 + Vulnerable 1 (it beat Seed Bomb, the 2 PP Bash, outright).
 Human bot, 150 a cell, grass / fire / water: L5 27.3 / 32.7 / 28.0, L6 19.3 / 34.7 / 28.7, L7 12.7 / 33.3 / 14.7, L8 6.7 /
 27.3 / 11.3, L9 4.7 / 14.7 / 7.3, L10 2.7 / 8.7 / 7.3 (L10 at 300: see below). Bitter Medicine lands on Grass alone, as
-meant; the user plays well above this bot (it wins ~30% at Level 5, where the user found the game easy).
+meant; the user plays well above this bot (it wins ~30% at Level 5, where the user found the game easy). L10 at 300 a
+cell: 3.0 / 10.3 / 6.3. Grass ends lowest (69% of its losses in biome 1): if it plays too hard at the top, Bitter
+Medicine goes to 15%.
