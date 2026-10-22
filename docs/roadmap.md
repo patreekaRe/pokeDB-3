@@ -1182,6 +1182,25 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**The game feels too easy, Grass most of all; healing feels overpowered** (2026-10-22, the user, after a Servine run where
+Apple Acid+ (1 PP, 11 + Vulnerable 2) sat beside Seed Bomb (2 PP, 10 + Vulnerable 2)). The human bot, 150 a cell, sim
+variants `heal75` / `heal50` / `heal0` / `appleNerf` / `synthEx` (pokeDB-sim, branch `claude/game-difficulty-healing-balance-e107sm`):
+- Base: Grass L0 62.0 / L3 46.7, Fire L0 76.0, Water L0 60.0. To the bot Grass isn't the easiest; Fire is.
+- **Grass is built on healing**: in-fight healing x0.75 takes Grass 62 -> 42 (L3 47 -> 23), x0.5 to 33, none to 6, while
+  Fire only drops 76 -> 64 and Water 60 -> 43-53. A blanket heal cut would break Grass long before it touched the others.
+- Single cards move nothing: Apple Acid+ at 10 + Vulnerable 1 (70.7, noise) or Synthesis with Exhaust (61.3).
+- Out-of-fight heals are big too: evolving **fully heals** below Level 5, the Center 35%, Overgrow 3 a fight.
+Claude's plan, put to the user (not agreed yet; ▶ CLOUD, both repos, effort: high):
+1. **Trainer Levels 6-10** (StS's Ascension went to 20; ours stops at 5), for a player who wins at 5. Level 0 stays as it
+   is for new players. Candidates, each set by the bot: "Bitter Medicine" (in-fight healing 15-20% less, with Grass given
+   something back so its gap stays inside the others'), evolving no longer heals, Centers 0% (resting only upgrades or
+   forgets), elites with a buff, a curse in the starting deck (with the Curses idea below), a tougher last boss.
+2. **Enemies that answer healing**: a Heal Block move on a few enemies and elites (your heals do nothing for 2 turns), a
+   counter Leech Seed on you. Pressure on heal decks only when they meet it. Pairs with "Enemy variety" below.
+3. **Apple Acid+ to 10 damage + Vulnerable 1**, so Seed Bomb isn't strictly worse (the bot sees no change in difficulty;
+   a fix for the card's design, not the difficulty).
+First question for the user: which Trainer Level they were playing. At Level 0-2, try climbing first; at 5, build 1.
+
 **Picking a duo's look and shiny** (2026-10-21, the user's question: "is this the best way to cycle through our
 starters? any other ideas for shiny toggles?"). Built so far: ◀ ▶ under each portrait, and a ✨ on its corner (archive).
 Ideas put to the user, none agreed (▶ CLOUD, effort: medium):
