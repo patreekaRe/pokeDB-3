@@ -49,6 +49,8 @@ export const NEXT = [
   ['battle', 'Endless combos trimmed: Growth Spurt+ keeps Exhaust, Overgrowth+ costs 0 instead of doubling, Ice Core and Electric Seed give half, Dark Memory skips Magician, Lum Berry no longer draws.'],
   ['battle', 'Flame Wall and Mat Block now give 9 block (12 upgraded), a lift for Fire and Fighting.'],
   ['dex', 'The Moves app\'s type tabs show just their round type badges now, instead of cut-off names.'],
+  ['runs', 'Trainer Levels 6-10 for champions: weaker healing, less HP, tougher foes and bosses. A win on 5 or higher still enters the Hall of Fame.'],
+  ['battle', 'Apple Acid+ now deals 10 damage and applies 1 Vulnerable, so it no longer outdoes Seed Bomb.'],
   ['fixes', 'The run map is smoother on phones: its glowing badges and blinking rooms no longer repaint every frame.'],
 ];
 

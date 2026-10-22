@@ -24,6 +24,10 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   `js/data/sprite-fit.js` lends a shiny its normal sprite's entry. In battle a shiny comes out of its ball in a
   burst of ✨ (`shinySparkle()` in `js/battle.js`). Safari wilds have shinies of their own, caught not bought (2026-10-18; `docs/reference/safari.md`'s
   "Wild shinies and Sparkle").
+- **Trainer Levels 6-10** (2026-10-22): `CHAMPION_LEVEL` (5) and `isChampion()` in `js/data/difficulty.js` stand for
+  "a Level 5 win" everywhere (rewards, Hall of Fame `fame`, the gate's last blow and `GATE_HIT`, badges): a win on any Level
+  from 5 up counts. `MAX_LEVEL` (10) is only the cap. New mods: `healMult` (every heal in battle, rounded) and `maxHpMult`
+  (starting max HP), mirrored in pokeDB-sim. Rewards of their own for 6-10 are an open idea on the roadmap.
 - **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
   `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
   `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character

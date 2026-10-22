@@ -3408,3 +3408,12 @@ fading in and out (`docs/reference/map-screen.md`); a room's blink an opacity ri
 Sky Pillar lobbies' backdrops let their canvases go on close (~5 MB each held through a run). The Power Plant and Night
 Alley added to the budget check.
 
+
+## Trainer Levels 6-10 and Apple Acid+ (2026-10-22, the user: too easy at Level 5, Grass and healing most of all; branch `claude/game-difficulty-healing-balance-e107sm`)
+Five Levels above 5, StS's Ascension 15-20 in five steps (`LEVELS` in `js/data/difficulty.js`): 6 Bitter Medicine (healing in
+battle x0.8), 7 Worn Out (starting max HP x0.9), 8 Seasoned Foes (enemies +2 in all, elites x1.25 HP), 9 No Second Wind
+(evolving heals nothing, Centers 5%), 10 Champion's Trial (bosses x1.2 HP, +4). A win from 5 up stays a champion's
+(`isChampion()`). Apple Acid+ 11 + Vulnerable 2 -> 10 + Vulnerable 1 (it beat Seed Bomb, the 2 PP Bash, outright).
+Human bot, 150 a cell, grass / fire / water: L5 27.3 / 32.7 / 28.0, L6 19.3 / 34.7 / 28.7, L7 12.7 / 33.3 / 14.7, L8 6.7 /
+27.3 / 11.3, L9 4.7 / 14.7 / 7.3, L10 2.7 / 8.7 / 7.3 (L10 at 300: see below). Bitter Medicine lands on Grass alone, as
+meant; the user plays well above this bot (it wins ~30% at Level 5, where the user found the game easy).
