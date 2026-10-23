@@ -174,11 +174,18 @@ js/data/held.js; shown once the backyard's bought, `save.secretBase.house.yard`,
 Oran (3 Oran, 1 Whisper Acorn), Sitrus (3 Sitrus, 1 Sea Glass), Cheri (3 Cheri, 1 Savanna Spice), Pecha (3 Pecha, 1 Washi
 Paper), Lum (3 Lum, 1 Ghostcap); **Run kit** (`kit-<item id>`, a real js/data/items.js item, always shown) Potion (2 Oran, 1
 Glowmoss), Super Potion (2 Sitrus, 1 Oran, 1 Acacia Resin), X Attack (2 Cheri, 1 Magma Ore), X Defend (2 Pecha, 1
-Driftwood), Revive (2 Lum, 1 Sitrus, 1 Sea Glass, 1 Ember Sequin). **Packing**: the run's Prepare screen (js/select.js's
-`renderPack()`, `#prep-pack` under the Trainer Level, only when something's kept) packs two things since 2026-10-15 (the
-user's approved design): a **Berry Pouch** of up to `POUCH` (3) held berries, any mix, repeats while enough are kept (three
-slots, `#pouch-slots`, the first ringed as the one held; tap a kept berry's chip, `#pouch-kept`, to add it, a slot to take
-it out), and one **Run kit** item (◀ ▶, `#pack-kit`). Begin hands `{ berries, item }` to `beginRun(..., pack)` in
+Driftwood), Revive (2 Lum, 1 Sitrus, 1 Sea Glass, 1 Ember Sequin). **Packing** (the Berry Booth since 2026-10-23, the user's calls; before it, Prepare's Pack panel, 2026-10-15): the
+**Berry Booth** by the Clearing's gate (`js/berrybooth.js`, `#booth-dialog`, the Safari lobby's `.tower-lobby` device;
+the kiosk is `boothArt()` at `BOOTH_AT` in js/hub-3d.js, shown once `workshopOpen()`, a "!" while `boothBeckons()`: held
+berries kept and nothing packed) is the one place to pack. Its window shows the loadout (the held slot, two more Berry
+Pouch slots, the kit slot; tap one to take it out); its keys are apps over the LCD: **Pouch** (tap a kept berry for the
+next slot, repeats while enough are kept), **Kit** (tap one item, again to leave it), **Guide** (eight steps played on
+the window: held, pouch, kit, the Bag's Hold and swap, eaten, the next biome; it opens by itself the first time,
+`save.loadout.guided`). A = Done. The loadout is saved (`save.loadout = { berries: recipe ids, item }`) and read through
+`fitLoadout()` (js/data/workshop.js, tests/loadout.test.mjs), held to what's still kept, so it stays packed run after run.
+**No perks** (the user's call): still `POUCH` (3) berries, one a biome, and one kit item. Prepare shows it on one
+read-only line (`#prep-bring`, `loadoutLine()`: "Bringing: Oran (held) · Lum · Kit: Potion", or "Nothing packed: visit
+the Berry Booth"), and Begin hands `{ berries, item }` to `beginRun(..., pack)` in
 js/run.js, whose `packKit()` takes them from the counts (`packPouch()`, `packOne()`) as the run starts: the first berry
 becomes `run.held`, the rest `run.pouch` (`setOut()`; docs/reference/items.md says how they go on), the kit item goes into
 `run.items`. Never a playtest

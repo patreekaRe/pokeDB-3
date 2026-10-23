@@ -843,3 +843,10 @@ one in from the feet up. Its light takes no tap. Tapped, the place card's Change
 `js/holo-pick.js`: a narrow cyan panel (`.holo-pick` in `css/hub.css`), the `buddyChoices()` grid, and a Shiny switch
 that is always there (the user's ask): every buddy's shiny, greyed and locked till it's bought at the Game Corner.
 A pick saves `save.buddy`, cries and closes; the buddy hops out in place.
+
+**The Berry Booth** (2026-10-23, the user's idea): a digital kiosk (`boothArt()`, a teal body, a berry-pink canopy, a lit
+screen) on the lawn left of the gate at `BOOTH_AT` (12, -1), where the route sign stood; the sign moved a tile west
+(`SIGN_AT` 11, -1, its doorstep below it). Only once `workshopOpen()`; a yellow "!" (`boothMark`, `boothMarks()`) while
+held berries are kept and nothing's packed. A tap opens `openBerryBooth()` (js/berrybooth.js); docs/reference/towns.md's
+Packing says what's inside.
+

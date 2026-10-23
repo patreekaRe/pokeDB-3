@@ -49,7 +49,7 @@ import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, friendWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { asking, favourOf } from './data/favours.js';
-import { workshopOf, heartsOf } from './data/workshop.js';
+import { workshopOf, heartsOf, boothBeckons } from './data/workshop.js';
 import { unclaimed, friendMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -71,7 +71,8 @@ const WEST = 4, MW = M + WEST;
 const GATE_AT = { tx: 15, ty: -2 };
 // either side of the gate, just outside its feet so neither hides their runes (the user's ask, 2026-10-15: they stood
 // a row or two forward of it, the sign further out than the stop); each nudged in towards the opening (STAND_IN)
-const STOP_AT = { tx: 18, ty: -1 }, SIGN_AT = { tx: 12, ty: -1 }, STAND_IN = 0.3;
+// the Berry Booth (js/berrybooth.js, 2026-10-23) stands where the sign did, the Pokéstop's mirror, and the sign a tile west
+const STOP_AT = { tx: 18, ty: -1 }, SIGN_AT = { tx: 11, ty: -1 }, BOOTH_AT = { tx: 12, ty: -1 }, STAND_IN = 0.3;
 const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
@@ -192,6 +193,7 @@ let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a 
 let holo = null;    // the Buddy Projector: the walking buddy as a hologram (js/hub-holo.js)
 let beckons = [];   // the signs that are places of their own, hopping now and then (beckon())
 let questMark = null, nietosMark = null;   // the "!" over the quest board (a notice to read) and over the Nietos' house (a step to hand them; boardNow())
+let boothMark = null;  // a "!" over the Berry Booth while held berries are kept and nothing's packed (boothBeckons())
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
 let greets = false; // listening for the logo's fade to end
@@ -2418,7 +2420,7 @@ function makePlaces() {
     },
     {
       // the route sign says what the old gate's card did (the user's ask, 2026-10-09); like the Safari gate, no buttons
-      id: 'route-sign', name: 'Whispering Clearing', step: { x: SIGN_AT.tx + 1, y: SIGN_AT.ty }, tiles: [[SIGN_AT.tx, SIGN_AT.ty]], tag: [SIGN_AT.tx, 2.6, SIGN_AT.ty],
+      id: 'route-sign', name: 'Whispering Clearing', step: { x: SIGN_AT.tx, y: SIGN_AT.ty + 1 }, tiles: [[SIGN_AT.tx, SIGN_AT.ty]], tag: [SIGN_AT.tx, 2.6, SIGN_AT.ty],
       open: true,
       line: 'The way out of the Whispering Clearing. Spin the Pokéstop to set out on an adventure.',
       buttons: [],
@@ -2669,6 +2671,23 @@ function makePlaces() {
     buttons: kurtIn ? [['Go in', () => {}]] : [],
     build: (g) => kurtWorkshop(g, tileX(WORKSHOP_AT.tx + 1), tileZ(WORKSHOP_AT.ty + 1), kurtIn),
   });
+  // the Berry Booth by the gate (2026-10-23, the user's idea): a kiosk where the run's Berry Pouch and kit are packed,
+  // once Kurt's open to make them
+  if (kurtIn) list.push({
+    id: 'booth', name: 'Berry Booth', step: { x: BOOTH_AT.tx + 1, y: BOOTH_AT.ty }, tiles: [[BOOTH_AT.tx, BOOTH_AT.ty]], tag: [BOOTH_AT.tx, 2.6, BOOTH_AT.ty], open: true,
+    get line() { return `${boothBeckons(getSave().loadout, workshopOf(getSave())) ? 'Berries from Kurt\'s, not packed yet! ' : ''}A Berry Booth. Pack your held berries and one run kit item for your next run.`; },
+    buttons: [['Open', openBooth]],
+    build: (g) => {
+      const x = tileX(BOOTH_AT.tx) + STAND_IN, z = tileZ(BOOTH_AT.ty) - 0.2, art = boothArt(), b = board(art, x, z, { s: 0.9 });
+      glowing(b.material, art, null, '#c8ffd0', 1.2).userData.glowMin = 0.4;
+      g.add(b);
+      boothMark = board(newsArt(), x, z + 0.1, { shadow: false });
+      boothMark.rotation.x = -PITCH;
+      boothMark.userData.y = 2.55;
+      g.add(boothMark);
+      boothMarks();
+    },
+  });
   // shut till you've beaten Kenmatta once in a run (the user's ask, 2026-10-15)
   const dojoIn = kenWinsOf(save) >= 1;
   list.push({
@@ -2830,7 +2849,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; holo = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; boothMark = null; holo = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -2922,6 +2941,37 @@ function routeSignArt() {
   g.fillStyle = '#3a3a3a'; g.fillText('CLEARING', cx, 9.3);
   g.font = '700 1.05px "Trebuchet MS", sans-serif';
   g.fillStyle = '#7a7a76'; g.fillText('↑ ROUTE OUT', cx, 11.1);
+  return c;
+}
+
+/** The Berry Booth (2026-10-23): a digital kiosk, the Safari gate's teal and cream, a berry-pink canopy over a lit screen
+    showing a berry and the pouch's three slots, a card slot and a tray under it. */
+function boothArt() {
+  const { c, g, rr, lin, shine } = fine(18, 32);
+  rr(2.4, 28.6, 13.2, 3, 1, lin(0, 28.6, 0, 31.6, ['#8a8a86', '#5e5e5a', '#3e3e3a']));
+  rr(3.2, 9.4, 11.6, 19.8, 1.6, lin(3.2, 0, 14.8, 0, ['#5ec8b8', '#2e9a8e', '#1e6e66']));
+  rr(3.8, 9.8, 1.2, 19, 0.6, 'rgba(255,255,255,0.3)');
+  rr(4.6, 11.4, 8.8, 8.6, 1, '#1a2a30');
+  rr(5.2, 12, 7.6, 7.4, 0.7, lin(0, 12, 0, 19.4, ['#d8f8c8', '#9fe0a0', '#6cbc78']));
+  const berry = (gg, k) => {
+    gg.fillStyle = k ? '#ffffff' : '#3a62c8'; gg.beginPath(); gg.arc(9, 14.8, 1.7, 0, Math.PI * 2); gg.fill();
+    gg.fillStyle = k ? '#ffffff' : '#3aa040'; gg.beginPath(); gg.ellipse(9.9, 12.9, 0.9, 0.45, -0.5, 0, Math.PI * 2); gg.fill();
+    for (const x of [6.6, 9, 11.4]) { gg.fillStyle = k ? '#d0d0d0' : 'rgba(31,58,20,0.55)'; gg.fillRect(x - 0.8, 17.4, 1.6, 1.3); }
+  };
+  berry(g, false);
+  const s = shine();
+  s.fillStyle = '#b8f0b0'; s.beginPath(); s.roundRect(5.2, 12, 7.6, 7.4, 0.7); s.fill();
+  berry(s, true);
+  rr(6, 21.4, 6, 1, 0.4, '#123a36');
+  rr(5.4, 24.2, 7.2, 2.8, 0.8, lin(0, 24.2, 0, 27, ['#e8e4d8', '#b8b4a6']));
+  rr(6.2, 25, 5.6, 1.2, 0.5, '#5e5a50');
+  rr(1.4, 4.6, 15.2, 5.2, 1.6, lin(0, 4.6, 0, 9.8, ['#ff8ab8', '#e84a8a', '#b02a62']));
+  g.fillStyle = 'rgba(255,255,255,0.85)';
+  for (let x = 2.6; x < 16; x += 2.6) { g.beginPath(); g.arc(x, 9.6, 1.1, 0, Math.PI); g.fill(); }
+  rr(4, 0.6, 10, 4.4, 1, lin(0, 0.6, 0, 5, ['#fff6e0', '#f0dcb0']));
+  words(g, 'BERRY', 9, 2.9, 2.6, '#c02a62');
+  words(s, 'BERRY', 9, 2.9, 2.6, '#ffd0e0');
+  words(g, 'BOOTH', 9, 7.3, 2.2, '#ffffff');
   return c;
 }
 
@@ -3686,6 +3736,20 @@ function pcMarks() {
   pcNews.visible = !pcMail.visible && pcBeckons(getSave());
 }
 
+function boothMarks() {
+  if (boothMark) boothMark.visible = boothBeckons(getSave().loadout, workshopOf(getSave()));
+}
+
+/** The Berry Booth's device (js/berrybooth.js) over the Clearing. */
+async function openBooth() {
+  if (entering || document.getElementById('booth-dialog')?.open) return;
+  hideCard();
+  walker.path = []; aim = null;
+  let openBerryBooth;
+  try { ({ openBerryBooth } = await import('./berrybooth.js')); } catch { playSound('cancel'); return; }
+  openBerryBooth(boothMarks);
+}
+
 /** Log on to the PC (js/pc.js), full screen over the Clearing. */
 async function openPc() {
   if (entering || document.querySelector('.pc-screen')) return;
@@ -4427,7 +4491,7 @@ function frame(now) {
   cauldron?.tick(now, dt, calm);
   safariFx?.tick(now, calm);
   plazaFx?.tick(now, calm);
-  for (const m of [pcMail, pcNews, questMark, nietosMark, safariMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
+  for (const m of [pcMail, pcNews, boothMark, questMark, nietosMark, safariMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) {
     s.cue.opacity = calm ? 0.82 : 0.74 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));

@@ -1877,38 +1877,10 @@ html.calm-fx .aura-strip { animation: none; }
 .qlog-tip { margin: 14px 8px 0; padding: 8px 10px; border-radius: 4px; text-align: center; color: #fff8e8; background: rgba(60, 30, 10, 0.55); }
 @media (prefers-reduced-motion: reduce) { .qlog-caret { transition: none; } }
 
-/* ---------- Pack: a held berry or run kit item from Kurt's Workshop to set out with (renderPack() in js/select.js, 2026-10-15) ---------- */
-.prep-pack { margin-top: 8px; }
-.prep-pack[hidden] { display: none; }
-.pack-pick { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 8ch; max-width: 46vw; padding: 2px 6px; border-radius: 4px; background: #1f3a14; color: #b6d68e; font-size: 0.75rem; text-align: center; }
-.pack-ico { flex: none; display: grid; place-items: center; width: 24px; height: 24px; }
-.pack-ico .item-sprite { width: 24px; height: 24px; image-rendering: pixelated; }
-.pack-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pack-none { padding: 4px 0; }
-/* the Berry Pouch (2026-10-15): three slots, the first one held as the run sets out, and the kept berries to tap in */
-/* the tab pinned to the panel's foot while the pack is below it (updatePeek(), 2026-10-16): no height of its own, so
-   showing it never shifts the scroll */
-.pack-peek-pin { position: sticky; bottom: 0; height: 0; display: flex; justify-content: center; }
-.pack-peek {
-  position: absolute; bottom: 2px; padding: 6px 12px; border: 2px solid #b6d68e; border-radius: 999px; background: #1f3a14;
-  color: #b6d68e; font: 0.75rem var(--pixel-font); white-space: nowrap; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3); cursor: pointer;
-  animation: peekBob 1.4s ease-in-out infinite;
-}
-.pack-peek[hidden] { display: none; }
-@keyframes peekBob { 50% { translate: 0 -3px; } }
-@media (prefers-reduced-motion: reduce) { .pack-peek { animation: none; } }
-.pack-pouch[hidden], .pack-kit[hidden] { display: none; }
-.pack-kit { margin-top: 6px; }
-.pouch-level { flex-direction: column; align-items: stretch; }
-.pouch-slots { display: flex; justify-content: center; gap: 14px; }
-.pouch-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.pouch-cell small { font-size: 0.75rem; }
-.pouch-slot { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 2px dashed rgba(31, 58, 20, 0.45); border-radius: 8px; background: rgba(31, 58, 20, 0.08); cursor: default; }
-.pouch-slot.full { border-style: solid; border-color: #1f3a14; background: #1f3a14; cursor: pointer; }
-.pouch-slot.first.full { box-shadow: 0 0 0 2px #b6d68e, 0 0 0 4px #1f3a14; }
-.pouch-kept { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 8px 0 6px; }
-.pouch-chip { display: flex; align-items: center; gap: 2px; min-height: 36px; padding: 2px 8px 2px 4px; border: 2px solid #1f3a14; border-radius: 999px; background: #1f3a14; color: #b6d68e; font: 0.75rem var(--pixel-font); cursor: pointer; }
-.pouch-chip:disabled { opacity: 0.4; cursor: default; }
+/* ---------- what the run sets out with, packed at the Berry Booth (renderBring() in js/select.js, 2026-10-23): one
+   read-only line ---------- */
+.prep-bring { margin: 8px 0 0; padding: 6px 8px; border: 2px dashed rgba(31, 58, 20, 0.45); border-radius: 6px; font-size: 0.75rem; line-height: 1.4; }
+.prep-bring[hidden] { display: none; }
 
 /* ---------- the "added you" pop-up (js/trainer-notice.js): a TRAINER LINK card in the adder's card colour, a Poké Ball
    that drops, wobbles and opens on their buddy, a name plate, the games' text box, and A / B keys ---------- */

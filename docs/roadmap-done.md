@@ -3504,3 +3504,13 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   reports (11.4 ms/s). Also paused the hidden select screen's pulsing A button behind the Clearing and 3D places, and the
   see-through run-map Poké Ball's wobble. Not taken: the run map's scenery timer (`scene.js`, ~25 ms/s), as measured on
   2026-10-21.
+
+## The Berry Booth (2026-10-23, the user's idea and calls; on `main`)
+
+A digital kiosk left of the Clearing's gate (`BOOTH_AT` 12,-1; the route sign moved to 11,-1), shown once Kurt's Workshop
+is open, a "!" while held berries are kept and nothing's packed. It opens the Safari lobby's device (`js/berrybooth.js`):
+the window shows the loadout (held, two pouch slots, kit), and its keys are the Pouch, Kit and Guide apps (an eight-step
+guide played on the window, opening by itself the first time). The loadout is saved (`save.loadout`, `fitLoadout()`) and
+stays packed run after run. Prepare lost its Pack panel and "▼ Berry Pouch · Run kit" tab for one read-only "Bringing:"
+line (option A). No perks, so no bot check. Docs: docs/reference/towns.md's Packing.
+
