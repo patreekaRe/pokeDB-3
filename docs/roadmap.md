@@ -1217,8 +1217,11 @@ save field for owned houses, the one lived in and its paint (old saves keep the 
 free); a Timburr crew's builder kiosk beside the lot in the Clearing (a real model, FOR SALE before the base is bought)
 whose catalogue tries a house on the real lot before you pay; repaints at 250; the lot showing the house lived in as a
 real 3D model like nietosHouse(), its door opening the base as the tree's does; one HOUSE UPGRADES row on the PC pointing
-to the kiosk. Houses this session: Starter Cottage, Ancient Tree, Log Cabin, Seaside Bungalow. Run tools/budget-check.mjs
-on the Clearing, add a patch-notes line, update the roadmap, push to main and give a githack link with ?coins=5000." Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
+to the kiosk. Houses this session: Starter Cottage, Ancient Tree, Log Cabin, Seaside Bungalow. Keep it all behind a
+HOUSES_LIVE switch (false, as TOWNS_LIVE was) with a ?houses flag that shows it for a page load, so players see nothing
+until the user's playtest says go. Run tools/budget-check.mjs on the Clearing, add a patch-notes line (held until
+HOUSES_LIVE), update the roadmap, push to main and give the playtest links: the live site with ?houses&coins=5000 and the
+githack one." Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
 check on the Clearing). Sessions: 1 the system plus Cottage, Tree and two Homestead (high), 2 the coin houses (medium), 3
 earned and seasonal with unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium). All CLOUD.
 
