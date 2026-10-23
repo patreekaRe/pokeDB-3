@@ -995,3 +995,19 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   inside |x| <= 2.25; on the Clearing 268 to 274 draws, 119 to 120.3 MB (the tree 279). Tiers now: Starter 2, Homestead
   6, Estate 6, Earned 7, Seasonal 3, Legendary 1 (25 houses; the catalogue 280 px, 25 cards).
 
+### Front lawn: a friend's visit starts outside (2026-10-23, branch `houses-playtest`, for the user's playtest)
+
+- **The lawn** (`openLawn()` in `js/front-lawn.js`, `.lawn3d` / `.lawn-*` in `css/hub.css`): with houses on, the
+  Trainers app's Visit (the house, not the yard) stands you outside their house on a little lawn: a hedge on three sides,
+  the Clearing's trees behind, flowerbeds, stepping stones up to the door, a red mailbox with their name on a plate,
+  their buddy beside it (a tap: its cry and a hop) and your partner at the foot of the path, under the Clearing's light
+  for the hour. A cream card says whose house and its paint, with Go in (or tap the house); your partner walks up, the
+  door swings open (the tree's painting swaps to its open one), the curtain drops and their base opens as before.
+  Leave goes home. Its own renderer, made each visit and `dropGL()`ed on the way out; in the headless probe it runs
+  faster than the Clearing (19 textures to its 81).
+- **Their house** rides in their page's base JSON as `lot` ({ id, paint }; `pageBase()` in `js/trainers.js`, only with
+  houses on), so `firestore.rules` needs no change; `lotOfBase()` reads it against `HOUSES_BY_ID`, and a page written
+  before houses (every friend's until houses go live) shows the Ancient Tree. Visit hands over `buddy` (their page's
+  key, read through `trainerMon()`, a masked one left out).
+- **Playtest**: `?base&asfriend&houses` is your own base as a friend arrives (lawn first); `&livein=<id>` another house.
+

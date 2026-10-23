@@ -1266,7 +1266,10 @@ Clearing's budget, checks each model with `tools/house-check.mjs` (text, no scre
   walk before every visit; instead, a short arrival shot (the camera on the friend's house, the door opens, cut inside,
   no walking) plus the house's picture on their Trainers page and Plaza blurb.
   Mock-up of both (the user asked, 2026-10-23): https://claude.ai/artifact/DEh9vUss4bD1StvwxzSrC2 (the lawn's three
-  screens, and the arrival shot beside them).
+  screens, and the arrival shot beside them). **The lawn built for a playtest (2026-10-23, the user: "let's try a
+  playtest"; branch `houses-playtest`)**: `js/front-lawn.js`, detail in `docs/reference/hub-base-mall.md`, "Front lawn".
+  **Next: the user playtests** (`?base&asfriend&houses`, `&livein=<id>` for another house) and says keep the lawn, swap
+  it for the arrival shot, or drop both. Insides still waiting on their call.
 Going live is its own step after the user's go: merge `main` into the branch, HOUSES_LIVE true, the patch note out of
 HELD, and only then onto `main`.
 
