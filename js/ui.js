@@ -3,6 +3,7 @@
    switching screens, dialogs, and the card element.
    ============================================================ */
 
+import { takeOffFoil } from './foil.js';
 import { TYPES, CARDS_BY_ID, describe, keywords, termTips, cardTerms } from './data/cards.js';
 import { ITEM_FIT } from './data/item-fit.js';
 import { cardArt } from './card-art.js';
@@ -118,6 +119,7 @@ export function showScreen(id) {
   SCREENS.forEach(s => { $(s).hidden = s !== id; });
   document.body.dataset.screen = id;
   const inRun = RUN_SCREENS.includes(id);
+  if (!inRun) takeOffFoil();   // a run's foil is its own
   $('bag-btn').hidden = !inRun;
   $('money-pill').hidden = !inRun;
   // in a run the Shop moves into the Pokédex's dock, leaving the top bar to the run's own ₽ and Bag

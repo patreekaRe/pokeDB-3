@@ -3430,3 +3430,16 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   `docs/reference/economy-and-hall-of-fame.md`'s "A Pokémon Master". A Champion's Cape (painted on the walking buddy, a
   stand in the Safari Outfitter) was built too, then taken out: the user's call, "no outfits". Checked headless: the
   card's lines, the scene's class, title and pedestal, no page errors.
+
+- **Level 6-10 rewards 6, 7 and 10** (2026-10-23, the user's picks "6 7 and 10"; one session, branch
+  `claude/cloud-build-shells-letters-jggbf4`, on `main` too). **Foil decks** (`js/foil.js`, css/cards.css's foil block):
+  `bestWin()` of the run's starter sets `data-foil` on `<html>` at each map and battle (`wearFoil()`), cleared off a run's
+  screens; 6-9 a metallic edge in the star's gem colour (the card face's border showing a second background, so no mask),
+  10 a rainbow edge and a `::before` holo, both following `--foil-x` / `--foil-y` (pointer, or `deviceorientation`; an
+  iPhone asks as Settings' Foil cards is turned on). Not in the Safari; still under `calmFx()`. **Shells**:
+  `LEVEL_SHELLS` / `shellEarned()` in `js/data/difficulty.js`, Gilded at 8 and Clear (translucent rgba shell colours) at
+  10, said in the result window. **Letters**: `js/data/level-letters.js`, three friends a Level for 6-9 and the Nietos at
+  10, posted from `level5Rewards()` once per Level (`stats.levelLetters`, only with a PC), shown with the Level's star;
+  the photo (`leaderphoto`, `js/base-furniture-gym.js`, modelled as a gilt `picture`, model-check iou 0.9) is earned by
+  furniture's `level` source (a Record Book win on 10). Budget check: run-map within budget.
+

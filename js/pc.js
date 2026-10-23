@@ -46,6 +46,7 @@ import { RECIPES_BY_ID } from './data/workshop.js';
 import { friendsOpen, friendsNews } from './data/friends.js';
 import { openDeviceApp } from './collection.js';
 import { MATERIALS_BY_ID } from './data/satchel.js';
+import { starClass } from './data/difficulty.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -328,7 +329,7 @@ const PAGES = {
     const m = (getSave().mail || []).find(x => x.id === letter);
     if (!m) return show('mailbox');
     const from = senderOf(m.from), fresh = !m.claimed, mat = m.mat && MATERIALS_BY_ID[m.mat.id], recipe = m.recipe && RECIPES_BY_ID[m.recipe];
-    const code = m.code && formatCode(m.code), read = recipe || code;
+    const code = m.code && formatCode(m.code), cheer = m.level, read = recipe || code || cheer;
     const wrap = el('div', `pc-letter${fresh ? ' fresh' : ''}`);
     wrap.style.setProperty('--ink', from.ink);
     wrap.style.setProperty('--paper', from.paper);
@@ -337,6 +338,8 @@ const PAGES = {
     // a friend's letter holds a material or shows the secret recipe they taught Kurt (step 8, session e)
     if (code) prize.append(el('small', 'pc-prize-label', 'YOUR CODE'), el('b', 'pc-prize-n pc-prize-code', code));
     else if (mat) prize.append(el('span', 'pc-prize-mat', mat.icon), el('b', 'pc-prize-n', `${mat.name} ×${m.mat.n}`));
+    // a Gym Leader's letter for a high Level's first win (js/data/level-letters.js): its star, Level 10's the signed photo
+    else if (cheer) prize.append(el('span', `pc-prize-mat ${starClass(cheer)}`, m.photo ? '🖼️' : '⭐'), el('b', 'pc-prize-n', m.photo ? 'Signed photo' : `Level ${cheer}`));
     else if (recipe) {
       const img = el('img', 'pc-prize-ball pixel');
       Object.assign(img, { src: `assets/items/${recipe.sprite}.png`, alt: '', draggable: false });
@@ -358,7 +361,7 @@ const PAGES = {
         sheet.append(el('span', 'pc-claimed', read ? 'READ' : 'CLAIMED'));
         wrap.classList.add('paid');
         const me = trainerName().toUpperCase();
-        speak(code ? `Open the Trainers app on your Pokédex to add a friend.` : mat ? `${me} put ${mat.name} ×${m.mat.n} in the Satchel!` : recipe ? `Kurt can make the ${recipe.name} now. Visit his Workshop!` : `${me} received ${paid.toLocaleString()} PokéCoins!`);
+        speak(code ? `Open the Trainers app on your Pokédex to add a friend.` : mat ? `${me} put ${mat.name} ×${m.mat.n} in the Satchel!` : recipe ? `Kurt can make the ${recipe.name} now. Visit his Workshop!` : m.photo ? 'The signed photo is in your Secret Base: Decorate, Wall.' : cheer ? `Keep climbing, ${me}!` : `${me} received ${paid.toLocaleString()} PokéCoins!`);
       });
       kids.push(ok);
     }

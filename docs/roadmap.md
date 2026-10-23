@@ -1222,20 +1222,24 @@ things for the Secret Base. **The user: "send it"; 1-3 built the same day** (arc
    CLOUD, effort: medium.
 More creative ones (2026-10-23, the user: "Lets give them some cool creative stuff"; Claude's pitch; still no outfits
 and nothing that makes a run easier). **The user picked 6, 7 and 10** (2026-10-23: "I like 6 7 and 10"); 8, 9, 11 and 12
-not picked. Build them one a session, 7 and 10 first (smaller). The user also asked to see the cape again: its build is
+not picked. **6, 7 and 10 built together 2026-10-23** (branch `claude/cloud-build-shells-letters-jggbf4` and `main`; archive):
+the user playtests them (below). The user also asked to see the cape again: its build is
 still playable pinned at `e3f047fc` (`rawcdn.githack.com/patreekaRe/pokeDB-3/e3f047fcbae98bf6bcf5b1d001d0d0a374389168/index.html?master`,
 `&mall=outfitter` for its stand). If they want it back, revert `11f820a7`.
-6. **Foil decks** (Claude's top pick): a win on Level N with a starter gives that starter's cards a foil edge in the
-   star's colour, and Level 10 a full rainbow holo that shifts as the phone tilts or the pointer moves. A Settings switch,
-   off under `calmFx()`. ▶ CLOUD, effort: high.
-7. **Gold and Crystal Pokédex shells**: two earned colours for the device's shell setting, Gold for a Level 8 win and a
-   see-through Crystal (the old clear Game Boy) for 10. ▶ CLOUD, effort: medium.
+6. ~~**Foil decks**~~ done: a run with a starter won on Level 6-9 wears foil-edged cards in its star's colour, Level 10 a
+   rainbow edge and a holo that follows the pointer or the tilt (Settings, Foil cards). **The user playtests** with
+   `?foil=6` to `?foil=10` (lent for a page load, any run) and says if the edge is too thin or the holo too strong.
+   ▶ Playtest on the live site.
+7. ~~**Gold and Crystal Pokédex shells**~~ done as **Gilded** (Level 8) and **Clear** (Level 10; `?master` lends it):
+   "gold" and "crystal" were already taken by Grand Champion's and the Catalogue's. The user looks at both (Settings,
+   Device colour) and says if Clear is see-through enough. ▶ Playtest on the live site (`?master` lends both).
 8. **The Master's constellation**: each Level won lights a star in the Clearing's night sky, in your starter's shape;
    Level 10 joins them up. Friends visiting see it. ▶ CLOUD, effort: high.
 9. **A golden statue in the Clearing**: a Level 10 win casts that starter in gold on a plinth with your name and the
    date, one per type, up to three. ▶ CLOUD, effort: high.
-10. **Letters from the Gym Leaders**: each friend mails you in their own voice on your first win on 6-10, the last with
-    a signed photo for the Secret Base. ▶ CLOUD, effort: medium.
+10. ~~**Letters from the Gym Leaders**~~ done: three friends write on each Level 6-9 first win, the Nietos for everyone
+    at 10 with a signed group photo (a wall piece). The user reads them (`?mail` doesn't hold them; a real first win
+    does) and says if the voices are right. ▶ Playtest on the live site.
 11. **The homecoming parade**: after the first Level 10 win, the Clearing at dusk with fireworks in the star's colours
     and the Gym Leaders lined up cheering (Lantern Village's fireworks reused), once. ▶ CLOUD, effort: high.
 12. **The silent champion**: after Level 10, a secret summit with one last fight at Level 10's rules; a win puts a gold

@@ -19,6 +19,7 @@
    stay separate and easy to read.
    ============================================================ */
 
+import { wearFoil } from './foil.js';
 import { gymTalk } from './gym.js';
 import { talkOf } from './data/gym.js';
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT, STATIC_CAP, ICICLE_STEP, HAIL, SAND, STEAL_BLOCK } from './data/cards.js';
@@ -340,6 +341,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
   };
 
   setTheme(out.type);
+  wearFoil(run);
   showScreen('battle-screen');
   const land = run.safari?.areas[run.biome] ?? biomeAt(run.route, run.biome)?.id;
   document.body.dataset.biome = land || '';   // the piles' colour

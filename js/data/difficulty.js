@@ -61,7 +61,17 @@ export const starName = (level) => STAR_NAMES[Math.min(level, MAX_LEVEL) - CHAMP
     old save proves it. It earns the title on the Trainer Card and a crystal Hall of Fame pedestal (the user's pick,
     2026-10-22). `?master` lends the title for a page load. */
 const LENT_MASTER = typeof location !== 'undefined' && new URLSearchParams(location.search).has('master');
-export const isMaster = (save) => LENT_MASTER || (save.hallOfFame || []).some(w => w.starter !== 'mewtwo' && !w.summit && w.level >= MAX_LEVEL);
+/** Has the save won a run on Trainer Level `level` or higher (Mewtwo's and a summit aside), from the Record Book? */
+export const wonOn = (save, level) => (save.hallOfFame || []).some(w => w.starter !== 'mewtwo' && !w.summit && w.level >= level);
+export const isMaster = (save) => LENT_MASTER || wonOn(save, MAX_LEVEL);
+
+/** The Pokédex shells a high Level earns (the roadmap's Level 6-10 reward 7, 2026-10-23): Gilded, polished gold, for a
+    Level 8 win and Clear, the see-through Game Boy, for a Pokémon Master. Settings shows each once earned. */
+export const LEVEL_SHELLS = [
+  { id: 'gilded', name: 'Gilded', swatch: '#f0c040', level: 8 },
+  { id: 'clear', name: 'Clear', swatch: '#c8dcec', level: MAX_LEVEL },
+];
+export const shellEarned = (save, sh) => isMaster(save) || wonOn(save, sh.level);
 
 /** All the rules that apply at a level (the levels below it included). */
 export function modsFor(level) {

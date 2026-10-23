@@ -32,6 +32,17 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   select screen, the Trainer Card, a friend's Trainers page from their `top`, the Record Book and the Box), and
   `LEVEL_JACKPOT` in `js/run.js` (600 / 700 / 800 / 900 / 2000, once ever per Level, `stats.levelJackpot`), paid in
   `level5Rewards()`. Trophies and Master Badges are open on the roadmap.
+- **Foil decks, Gilded / Clear shells, the Gym Leaders' letters** (2026-10-23, the roadmap's Level 6-10 rewards 6, 7 and
+  10; archive). Foil: `js/foil.js` (`wearFoil(run)` at each map and battle, `takeOffFoil()` off a run's screens from
+  `showScreen()`), `data-foil` 6-10 on `<html>`, css/cards.css's foil block: the face's transparent border shows a gem
+  gradient (6 ruby, 7 emerald, 8 sapphire, 9 amethyst), 10 a rainbow edge and a `::before` holo, both angled by
+  `--foil-x` / `--foil-y` (pointer, or the tilt; Settings' Foil cards asks an iPhone for the tilt as it's turned on).
+  Never in the Safari; the holo stands still under `calmFx()`; `?foil=N` lends it. Shells: `LEVEL_SHELLS` /
+  `shellEarned()` in `js/data/difficulty.js` (`wonOn(save, level)` reads the Record Book), said in the result window.
+  Letters: `js/data/level-letters.js` (`LEVEL_LETTERS`: three friends for each of 6-9, the Nietos at 10), posted by
+  `level5Rewards()` once per Level (`stats.levelLetters`; with the Signs title there is no PC, so they wait for a later win on that Level
+  ), a `level` (and Level 10's `photo`) on the letter: the PC shows its star or the photo, nothing to claim.
+  The photo is `leaderphoto` (`js/base-furniture-gym.js`), from furniture's `level` source (a Record Book win on 10).
 - **A Pokémon Master** (2026-10-22, the roadmap's Level 6-10 reward 3): `isMaster(save)` in `js/data/difficulty.js` is a
   Record Book win at `MAX_LEVEL` (Mewtwo's and summits aside), so an old save proves it; `?master` lends it for a page
   load. It earns **the title**, a TITLE line under NAME on the Trainer Card (`.tc-master`: gold on a dark chip, a rainbow

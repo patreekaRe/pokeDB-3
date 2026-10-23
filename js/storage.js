@@ -122,6 +122,7 @@ const freshSave = () => ({
     level5WinsBy: {},         // Trainer Level 5 wins per starter (a gold star on its portrait); counted from the rewards' release, not seeded
     level5Jackpot: {},        // { fire: true }: the type's first Level 5 win paid LEVEL5_JACKPOT
     levelJackpot: {},         // { 7: true }: the first win on Trainer Level 6-10 paid LEVEL_JACKPOT
+    levelLetters: {},         // { 7: true }: the Gym Leaders wrote for the first win on Trainer Level 6-10 (js/data/level-letters.js)
     playMs: 0,                // play time while the page is visible, counted from the Trainer Card's release (initPlayTime())
   },
 });
@@ -355,7 +356,7 @@ export function countDex(id) {
 
 // Settings' choices (and the deck view's sort) belong to the player, not the progress: a reset keeps them
 const PREF_KEYS = ['muted', 'volume', 'musicVolume', 'sfxVolume', 'cryVolume', 'battleSpeed', 'battleFx', 'endTurnWarn', 'textSpeed', 'textAuto',
-  'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName', 'setupDone'];
+  'clock', 'calmFx', 'vibration', 'shell', 'foil', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName', 'setupDone'];
 
 export function resetSave() {
   const kept = Object.fromEntries(PREF_KEYS.filter(k => k in data).map(k => [k, data[k]]));

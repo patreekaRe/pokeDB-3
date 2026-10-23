@@ -37,7 +37,9 @@ import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunDa
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
 import { openSealed } from './data/exchange.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
-import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion, bestWin, starName, isMaster } from './data/difficulty.js';
+import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion, bestWin, starName, isMaster, LEVEL_SHELLS, shellEarned } from './data/difficulty.js';
+import { lettersFor } from './data/level-letters.js';
+import { wearFoil } from './foil.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner, BASICS, tabletUps, bonfireGift, flipState, rivalWants } from './data/events.js';
@@ -1122,6 +1124,7 @@ function showMap() {
   scoping = rubbing = false;
   showBadgeNews();
   setTheme(outStarter(run).type);
+  wearFoil(run);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
   warmPlaces();
 
@@ -5495,11 +5498,14 @@ function level5Rewards() {
   const jackpot = !save.stats.level5Jackpot[type];
   const levelPrize = LEVEL_JACKPOT[lv] && !save.stats.levelJackpot?.[lv] ? LEVEL_JACKPOT[lv] : 0;
   const master = lv >= MAX_LEVEL && !isMaster(save);   // read before recordWin() puts this win in the Record Book
+  const shells = LEVEL_SHELLS.filter(sh => lv >= sh.level && !shellEarned(save, sh));
+  const letters = mailOn() && !save.stats.levelLetters?.[lv] ? lettersFor(lv, LEVELS[lv]?.name) : [];
   updateSave(d => {
     d.stats.level5WinsBy[id] = (d.stats.level5WinsBy[id] || 0) + 1;
     if (shiny) { d.shiny.owned.push(id); if (!d.shiny.on.includes(id)) d.shiny.on.push(id); }
     if (jackpot) d.stats.level5Jackpot[type] = true;
     if (levelPrize) d.stats.levelJackpot = { ...d.stats.levelJackpot, [lv]: true };
+    if (letters.length) d.stats.levelLetters = { ...d.stats.levelLetters, [lv]: true };
   });
   if (shiny) lines.push(`✨ Shiny ${name} unlocked, and switched on!`);
   if (jackpot) {
@@ -5514,6 +5520,9 @@ function level5Rewards() {
     lines.push(`💰 Jackpot for your first win on Trainer Level ${lv}! ${paid}`);
   }
   if (master) lines.push('👑 You are a POKéMON MASTER! The title is on your Trainer Card.');
+  for (const sh of shells) lines.push(`🎨 The ${sh.name} Pokédex shell is yours: put it on in Settings, Device colour.`);
+  for (const l of letters) post(l.from, l.title, l.text, 0, lv >= MAX_LEVEL ? { level: lv, photo: true } : { level: lv });
+  if (letters.length) lines.push(`💌 ${letters.length > 1 ? `${letters.length} Gym Leaders wrote` : 'The Gym Leaders wrote'} to you! The letters are in your PC's mailbox.`);
   return lines;
 }
 
