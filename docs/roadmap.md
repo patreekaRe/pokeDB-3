@@ -1205,11 +1205,20 @@ house, 250 PokéCoins a repaint. Only the outside changes (rooms, furniture, yar
 new work (the user asked how, 2026-10-23: today Visit opens straight inside, `openBase3d({ guest })`): Visit starts on a
 small front lawn (an outdoor room like the yard: their house, their buddy, a mailbox with their name; the door goes in),
 and the Trainers page and Plaza blurb carry the house id and paint for a small picture.
-Where the catalogue lives (the user asked PC or kiosk, 2026-10-23; Claude's lean, waiting on their call): a builder's
+Where the catalogue lives: **a kiosk** (the user's call, 2026-10-23, over the PC): a builder's
 kiosk beside the lot (a Timburr crew's stand), because picking a house can show it built on your real lot as a try-on,
 the way wallpaper is tried on in the base (`trying` in `js/base-3d.js`); the PC's HOUSE UPGRADES keeps rooms and the yard
 and gets one row pointing to the kiosk. Before the base is bought the stand shows the cottage FOR SALE. One more model
-in the Clearing, so it goes through the budget check. Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
+in the Clearing, so it goes through the budget check.
+Still open (the session uses Claude's proposal unless the user says otherwise): which of the 18 to keep, the prices, the
+tree kept as a choice. Session 1 prompt: "▶ Run in: CLOUD. Effort: high. Read CLAUDE.md, docs/roadmap.md's 'Secret Base
+houses' idea and docs/reference/hub-base-mall.md, and open docs/mockups/secret-base-houses.html. Build session 1: the
+save field for owned houses, the one lived in and its paint (old saves keep the Ancient Tree and get the Starter Cottage
+free); a Timburr crew's builder kiosk beside the lot in the Clearing (a real model, FOR SALE before the base is bought)
+whose catalogue tries a house on the real lot before you pay; repaints at 250; the lot showing the house lived in as a
+real 3D model like nietosHouse(), its door opening the base as the tree's does; one HOUSE UPGRADES row on the PC pointing
+to the kiosk. Houses this session: Starter Cottage, Ancient Tree, Log Cabin, Seaside Bungalow. Run tools/budget-check.mjs
+on the Clearing, add a patch-notes line, update the roadmap, push to main and give a githack link with ?coins=5000." Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
 check on the Clearing). Sessions: 1 the system plus Cottage, Tree and two Homestead (high), 2 the coin houses (medium), 3
 earned and seasonal with unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium). All CLOUD.
 
