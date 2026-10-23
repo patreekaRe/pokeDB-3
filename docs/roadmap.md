@@ -1201,8 +1201,10 @@ Villa, Victorian Manor), **Earned**, never sold (Gym Hall: every Gym Leader; Hot
 Lodge: every Safari page; Sky Spire: the Sky Pillar's top; Poké Ball Dome: the Master Badge), **Seasonal** (Haunted Chateau
 in October, Snow Chalet in December, 3,000, kept for good), **Legendary** (Crystal Palace: beat Eternatus; the Ancient Tree:
 kept by every base bought before, else the Clearing Badge). The first aesthetic change anyone can buy: three paint jobs a
-house, 250 PokéCoins a repaint. Only the outside changes (rooms, furniture, yard, residents stay); friends visiting see
-your house. Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
+house, 250 PokéCoins a repaint. Only the outside changes (rooms, furniture, yard, residents stay). Friends seeing it is
+new work (the user asked how, 2026-10-23: today Visit opens straight inside, `openBase3d({ guest })`): Visit starts on a
+small front lawn (an outdoor room like the yard: their house, their buddy, a mailbox with their name; the door goes in),
+and the Trainers page and Plaza blurb carry the house id and paint for a small picture. Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
 check on the Clearing). Sessions: 1 the system plus Cottage, Tree and two Homestead (high), 2 the coin houses (medium), 3
 earned and seasonal with unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium). All CLOUD.
 
