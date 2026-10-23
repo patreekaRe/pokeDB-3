@@ -1183,26 +1183,30 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 ## Ideas, not agreed yet (ask the user before building)
 
 **A Berry Booth by the Clearing's gate** (2026-10-23, the user's idea, with a screenshot circling the lawn left of the gate,
-between the route sign `SIGN_AT` 12,-1 and the gate's left pillar, the Pokéstop's mirror at `STOP_AT` 18,-1). A booth that
-looks after the run kit and the Berry Pouch: pack and equip berries, an interactive guide that's easy to follow (how the
-pouch works, swapping a berry from the Bag on the map, one a biome), and **perks bought at the booth to use more than one
-berry a biome**. The user's calls: **the run kit item stays one slot, no perk ever adds a second** ("can't have people spam
-revives"). What exists: the Berry Pouch (`POUCH` 3, `canHold()` / `holdFromPouch()` in `js/data/held.js`) and one kit item
-are packed on Prepare (`js/select.js`'s Pack, with the 2026-10-16 "▼ Berry Pouch · Run kit" tab because no one saw them)
-from what Kurt made (`save.workshop.kit`). Claude's lean:
-- The booth opens the same Pack panel (one code path shared with Prepare, not a copy) and **saves the loadout**
-  (`save.loadout`), so Prepare shows it packed with a "Change" button instead of asking every run.
-- It appears once `workshopOpen()`, and is run by a **Shuckle** (it ferments berries into Berry Juice in the games; a Munchlax
-  the other pick). The sign moves a tile west if the booth needs the room.
-- The guide: a few steps on a first visit (fill slot 1, it's held; fill the pouch; pick a kit item), then a played demo of
-  the map's Bag (Hold, a swap while uneaten, eaten, the next one waits for the next biome); replayable from a "?" on the booth.
-- Perks (PokéCoins): a 4th pouch slot (~1,500), then **Second Helping**: two berries eaten a biome (~3,000; `canHold()`
-  counts eaten berries a biome instead of `heldAte`). A bot check first: the sim mirrors held berries, and healing berries
-  carry runs It pulls against the user's 2026-10-22 worry that healing is already overpowered (the entry
+between the route sign `SIGN_AT` 12,-1 and the gate's left pillar, the Pokéstop's mirror at `STOP_AT` 18,-1). **A digital
+booth, like the Safari's** (the user's correction the same day: not a stall with a Pokémon behind it): a small kiosk with a
+lit screen; a tap opens a Pokédex-device window in the Safari lobby's / Sky Pillar lobby's treatment (`.tower-lobby`: lid
+LCD, window, green LCD, app keys, A / B; `APPS` in `js/safariprep.js` slides an app over the LCD). It looks after the run
+kit and the Berry Pouch: pack and equip berries, an interactive guide that's easy to follow (how the pouch works, swapping
+a berry from the Bag on the map, one a biome), and **perks bought there to use more than one berry a biome**. The user's
+calls: **the run kit item stays one slot, no perk ever adds a second** ("can't have people spam revives"). What exists:
+the Berry Pouch (`POUCH` 3, `canHold()` / `holdFromPouch()` in `js/data/held.js`) and one kit item are packed on Prepare
+(`js/select.js`'s Pack, with the 2026-10-16 "▼ Berry Pouch · Run kit" tab because no one saw them) from what Kurt made
+(`save.workshop.kit`). Claude's lean:
+- The LCD shows the loadout: the held slot, the pouch slots, the kit slot. Keys as apps: **Pouch** (Kurt's kept berries,
+  tap into a slot), **Kit** (◀ ▶ the one item), **Guide**, **Perks**; A = Done. One code path shared with Prepare's Pack,
+  not a copy, and the loadout **saved** (`save.loadout`), so Prepare shows it packed with a "Change" button.
+- The kiosk appears once `workshopOpen()`, with a "!" while nothing's packed and berries are kept. The sign moves a tile
+  west if it needs the room.
+- **Guide** app: a few steps on the LCD (slot 1 is held; fill the pouch; pick a kit item), then a played demo of the map's
+  Bag on the window (Hold, a swap while uneaten, eaten, the next one waits for the next biome); auto-opens the first time.
+- **Perks** app (PokéCoins): a 4th pouch slot (~1,500), then **Second Helping**: two berries eaten a biome (~3,000;
+  `canHold()` counts eaten berries a biome instead of `heldAte`). A bot check first: the sim mirrors held berries, and
+  healing berries carry runs. It pulls against the user's 2026-10-22 worry that healing is already overpowered (the entry
   below), so a Second Helping might rather allow only the non-healing berries (Cheri, Pecha, Lum) twice.
-Open questions for the user: Shuckle or Munchlax, the perks' prices (or earned, e.g. Kurt's hearts), and whether Prepare
-keeps its Pack panel or only shows the booth's loadout. If agreed, ▶ Run in: CLOUD, effort high (the booth, the shared
-panel, the perks and the sim), then LOCAL for the booth's look.
+Open questions for the user: the perks' prices (or earned, e.g. Kurt's hearts), healing berries under Second Helping or
+not, and whether Prepare keeps its Pack panel or only shows the booth's loadout. If agreed, ▶ Run in: CLOUD, effort high
+(the kiosk, the device window, the perks and the sim), then LOCAL for the kiosk's look.
 
 **The game feels too easy, Grass most of all; healing feels overpowered** (2026-10-22, the user, after a Servine run where
 Apple Acid+ (1 PP, 11 + Vulnerable 2) sat beside Seed Bomb (2 PP, 10 + Vulnerable 2)). The human bot, 150 a cell, sim
