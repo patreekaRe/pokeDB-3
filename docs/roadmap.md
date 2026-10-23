@@ -1259,6 +1259,12 @@ Clearing's budget, checks each model with `tools/house-check.mjs` (text, no scre
   Pokédex Badge's whole Pokédex), the Cherry Blossom Teahouse (April, 3,000), 8 paints each: 25 houses. Lived in, 268 to
   274 draws and about 120 MB, inside the Clearing's budget; save check passed; no name cut off in the catalogue.
   **Next: the user playtests** the githack link (`?houses=all&coins=20000`), then says go for going live.
+- **Insides and the friends' lawn, talked over (2026-10-23; the user: "wouldn't that take a while? My friends have been
+  designing their homes already too. Wouldn't the lawn thing feel weird too?")**. Claude's take, waiting on the user's call:
+  insides per house risk friends' rooms (a round or narrow room breaks furniture laid out for the square one), so either
+  drop them or keep them to looks that don't move a wall (floor, wall paper, window frames per house). The lawn adds a
+  walk before every visit; instead, a short arrival shot (the camera on the friend's house, the door opens, cut inside,
+  no walking) plus the house's picture on their Trainers page and Plaza blurb.
 Going live is its own step after the user's go: merge `main` into the branch, HOUSES_LIVE true, the patch note out of
 HELD, and only then onto `main`.
 
