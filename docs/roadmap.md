@@ -1218,6 +1218,12 @@ things for the Secret Base. **The user: "send it"; 1-3 built the same day** (arc
    archive): a 3D gold crown with rainbow gems floating and turning over the walking buddy, and a pixel one over the
    Trainer Card's partner, with a Crown key. **Next: the user playtests** `?master` (walk the Clearing; the Trainer
    Card). Maybe later: friends' buddies in the Plaza wearing theirs. ▶ Playtest on the live site.
+   **A preview of the crown before it's earned** (2026-10-23, the user: "Is there a way to give the player a preview of the
+   crown somewhere?"; Claude's ideas, none picked yet): (a) the Trainer Level picker's Level 10 row shows the pixel crown
+   and "Win to wear the Champion's Crown" (recommended, cheap, seen right when choosing a Level); (b) a glass case with
+   the real 3D crown turning on a cushion in the mall (the Outfitter, where the cape's stand was) or the Clearing, its
+   window saying how to earn it; (c) a greyed crown and "Win Level 10" on the Trainer Card where the Crown key goes;
+   (d) a "try it on" tap in that case that lends the crown for a minute. ▶ CLOUD, effort: low (a, c) / medium (b, d).
 4. **Trophies for the Secret Base**: a cup for each of Levels 6-9 and the Champion's Trophy for 10, earned furniture
    (each a painting and a hand-built model). ▶ CLOUD, effort: high.
 5. **Master Badges**: a Level 10 win with a Fire, a Water and a Grass starter, and all three (each a `LOOK` line). ▶
