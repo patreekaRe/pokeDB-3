@@ -69,10 +69,13 @@ const WEST = 4, MW = M + WEST;
 // the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the route sign either
 // side of the avenue just inside it
 const GATE_AT = { tx: 15, ty: -2 };
-// either side of the gate, just outside its feet so neither hides their runes (the user's ask, 2026-10-15: they stood
-// a row or two forward of it, the sign further out than the stop); each nudged in towards the opening (STAND_IN)
-// the Berry Booth (js/berrybooth.js, 2026-10-23) stands where the sign did, the Pokéstop's mirror, and the sign a tile west
-const STOP_AT = { tx: 18, ty: -1 }, SIGN_AT = { tx: 11, ty: -1 }, BOOTH_AT = { tx: 12, ty: -1 }, STAND_IN = 0.3;
+// the route sign left of the gate, just outside its foot so it hides none of its runes (the user's ask, 2026-10-15),
+// nudged in towards the opening (STAND_IN)
+const SIGN_AT = { tx: 12, ty: -1 }, STAND_IN = 0.3;
+// New game's Pokéstop and the Berry Booth (js/berrybooth.js) a row in front of the gate, right at the avenue's edges, in
+// line with its lamps (the user's ask, 2026-10-23: closer to the road), their doorsteps on the road (ROADSIDE: how far
+// each stands out from its tile towards the road)
+const STOP_AT = { tx: 17, ty: 0 }, BOOTH_AT = { tx: 13, ty: 0 }, ROADSIDE = 0.4;
 const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
@@ -2416,11 +2419,11 @@ function makePlaces() {
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
       // outside the gate on its right, the route sign across the trail from it (the user's ask, 2026-10-09)
-      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - STAND_IN, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
+      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - ROADSIDE, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
     },
     {
       // the route sign says what the old gate's card did (the user's ask, 2026-10-09); like the Safari gate, no buttons
-      id: 'route-sign', name: 'Whispering Clearing', step: { x: SIGN_AT.tx, y: SIGN_AT.ty + 1 }, tiles: [[SIGN_AT.tx, SIGN_AT.ty]], tag: [SIGN_AT.tx, 2.6, SIGN_AT.ty],
+      id: 'route-sign', name: 'Whispering Clearing', step: { x: SIGN_AT.tx + 1, y: SIGN_AT.ty }, tiles: [[SIGN_AT.tx, SIGN_AT.ty]], tag: [SIGN_AT.tx, 2.6, SIGN_AT.ty],
       open: true,
       line: 'The way out of the Whispering Clearing. Spin the Pokéstop to set out on an adventure.',
       buttons: [],
@@ -2678,7 +2681,7 @@ function makePlaces() {
     get line() { return `${boothBeckons(getSave().loadout, workshopOf(getSave())) ? 'Berries from Kurt\'s, not packed yet! ' : ''}A Berry Booth. Pack your held berries and one run kit item for your next run.`; },
     buttons: [['Open', openBooth]],
     build: (g) => {
-      const x = tileX(BOOTH_AT.tx) + STAND_IN, z = tileZ(BOOTH_AT.ty) - 0.2, art = boothArt(), b = board(art, x, z, { s: 0.9 });
+      const x = tileX(BOOTH_AT.tx) + ROADSIDE, z = tileZ(BOOTH_AT.ty) - 0.2, art = boothArt(), b = board(art, x, z, { s: 0.9 });
       glowing(b.material, art, null, '#c8ffd0', 1.2).userData.glowMin = 0.4;
       g.add(b);
       boothMark = board(newsArt(), x, z + 0.1, { shadow: false });

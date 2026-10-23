@@ -845,8 +845,9 @@ that is always there (the user's ask): every buddy's shiny, greyed and locked ti
 A pick saves `save.buddy`, cries and closes; the buddy hops out in place.
 
 **The Berry Booth** (2026-10-23, the user's idea): a digital kiosk (`boothArt()`, a teal body, a berry-pink canopy, a lit
-screen) on the lawn left of the gate at `BOOTH_AT` (12, -1), where the route sign stood; the sign moved a tile west
-(`SIGN_AT` 11, -1, its doorstep below it). Only once `workshopOpen()`; a yellow "!" (`boothMark`, `boothMarks()`) while
+screen) at `BOOTH_AT` (13, 0). The same day, the user asked for it and New game's Pokéstop to stand closer to the road:
+both moved a row in front of the gate, right at the avenue's edges in line with its lamps (`STOP_AT` 17, 0; each pulled
+`ROADSIDE` 0.4 towards the road, their doorsteps on it at 14, 0 and 16, 0), and the route sign stayed at `SIGN_AT`
+(12, -1). Only once `workshopOpen()`; a yellow "!" (`boothMark`, `boothMarks()`) while
 held berries are kept and nothing's packed. A tap opens `openBerryBooth()` (js/berrybooth.js); docs/reference/towns.md's
 Packing says what's inside.
-
