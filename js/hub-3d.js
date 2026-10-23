@@ -11,7 +11,7 @@
 import { getSave, updateSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { season } from './season.js';
-import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, deadTreeArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
+import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
 import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { plazaBoard } from './hub-plaza.js';
@@ -38,6 +38,7 @@ import { makeGardenArch } from './hub-arch.js';
 import { YARD_PRICE } from './data/house.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
+import { makeHolo } from './hub-holo.js';
 import { makeCauldron } from './hub-cauldron.js';
 import { safariGate, WING_X } from './hub-safari.js';
 import { makeDojo } from './hub-dojo.js';
@@ -75,6 +76,7 @@ const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
 const PC_AT = { tx: 19, ty: 10 };
+const HOLO_AT = { tx: 11, ty: 10 };   // the Buddy Projector (js/hub-holo.js), left of the quest board where Halloween's dead tree stood
 // the quest board (towns on only) and the Trainer Plaza's board (js/hub-plaza.js) at the plaza's top corners, either side
 // of the north avenue, each turned to face the plaza (the user's marks on an aerial shot, 2026-10-17); `at` is where it
 // stands (tiles, fractions allowed), `tiles` what it blocks, `step` where you stand to read it
@@ -187,6 +189,7 @@ let buddies = null, buddiesAt = 0;   // the trainers on your list, as their budd
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let safariMark = null;   // the "!" over the Safari gate while a Ranger task waits (js/data/ranger.js)
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
+let holo = null;    // the Buddy Projector: the walking buddy as a hologram (js/hub-holo.js)
 let beckons = [];   // the signs that are places of their own, hopping now and then (beckon())
 let questMark = null, nietosMark = null;   // the "!" over the quest board (a notice to read) and over the Nietos' house (a step to hand them; boardNow())
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
@@ -2456,9 +2459,9 @@ function makePlaces() {
       },
     },
     {
-      // right of the plaza, where your partner starts (2026-10-09): who walks with you, who lives in the base, your name
+      // right of the plaza, where your partner starts (2026-10-09): who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
-      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : claimable() ? 'A mission reward is waiting! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, your missions, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
+      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : claimable() ? 'A mission reward is waiting! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, your missions, the patch notes, who lives in your Secret Base, and your name.`; },
       buttons: [['Log on', openPc]],
       build: (g) => {
         const pc = pcModel(THREE, glowMats);
@@ -2473,6 +2476,19 @@ function makePlaces() {
         pcMarks();
         pc.position.set(tileX(PC_AT.tx), 0, tileZ(PC_AT.ty));
         g.add(pc);
+      },
+    },
+    {
+      // the Buddy Projector (the user's ask, 2026-10-22): a device of its own for picking who walks with you
+      id: 'holo', name: 'Buddy Projector', step: { x: HOLO_AT.tx, y: HOLO_AT.ty + 1 }, tiles: [[HOLO_AT.tx, HOLO_AT.ty]], tag: [HOLO_AT.tx, 2.4, HOLO_AT.ty], open: true,
+      get line() { return `A hologram of ${buddy(getSave()).name}, your walking buddy. Pick another to walk with you.`; },
+      buttons: [['Change buddy', openProjector]],
+      build: (g) => {
+        holo = makeHolo(THREE, PITCH);
+        mergeStill(holo.stand);
+        holo.group.position.set(tileX(HOLO_AT.tx), 0, tileZ(HOLO_AT.ty));
+        holo.show(buddy(getSave()));
+        g.add(holo.group);
       },
     },
   ];
@@ -2721,7 +2737,7 @@ const HINTS = [
   'Beat every Pokémon in the Whispering Clearing, the Overgrown Shrine and the Ember Wastes and the Safari Zone opens: one run a day, the same for everyone, and only your first try counts.',
   'Win a run and the Sky Pillar opens: 100 floors, with a new leaderboard every week.',
   '1,500 PokéCoins opens the boarded door in the Ancient Tree\'s roots. That\'s your Secret Base, to furnish however you like.',
-  'The PC holds your mail, your missions and the patch notes. It also picks who walks beside you here.',
+  'The PC holds your mail, your missions and the patch notes. The Buddy Projector picks who walks beside you here.',
   'The Poké Mall sells furniture for your Secret Base, and the Game Corner\'s arcade is inside.',
   'See those cracks in the ground to the west? Every run you win strikes the seal below. Something wants out.',
   'Your Pokédex keeps every card and Pokémon you\'ve met. Open it whenever you\'re curious.',
@@ -2814,7 +2830,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; holo = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -3109,7 +3125,7 @@ function liveDuck(now) {
 }
 
 /** The season's decorations, built once with the forest. Halloween: jack-o'-lanterns at the Ancient Tree's door, a
-    pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles under a dead tree, a
+    pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles, a
     bubbling cauldron with toadstools and two pairs of lantern posts (lit with the clock, setTime()), ghost
     Pokémon wandering among them (js/hub-spooky.js) and bats round the Ancient Tree. Each stands on its own tile, kept off
     every path and place (yardTiles), so nothing walks through them. In winter a snowman by the plaza. */
@@ -3127,7 +3143,8 @@ function dressSeason() {
       // the Ancient Tree the scarecrow stood at the Secret Base's door)
       [...P_(5), 21, 17, 4.4, 0, -0.1], [...P_(6), 20, 18, 2.2, 0, 0.1], [...P_(7, false), 19, 18, 1.9, 0, -0.2],
       [scarecrowArt(), 'white', 19, 17, 1.5, 0, 0],
-      [deadTreeArt(0), 'white', 11, 9, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
+      // the graveyard before the dojo: a row of stones, a candle at each end (its dead tree taken out 2026-10-22, the user's
+      // ask, for the Buddy Projector)
       [graveArt(0), null, 5, 9, 1.4, 0, 0], [graveArt(1), null, 6, 9, 1.5, 0, 0], [graveArt(2), null, 8, 9, 1.5, 0, 0], [graveArt(3), null, 9, 9, 1.4, 0, 0],
       [candlesArt(0), 'white', 5, 10, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 10, 1.1, 0, -0.1],
       [...P_(1), 16, 13, 1.4, 0.15, 0.1],   // a little one on the plaza
@@ -3668,18 +3685,28 @@ function pcMarks() {
   pcNews.visible = !pcMail.visible && pcBeckons(getSave());
 }
 
-/** Log on to the PC (js/pc.js), full screen over the Clearing; logged off, a new walking buddy steps out in place. */
+/** Log on to the PC (js/pc.js), full screen over the Clearing. */
 async function openPc() {
   if (entering || document.querySelector('.pc-screen')) return;
   hideCard();
   walker.path = []; aim = null;
   const { openPC } = await import('./pc.js');
-  openPC({ onClose: () => { pcMarks(); swapBuddy(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app) });
+  openPC({ onClose: () => { pcMarks(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app) });
+}
+
+/** The Buddy Projector's picker (js/holo-pick.js); a new pick steps out in place. */
+async function openProjector() {
+  if (entering || document.querySelector('.holo-pick')) return;
+  hideCard();
+  walker.path = []; aim = null;
+  const { openBuddyPicker } = await import('./holo-pick.js');
+  openBuddyPicker((picked) => { if (picked) swapBuddy(); });
 }
 
 /** The walking buddy again from the save: its billboard swapped where it stands, with a hop and its cry. */
 async function swapBuddy() {
   const mate = buddy(getSave());
+  holo?.show(mate);
   if (!mon || mon.src === mate.src) return;
   const old = mon;
   const next = await monBoard(mate);
@@ -3696,6 +3723,7 @@ async function swapBuddy() {
 /** The new player's buddy (the title's first power-on), swapped in quietly while the Clearing still waits behind it. */
 export async function refreshBuddy() {
   const mate = buddy(getSave());
+  holo?.show(mate);
   if (!mon || mon.src === mate.src) return;
   const old = mon, shown = old.group.visible;
   const next = await monBoard(mate);
@@ -4057,7 +4085,7 @@ function onUp(e) {
 }
 
 function onKey(e) {
-  if (!running || held || arriving || leaving || outbound || returning || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
+  if (!running || held || arriving || leaving || outbound || returning || document.querySelector('dialog:modal, #shop-dialog[open], .holo-pick') || document.activeElement?.matches?.('input')
     || document.getElementById('collection-screen')?.hidden === false) return;
   const step = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
   if (step) {
@@ -4393,6 +4421,7 @@ function frame(now) {
   liveGateway(now);
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);
+  holo?.tick(now, dt, calm);
   cauldron?.tick(now, dt, calm);
   safariFx?.tick(now, calm);
   plazaFx?.tick(now, calm);

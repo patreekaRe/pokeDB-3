@@ -3482,3 +3482,9 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   on, 5.4 before), and each aura sheet drawn once instead of twice (`forceSinglePass`; 10 is now +3 draws). Found on the
   way: behind the title the Clearing hides the buddy, so the earlier Clearing timings (and budget-check's `clearing`)
   never had the aura in them; retimed with the title tapped away, no GPU time beyond the noise.
+
+- **Buddy Projector** (2026-10-22, the user's ask, built in the Desktop app): a hologram of the walking buddy on a
+  pedestal of its own left of the Clearing's quest board (Halloween's dead tree there removed), tapped to pick the buddy
+  with an always-on Shiny switch; the PC's WALKING BUDDY page removed. v1.29 "Champion Levels" cut with it. The phone
+  budget check wasn't run (it needs the cloud's Chromium): a cloud session should run `--only=clearing` once.
+  Notes: `docs/reference/hub-base-mall.md`'s last section.
