@@ -3459,3 +3459,16 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   crown and "Win on Level 10 to wear the Champion's Crown." (at 10, "Win this Level..."; `#level-crown`, `renderLevel()`
   in `js/select.js`); the Trainer Card shows a greyed crown, "Win Lv 10", where a Master's Crown key goes. `crownArt()`
   moved to `js/ui.js` for both. Checked headless with `?levels`, `?levels&master` and a fresh save; no errors, 391 tests pass.
+
+## The Super Saiyan aura for Trainer Levels 6-10 (2026-10-23, the user's go; on `main`)
+
+- The walking buddy (Clearing, Secret Base, mall) wears the aura of the highest Level won from 6 up, in that star's
+  colour and bigger each Level: 6 a ruby glow at the feet, 7 emerald flames up the sides, 8 sapphire to the head, 9
+  amethyst with lightning, 10 a towering rainbow-gold blaze with lightning and rising sparks, under the crown. Flat
+  additive billboards on the sprite's board, sheets painted once on canvases (`js/aura-art.js`, `wearAura()` in
+  `js/hd2d.js`), still under Calm effects. The Trainer Card's partner wears the same frames in CSS, with an Aura key
+  (earned auras, then off; `save.aura`) and a greyed "Win Lv 6" preview; the Level picker previews each Level's aura
+  (`#level-aura`). `?aura=6..10` lends one (10 the crown too). Detail: `docs/reference/economy-and-hall-of-fame.md`'s
+  "The Super Saiyan aura". Checked headless: every Level builds with no page errors, calm holds one frame with no
+  bolts, the key cycles, budget check within budget (base 83 -> 96 draws and mall hall 332 -> 345 with `?aura=10`, the
+  crown's six included); 396 tests pass (`tests/aura.test.mjs` new).

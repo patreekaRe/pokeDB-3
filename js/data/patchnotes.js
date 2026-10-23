@@ -50,7 +50,7 @@ export const NEXT = [
   ['battle', 'Flame Wall and Mat Block now give 9 block (12 upgraded), a lift for Fire and Fighting.'],
   ['dex', 'The Moves app\'s type tabs show just their round type badges now, instead of cut-off names.'],
   ['runs', 'Trainer Levels 6-10 for champions: weaker healing, less HP, tougher foes and bosses. Your star changes colour as you climb, and each Level\'s first win pays a jackpot.'],
-  ['runs', 'Win on Trainer Level 10 to become a Pokémon Master: a title, a crystal Hall of Fame pedestal and a champion\'s crown floating over your partner, previewed on the Level picker and Trainer Card.'],
+  ['runs', 'Each win on Trainer Levels 6-10 wraps your partner in a bigger Super Saiyan aura; Level 10 makes you a Pokémon Master, with a title, a crystal pedestal and a floating crown.'],
   ['runs', 'More for high Levels: foil cards for starters won on 6 and up, Gilded and Clear Pokédex shells at 8 and 10, and a letter from every Gym Leader.'],
   ['battle', 'Apple Acid+ now deals 10 damage and applies 1 Vulnerable, so it no longer outdoes Seed Bomb.'],
   ['fixes', 'The run map is smoother on phones: its glowing badges and blinking rooms no longer repaint every frame.'],

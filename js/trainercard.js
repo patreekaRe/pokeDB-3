@@ -21,13 +21,13 @@ import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { ALL_CARDS } from './data/cards.js';
 import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
-import { bestWin, starClass, isMaster, wearsCrown } from './data/difficulty.js';
+import { bestWin, starClass, starName, isMaster, wearsCrown, auraBest, aurasEarned, auraWorn } from './data/difficulty.js';
 import { safariDexCount } from './safaridex.js';
 import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { tipAt } from './tips.js';
 import { playSound } from './audio.js';
-import { $, el, openDialog, crownArt } from './ui.js';
+import { $, el, openDialog, crownArt, auraArt } from './ui.js';
 import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
@@ -420,16 +420,18 @@ export function buddyChoices(save = getSave()) {
 export function buddy(save = getSave()) {
   const all = buddyChoices(save);
   const chosen = save.buddy && all.find(m => m.key === save.buddy);
-  if (chosen) return { ...chosen, crown: crownOn };
+  if (chosen) return { ...chosen, crown: crownOn, aura: auraOn };
   const s = save.stats, score = (id) => (s.winsBy?.[id] || 0) + 10 * (s.level5WinsBy?.[id] || 0);
   const plain = all.filter(m => !m.shiny), best = [...plain].sort((a, b) => score(b.id) - score(a.id))[0] ?? plain[0];
   const st = STARTERS_BY_ID[best?.id ?? 'charmander'], shiny = isShiny(st.id) && (save.shiny?.owned || []).includes(st.id);
-  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny, crown: crownOn };
+  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny, crown: crownOn, aura: auraOn };
 }
 
 /** Whether the walking buddy wears the Champion's Crown right now: js/hd2d.js's drawMon() asks each frame, so the Trainer
     Card's Crown key shows at once. */
 const crownOn = () => wearsCrown(getSave());
+/** The Level of the Super Saiyan aura it wears (0: none), asked each frame the same way. */
+const auraOn = () => auraWorn(getSave());
 
 
 /** The walking buddy as a `save.buddy` key, picked or not. */
@@ -642,7 +644,15 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   img.src = mate.src;
   img.alt = '';
   if (wearsCrown(save)) pic.append(crownArt());
-  pic.append(img, el('span', 'tc-partner-edit', 'Change'));
+  const aura = auraWorn(save) ? auraArt(auraWorn(save)) : null;
+  if (aura) {
+    // its feet on the partner's: the picture is 96px tall under the button's 6px padding
+    for (const box of [aura.back, ...(aura.front?.children || [])]) box.style.top = `${104 - aura.h}px`;
+    pic.append(aura.back);
+  }
+  pic.append(img);
+  if (aura?.front) pic.append(aura.front);
+  pic.append(el('span', 'tc-partner-edit', 'Change'));
   pic.addEventListener('click', () => {
     playSound('confirm');
     partnerPicker(body, () => openTrainerCard(into, { reopen: true }));
@@ -679,6 +689,27 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     const lock = el('span', 'tc-shiny tc-crown-locked');
     lock.append(crownArt('tc-crown-mini'), ' Win Lv 10');
     lock.title = 'The Champion\'s Crown: win a run on Trainer Level 10 and it floats over your partner.';
+    frame.append(lock);
+  }
+  const earnedAuras = aurasEarned(save);
+  if (earnedAuras.length) {
+    // the Aura key steps through every aura earned, then off (the user's go, 2026-10-23); the best one isn't saved as a
+    // pick, so a higher Level won later puts its aura on by itself
+    const on = auraWorn(save), best = auraBest(save), cycle = [...earnedAuras, 0], next = cycle[(cycle.indexOf(on) + 1) % cycle.length];
+    const key = el('button', `tc-shiny tc-aura-key${on ? ` on aura-key-lv${on}` : ''}`, on ? `🔥 Lv ${on}` : 'Aura');
+    key.type = 'button';
+    key.title = `${on ? `The ${starName(on)} aura, for a Level ${on} win, is on` : 'Your aura is off'}: tap for ${next ? `the ${starName(next)} aura` : 'none'}`;
+    key.setAttribute('aria-label', `Super Saiyan aura: ${on ? starName(on) : 'off'}`);
+    key.addEventListener('click', () => {
+      updateSave(d => { if (next === best) delete d.aura; else d.aura = next; });
+      playSound('confirm');
+      openTrainerCard(into, { reopen: true });
+    });
+    frame.append(key);
+  } else {
+    const lock = el('span', 'tc-shiny tc-crown-locked tc-aura-locked');
+    lock.append(auraArt(6, { cls: 'tc-aura-mini', s: 16 }).back, ' Win Lv 6');
+    lock.title = 'A Super Saiyan aura: win a run on Trainer Level 6 and your partner glows ruby, bigger each Level up to 10.';
     frame.append(lock);
   }
   info.append(list, frame);

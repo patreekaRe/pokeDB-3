@@ -60,7 +60,10 @@ export const starName = (level) => STAR_NAMES[Math.min(level, MAX_LEVEL) - CHAMP
 /** A Pokémon Master: a run won on the top Trainer Level (Mewtwo's and a summit aside), read from the Record Book so an
     old save proves it. It earns the title on the Trainer Card, a crystal Hall of Fame pedestal (the user's pick,
     2026-10-22) and the Champion's Crown (2026-10-23). `?master` lends them for a page load. */
-const LENT_MASTER = typeof location !== 'undefined' && new URLSearchParams(location.search).has('master');
+const QUERY = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
+/** `?aura=6..10` lends that Level's aura for a page load; 10's comes with the crown, as a real Level 10 win's does. */
+const LENT_AURA = (() => { const n = parseInt(QUERY.get('aura'), 10); return n > CHAMPION_LEVEL && n <= MAX_LEVEL ? n : 0; })();
+const LENT_MASTER = QUERY.has('master') || LENT_AURA === MAX_LEVEL;
 let masterRead = { list: null, n: -1, yes: false };   // the walking buddy asks every frame: the Record Book is read once per new win
 export function isMaster(save) {
   if (LENT_MASTER) return true;
@@ -73,6 +76,30 @@ export function isMaster(save) {
 export const wearsCrown = (save) => isMaster(save) && save.crown !== false;
 /** Has the save won a run on Trainer Level `level` or higher (Mewtwo's and a summit aside), from the Record Book? */
 export const wonOn = (save, level) => (save.hallOfFame || []).some(w => w.starter !== 'mewtwo' && !w.summit && w.level >= level);
+
+/** The Super Saiyan aura (2026-10-23, the user's ask: "a super saiyan aura or something along the way? and a crazier one
+    at level 10?"): the walking buddy wears the aura of the highest Level won from 6 up, in that Level's star colour and
+    bigger each Level (js/aura-art.js paints them). Every Level below the best won counts as earned, as each one had to
+    be won to open the next. 0: none. */
+let auraRead = { list: null, n: -1, best: 0 };
+export function auraBest(save) {
+  const list = save.hallOfFame || [];
+  if (auraRead.list !== list || auraRead.n !== list.length) {
+    const won = list.filter(w => w.starter !== 'mewtwo' && !w.summit && typeof w.level === 'number').map(w => Math.min(w.level, MAX_LEVEL));
+    const best = Math.max(0, ...won);
+    auraRead = { list, n: list.length, best: best > CHAMPION_LEVEL ? best : 0 };
+  }
+  return Math.max(auraRead.best, LENT_AURA);
+}
+/** The auras the save may wear, lowest first. */
+export const aurasEarned = (save) => { const best = auraBest(save); return best ? Array.from({ length: best - CHAMPION_LEVEL }, (_, i) => CHAMPION_LEVEL + 1 + i) : []; };
+/** The aura the walking buddy wears (0: none): the Trainer Card's Aura key picks one earned (`save.aura`, 0 for off),
+    else the best. */
+export function auraWorn(save) {
+  const best = auraBest(save), pick = save.aura;
+  if (!best || pick === 0) return 0;
+  return typeof pick === 'number' && pick > CHAMPION_LEVEL && pick <= best ? pick : best;
+}
 
 /** The Pokédex shells a high Level earns (the roadmap's Level 6-10 reward 7, 2026-10-23): Gilded, polished gold, for a
     Level 8 win and Clear, the see-through Game Boy, for a Pokémon Master. Settings shows each once earned. */

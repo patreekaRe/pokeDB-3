@@ -13,6 +13,7 @@ import { shinyImage } from './data/shinies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { playMusic, playSound } from './audio.js';
 import { typeText } from './type-badge.js';
+import { AURA, AURA_FRAMES, SPARK_FRAMES, auraFlames, auraBolts, auraSparks } from './aura-art.js';
 
 /** Shorthand for document.getElementById. */
 export const $ = (id) => document.getElementById(id);
@@ -538,6 +539,29 @@ export function setMoney(amount) {
   $('money-value').textContent = String(amount);
   $('room-money').textContent = String(amount);
   $('run-money').textContent = String(amount);
+}
+
+/** The Super Saiyan aura in pixels, the walking buddy's frames (js/aura-art.js) stepped by CSS: `back` goes behind the
+    partner, `front` (the low licks, lightning and sparks from 9 up) over it. `s`: the partner's height in CSS pixels;
+    each aura pixel is two. Still under Calm effects and reduced motion. */
+export function auraArt(level, { cls = 'tc-aura', s = 64 } = {}) {
+  const a = AURA[level], fw = Math.max(6, Math.round(a.wide * s * 0.88 / 2)), fh = Math.max(6, Math.round(a.tall * s / 2));
+  const strip = (canvas, n, ms) => {
+    const box = el('span', `${cls} aura-lv${level}`);
+    box.style.cssText = `width:${fw * 2}px;height:${fh * 2}px`;
+    canvas.className = 'aura-strip';
+    canvas.style.cssText = `--n:${n};--ms:${ms}ms`;
+    box.append(canvas);
+    return box;
+  };
+  const back = strip(auraFlames(level, fw, fh), AURA_FRAMES, Math.round(AURA_FRAMES * 1000 / 11));
+  let front = null;
+  if (a.front) {
+    front = el('span', `${cls}-over`);
+    front.append(strip(auraFlames(level, fw, fh, true), AURA_FRAMES, Math.round(AURA_FRAMES * 1000 / 11)), strip(auraBolts(level, fw, fh), AURA_FRAMES, Math.round(AURA_FRAMES * 1000 / 9)));
+    if (a.sparks) front.append(strip(auraSparks(fw, fh), SPARK_FRAMES, SPARK_FRAMES * 100));
+  }
+  return { back, front, w: fw * 2, h: fh * 2 };
 }
 
 /** The Champion's Crown in pixels (the Trainer Card's partner, the Level picker's preview) like the walking buddy's 3D one: gold, five points

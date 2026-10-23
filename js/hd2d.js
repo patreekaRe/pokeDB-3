@@ -4,7 +4,8 @@
 
 import { spriteFit } from './data/sprite-fit.js';
 import { decodeGif } from './gif-frames.js';
-import { sharpness } from './prefs.js';
+import { sharpness, calmFx } from './prefs.js';
+import { AURA, AURA_FRAMES, SPARK_FRAMES, auraFlames, auraBolts, auraSparks, auraGlow } from './aura-art.js';
 
 // the minified build (half the bytes to fetch and parse); index.html preloads it, so keep the two URLs the same
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
@@ -424,7 +425,7 @@ async function decodeFrames(src) {
     feet, a cardboard cutout facing the camera, where the camera's ray through it crosses that upright plane: anything
     behind the feet can't cut it, anything in front of them still hides it. That depth is linear across the screen, so
     it is passed as (depth x w, w) to undo the perspective-correct interpolation. */
-function feetDepth(m) {
+function feetDepth(m, bias = -0.0005) {
   m.userData.upright = true;
   m.onBeforeCompile = (sh) => {
     sh.vertexShader = sh.vertexShader
@@ -440,13 +441,13 @@ function feetDepth(m) {
     if (along > 0.001) upW = cameraPosition + (pixW - cameraPosition) * (dot(feetW - cameraPosition, n) / along);
   }
   vec4 upClip = projectionMatrix * viewMatrix * vec4(upW, 1.0);
-  vUpZ = (upClip.z / upClip.w - 0.0005) * gl_Position.w;
+  vUpZ = (upClip.z / upClip.w + ${bias.toFixed(5)}) * gl_Position.w;
   vUpW = gl_Position.w;`);
     sh.fragmentShader = sh.fragmentShader
       .replace('void main() {', 'varying float vUpZ;\nvarying float vUpW;\nvoid main() {')
       .replace(/}\s*$/, '  gl_FragDepth = clamp((vUpZ / vUpW) * 0.5 + 0.5, 0.0, 1.0);\n}');
   };
-  m.customProgramCacheKey = () => 'upright-depth';
+  m.customProgramCacheKey = () => bias === -0.0005 ? 'upright-depth' : `upright-depth${bias}`;
 }
 
 /* ---------- the rolling-log bend (?curve=: the Clearing, and every town since 2026-10-14) ----------
@@ -525,6 +526,7 @@ export async function monBoard(mate, back = true) {
   const board = new THREE.Mesh(new THREE.PlaneGeometry(w * px, h * px), m);
   board.castShadow = true;
   const [top, bottom, left, right] = first && /\.png$/.test(front) ? gaps(first) : spriteFit(front);
+  const wide = (w - left - right) * px;
   board.geometry.translate((right - left) / 2 * px, (h / 2 - bottom) * px, 0);
   const blob = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.28, depthWrite: false }));
   blob.rotation.x = -Math.PI / 2;
@@ -535,7 +537,7 @@ export async function monBoard(mate, back = true) {
   return {
     group, board, c, g: c.getContext('2d', { willReadFrequently: true }), t, sheets, frame: 0, clock: 0, src: front,
     id: mate.cry ?? front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name, top: (h - bottom - top) * px,
-    crowned: mate.crown,
+    crowned: mate.crown, aura: mate.aura, wide, px,
   };
 }
 
@@ -552,6 +554,7 @@ function gaps(bmp) {
 /** The GIF's next frame on its billboard; a sleeping Pokémon breathes at a third of the speed. */
 export function drawMon(m, w, dt) {
   if (m.crowned) wearCrown(m);
+  if (m.aura) wearAura(m);
   const s = m.sheets[w.facing] || m.sheets.front;
   if (!s.frames.length) return;
   m.clock += w.sleeping ? dt / 3 : dt;
@@ -622,6 +625,77 @@ function crownModel(k) {
   crown.scale.setScalar(k);
   crown.traverse(c => { c.raycast = () => {}; });
   return crown;
+}
+
+/** The Super Saiyan aura (js/data/difficulty.js's auraWorn(): the highest Trainer Level won from 6 up, or the Trainer
+    Card's pick; the user's go, 2026-10-23) round a buddy whose `aura` says so. A few flat billboards on its own board, so
+    they lean with it: the flames behind the sprite, and from 9 up low licks and lightning in front of it, sparks rising
+    at 10, with a glow on the ground under it. Their sheets are painted once on canvases (js/aura-art.js) and uploaded
+    once; a frame is a step of the texture's offset. Unlit and added on, bright enough for the bloom to light. Under
+    calmFx() it holds one frame, without the lightning or the glow's pulse. Built when first worn, again for another Level. */
+function wearAura(m) {
+  const level = m.aura() || 0;
+  if (m.halo && m.halo.level !== level) { dropAura(m.halo); m.halo = null; }
+  if (!level) return;
+  const h = m.halo ??= auraModel(m, level), calm = calmFx(), t = performance.now() / 1000;
+  h.ground.visible = m.board.visible;
+  const step = calm ? 2 : Math.floor(t * 11);
+  for (const l of h.flames) l.map.offset.x = ((step + l.lag) % AURA_FRAMES) / AURA_FRAMES;
+  if (h.bolts) {
+    const k = Math.floor(t * 9) % AURA_FRAMES;
+    h.bolts.visible = !calm && AURA[level].bolts.includes(k);
+    h.bolts.material.map.offset.x = k / AURA_FRAMES;
+  }
+  if (h.sparks) h.sparks.material.map.offset.x = ((calm ? 0 : Math.floor(t * 10)) % SPARK_FRAMES) / SPARK_FRAMES;
+  h.ground.material.opacity = calm ? 0.85 : 0.75 + Math.sin(t * 3.1) * 0.2;
+}
+
+function auraModel(m, level) {
+  const a = AURA[level], tall = a.tall * m.top, wide = a.wide * Math.max(m.wide, m.top * 0.7), px = m.px || MON_PX;
+  const fw = Math.min(160, Math.round(wide / px)), fh = Math.min(200, Math.round(tall / px));
+  const lit = (canvas, frames, bias) => {
+    const map = tex(canvas);
+    map.repeat.set(1 / frames, 1);
+    const mat = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false });
+    feetDepth(mat, bias);
+    return mat;
+  };
+  const board = (mat, w, hh, lift = 0) => {
+    const geo = new THREE.PlaneGeometry(w, hh);
+    geo.translate(0, hh / 2 + lift, 0);
+    const o = new THREE.Mesh(geo, mat);
+    o.raycast = () => {};
+    m.board.add(o);
+    return o;
+  };
+  const halo = { level, meshes: [], flames: [] };
+  const back = board(lit(auraFlames(level, fw, fh), AURA_FRAMES, 0.0003), wide, tall, -0.04 * m.top);
+  halo.flames.push({ map: back.material.map, lag: 0 });
+  halo.meshes.push(back);
+  if (a.front) {
+    const fr = board(lit(auraFlames(level, fw, fh, true), AURA_FRAMES, -0.002), wide, tall, -0.04 * m.top);
+    halo.flames.push({ map: fr.material.map, lag: 3 });
+    halo.bolts = board(lit(auraBolts(level, fw, fh), AURA_FRAMES, -0.0025), wide, tall, -0.04 * m.top);
+    halo.meshes.push(fr, halo.bolts);
+  }
+  if (a.sparks) halo.meshes.push(halo.sparks = board(lit(auraSparks(fw, fh), SPARK_FRAMES, -0.0025), wide, tall, 0));
+  const r = a.glow * Math.max(m.wide, m.top * 0.7);
+  const ground = halo.ground = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r), new THREE.MeshBasicMaterial({ map: tex(auraGlow(level)), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = 0.014;
+  ground.raycast = () => {};
+  m.group.add(ground);
+  halo.meshes.push(ground);
+  return halo;
+}
+
+function dropAura(halo) {
+  for (const o of halo.meshes) {
+    o.removeFromParent();
+    o.geometry.dispose();
+    o.material.map?.dispose();
+    o.material.dispose();
+  }
 }
 
 /** Whether a ray's hit on a billboard landed on the sprite itself, a few pixels' slack round it, not its empty corners. */

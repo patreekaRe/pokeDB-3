@@ -63,6 +63,27 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   pixel one (`crownArt()` in `js/ui.js`, `.tc-crown`, bobbing, still under reduced motion). **Previews** (2026-10-23):
   until you're a Master, the Trainer Card shows a greyed crown, "Win Lv 10" (`.tc-crown-locked`), and the Level picker
   from Level 5 up a line with the crown and how to earn it (`#level-crown`, `renderLevel()` in `js/select.js`). `?master` skips the new-player setup and How to play (`start()` in `js/title.js`), so an empty playtest save lands on the crowned buddy.
+- **The Super Saiyan aura** (2026-10-23, the user's ask: "something aesthetic each time for 6-10? like a super saiyan
+  aura ... and a crazier one at level 10?"): `auraBest(save)` in `js/data/difficulty.js` is the highest Level won from 6 up
+  (Record Book, Mewtwo's and summits aside, read once per new win), every Level below it earned (`aurasEarned()`: each had
+  to be won to open the next); `auraWorn()` is the Trainer Card's pick (`save.aura`: a Level, 0 for off; no field: the
+  best, so a higher win puts its aura on by itself). In the star's colour (`starName()`), growing each Level (`AURA` in
+  `js/aura-art.js`): 6 a low ruby glow at the feet, 7 emerald flames up the sides, 8 sapphire to the head, 9 amethyst
+  with low licks and lightning in front of the sprite, 10 a towering rainbow-gold blaze with sparks rising, under the
+  crown. `buddy()` gives the mate `aura: auraOn`; `drawMon()` calls `wearAura()` in `js/hd2d.js`: billboards on the
+  sprite's own board (so they lean with it) with unlit, additive sheets painted once on canvases by `js/aura-art.js`
+  (value noise looping up the frame, three stepped shades; at most 576 x 80 a sheet), a frame being a step of the
+  texture's offset (no re-upload), plus a glow on the ground. Their depth is the sprite's upright one (`feetDepth(m,
+  bias)`), a hair behind it for the back flames and in front for the licks, bolts and sparks. One draw at 6-8 plus the
+  ground glow, up to five at 10 (budget check with `?aura=10`, the crown's six included: Secret Base 83 -> 96 draws, mall
+  hall 332 -> 345, the Clearing within its noise, memory up 1-2 MB).
+  Under `calmFx()` it holds one frame: no lightning, no pulse. The Trainer Card's partner wears the same frames stepped
+  by CSS (`auraArt()` in `js/ui.js`, `.tc-aura`, `.aura-strip`; still under Calm effects and reduced motion), and an
+  Aura key next to Crown steps through the earned auras, then off (`.tc-aura-key`, in the Level's colour); before any
+  is earned a greyed preview, "Win Lv 6". The Level picker shows each Level's aura from 6 up and whether it's yours
+  (`#level-aura`, `renderLevel()`). `?aura=6..10` lends one for a page load (10 lends the crown too, as a real Level 10
+  win has it) and skips the setup like `?master`. Friends' buddies in the Plaza don't wear one yet. Tests:
+  `tests/aura.test.mjs`.
 - **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
   `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
   `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character
