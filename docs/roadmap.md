@@ -1200,7 +1200,9 @@ the Berry Pouch (`POUCH` 3, `canHold()` / `holdFromPouch()` in `js/data/held.js`
   west if it needs the room.
 - **Guide** app: a few steps on the LCD (slot 1 is held; fill the pouch; pick a kit item), then a played demo of the map's
   Bag on the window (Hold, a swap while uneaten, eaten, the next one waits for the next biome); auto-opens the first time.
-- **Perks** app (PokéCoins): a 4th pouch slot (~1,500), then **Second Helping**: two berries eaten a biome (~3,000;
+- **Perks** app (PokéCoins): a 4th pouch slot (~1,500; the user asked what it was, 2026-10-23: three berries already cover a
+  run's three biomes, so a 4th only adds a spare to swap in for a fight, e.g. Pecha for a Poison boss; Claude's lean since:
+  drop it, or fold it into Second Helping), then **Second Helping**: two berries eaten a biome (~3,000;
   `canHold()` counts eaten berries a biome instead of `heldAte`). A bot check first: the sim mirrors held berries, and
   healing berries carry runs. It pulls against the user's 2026-10-22 worry that healing is already overpowered (the entry
   below), so a Second Helping might rather allow only the non-healing berries (Cheri, Pecha, Lum) twice.
