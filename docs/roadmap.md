@@ -1241,7 +1241,7 @@ Clearing's budget, checks each model with `tools/house-check.mjs` (text, no scre
   catalogue's paint strip (the card still 267 px), `tools/house-check.mjs` for text elevations. Within budget, save check
   passed. **Next: the user playtests** the branch's githack link (`?houses&coins=20000`, and `&tree` for an old save):
   each house on the lot, its paints, and says what to change before B.
-- ~~**B**~~ **done 2026-10-23** (cloud, branch `houses-playtest`; detail: `docs/reference/hub-base-mall.md`, "Session B"):
+- ~~**B**~~ **done 2026-10-23** (cloud, branch `houses-playtest`, e8cecd7; detail: `docs/reference/hub-base-mall.md`, "Session B"):
   the Gym Hall, Hot-Spring Ryokan, Ranger Lodge, Sky Spire, Poké Ball Dome, Crystal Palace, Haunted Chateau (October)
   and Snow Chalet (December, both 3,000, kept for good) as 3D models, 8 paints each; their checks in `EARN`
   (`js/data/houses.js`, tested), stored for good once seen, a TIMBURR & CO. letter in the Mailbox for each; greyed LOCKED
