@@ -33,7 +33,7 @@ import { realBeats } from './data/real-types.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
 import { runTypes, outStarter, runPool, runItems, fitsRun, newDuo, restoreDuo, syncDecks, duoGains, duoStarters } from './data/duo.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, stashLostRun, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
 import { moveInFirst } from './safari-home.js';
 import { openSealed } from './data/exchange.js';
@@ -488,7 +488,7 @@ export function loadSavedRun() {
   const saved = loadRunData();
   if (!saved) return null;
   try { return restoreRun(saved); }
-  catch (err) { clearRunData(); return null; }
+  catch (err) { console.error('Saved run thrown away:', err); stashLostRun(saved, err); clearRunData(); return null; }
 }
 
 export const hasSavedRun = () => loadSavedRun() !== null;

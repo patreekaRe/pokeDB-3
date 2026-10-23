@@ -3530,9 +3530,25 @@ with a window ("🏠 A new housemate!", the unlock window) saying Safari catches
 (`js/safari-home.js`, `tests/safari-home.test.mjs`). A third catch stays in the box. Checked headless with three real
 catches in a Duo Run. Players who already have three or more catches see no change.
 
-### Secret Base houses, session 1 (2026-10-23, cloud; on `main` behind `HOUSES_LIVE`)
+### Secret Base houses, session 1 (2026-10-23, cloud; on branch `houses-playtest` behind `HOUSES_LIVE`)
 The save's `houses` (old bases keep the Ancient Tree, the Starter Cottage free), the Starter Cottage, Log Cabin and
 Seaside Bungalow as 3D models on the lot (`js/hub-houses.js`), the tree in three crown colours, Timburr & Co.'s stand at
 17,4 whose catalogue (`js/house-kiosk.js`) builds each pick on the lot as a try-on, repaints at 250, a YOUR HOUSE row on
 the PC's HOUSE UPGRADES. Off for players until the user's playtest says go (`?houses` shows it); budget line
 `clearing-houses` 275 draws / 119 MB (the Clearing 257 / 124). Its patch note waits in `HELD`.
+
+### Cloud save: no "Two saves found" over your own save (2026-10-23, cloud)
+The user's report: it popped after every berry Kurt
+explained, both sides the same, the cloud's "on iPhone"). The iPhone froze or reloaded the page between an upload landing
+and its rev being noted, so the next upload met its own copy. Each browser now signs its uploads (`from`) and the state
+keeps a fingerprint of the agreed progress (`sum`); play time alone no longer counts as a change. Detail:
+`docs/reference/cloud-save.md`. Shipped on `main`.
+
+### Cloud save: a run in progress is never swapped out quietly (2026-10-23, cloud)
+The user lost runs after Menu, only while signed in (incognito was fine): on load, the cloud's copy from another browser
+replaced the save silently, run and all. It now asks when this device holds a run the cloud's doesn't, and a run the
+cloud replaces is kept (`?runback`). A run that fails to load is kept the same way. Detail: `docs/reference/cloud-save.md`.
+
+### The Halloween ghosts no longer greet you (2026-10-23, cloud)
+The user found the walk-up greeting on every Clearing visit annoying. Cut from `js/hub-spooky.js` (and the `greets` lines
+from `js/data/spooky-lines.js`); the random lines over their heads and tap talks stay, nickname lines included.
