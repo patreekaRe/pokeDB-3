@@ -257,7 +257,7 @@ const PAGES = {
         () => import('./ranger.js').then(m => m.openJournal(() => show('home'))), journal > 0],
       ['BASE RESIDENTS', `Choose which Safari catches live in your Secret Base, up to ${residentCap()} a room.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save) || freshDesigns(loadBase()).length > 0],
-      ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; yardTab = false; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
+      ...(inBase || save.baseOwned || save.secretBase?.v >= 2 ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; yardTab = false; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
       ...(friendsOpen(save) ? [['FRIENDS', 'Your friends\' hearts live in your Pokédex now, by the Quests app. This opens it there.', () => { logOff(); openDeviceApp('friends'); }, friendsNews(save), { sub: 'Opens in your Pokédex' }]] : []),
       ...(cloudConfigured() ? [['TRAINERS', cloudRemembered() ? 'Other players you\'ve added, and your trainer code to give out. This opens it in your Pokédex.' : 'Sign in to get a trainer code and add other players. This opens it in your Pokédex.',
         () => { logOff(); openDeviceApp('trainers'); }, false, { sub: myCode() ? `Your code: ${formatCode(myCode())}` : 'Opens in your Pokédex' }]] : []),
@@ -421,14 +421,14 @@ const PAGES = {
   },
   residents() {
     // the room you're standing in, from the base's Storage PC; the main room from the Clearing's
-    const save = getSave(), { all, shown } = residents(save), b = save.secretBase ? loadBase() : {}, room = inBase ? b.here || 'main' : 'main';
+    const save = getSave(), { all, shown } = residents(save), b = save.secretBase?.v >= 2 ? loadBase() : { mons: save.secretBase?.mons }, room = inBase ? b.here || 'main' : 'main';
     const mine = monsIn(b, shown, room), where = b.house ? roomName(b.house, room) : 'Secret Base';
     const grid = el('div', 'pc-box');
     const order = [...mine, ...shown.filter(id => !mine.includes(id)), ...all.filter(id => !shown.includes(id))];
     grid.append(...order.map(id => monTile(resident(id).image, resident(id).name, mine.includes(id), () => {
       const def = resident(id), did = placeMon(b, residents().shown, id, room, residentCap());
       if (did === 'full') { playSound('cancel'); speak(`${residentCap()} can live in each room. Send one back first.`); return; }
-      if (save.secretBase) saveBase(b); else setResidents(b.mons);
+      if (save.secretBase?.v >= 2) saveBase(b); else setResidents(b.mons);
       if (did === 'out') { playSound('cancel'); show('residents'); speak(`${def.name} went back into the box.`); return; }
       playCry(def.cry);
       show('residents');
@@ -449,7 +449,7 @@ const PAGES = {
   },
   decor() {
     const save = getSave();
-    if (!inBase && !save.baseOwned && !save.secretBase) {
+    if (!inBase && !save.baseOwned && !(save.secretBase?.v >= 2)) {
       glass.replaceChildren(head('DECORATIONS'), el('p', 'pc-empty', 'No Secret Base yet.'));
       return speak('The Ancient Tree\'s door leads to a Secret Base. Make it yours, and its furniture is kept here.');
     }
@@ -527,7 +527,7 @@ const PAGES = {
   },
   house() {
     const save = getSave(), b = loadBase(), house = b.house, big = !!house?.big;
-    if (!inBase && !save.baseOwned && !save.secretBase) {
+    if (!inBase && !save.baseOwned && !(save.secretBase?.v >= 2)) {
       glass.replaceChildren(head('HOUSE UPGRADES'), el('p', 'pc-empty', 'No Secret Base yet.'));
       return speak('The Ancient Tree\'s door leads to a Secret Base. Make it yours, and its blueprint is kept here.');
     }

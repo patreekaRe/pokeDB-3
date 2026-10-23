@@ -27,7 +27,12 @@ The first section began as the note on playtesting the live site and grew into t
   rather than up front, and the boot screen waits on it; `warmPC()` starts it as you head for the PC (`goTo()` in
   `js/hub-3d.js`). Keep them out of `js/pc.js`'s static imports, or a tap on the PC waits on all of it again.
   Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6 a room, shared with `js/base-3d.js`; since
-  2026-10-23 it picks for the main room, or from the base's Storage PC the room you're in, as Pokémon out in the yard below). A resident whose
+  2026-10-23 it picks for the main room, or from the base's Storage PC the room you're in, as Pokémon out in the yard below).
+  A new Safari player's first two catches (`FIRST_HOME`) move into the main room by themselves, the first with a
+  "🏠 A new housemate!" unlock window saying every catch can live there, 6 a room (`moveInFirst()` in `js/safari-home.js`,
+  called on a new Safari Pokédex catch in `js/run.js`, `save.safariHomeTold`; the user's call, 2026-10-23). Before the base
+  is bought that writes a `secretBase` of only `mons`, which `loadBase()` keeps, so "has a base" checks read
+  `baseOwned || secretBase?.v >= 2`. A resident whose
   Safari shiny is yours comes out shiny, named "Shiny X" in the pickers (`resident(id, mine)`; 2026-10-19), and twinkles
   in the base now and then (`liveGuest()`); a friend's base's stay plain.
 - **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins; balanced the same day, the

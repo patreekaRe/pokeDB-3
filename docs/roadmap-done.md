@@ -3523,3 +3523,9 @@ guests. The PC's Base Residents picks for the main room (the room you're in from
 `out` moves over; a room taken down sends its residents back to the box. `tests/base-residents.test.mjs`; checked
 headless (both tabs and the PC), the base and yard within their phone budget. Branch
 `claude/backyard-garden-pokemon-allowlist-u7kn5b`, pushed to `main` too.
+
+### Secret Base: the first two Safari catches move in (2026-10-23, cloud)
+The user's ask: a new Safari player's first two catches move into the Secret Base's main room by themselves, the first
+with a window ("🏠 A new housemate!", the unlock window) saying Safari catches can live there, 6 a room
+(`js/safari-home.js`, `tests/safari-home.test.mjs`). A third catch stays in the box. Checked headless with three real
+catches in a Duo Run. Players who already have three or more catches see no change.

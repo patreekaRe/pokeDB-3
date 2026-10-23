@@ -16,7 +16,7 @@ import { wearShell } from './settings.js';
 
 const coins = () => getSave().coins ?? 0;
 const n = (v) => v.toLocaleString();
-const hasBase = () => { const s = getSave(); return !!(s.baseOwned || s.secretBase); };
+const hasBase = () => { const s = getSave(); return !!(s.baseOwned || s.secretBase?.v >= 2); };
 /** The starters whose statue is listed: all but Mewtwo, and Mewtwo once it's yours. */
 const listed = () => STARTERS.filter(s => !s.secret || isStarterUnlocked(s));
 

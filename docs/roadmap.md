@@ -353,7 +353,8 @@ roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no 
   a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
   b) Done 2026-10-14, on `main`: 16 outdoor kinds, Smeargle's garden catalogue (docs/roadmap-done.md).
   c) Done 2026-10-14, on `main`: the 6 on show let out from the yard's Pokémon tab; swim, swing, sit (docs/roadmap-done.md).
-     2026-10-23: every room, the yard too, now picks from the whole Safari list, up to 6 a room (docs/roadmap-done.md).
+     2026-10-23: every room, the yard too, now picks from the whole Safari list, up to 6 a room, and a new Safari player's
+     first two catches move in by themselves, with a window (docs/roadmap-done.md).
      Not yet seen in a browser: playtest `?yard&guests` with a swing set and pond out (`?base&yard` opens the main
      room: `?base` is read first).
   d) Done 2026-10-14, on `main`: berry plots in Smeargle's catalogue, five berries, coins capped at 100 a day, a basket

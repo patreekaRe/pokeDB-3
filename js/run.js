@@ -35,6 +35,7 @@ import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.j
 import { runTypes, outStarter, runPool, runItems, fitsRun, newDuo, restoreDuo, syncDecks, duoGains, duoStarters } from './data/duo.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
+import { moveInFirst } from './safari-home.js';
 import { openSealed } from './data/exchange.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion, bestWin, starName, isMaster, LEVEL_SHELLS, shellEarned } from './data/difficulty.js';
@@ -2683,7 +2684,12 @@ function afterFight(node, result) {
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
     if (shinyCatch && !lentShiny) run.tally.shinies = (run.tally.shinies || 0) + 1;   // the leaderboard's ✨
-    if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+    if (!peeking && markSafari('caught', node.enemyId)) {
+      dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+      const home = moveInFirst(node.enemyId, result.shiny && !lentShiny);
+      if (home?.told) unlocked.push(home.told);
+      else if (home) dexNews.push(`🏠 ${home.name} moved into your Secret Base too!`);
+    }
     if (shinyCatch) dexNews.unshift(shinyLine(ENEMY_DEFS[node.enemyId].name, shinyCatch) + (lentShiny ? ' (A playtest: nothing is saved.)' : ''));
     if (opened.length) dexNews.splice(shinyCatch ? 1 : 0, 0, ...opened.map(g => `🔓 Sealed capsule opened! ${shinyLine(ENEMY_DEFS[node.enemyId].name, g).replace(/^✨ /, '')}`));
     // a Ranger task this catch finishes, said now (it's logged as the rewards are collected)
