@@ -1213,7 +1213,9 @@ in the Clearing, so it goes through the budget check.
 **Session 1 built (2026-10-23, cloud), behind `HOUSES_LIVE` (false), waiting on the user's playtest**: the save field,
 the Starter Cottage / Log Cabin / Seaside Bungalow as 3D models, the tree repaintable (Spring / Autumn / Twilight), Timburr
 & Co.'s stand at tile 17,4 with its try-on catalogue, repaints at 250, the PC's YOUR HOUSE row (detail:
-`docs/reference/hub-base-mall.md`'s last section; the archive has the line). Playtest: the live site with
+`docs/reference/hub-base-mall.md`'s last section; the archive has the line). The catalogue was restyled after the user's first playtest ("doesn't look that great"): the shops' cream merchant card with a
+picture of each house; they liked seeing the house built on the lot as they pick. Playtest only on the branch's githack
+link (never the live site): `?houses&coins=5000`, and `?houses&tree` for an old save. Was: the live site with
 `?houses&coins=5000` (and a save that already owns the tree, to see it kept and the cottage free). Still open: which of the
 18 to keep, the prices, friends' visits (front lawn). Sessions left: 2 the coin houses (medium), 3 earned and seasonal with
 unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium), and the friends' front lawn. All CLOUD.
