@@ -3529,3 +3529,10 @@ The user's ask: a new Safari player's first two catches move into the Secret Bas
 with a window ("🏠 A new housemate!", the unlock window) saying Safari catches can live there, 6 a room
 (`js/safari-home.js`, `tests/safari-home.test.mjs`). A third catch stays in the box. Checked headless with three real
 catches in a Duo Run. Players who already have three or more catches see no change.
+
+### Cloud save: no "Two saves found" over your own save (2026-10-23, cloud)
+The user's report: it popped after every berry Kurt
+explained, both sides the same, the cloud's "on iPhone"). The iPhone froze or reloaded the page between an upload landing
+and its rev being noted, so the next upload met its own copy. Each browser now signs its uploads (`from`) and the state
+keeps a fingerprint of the agreed progress (`sum`); play time alone no longer counts as a change. Detail:
+`docs/reference/cloud-save.md`. Shipped on `main`.
