@@ -5,7 +5,6 @@
 import { getSave, updateSave } from './storage.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { shinyImage } from './data/shinies.js';
-import { lotWord } from './data/houses.js';
 
 export const FIRST_HOME = 2;
 
@@ -21,6 +20,6 @@ export function moveInFirst(id, shiny) {
   const owned = save.baseOwned || save.secretBase?.v >= 2;
   return { name, told: { feat: true, kicker: '🏠 A new housemate!', name, sprite: shiny ? shinyImage(id) : def.image, cry: def.spriteId ?? id,
     text: `${name} moved into your Secret Base!`,
-    hint: `Safari Pokémon you catch can live in your Secret Base now, 6 in each room, the backyard too: pick them on a room's Pokémon tab, or at the PC's Base Residents.${owned ? '' : ` Make ${lotWord(save)} in the Clearing your Secret Base to visit them.`}` } };
+    hint: `Safari Pokémon you catch can live in your Secret Base now, 6 in each room, the backyard too: pick them on a room's Pokémon tab, or at the PC's Base Residents.${owned ? '' : ' Make the Ancient Tree in the Clearing your Secret Base to visit them.'}` } };
 }
 

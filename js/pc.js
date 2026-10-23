@@ -43,7 +43,6 @@ import { friendsOpen, friendsNews } from './data/friends.js';
 import { openDeviceApp } from './collection.js';
 import { MATERIALS_BY_ID } from './data/satchel.js';
 import { starClass } from './data/difficulty.js';
-import { housesOpen, homeOf, HOUSES_BY_ID, lotWord, LotWord } from './data/houses.js';
 
 // The Secret Base's side (secret-base.js pulls in every furniture model, ~170 files) loads behind the boot screen
 // (2026-10-23, the user's report: the PC "doesn't open"). Imported up front, a tap on the PC waited on all of it before
@@ -81,7 +80,7 @@ export function resident(id, mine = true) {
   return { image: sparkle ? shinyImage(id) : def.image, name: `${sparkle ? 'Shiny ' : ''}${def.name}`, cry: def.spriteId ?? id, sparkle };
 }
 
-let root = null, glass = null, say = null, onClose = null, onFame = null, onKiosk = null, page = 'home', typing = 0, letter = null, hint = 0;
+let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;
 let start = 'home', reading = 0, deco = null, decoKind = 'All', inBase = false;
 let dupes = false;   // Decorations picking a piece to duplicate, not to put away
 // House upgrades: the doorway picked on the blueprint ({ room, pip, up } to build onto, or { join } between two rooms), the
@@ -97,16 +96,16 @@ const canGrowYard = (house) => ownsYard(house) && !(house.yard.size > 1);
 /** What the PC says on the BACKYARD tab: the plot to buy, the bought one to make bigger, or the one grown as big as it goes. */
 const yardSay = (house) => canGrowYard(house)
   ? `Make your backyard bigger, ${BIG_YARD_PRICE.toLocaleString()} PokéCoins? Everything out there keeps its place by the gate.`
-  : ownsYard(house) ? `Your backyard, as big as it grows, through the garden arch beside ${lotWord(getSave())}.`
-  : !inBase && !getSave().baseOwned ? `A backyard behind ${lotWord(getSave())}. Make ${lotWord(getSave())} your Secret Base first.`
-  : `A backyard behind ${lotWord(getSave())}, through the garden arch beside it. ${YARD_PRICE.toLocaleString()} PokéCoins.`;
+  : ownsYard(house) ? 'Your backyard, as big as it grows, through the garden arch beside the Ancient Tree.'
+  : !inBase && !getSave().baseOwned ? 'A backyard behind the Ancient Tree. Make the Ancient Tree your Secret Base first.'
+  : `A backyard behind the Ancient Tree, through the garden arch beside it. ${YARD_PRICE.toLocaleString()} PokéCoins.`;
 
 /** Log on. `onClose` runs once it's logged off; `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. `start: 'decor'` boots onto the Decorations, as the Secret Base's
     Storage PC does (`inBase` lifts it over the base). */
 export function openPC(opts = {}) {
   if (root) return;
-  ({ onClose = null, onFame = null, onKiosk = null, start = 'home' } = opts);
+  ({ onClose = null, onFame = null, start = 'home' } = opts);
   deco = null;
   inBase = !!opts.inBase;
   pcLookedAt(getSave());
@@ -452,7 +451,7 @@ const PAGES = {
     const save = getSave();
     if (!inBase && !save.baseOwned && !(save.secretBase?.v >= 2)) {
       glass.replaceChildren(head('DECORATIONS'), el('p', 'pc-empty', 'No Secret Base yet.'));
-      return speak(`${LotWord(getSave())}'s door leads to a Secret Base. Make it yours, and its furniture is kept here.`);
+      return speak('The Ancient Tree\'s door leads to a Secret Base. Make it yours, and its furniture is kept here.');
     }
     const b = loadBase(), all = decorations(b).filter(d => !(dupes && PIECES[d.id].luxury));   // a statue's copies are the Grand Catalogue's
     const unlit = statuesIn(all.map(d => d.id)).filter(id => !statueReady(id)), unfig = figuresToLoad(all.map(d => PIECES[d.id].fam));
@@ -530,7 +529,7 @@ const PAGES = {
     const save = getSave(), b = loadBase(), house = b.house, big = !!house?.big;
     if (!inBase && !save.baseOwned && !(save.secretBase?.v >= 2)) {
       glass.replaceChildren(head('HOUSE UPGRADES'), el('p', 'pc-empty', 'No Secret Base yet.'));
-      return speak(`${LotWord(getSave())}'s door leads to a Secret Base. Make it yours, and its blueprint is kept here.`);
+      return speak('The Ancient Tree\'s door leads to a Secret Base. Make it yours, and its blueprint is kept here.');
     }
     markPcSeen('yard');
     const h = head('HOUSE UPGRADES');
@@ -540,15 +539,6 @@ const PAGES = {
     const kids = [h];
     const buy = (label, go, cls = '') => { const ok = el('button', `room-ok pc-build${cls}`, label); ok.type = 'button'; ok.addEventListener('click', go); return ok; };
     const short = (price) => speak(`You need ${price - (getSave().coins ?? 0)} more PokéCoins.`);
-    // the house on the lot (houses on): what it is, and a key to the builders' stand beside it, which sells and repaints
-    const home = housesOpen() && homeOf(save), outside = [];
-    if (home) {
-      const def = HOUSES_BY_ID[home.id], row = el('div', 'pc-plan');
-      row.append(el('b', 'pc-plan-name', 'YOUR HOUSE'), el('small', 'pc-plan-note', `${def.name}, ${def.paints[home.paint].name}. Timburr & Co.'s stand beside your lot builds new houses and repaints this one.`));
-      if (onKiosk && !inBase) row.append(buy('Go there', () => { const go = onKiosk; logOff(); go(); }));
-      outside.push(row);
-    }
-    kids.push(...outside);
     // the backyard's plot behind the house, bought on its own whatever size the main room is, then made bigger
     const yardCard = () => {
       const card = el('div', 'pc-plan'), { w, h } = shapeOf('yard');
@@ -570,16 +560,16 @@ const PAGES = {
         return card;
       }
       if (!inBase && !save.baseOwned) {
-        card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', `Make ${lotWord(getSave())} your Secret Base first, then its backyard can be built.`));
+        card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', 'Make the Ancient Tree your Secret Base first, then its backyard can be built.'));
         return card;
       }
-      card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', `${w} × ${h} tiles of lawn behind ${lotWord(getSave())}, through the garden arch beside it.`),
+      card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', `${w} × ${h} tiles of lawn behind the Ancient Tree, through the garden arch beside it.`),
         buy(`Build · ${YARD_PRICE.toLocaleString()}`, () => {
           if (!buyYard(loadBase())) { playSound('cancel'); return short(YARD_PRICE); }
           unpick();
           playSound('item-get');
           show('house');
-          speak(`Your backyard is ready! The garden arch beside ${lotWord(getSave())} is open now: walk through it to see.`);
+          speak('Your backyard is ready! The garden arch beside the Ancient Tree is open now: walk through it to see.');
         }));
       return card;
     };
@@ -596,7 +586,7 @@ const PAGES = {
     // the Build key stays in sight at the foot of the page, over the scroll (the user's ask: it hid under the text window)
     const act = (...n) => { const a = el('div', 'pc-act'); a.append(...n); return a; };
     if (yardTab) {
-      glass.replaceChildren(h, ...outside, tabs, yardPlan(house), act(yardCard()));
+      glass.replaceChildren(h, tabs, yardPlan(house), act(yardCard()));
       return speak(yardSay(house));
     }
     if (!big) {
@@ -608,7 +598,7 @@ const PAGES = {
           show('house');
           speak('Your main room is bigger! Tap a green spot on a wall to build a room there, or go to 2F to build upstairs.');
         }));
-      glass.replaceChildren(h, ...outside, tabs, blueprint(house, null), act(card));
+      glass.replaceChildren(h, tabs, blueprint(house, null), act(card));
       return speak(`First, make your main room bigger for ${BIG_PRICE} PokéCoins. Then you can build more rooms onto it. The Backyard tab has your lawn.`);
     }
     kids.push(tabs, blueprint(house, fit));

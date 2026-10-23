@@ -3529,10 +3529,3 @@ The user's ask: a new Safari player's first two catches move into the Secret Bas
 with a window ("🏠 A new housemate!", the unlock window) saying Safari catches can live there, 6 a room
 (`js/safari-home.js`, `tests/safari-home.test.mjs`). A third catch stays in the box. Checked headless with three real
 catches in a Duo Run. Players who already have three or more catches see no change.
-
-### Secret Base houses, session 1 (2026-10-23, cloud; on `main` behind `HOUSES_LIVE`)
-The save's `houses` (old bases keep the Ancient Tree, the Starter Cottage free), the Starter Cottage, Log Cabin and
-Seaside Bungalow as 3D models on the lot (`js/hub-houses.js`), the tree in three crown colours, Timburr & Co.'s stand at
-17,4 whose catalogue (`js/house-kiosk.js`) builds each pick on the lot as a try-on, repaints at 250, a YOUR HOUSE row on
-the PC's HOUSE UPGRADES. Off for players until the user's playtest says go (`?houses` shows it); budget line
-`clearing-houses` 275 draws / 119 MB (the Clearing 257 / 124). Its patch note waits in `HELD`.

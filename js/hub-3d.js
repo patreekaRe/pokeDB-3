@@ -35,8 +35,6 @@ import { vistaArt, VISTA } from './hub-vista.js';
 import { makeCracks, CRACK_LINES } from './hub-cracks.js';
 import { makeSealedGate } from './hub-sealed.js';
 import { makeGardenArch } from './hub-arch.js';
-import { makeHouse, makeKiosk } from './hub-houses.js';
-import { housesOpen, homeOf, HOUSES_BY_ID, firstHouse, lotWord } from './data/houses.js';
 import { YARD_PRICE } from './data/house.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
@@ -141,8 +139,6 @@ const SEALED_AT = { tx: 2, ty: 10 };
 // the garden gate into the Secret Base's backyard (2026-10-15, the user's ask: its way in from outside, not a back door),
 // in the front of the Ancient Tree's fenced garden, just right of its trunk (moved from 27,3 the same day, the user's drawing)
 const ARCH_AT = { tx: 25, ty: 4 }, ARCH_X = 0;
-// the Timburr crew's builders' stand (houses on, js/data/houses.js), just outside the lot's fence on its left, by the ring road
-const KIOSK_AT = { tx: 17, ty: 4 };
 // Kurt's Workshop (its top-left tile) in the plaza's north-east, its door straight onto the east avenue (moved down a
 // step from 23,6 on 2026-10-15, the user's ask: up the grass it stood apart from the street)
 const WORKSHOP_AT = { tx: 23, ty: 8 };
@@ -197,7 +193,6 @@ let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a 
 let holo = null;    // the Buddy Projector: the walking buddy as a hologram (js/hub-holo.js)
 let beckons = [];   // the signs that are places of their own, hopping now and then (beckon())
 let questMark = null, nietosMark = null;   // the "!" over the quest board (a notice to read) and over the Nietos' house (a step to hand them; boardNow())
-let house = null, kiosk = null, trying = null;   // the house on the lot (js/hub-houses.js), the builders' stand, and the house tried on from its catalogue
 let boothMark = null;  // a "!" over the Berry Booth while held berries are kept and nothing's packed (boothBeckons())
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
@@ -611,7 +606,7 @@ function gateVeilArt() {
     vines hanging off it, a ridged trunk flaring into arching roots, and the Secret Base's plank door in the hollow between
     them, a round window and a lantern lit at dusk; mushrooms, ferns and grass at its foot. Open, the door's swung in on a
     warm room; `boarded` (not bought yet) nails two planks across it. */
-function ancientArt(open = false, boarded = false, L = HOUSES_BY_ID.tree.paints[0]) {
+function ancientArt(open = false, boarded = false) {
   // at 4 pixels a unit, still several times what the screen shows of it: at 8 its four pictures (shut and open, with their
   // glow) were 5 MP, sent to the GPU as the Clearing first drew
   const W = 128, H = 160, { c, g, fill, rr, lin, shine } = fine(W, H, 4), rnd = seeded(11), glow = shine();
@@ -684,8 +679,8 @@ function ancientArt(open = false, boarded = false, L = HOUSES_BY_ID.tree.paints[
   rr(38.4, 116.8, 6.4, 1.3, 0.4, '#2e2e38');
 
   const lobes = [[64, 40, 36], [28, 58, 24], [100, 58, 24], [44, 26, 22], [86, 26, 22], [64, 15, 17], [16, 74, 12], [112, 74, 12]];
-  for (const [x, y, r] of lobes) fill(L.lobe[0], () => g.arc(x, y, r + 1.2, 0, Math.PI * 2));
-  for (const [x, y, r] of lobes) fill(L.lobe[1], () => g.arc(x, y, r, 0, Math.PI * 2));
+  for (const [x, y, r] of lobes) fill(P.trees[3], () => g.arc(x, y, r + 1.2, 0, Math.PI * 2));
+  for (const [x, y, r] of lobes) fill(P.trees[2], () => g.arc(x, y, r, 0, Math.PI * 2));
   const clumps = [];
   for (let i = 0; i < 420; i++) {   // leaf clumps, lit from the top left, the lit ones on top
     const [bx, by, br] = lobes[Math.floor(rnd() * lobes.length)], a = rnd() * Math.PI * 2, rad = 2.6 + rnd() * 3.6, d = Math.sqrt(rnd()) * (br - rad * 0.6);
@@ -694,17 +689,17 @@ function ancientArt(open = false, boarded = false, L = HOUSES_BY_ID.tree.paints[
     clumps.push([l, x, y, rad]);
   }
   clumps.sort((p, q) => p[0] - q[0]);
-  const shade = (l) => L.shade[l > 0.75 ? 0 : l > 0.35 ? 1 : l > -0.1 ? 2 : 3];
+  const shade = (l) => l > 0.75 ? ['#a8e078', '#6cc058'] : l > 0.35 ? ['#7cc860', '#48a044'] : l > -0.1 ? ['#5aac4a', '#2e7c34'] : ['#3a8a3a', '#1c5a26'];
   for (const [l, x, y, rad] of clumps) {
     const [lit, dark] = shade(l);
     fill(dark, () => g.arc(x + rad * 0.18, y + rad * 0.22, rad, 0, Math.PI * 2));
     fill(lit, () => g.arc(x, y, rad * 0.88, 0, Math.PI * 2));
     if (l > 0.2) fill('rgba(255,255,220,0.22)', () => g.arc(x - rad * 0.3, y - rad * 0.35, rad * 0.35, 0, Math.PI * 2));
   }
-  for (const [l, x, y] of clumps.slice(-90)) if (rnd() < 0.5) leaf(g, x + (rnd() - 0.5) * 4, y + (rnd() - 0.5) * 4, -2.4 + rnd() * 1.2, 1.6 + rnd(), l > 0.75 ? L.leaf[0] : L.leaf[1]);
+  for (const [l, x, y] of clumps.slice(-90)) if (rnd() < 0.5) leaf(g, x + (rnd() - 0.5) * 4, y + (rnd() - 0.5) * 4, -2.4 + rnd() * 1.2, 1.6 + rnd(), l > 0.75 ? '#c8f090' : '#8ad468');
   for (let i = 0; i < 26; i++) {   // blossoms in the light
     const [, x, y] = clumps[clumps.length - 1 - Math.floor(rnd() * 160)];
-    blossom(g, x + (rnd() - 0.5) * 3, y + (rnd() - 0.5) * 3, 0.55, rnd() < 0.5 ? L.bloom[0] : L.bloom[1], '#f8d848');
+    blossom(g, x + (rnd() - 0.5) * 3, y + (rnd() - 0.5) * 3, 0.55, rnd() < 0.5 ? '#ffffff' : '#f8c8e0', '#f8d848');
   }
   for (const [x, y, n] of [[18, 84, 12], [30, 80, 16], [42, 74, 10], [86, 74, 12], [98, 80, 18], [110, 84, 10]]) {   // vines hanging off it
     const pts = [];
@@ -2425,15 +2420,30 @@ function makePlaces() {
     },
     {
       id: 'base', name: 'Secret Base', step: { x: TREE_AT.tx, y: TREE_AT.ty + 1 }, tiles: [...rect(TREE_AT.tx - 3, TREE_AT.ty - 2, TREE_AT.tx + 3, TREE_AT.ty - 1), ...rect(TREE_AT.tx - 3, TREE_AT.ty, ARCH_AT.tx - 1, TREE_AT.ty)], tag: [TREE_AT.tx, 3.2, TREE_AT.ty], open: true,
-      line: lotLine(),
+      line: baseOwned() ? 'A door in the Ancient Tree\'s roots: your Secret Base.'
+        : `A boarded-up door in the Ancient Tree's roots. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
       buttons: [[baseOwned() ? 'Go in' : 'Unlock', baseOwned() ? enterBase : buyBase]],
-      build: (g) => buildLot(g, lotNow()),
+      build: (g) => {
+        const shut = ancientArt(false, !baseOwned()), b = board(shut, tileX(TREE_AT.tx), tileZ(TREE_AT.ty) + 0.2), open = ancientArt(true);
+        glowing(b.material, shut, null, '#ffd890');
+        b.raycast = doorOnly;
+        tree = { m: b.material, shut: b.material.map, open: texOf(open) };
+        g.add(b);
+        // the sign hangs off its nail on the bark over the door, pivoting there (liveSign())
+        const art = homeSignArt(baseOwned()), plate = board(art, 0, 0), pivot = new THREE.Group();
+        plate.position.set((art.width / art.fine / 2 - SIGN_NAIL[0]) / TP, (SIGN_NAIL[1] - art.height / art.fine / 2) / TP, 0);
+        pivot.position.set(tileX(TREE_AT.tx), 3.62, tileZ(TREE_AT.ty) + 0.32);
+        plate.raycast = () => {};
+        pivot.add(plate);
+        g.add(pivot);
+        sign = { pivot, m: plate.material, fixed: baseOwned() ? null : texOf(homeSignArt(true)), fixAt: 0, from: 0, swapped: false };
+      },
     },
     {
       // the backyard's garden arch: brambles and a padlock till it's bought, here or on the PC's blueprint (js/hub-arch.js)
       id: 'backyard', name: yardOwned() ? 'Backyard' : 'Garden Arch', step: { x: ARCH_AT.tx, y: ARCH_AT.ty + 1 }, tiles: [[ARCH_AT.tx, ARCH_AT.ty]], tag: [ARCH_AT.tx + ARCH_X, 2.9, ARCH_AT.ty], open: true,
-      line: yardOwned() ? `Through the garden arch beside ${lotWord(save)}: your backyard.`
-        : `An old garden arch beside ${lotWord(save)}, choked with brambles, its gate padlocked. ${baseOwned() ? `${YARD_PRICE.toLocaleString()} PokéCoins clears it into a backyard of your own.` : `Make ${lotWord(save)} your Secret Base first.`}`,
+      line: yardOwned() ? 'Through the garden arch beside the Ancient Tree: your backyard.'
+        : `An old garden arch beside the Ancient Tree, choked with brambles, its gate padlocked. ${baseOwned() ? `${YARD_PRICE.toLocaleString()} PokéCoins clears it into a backyard of your own.` : 'Make the Ancient Tree your Secret Base first.'}`,
       buttons: yardOwned() ? [['Go in', enterYard]] : baseOwned() ? [['Unlock', buyYardArch]] : [],
       build: (g) => {
         const L = leavesOf(SEASON), owned = yardOwned();
@@ -2442,14 +2452,6 @@ function makePlaces() {
         g.add(gardenArch.group);
       },
     },
-    ...(housesOpen() ? [{
-      // the Timburr crew's stand beside the lot (houses on): its catalogue tries a house on the lot before you pay
-      id: 'kiosk', name: 'Timburr & Co.', step: { x: KIOSK_AT.tx, y: KIOSK_AT.ty + 1 }, tiles: [[KIOSK_AT.tx, KIOSK_AT.ty]], tag: [KIOSK_AT.tx, 2.6, KIOSK_AT.ty], open: true,
-      line: baseOwned() ? 'Timburr & Co., builders. Their catalogue builds a new house on your lot, tried on before you buy, and repaints the one you have.'
-        : `Timburr & Co., builders. FOR SALE: the lot beside them, a Starter Cottage on it. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
-      buttons: [['Catalogue', openKiosk]],
-      build: (g) => buildKiosk(g),
-    }] : []),
     {
       // right of the plaza, where your partner starts (2026-10-09): who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
@@ -2839,7 +2841,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; house = null; kiosk = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; boothMark = null; holo = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; boothMark = null; holo = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -3254,7 +3256,6 @@ const placeAt = (t) => places.find(p => p.step.x === t.x && p.step.y === t.y) ??
 function goTo(p, enter, i = null) {
   playSound('confirm');   // as you tap, not again as you get there (the user's ask, 2026-10-12)
   if (p.id === 'pc') import('./pc.js').then(m => m.warmPC(), () => {});
-  if (p.id === 'kiosk') import('./house-kiosk.js').catch(() => {});
   if (walker.path.length === 0 && placeAt(walker.tile) === p) return enter ? open(p, i) : showCard(p);
   walker.path = route(walker.tile, p.step);
   aim = enter ? { p, i } : null;
@@ -3540,127 +3541,6 @@ const BASE_PRICE = 1500;
 const baseOwned = () => !!getSave().baseOwned;
 const yardOwned = () => { const y = getSave().secretBase?.house?.yard; return !!y && !y.lent; };
 
-/* ---------- the house on the lot, and the builders' stand (js/data/houses.js; behind HOUSES_LIVE / ?houses) ---------- */
-
-/** What stands on the lot: with houses off, always the Ancient Tree; on, the house tried on from the stand's catalogue,
-    else the one lived in, else (no base yet) the Starter Cottage for sale. */
-function lotNow() {
-  if (!housesOpen()) return { id: 'tree', paint: 0 };
-  return trying || homeOf(getSave()) || { id: 'cottage', paint: 0 };
-}
-
-function lotLine() {
-  const lot = lotNow(), name = HOUSES_BY_ID[lot.id].name;
-  if (lot.id === 'tree') return baseOwned() ? 'A door in the Ancient Tree\'s roots: your Secret Base.'
-    : `A boarded-up door in the Ancient Tree's roots. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`;
-  return baseOwned() ? `Your Secret Base: a ${name}, in ${HOUSES_BY_ID[lot.id].paints[lot.paint]?.name ?? 'its own paint'}.`
-    : `A ${name}, boarded up. ${BASE_PRICE.toLocaleString()} PokéCoins at Timburr & Co.'s stand makes it your Secret Base.`;
-}
-
-/** The lot's house, `lot` { id, paint }: the tree's painting (its door, its "Home" sign), or a house's model. */
-function buildLot(g, lot) {
-  const owned = baseOwned();
-  lotShown = lot;
-  if (lot.id !== 'tree') {
-    const def = HOUSES_BY_ID[lot.id];
-    house = makeHouse(THREE, { id: lot.id, p: def.paints[lot.paint] || def.paints[0], x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty) - 0.1, boarded: !owned, winter: SEASON === 'winter', fine, texOf, merge: mergeStill });
-    glowMats.push(...house.glows);
-    g.add(house.group);
-    return;
-  }
-  const L = HOUSES_BY_ID.tree.paints[lot.paint] || HOUSES_BY_ID.tree.paints[0];
-  const shut = ancientArt(false, !owned, L), b = board(shut, tileX(TREE_AT.tx), tileZ(TREE_AT.ty) + 0.2), open = ancientArt(true, false, L);
-  glowing(b.material, shut, null, '#ffd890');
-  b.raycast = doorOnly;
-  tree = { m: b.material, shut: b.material.map, open: texOf(open) };
-  g.add(b);
-  // the sign hangs off its nail on the bark over the door, pivoting there (liveSign())
-  const art = homeSignArt(owned), plate = board(art, 0, 0), pivot = new THREE.Group();
-  plate.position.set((art.width / art.fine / 2 - SIGN_NAIL[0]) / TP, (SIGN_NAIL[1] - art.height / art.fine / 2) / TP, 0);
-  pivot.position.set(tileX(TREE_AT.tx), 3.62, tileZ(TREE_AT.ty) + 0.32);
-  plate.raycast = () => {};
-  pivot.add(plate);
-  g.add(pivot);
-  sign = { pivot, m: plate.material, fixed: owned ? null : texOf(homeSignArt(true)), fixAt: 0, from: 0, swapped: false };
-}
-
-/** Just the lot built again (a try-on from the catalogue): its old model let go, its lights out of glowMats. */
-function rebuildLot() {
-  const g = placeGroup?.children.find(o => o.name === 'base'), p = places.find(q => q.id === 'base');
-  if (!g || !p) return;
-  const gone = new Set();
-  g.traverse(o => { for (const m of [o.material].flat()) if (m) gone.add(m); });
-  glowMats = glowMats.filter(m => !gone.has(m));
-  tree?.open.dispose();
-  sign?.fixed?.dispose();
-  tree = null; sign = null; house = null;
-  dispose(g);
-  p.line = lotLine();
-  p.build(g);
-  g.traverse(o => { o.userData.place = p; });
-  const L = LIGHT[time] || LIGHT.day;
-  g.traverse(o => { const m = o.material; if (m && glowMats.includes(m)) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow; });
-}
-
-const KIOSK_CREW = 'assets/pokemon/timburr-front.gif';
-
-/** The builders' stand, and Timburr behind its counter, hopping now and then to be noticed. */
-function buildKiosk(g) {
-  const x = tileX(KIOSK_AT.tx), z = tileZ(KIOSK_AT.ty) + 0.05;
-  g.add(makeKiosk(THREE, { x, z, sale: !baseOwned(), fine, texOf, merge: mergeStill }).group);
-  const k = kiosk = { mon: null, next: 0, hop: 0, tick(now) {
-    if (!k.mon || calm) return;
-    if (!k.next) k.next = now + 4000;
-    if (now > k.next) { k.hop = now; k.next = now + 6000 + Math.random() * 5000; }
-    const t = (now - k.hop) / 450;
-    k.mon.board.position.y = t < 1 ? Math.sin(t * Math.PI) * 0.18 : 0;
-  } };
-  monBoard({ src: KIOSK_CREW, name: 'Timburr', cry: 'timburr' }, false).then(m => {
-    if (!g.parent || kiosk !== k) { dispose(m.group); return; }
-    m.board.rotation.x = -PITCH;
-    m.group.scale.setScalar(0.85);
-    m.group.position.set(x + 0.08, 0, z - 0.38);
-    const p = places.find(q => q.id === 'kiosk');
-    m.group.traverse(o => { o.userData.place = p; });
-    drawMon(m, { facing: 'front' }, 0);
-    g.add(m.group);
-    k.mon = m;
-  }, () => {});
-}
-
-let browsing = null;   // while the stand's catalogue is open, where the view looks: the lot, over the sheet
-let near = 1;          // the view's distance, eased in to BROWSE_NEAR while it does, so the house tried on reads on a phone
-const BROWSE_NEAR = 0.8;
-let lotShown = null;   // the { id, paint } built on the lot
-const sameLot = (a, b) => a?.id === b?.id && a?.paint === b?.paint;
-
-/** The stand's catalogue (js/house-kiosk.js), a sheet over the lower half: a pick builds that house on the lot as a
-    try-on (rebuildLot()), and shutting it puts back the one lived in. */
-async function openKiosk() {
-  if (entering || document.querySelector('.hk-sheet')) return;
-  hideCard();
-  walker.path = []; aim = null;
-  let mod;
-  try { mod = await import('./house-kiosk.js'); } catch { playSound('cancel'); return; }
-  playCry('timburr');
-  browsing = { x: tileX(TREE_AT.tx) - 0.2, z: tileZ(TREE_AT.ty) + 2.6 };
-  root.classList.add('browsing');
-  mod.openKiosk({
-    parent: root,
-    tryOn: (lot) => { trying = lot; if (!sameLot(lotNow(), lotShown)) rebuildLot(); },
-    rebuild: () => rebuildLot(),
-    buyBase: (paint) => buyBase(paint, true),
-    onClose: (changed) => {
-      browsing = null;
-      root.classList.remove('browsing');
-      trying = null;
-      if (changed) buildPlaces();
-      else if (!sameLot(lotNow(), lotShown)) rebuildLot();
-      refreshCoins();
-    },
-  });
-}
-
 const FIX = 1100;
 
 /** The locked sign swings left and right on its one nail; bought, it settles level, mending itself on the way. */
@@ -3673,21 +3553,20 @@ function liveSign(now) {
 }
 
 /** The boarded door's price: too few coins says how many more; else a yes pays, pulls the planks off and walks in. */
-async function buyBase(paint = 0, fromKiosk = false) {
-  if (entering) return false;
+async function buyBase() {
+  if (entering) return;
   hideCard();
   walker.path = []; aim = null;
-  const coins = getSave().coins ?? 0, cottage = housesOpen();
+  const coins = getSave().coins ?? 0;
   if (coins < BASE_PRICE) {
     playSound('cancel');
     await confirmDialog(`The Secret Base costs ${BASE_PRICE.toLocaleString()} PokéCoins, and you have ${coins.toLocaleString()}.`, 'OK');
-    return false;
+    return;
   }
-  if (!fromKiosk && !(await confirmDialog(cottage ? `Make the Starter Cottage your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?` : `Make the Ancient Tree your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?`, `Buy (${BASE_PRICE.toLocaleString()})`))) return false;
-  updateSave(d => { d.coins -= BASE_PRICE; d.baseOwned = true; if (cottage) firstHouse(d, paint); });
+  if (!(await confirmDialog(`Make the Ancient Tree your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?`, `Buy (${BASE_PRICE.toLocaleString()})`))) return;
+  updateSave(d => { d.coins -= BASE_PRICE; d.baseOwned = true; });
   refreshCoins();
   playSound('buy');
-  if (fromKiosk) return true;
   if (sign && !calm) {   // the sign swings up level and mends itself before the door opens
     entering = { at: performance.now(), z: walker.z, still: true };
     sign.from = sign.pivot.rotation.z; sign.fixAt = performance.now();
@@ -3697,7 +3576,6 @@ async function buyBase(paint = 0, fromKiosk = false) {
   buildPlaces();
   here = places.find(q => q.id === 'base');
   await enterBase();
-  return true;
 }
 
 /** Into the Ancient Tree: the door swings open, your partner steps into the dark, and the Secret Base comes up under a
@@ -3707,13 +3585,11 @@ async function enterBase() {
   hideCard();
   walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
   if (tree) tree.m.map = tree.open;
-  house?.open(true);
   playSound('door');
   entering = { at: performance.now(), z: walker.z };
   await curtain(true, calm ? 0 : 420);
   entering = null;
   if (tree) tree.m.map = tree.shut;
-  house?.open(false, true);
   inside = 'base';
   await acts.onBase();
 }
@@ -3725,7 +3601,7 @@ async function lockedArch() {
   hideCard();
   walker.path = []; aim = null;
   playSound('cancel');
-  await confirmDialog(`The garden arch is padlocked. Make ${lotWord(getSave())} your Secret Base first, then its backyard can be cleared.`, 'OK');
+  await confirmDialog('The garden arch is padlocked. Make the Ancient Tree your Secret Base first, then its backyard can be cleared.', 'OK');
 }
 
 async function buyYardArch() {
@@ -3738,7 +3614,7 @@ async function buyYardArch() {
     await confirmDialog(`The backyard costs ${YARD_PRICE.toLocaleString()} PokéCoins, and you have ${coins.toLocaleString()}.`, 'OK');
     return;
   }
-  if (!(await confirmDialog(`Clear the garden arch and make a backyard behind ${lotWord(getSave())} for ${YARD_PRICE.toLocaleString()} PokéCoins?`, `Buy (${YARD_PRICE.toLocaleString()})`))) return;
+  if (!(await confirmDialog(`Clear the garden arch and make a backyard behind the Ancient Tree for ${YARD_PRICE.toLocaleString()} PokéCoins?`, `Buy (${YARD_PRICE.toLocaleString()})`))) return;
   const { buyYard, loadBase } = await import('./secret-base.js');
   if (!buyYard(loadBase())) { playSound('cancel'); return; }
   refreshCoins();
@@ -3810,8 +3686,7 @@ async function openPc() {
   walker.path = []; aim = null;
   let openPC;
   try { ({ openPC } = await import('./pc.js')); } catch { playSound('cancel'); return; }
-  openPC({ onClose: () => { pcMarks(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app),
-    onKiosk: () => { const k = places.find(q => q.id === 'kiosk'); if (k) goTo(k, true); } });
+  openPC({ onClose: () => { pcMarks(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app) });
 }
 
 /** The Buddy Projector's picker (js/holo-pick.js); a new pick steps out in place. */
@@ -3872,10 +3747,9 @@ function leftPlace() {
     walker.hopUntil = 0;
     return;
   }
-  if ((!tree && !house) || p.id !== 'base') return;
-  if (tree) tree.m.map = tree.open;
-  house?.open(true, true);
-  if (calm) { if (tree) tree.m.map = tree.shut; house?.open(false, true); return; }
+  if (!tree || p.id !== 'base') return;
+  tree.m.map = tree.open;
+  if (calm) { tree.m.map = tree.shut; return; }
   // out of the hollow the way it went in (the user's ask, 2026-10-09): it steps out of the open door onto the doorstep
   leaving = { at: performance.now() + LEAVE_WAIT, z: walker.z };
   walker.z -= 0.7;
@@ -3893,7 +3767,7 @@ function liveLeaving(now) {
   if (t < 1) return;
   leaving = null;
   walker.hopUntil = now + 500;
-  setTimeout(() => { if (tree) tree.m.map = tree.shut; house?.open(false); gardenArch?.swing(false); playSound('door'); }, 250);
+  setTimeout(() => { if (tree) tree.m.map = tree.shut; gardenArch?.swing(false); playSound('door'); }, 250);
 }
 
 /* ---------- the card under a place ---------- */
@@ -4402,7 +4276,7 @@ function sounds(now) {
 const quiet = () => AIRS.forEach(name => setLoop(name, false));
 
 function aimCamera(x, z) {
-  const d = camera.userData.dist * near;
+  const d = camera.userData.dist;
   camera.position.set(x, LOOK_Y + Math.sin(PITCH) * d, z + Math.cos(PITCH) * d);
   camera.lookAt(x, LOOK_Y, z);
   camera.updateMatrixWorld();
@@ -4466,11 +4340,10 @@ function placeCamera(dt) {
   // walking in, the view waits on the plaza for it rather than dipping to meet it
   const wx = arriving ? tileX(ARRIVE.x) : walker.x, wz = arriving ? tileZ(ARRIVE.y) : walker.z - ahead;
   const loX = tileX(-0.5 - WEST) - 2.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
-  const wantX = browsing ? browsing.x : loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
-  const wantZ = browsing ? browsing.z : backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
+  const wantX = loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
+  const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
-  near += ((browsing ? BROWSE_NEAR : 1) - near) * k;
   aimCamera(camX, camZ);
   followSun();
 }
@@ -4554,8 +4427,6 @@ function frame(now) {
     s.cue.userData.tick(calm ? 0 : now);
   }
   liveSign(now);
-  house?.tick(dt, calm);
-  kiosk?.tick(now);
   liveBeckons(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
