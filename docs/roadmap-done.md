@@ -3488,3 +3488,9 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   with an always-on Shiny switch; the PC's WALKING BUDDY page removed. v1.29 "Champion Levels" cut with it. The phone
   budget check wasn't run (it needs the cloud's Chromium): a cloud session should run `--only=clearing` once.
   Notes: `docs/reference/hub-base-mall.md`'s last section.
+
+- **The PC opens straight away** (2026-10-23, the user: "PC doesn't open when I click on it"; on `main`): a tap on the
+  Clearing's PC first downloaded `js/secret-base.js` and every furniture model with it (177 modules) before anything
+  showed, ~2.3 s more even headless, far longer on a phone, and a failed fetch left the tap doing nothing. `js/pc.js` now
+  loads that side behind its boot screen (`loadBaseKit()`), the hub starts it as you set off for the PC (`warmPC()`), and
+  a failed load says to reload. The Buddy Projector's budget check ran too: `clearing` within budget (254 draws, 124 MB).

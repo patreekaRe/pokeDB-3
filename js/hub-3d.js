@@ -3276,6 +3276,7 @@ const placeAt = (t) => places.find(p => p.step.x === t.x && p.step.y === t.y) ??
     shows there. */
 function goTo(p, enter, i = null) {
   playSound('confirm');   // as you tap, not again as you get there (the user's ask, 2026-10-12)
+  if (p.id === 'pc') import('./pc.js').then(m => m.warmPC(), () => {});
   if (walker.path.length === 0 && placeAt(walker.tile) === p) return enter ? open(p, i) : showCard(p);
   walker.path = route(walker.tile, p.step);
   aim = enter ? { p, i } : null;
@@ -3690,7 +3691,8 @@ async function openPc() {
   if (entering || document.querySelector('.pc-screen')) return;
   hideCard();
   walker.path = []; aim = null;
-  const { openPC } = await import('./pc.js');
+  let openPC;
+  try { ({ openPC } = await import('./pc.js')); } catch { playSound('cancel'); return; }
   openPC({ onClose: () => { pcMarks(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app) });
 }
 

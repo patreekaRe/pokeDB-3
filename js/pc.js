@@ -34,9 +34,6 @@ import { SAFARI_AREA_COINS } from './data/safari.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
-import { PIECES, KINDS_OF, icon, loadBase, decorations, freshDesigns, seeDesign, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './secret-base.js';
-import { loadStatues, statuesIn, statueReady } from './base-furniture-statues.js';
-import { loadFigures, figuresToLoad } from './base-figures.js';
 import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, pipUsed, entryOf, shapeOf, yardKind } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
@@ -46,6 +43,21 @@ import { friendsOpen, friendsNews } from './data/friends.js';
 import { openDeviceApp } from './collection.js';
 import { MATERIALS_BY_ID } from './data/satchel.js';
 import { starClass } from './data/difficulty.js';
+
+// The Secret Base's side (secret-base.js pulls in every furniture model, ~170 files) loads behind the boot screen
+// (2026-10-23, the user's report: the PC "doesn't open"). Imported up front, a tap on the PC waited on all of it before
+// anything showed, seconds on a phone, and a failed fetch left the tap doing nothing at all.
+let PIECES, KINDS_OF, icon, loadBase, decorations, freshDesigns, seeDesign, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE;
+let loadStatues, statuesIn, statueReady, loadFigures, figuresToLoad;
+let baseKit = null;
+const loadBaseKit = () => baseKit ??= Promise.all([import('./secret-base.js'), import('./base-furniture-statues.js'), import('./base-figures.js')])
+  .then(([sb, st, fg]) => {
+    ({ PIECES, KINDS_OF, icon, loadBase, decorations, freshDesigns, seeDesign, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } = sb);
+    ({ loadStatues, statuesIn, statueReady } = st);
+    ({ loadFigures, figuresToLoad } = fg);
+  });
+/** Starts that load early: the hub calls it as you set off for the PC, so most of it is in by the time you log on. */
+export const warmPC = () => { loadBaseKit().catch(() => {}); };
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -122,7 +134,10 @@ export function openPC(opts = {}) {
   page = 'boot';
   glass.replaceChildren();
   speak(`${trainerName().toUpperCase()} booted up the PC.`);
-  setTimeout(() => { if (root && page === 'boot') show(start); }, calmFx() ? 0 : 900);
+  const me = root;
+  Promise.all([loadBaseKit(), new Promise(r => setTimeout(r, calmFx() ? 0 : 900))])
+    .then(() => { if (root === me && page === 'boot') show(start); },
+      () => { if (root === me && page === 'boot') speak('The PC couldn\'t connect. Reload the page and log on again.'); });
 }
 
 function logOff() {

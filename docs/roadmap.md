@@ -9,10 +9,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**▶ Run in: CLOUD. Budget-check the Buddy Projector** (2026-10-22, on `main`): the Clearing gained a pedestal and hologram
-(`js/hub-holo.js`, about seven draws) in a local session that couldn't run `tools/budget-check.mjs`. Run
-`--only=clearing`; if it's over, trim the projector (`docs/reference/hub-base-mall.md`, "The Buddy Projector").
-
 **▶ PLAYTEST ON THE LIVE SITE. Mid-run reloads, round seven: done 2026-10-19, on `main`, waiting on the user's phone**
 (`docs/reference/walk-in-rooms.md`, "One side-wall painting"). The full `tools/budget-check.mjs` passed before the change;
 a new `tools/run-probe.mjs` (fight after fight on one page) found no growth over a run, the map level near 120 MB and each

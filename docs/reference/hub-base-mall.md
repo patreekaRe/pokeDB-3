@@ -22,6 +22,10 @@ The first section began as the note on playtesting the live site and grew into t
   (the user's call): `buddy()` / `buddyChoices()` in `js/trainercard.js`, the save's `buddy`, only first forms of owned
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
   all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
+  **The PC's Secret Base side loads behind its boot screen** (2026-10-23, the user: the PC didn't open): `js/secret-base.js`
+  pulls in every furniture model (~170 modules), so `js/pc.js` imports it, the statues and the figures in `loadBaseKit()`
+  rather than up front, and the boot screen waits on it; `warmPC()` starts it as you head for the PC (`goTo()` in
+  `js/hub-3d.js`). Keep them out of `js/pc.js`'s static imports, or a tap on the PC waits on all of it again.
   Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`). A resident whose
   Safari shiny is yours comes out shiny, named "Shiny X" in the pickers (`resident(id, mine)`; 2026-10-19), and twinkles
   in the base now and then (`liveGuest()`); a friend's base's stay plain.
