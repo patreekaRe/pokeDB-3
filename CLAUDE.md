@@ -158,7 +158,7 @@ These used to be buried in the notes. Each one has its detail in the reference f
 
 Flags on the live site or a githack link. Most are never saved. Details are in the file named.
 
-- **Save and unlocks**: `?levels` (every Trainer Level), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
+- **Save and unlocks**: `?levels` (every Trainer Level), `?master` (a Pokémon Master's title, crown, crystal pedestal and Gilded / Clear shells for a page load), `?aura=6..10` (that Level's Super Saiyan aura on the walking buddy and the Trainer Card for a page load; 10 brings the crown; skips the new-player setup), `?foil=6..10` (that Level's foil cards on any run), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
   `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?holiday=<id>` (a seasonal furniture set on sale, `js/data/holidays.js`), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp), `?addnotice=N` (N sample TRAINER LINK pop-ups, the last one an add-back; nothing sent), `?mycard` (your own Trainers page as a friend sees it, a banner in the Trainers app; nothing fetched or sent), `?lbsample=tower|safari|arcade` (the leaderboard on made-up trainers; nothing fetched or posted), `?sparkle=N` (every Safari signature card at Sparkle ★N; nothing saved), `?graves=N` (N made-up friends' graves on any run's map and their buddies in the Trainer Plaza; nothing fetched or saved), `?hearts=N` (every friend at N hearts at home and in the Secret Base, their heart lines unheard; nothing saved; `?base&hearts=5&visit` a best friend sitting).
 - **Look**: `?time=dawn|day|dusk|night`, `?season=halloween|winter|none`, `?hybrid` / `?pixel` / `?smooth`,
   `?pixelcards`, `?sharp=soft|sharp|max` (the Sharpness setting for a page load), `?phone` (a phone frame on a wide screen), `?standalone` (3D drawn as in a Home Screen app), `?signs` / `?walk` (old title / walkable Clearing).
@@ -245,8 +245,8 @@ There's no automated test suite. Before committing:
    just reading the code.
 3. **The phone's budgets** (a cloud session, 2026-10-19, the user's ask: the reload and lag fixes kept by a check): any
    change to a 3D place, a screen's animations or what the game keeps in memory runs
-   `NODE_PATH=$(npm root -g) node tools/budget-check.mjs` (`--only=name,...` for the places touched; the full run takes
-   several minutes) before pushing. Over budget is a bug to fix, not to record; a change meant to cost more reruns it with
+   `NODE_PATH=$(npm root -g) node tools/budget-check.mjs` (on the Windows PC: `npm i playwright` in a scratch folder, its `node_modules` as `NODE_PATH`, and `PW_CHROMIUM` set to Chrome's `chrome.exe`; 2026-10-23) (`--only=name,...` for the places touched; the full run takes
+   several minutes) before pushing. `tools/fps-probe.mjs` times a place's JS, style and GC a frame (`--only=`; the Safari areas and Duo Run included). Over budget is a bug to fix, not to record; a change meant to cost more reruns it with
    `--update` and says so in its commit. Its header says what it counts.
 4. If it's a balance change (card damage, achievement difficulty, drop
    rates), use the headless-bot harness in `../pokeDB-sim/` (a sibling

@@ -11,7 +11,7 @@
 import { getSave, updateSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { season } from './season.js';
-import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, deadTreeArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
+import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
 import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { plazaBoard } from './hub-plaza.js';
@@ -38,6 +38,7 @@ import { makeGardenArch } from './hub-arch.js';
 import { YARD_PRICE } from './data/house.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
+import { makeHolo } from './hub-holo.js';
 import { makeCauldron } from './hub-cauldron.js';
 import { safariGate, WING_X } from './hub-safari.js';
 import { makeDojo } from './hub-dojo.js';
@@ -48,7 +49,7 @@ import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, friendWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { asking, favourOf } from './data/favours.js';
-import { workshopOf, heartsOf } from './data/workshop.js';
+import { workshopOf, heartsOf, boothBeckons } from './data/workshop.js';
 import { unclaimed, friendMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -65,16 +66,18 @@ const M = 4, FRONT = 2;       // grass round it (tiles): the open meadow behind,
 // grass to the forest's edge; MW is its margin, M the other sides'
 const WEST = 4, MW = M + WEST;
 // the Whispering Clearing's gate at the far end of the north avenue (the user's ask, 2026-10-14: the way out goes north);
-// the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the route sign either
-// side of the avenue just inside it
+// the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the Berry Booth either
+// side of the avenue before it
 const GATE_AT = { tx: 15, ty: -2 };
-// either side of the gate, just outside its feet so neither hides their runes (the user's ask, 2026-10-15: they stood
-// a row or two forward of it, the sign further out than the stop); each nudged in towards the opening (STAND_IN)
-const STOP_AT = { tx: 18, ty: -1 }, SIGN_AT = { tx: 12, ty: -1 }, STAND_IN = 0.3;
+// New game's Pokéstop and the Berry Booth (js/berrybooth.js) a row in front of the gate, right at the avenue's edges, in
+// line with its lamps (the user's ask, 2026-10-23: closer to the road), their doorsteps on the road (ROADSIDE: how far
+// each stands out from its tile towards the road)
+const STOP_AT = { tx: 17, ty: 0 }, BOOTH_AT = { tx: 13, ty: 0 }, ROADSIDE = 0.4;
 const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
 const PC_AT = { tx: 19, ty: 10 };
+const HOLO_AT = { tx: 11, ty: 10 };   // the Buddy Projector (js/hub-holo.js), left of the quest board where Halloween's dead tree stood
 // the quest board (towns on only) and the Trainer Plaza's board (js/hub-plaza.js) at the plaza's top corners, either side
 // of the north avenue, each turned to face the plaza (the user's marks on an aerial shot, 2026-10-17); `at` is where it
 // stands (tiles, fractions allowed), `tiles` what it blocks, `step` where you stand to read it
@@ -187,8 +190,10 @@ let buddies = null, buddiesAt = 0;   // the trainers on your list, as their budd
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let safariMark = null;   // the "!" over the Safari gate while a Ranger task waits (js/data/ranger.js)
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
+let holo = null;    // the Buddy Projector: the walking buddy as a hologram (js/hub-holo.js)
 let beckons = [];   // the signs that are places of their own, hopping now and then (beckon())
 let questMark = null, nietosMark = null;   // the "!" over the quest board (a notice to read) and over the Nietos' house (a step to hand them; boardNow())
+let boothMark = null;  // a "!" over the Berry Booth while held berries are kept and nothing's packed (boothBeckons())
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
 let greets = false; // listening for the logo's fade to end
@@ -2410,16 +2415,8 @@ function makePlaces() {
       open: true,
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
-      // outside the gate on its right, the route sign across the trail from it (the user's ask, 2026-10-09)
-      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - STAND_IN, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
-    },
-    {
-      // the route sign says what the old gate's card did (the user's ask, 2026-10-09); like the Safari gate, no buttons
-      id: 'route-sign', name: 'Whispering Clearing', step: { x: SIGN_AT.tx + 1, y: SIGN_AT.ty }, tiles: [[SIGN_AT.tx, SIGN_AT.ty]], tag: [SIGN_AT.tx, 2.6, SIGN_AT.ty],
-      open: true,
-      line: 'The way out of the Whispering Clearing. Spin the Pokéstop to set out on an adventure.',
-      buttons: [],
-      build: (g) => beckon(g, board(routeSignArt(), tileX(SIGN_AT.tx) + STAND_IN, tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 })),
+      // right of the avenue before the gate, the Berry Booth across the road from it
+      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - ROADSIDE, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
     },
     {
       id: 'base', name: 'Secret Base', step: { x: TREE_AT.tx, y: TREE_AT.ty + 1 }, tiles: [...rect(TREE_AT.tx - 3, TREE_AT.ty - 2, TREE_AT.tx + 3, TREE_AT.ty - 1), ...rect(TREE_AT.tx - 3, TREE_AT.ty, ARCH_AT.tx - 1, TREE_AT.ty)], tag: [TREE_AT.tx, 3.2, TREE_AT.ty], open: true,
@@ -2456,9 +2453,9 @@ function makePlaces() {
       },
     },
     {
-      // right of the plaza, where your partner starts (2026-10-09): who walks with you, who lives in the base, your name
+      // right of the plaza, where your partner starts (2026-10-09): who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
-      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : claimable() ? 'A mission reward is waiting! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, your missions, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
+      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : claimable() ? 'A mission reward is waiting! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, your missions, the patch notes, who lives in your Secret Base, and your name.`; },
       buttons: [['Log on', openPc]],
       build: (g) => {
         const pc = pcModel(THREE, glowMats);
@@ -2473,6 +2470,19 @@ function makePlaces() {
         pcMarks();
         pc.position.set(tileX(PC_AT.tx), 0, tileZ(PC_AT.ty));
         g.add(pc);
+      },
+    },
+    {
+      // the Buddy Projector (the user's ask, 2026-10-22): a device of its own for picking who walks with you
+      id: 'holo', name: 'Buddy Projector', step: { x: HOLO_AT.tx, y: HOLO_AT.ty + 1 }, tiles: [[HOLO_AT.tx, HOLO_AT.ty]], tag: [HOLO_AT.tx, 2.4, HOLO_AT.ty], open: true,
+      get line() { return `A hologram of ${buddy(getSave()).name}, your walking buddy. Pick another to walk with you.`; },
+      buttons: [['Change buddy', openProjector]],
+      build: (g) => {
+        holo = makeHolo(THREE, PITCH);
+        mergeStill(holo.stand);
+        holo.group.position.set(tileX(HOLO_AT.tx), 0, tileZ(HOLO_AT.ty));
+        holo.show(buddy(getSave()));
+        g.add(holo.group);
       },
     },
   ];
@@ -2653,6 +2663,23 @@ function makePlaces() {
     buttons: kurtIn ? [['Go in', () => {}]] : [],
     build: (g) => kurtWorkshop(g, tileX(WORKSHOP_AT.tx + 1), tileZ(WORKSHOP_AT.ty + 1), kurtIn),
   });
+  // the Berry Booth by the gate (2026-10-23, the user's idea): a kiosk where the run's Berry Pouch and kit are packed,
+  // once Kurt's open to make them
+  if (kurtIn) list.push({
+    id: 'booth', name: 'Berry Booth', step: { x: BOOTH_AT.tx + 1, y: BOOTH_AT.ty }, tiles: [[BOOTH_AT.tx, BOOTH_AT.ty]], tag: [BOOTH_AT.tx, 2.6, BOOTH_AT.ty], open: true,
+    get line() { return `${boothBeckons(getSave().loadout, workshopOf(getSave())) ? 'Berries from Kurt\'s, not packed yet! ' : ''}A Berry Booth. Pack your held berries and one run kit item for your next run.`; },
+    buttons: [['Open', openBooth]],
+    build: (g) => {
+      const x = tileX(BOOTH_AT.tx) + ROADSIDE, z = tileZ(BOOTH_AT.ty) - 0.2, art = boothArt(), b = board(art, x, z, { s: 0.9 });
+      glowing(b.material, art, null, '#c8ffd0', 1.2).userData.glowMin = 0.4;
+      g.add(b);
+      boothMark = board(newsArt(), x, z + 0.1, { shadow: false });
+      boothMark.rotation.x = -PITCH;
+      boothMark.userData.y = 2.55;
+      g.add(boothMark);
+      boothMarks();
+    },
+  });
   // shut till you've beaten Kenmatta once in a run (the user's ask, 2026-10-15)
   const dojoIn = kenWinsOf(save) >= 1;
   list.push({
@@ -2721,7 +2748,7 @@ const HINTS = [
   'Beat every Pokémon in the Whispering Clearing, the Overgrown Shrine and the Ember Wastes and the Safari Zone opens: one run a day, the same for everyone, and only your first try counts.',
   'Win a run and the Sky Pillar opens: 100 floors, with a new leaderboard every week.',
   '1,500 PokéCoins opens the boarded door in the Ancient Tree\'s roots. That\'s your Secret Base, to furnish however you like.',
-  'The PC holds your mail, your missions and the patch notes. It also picks who walks beside you here.',
+  'The PC holds your mail, your missions and the patch notes. The Buddy Projector picks who walks beside you here.',
   'The Poké Mall sells furniture for your Secret Base, and the Game Corner\'s arcade is inside.',
   'See those cracks in the ground to the west? Every run you win strikes the seal below. Something wants out.',
   'Your Pokédex keeps every card and Pokémon you\'ve met. Open it whenever you\'re curious.',
@@ -2814,7 +2841,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; boothMark = null; holo = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -2875,38 +2902,6 @@ function liveGateway(now) {
     c.setXYZ(i, tint[0] * fade, tint[1] * fade, tint[2] * fade);
   });
   p.needsUpdate = c.needsUpdate = true;
-}
-
-/** A Pokémon route sign (the user's pick, 2026-10-09, after Scarlet / Violet's): a white pin, a red band over its round
-    face, a red point below, on a grey post and foot. */
-function routeSignArt() {
-  const { c, g, fill, rr, lin } = fine(16, 36), cx = 8, cy = 8.5;
-  const pin = (r, tip) => {   // the round head and its tangents down to the point
-    const a = Math.acos(r / (tip - cy));
-    g.moveTo(cx, tip); g.lineTo(cx + r * Math.cos(Math.PI / 2 - a), cy + r * Math.sin(Math.PI / 2 - a));
-    g.arc(cx, cy, r, Math.PI / 2 - a, Math.PI / 2 + a, true); g.closePath();
-  };
-  rr(6.2, 22, 3.6, 3.2, 0.9, lin(6.2, 0, 9.8, 0, ['#d8d8d4', '#a8a8a4', '#70706c']));   // the collar, post and foot
-  rr(7, 24.6, 2, 7.6, 0.6, lin(7, 0, 9, 0, ['#c8c8c4', '#9a9a96', '#6a6a66']));
-  rr(3.6, 31.4, 8.8, 4.4, 1.2, lin(0, 31.4, 0, 35.8, ['#a8a8a4', '#7a7a76', '#4e4e4a']));
-  rr(4.2, 31.6, 7.6, 0.8, 0.4, 'rgba(255,255,255,0.45)');
-  fill(lin(0, 1, 0, 23, ['#e4e4e0', '#b8b8b4', '#8a8a86']), () => pin(7.4, 23.2));
-  fill(lin(0, 2, 0, 22, ['#ffffff', '#f4f4f0', '#dcdcd6']), () => pin(6.7, 22.2));
-  g.strokeStyle = lin(0, 1.5, 0, 12, ['#ff7a6a', '#e8483a', '#c8302a']); g.lineWidth = 1.5;   // the red band round the top
-  g.beginPath(); g.arc(cx, cy, 6.3, 0.3, Math.PI - 0.3, true); g.stroke();
-  g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 0.35;
-  g.beginPath(); g.arc(cx, cy, 6.7, 1.15 * Math.PI, 1.4 * Math.PI); g.stroke();
-  fill('#e2e2dc', () => g.arc(cx, cy, 5.1, 0, Math.PI * 2));   // the face
-  fill('#fdfdfb', () => g.arc(cx, cy, 4.7, 0, Math.PI * 2));
-  fill(lin(0, 15.6, 0, 20.6, ['#ff6a5a', '#d83a30']), () => { g.moveTo(5.3, 15.6); g.lineTo(10.7, 15.6); g.lineTo(cx, 20.6); g.closePath(); });
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.font = '900 1.75px "Trebuchet MS", "Arial Black", sans-serif';
-  g.fillStyle = '#e8483a'; g.fillText('WHISPERING', cx, 7.1);
-  g.font = '800 1.45px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#3a3a3a'; g.fillText('CLEARING', cx, 9.3);
-  g.font = '700 1.05px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#7a7a76'; g.fillText('↑ ROUTE OUT', cx, 11.1);
-  return c;
 }
 
 /* ---------- the Clearing round them ---------- */
@@ -3109,7 +3104,7 @@ function liveDuck(now) {
 }
 
 /** The season's decorations, built once with the forest. Halloween: jack-o'-lanterns at the Ancient Tree's door, a
-    pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles under a dead tree, a
+    pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles, a
     bubbling cauldron with toadstools and two pairs of lantern posts (lit with the clock, setTime()), ghost
     Pokémon wandering among them (js/hub-spooky.js) and bats round the Ancient Tree. Each stands on its own tile, kept off
     every path and place (yardTiles), so nothing walks through them. In winter a snowman by the plaza. */
@@ -3127,7 +3122,8 @@ function dressSeason() {
       // the Ancient Tree the scarecrow stood at the Secret Base's door)
       [...P_(5), 21, 17, 4.4, 0, -0.1], [...P_(6), 20, 18, 2.2, 0, 0.1], [...P_(7, false), 19, 18, 1.9, 0, -0.2],
       [scarecrowArt(), 'white', 19, 17, 1.5, 0, 0],
-      [deadTreeArt(0), 'white', 11, 9, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
+      // the graveyard before the dojo: a row of stones, a candle at each end (its dead tree taken out 2026-10-22, the user's
+      // ask, for the Buddy Projector)
       [graveArt(0), null, 5, 9, 1.4, 0, 0], [graveArt(1), null, 6, 9, 1.5, 0, 0], [graveArt(2), null, 8, 9, 1.5, 0, 0], [graveArt(3), null, 9, 9, 1.4, 0, 0],
       [candlesArt(0), 'white', 5, 10, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 10, 1.1, 0, -0.1],
       [...P_(1), 16, 13, 1.4, 0.15, 0.1],   // a little one on the plaza
@@ -3259,6 +3255,7 @@ const placeAt = (t) => places.find(p => p.step.x === t.x && p.step.y === t.y) ??
     shows there. */
 function goTo(p, enter, i = null) {
   playSound('confirm');   // as you tap, not again as you get there (the user's ask, 2026-10-12)
+  if (p.id === 'pc') import('./pc.js').then(m => m.warmPC(), () => {});
   if (walker.path.length === 0 && placeAt(walker.tile) === p) return enter ? open(p, i) : showCard(p);
   walker.path = route(walker.tile, p.step);
   aim = enter ? { p, i } : null;
@@ -3475,8 +3472,8 @@ function liveStop(stop, now) {
 
 let glintArt = null;
 
-/** A sign that is a place of its own (the Safari's and the Sky Pillar's boards, the Nietos' name board, the route sign by
-    the gate) hops and wiggles every few seconds, a glint twinkling at its top corner (the user's ask, 2026-10-15: they
+/** A sign that is a place of its own (the Safari's and the Sky Pillar's boards, the Nietos' name board)
+    hops and wiggles every few seconds, a glint twinkling at its top corner (the user's ask, 2026-10-15: they
     read as scenery, nothing said they could be tapped; liveBeckons()). `obj` is a board(), standing on its middle, or a
     group standing on its origin `w` wide and `h` tall. */
 function beckon(g, obj, w, h) {
@@ -3668,18 +3665,43 @@ function pcMarks() {
   pcNews.visible = !pcMail.visible && pcBeckons(getSave());
 }
 
-/** Log on to the PC (js/pc.js), full screen over the Clearing; logged off, a new walking buddy steps out in place. */
+function boothMarks() {
+  if (boothMark) boothMark.visible = boothBeckons(getSave().loadout, workshopOf(getSave()));
+}
+
+/** The Berry Booth's device (js/berrybooth.js) over the Clearing. */
+async function openBooth() {
+  if (entering || document.getElementById('booth-dialog')?.open) return;
+  hideCard();
+  walker.path = []; aim = null;
+  let openBerryBooth;
+  try { ({ openBerryBooth } = await import('./berrybooth.js')); } catch { playSound('cancel'); return; }
+  openBerryBooth(boothMarks);
+}
+
+/** Log on to the PC (js/pc.js), full screen over the Clearing. */
 async function openPc() {
   if (entering || document.querySelector('.pc-screen')) return;
   hideCard();
   walker.path = []; aim = null;
-  const { openPC } = await import('./pc.js');
-  openPC({ onClose: () => { pcMarks(); swapBuddy(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app) });
+  let openPC;
+  try { ({ openPC } = await import('./pc.js')); } catch { playSound('cancel'); return; }
+  openPC({ onClose: () => { pcMarks(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app) });
+}
+
+/** The Buddy Projector's picker (js/holo-pick.js); a new pick steps out in place. */
+async function openProjector() {
+  if (entering || document.querySelector('.holo-pick')) return;
+  hideCard();
+  walker.path = []; aim = null;
+  const { openBuddyPicker } = await import('./holo-pick.js');
+  openBuddyPicker((picked) => { if (picked) swapBuddy(); });
 }
 
 /** The walking buddy again from the save: its billboard swapped where it stands, with a hop and its cry. */
 async function swapBuddy() {
   const mate = buddy(getSave());
+  holo?.show(mate);
   if (!mon || mon.src === mate.src) return;
   const old = mon;
   const next = await monBoard(mate);
@@ -3696,6 +3718,7 @@ async function swapBuddy() {
 /** The new player's buddy (the title's first power-on), swapped in quietly while the Clearing still waits behind it. */
 export async function refreshBuddy() {
   const mate = buddy(getSave());
+  holo?.show(mate);
   if (!mon || mon.src === mate.src) return;
   const old = mon, shown = old.group.visible;
   const next = await monBoard(mate);
@@ -4057,7 +4080,7 @@ function onUp(e) {
 }
 
 function onKey(e) {
-  if (!running || held || arriving || leaving || outbound || returning || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
+  if (!running || held || arriving || leaving || outbound || returning || document.querySelector('dialog:modal, #shop-dialog[open], .holo-pick') || document.activeElement?.matches?.('input')
     || document.getElementById('collection-screen')?.hidden === false) return;
   const step = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
   if (step) {
@@ -4393,10 +4416,11 @@ function frame(now) {
   liveGateway(now);
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);
+  holo?.tick(now, dt, calm);
   cauldron?.tick(now, dt, calm);
   safariFx?.tick(now, calm);
   plazaFx?.tick(now, calm);
-  for (const m of [pcMail, pcNews, questMark, nietosMark, safariMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
+  for (const m of [pcMail, pcNews, boothMark, questMark, nietosMark, safariMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) {
     s.cue.opacity = calm ? 0.82 : 0.74 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));

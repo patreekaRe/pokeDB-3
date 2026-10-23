@@ -25,6 +25,7 @@ const PLACES = {
   'town-thornwood': '?town=thornwood&towns', 'town-savanna': '?town=savanna&towns',
   center: '?center', mart: '?mart', 'event-spring': '?event=spring', gym: '?gym=britt', dojo: '?dojo',
   tower: '?tower=25', 'run-map': '?biome=ruins&starter=charmander',
+  'safari-powerplant': '?area=powerplant&intro=0', 'safari-nightalley': '?area=nightalley&intro=0&stage=3&kind=boss',
 };
 const SETTLE = 11000, TRIPS = 3;
 

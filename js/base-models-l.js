@@ -103,6 +103,8 @@ export const SHAPES = {
   blackbelttrophy: { make: 'blackbelttrophy' },
   // the posters are painted alike: paper at X=x+3, Y=10, 26 x 54, a red pin at each top corner
   [`${GYM_POSTERS} kenposter`]: { make: 'poster', box: [3, 10, 29, 64], pins: [[6, 13, '#d84848'], [26, 13, '#d84848']] },
+  // the Gym Leaders' signed photo (a Level 10 win's): a gilt frame round the print, painted at [4,16]-[60,68]
+  leaderphoto: { make: 'picture', outer: [4, 16, 60, 68], inner: [9, 21, 55, 63], gilt: true },
   dragonitemedal: { make: 'dragonitemedal' },
   // the Safari set
   safarilantern: { make: 'safarilantern' },

@@ -1,8 +1,8 @@
 /* ============================================================
    pc.js  -  the Clearing's PC (2026-10-09, the user's ask), full screen over the hub: a white hood round a striped cyan
    screen on a red stand, like the PC beside the plaza (pcModel() in js/hub-pc.js). Gen 3's PC menu, grouped since 2026-10-11:
-   rewards, then your Pokémon (the walking buddy, `save.buddy`, never the Pokédex's partner; and the Secret Base's residents,
-   `secretBase.mons`; Bill's PC that held them is gone), your own PC your name, Prof. Oak's PC rates your Pokédex and hints at the next unlock, the cloud save's Sign in (the title corner's PC, which the hub hides), then
+   rewards, then your Pokémon (the Secret Base's residents, `secretBase.mons`; Bill's PC that held them is gone; the walking
+   buddy moved out to the Clearing's Buddy Projector 2026-10-22, js/holo-pick.js), your own PC your name, Prof. Oak's PC rates your Pokédex and hints at the next unlock, the cloud save's Sign in (the title corner's PC, which the hub hides), then
    the Hall of Fame and Exit PC. The Mailbox on top holds rewards posted to the PC (js/mail.js): a letter opens out of its
    envelope and its PokéCoins are claimed there. Patch notes (since 2026-10-10, the user's ask: the hub's corner version tag
    moved in) list each version, the small changes since the newest and what's in the game (js/patchnotes.js). Everything else about you and the game stays in the Pokédex; the PC is your Pokémon and
@@ -13,7 +13,6 @@ import { journalReady } from './data/journal.js';
 import { rangerSlots } from './data/ranger.js';
 import { getSave, updateSave, coinsWithBonus, safariSparkle } from './storage.js';
 import { shinyImage } from './data/shinies.js';
-import { buddy, buddyChoices } from './trainercard.js';
 import { trainerName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { ENEMY_DEFS } from './data/enemies.js';
@@ -35,9 +34,6 @@ import { SAFARI_AREA_COINS } from './data/safari.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
-import { PIECES, KINDS_OF, icon, loadBase, decorations, freshDesigns, seeDesign, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, monRoom, monsIn, placeMon, saveBase, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './secret-base.js';
-import { loadStatues, statuesIn, statueReady } from './base-furniture-statues.js';
-import { loadFigures, figuresToLoad } from './base-figures.js';
 import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, pipUsed, entryOf, shapeOf, yardKind, roomName, roomTag } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
@@ -46,6 +42,22 @@ import { RECIPES_BY_ID } from './data/workshop.js';
 import { friendsOpen, friendsNews } from './data/friends.js';
 import { openDeviceApp } from './collection.js';
 import { MATERIALS_BY_ID } from './data/satchel.js';
+import { starClass } from './data/difficulty.js';
+
+// The Secret Base's side (secret-base.js pulls in every furniture model, ~170 files) loads behind the boot screen
+// (2026-10-23, the user's report: the PC "doesn't open"). Imported up front, a tap on the PC waited on all of it before
+// anything showed, seconds on a phone, and a failed fetch left the tap doing nothing at all.
+let PIECES, KINDS_OF, icon, loadBase, decorations, freshDesigns, seeDesign, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, monRoom, monsIn, placeMon, saveBase, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE;
+let loadStatues, statuesIn, statueReady, loadFigures, figuresToLoad;
+let baseKit = null;
+const loadBaseKit = () => baseKit ??= Promise.all([import('./secret-base.js'), import('./base-furniture-statues.js'), import('./base-figures.js')])
+  .then(([sb, st, fg]) => {
+    ({ PIECES, KINDS_OF, icon, loadBase, decorations, freshDesigns, seeDesign, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, monRoom, monsIn, placeMon, saveBase, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } = sb);
+    ({ loadStatues, statuesIn, statueReady } = st);
+    ({ loadFigures, figuresToLoad } = fg);
+  });
+/** Starts that load early: the hub calls it as you set off for the PC, so most of it is in by the time you log on. */
+export const warmPC = () => { loadBaseKit().catch(() => {}); };
 
 /** Safari catches living in each room of the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -69,7 +81,7 @@ export function resident(id, mine = true) {
 }
 
 let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;
-let start = 'home', reading = 0, deco = null, decoKind = 'All', inBase = false, buddyShiny = null;
+let start = 'home', reading = 0, deco = null, decoKind = 'All', inBase = false;
 let dupes = false;   // Decorations picking a piece to duplicate, not to put away
 // House upgrades: the doorway picked on the blueprint ({ room, pip, up } to build onto, or { join } between two rooms), the
 // room kind tried there and which of its turns, the floor looked at, and a built room picked (to take down, `sure` once asked)
@@ -88,7 +100,7 @@ const yardSay = (house) => canGrowYard(house)
   : !inBase && !getSave().baseOwned ? 'A backyard behind the Ancient Tree. Make the Ancient Tree your Secret Base first.'
   : `A backyard behind the Ancient Tree, through the garden arch beside it. ${YARD_PRICE.toLocaleString()} PokéCoins.`;
 
-/** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
+/** Log on. `onClose` runs once it's logged off; `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. `start: 'decor'` boots onto the Decorations, as the Secret Base's
     Storage PC does (`inBase` lifts it over the base). */
 export function openPC(opts = {}) {
@@ -123,7 +135,10 @@ export function openPC(opts = {}) {
   page = 'boot';
   glass.replaceChildren();
   speak(`${trainerName().toUpperCase()} booted up the PC.`);
-  setTimeout(() => { if (root && page === 'boot') show(start); }, calmFx() ? 0 : 900);
+  const me = root;
+  Promise.all([loadBaseKit(), new Promise(r => setTimeout(r, calmFx() ? 0 : 900))])
+    .then(() => { if (root === me && page === 'boot') show(start); },
+      () => { if (root === me && page === 'boot') speak('The PC couldn\'t connect. Reload the page and log on again.'); });
 }
 
 function logOff() {
@@ -143,7 +158,7 @@ function onKey(e) {
   back();
 }
 
-const UP = { home: null, prof: 'home', mailbox: 'home', missions: 'home', letter: 'mailbox', buddy: 'home', residents: 'home', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches', house: 'home' };
+const UP = { home: null, prof: 'home', mailbox: 'home', missions: 'home', letter: 'mailbox', residents: 'home', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches', house: 'home' };
 
 function back() {
   const up = UP[page];
@@ -240,7 +255,6 @@ const PAGES = {
       [ready ? `MISSIONS (${ready})` : 'MISSIONS', ready ? `${ready} mission reward${ready === 1 ? '' : 's'} to claim!` : 'Daily and weekly goals that pay PokéCoins.', () => show('missions'), ready > 0 || pcNew('missions', save)],
       [journal ? `TRAINER'S JOURNAL (${journal})` : 'TRAINER\'S JOURNAL', journal ? `${journal} task${journal === 1 ? '' : 's'} done! Claim ${journal === 1 ? 'it' : 'them'} for PokéCoins.` : 'Goals for the whole game, from your first win to the top of the Sky Pillar, each paying PokéCoins.',
         () => import('./ranger.js').then(m => m.openJournal(() => show('home'))), journal > 0],
-      ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
       ['BASE RESIDENTS', `Choose which Safari catches live in your Secret Base, up to ${residentCap()} a room.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save) || freshDesigns(loadBase()).length > 0],
       ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; yardTab = false; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
@@ -329,7 +343,7 @@ const PAGES = {
     const m = (getSave().mail || []).find(x => x.id === letter);
     if (!m) return show('mailbox');
     const from = senderOf(m.from), fresh = !m.claimed, mat = m.mat && MATERIALS_BY_ID[m.mat.id], recipe = m.recipe && RECIPES_BY_ID[m.recipe];
-    const code = m.code && formatCode(m.code), read = recipe || code;
+    const code = m.code && formatCode(m.code), cheer = m.level, read = recipe || code || cheer;
     const wrap = el('div', `pc-letter${fresh ? ' fresh' : ''}`);
     wrap.style.setProperty('--ink', from.ink);
     wrap.style.setProperty('--paper', from.paper);
@@ -338,6 +352,8 @@ const PAGES = {
     // a friend's letter holds a material or shows the secret recipe they taught Kurt (step 8, session e)
     if (code) prize.append(el('small', 'pc-prize-label', 'YOUR CODE'), el('b', 'pc-prize-n pc-prize-code', code));
     else if (mat) prize.append(el('span', 'pc-prize-mat', mat.icon), el('b', 'pc-prize-n', `${mat.name} ×${m.mat.n}`));
+    // a Gym Leader's letter for a high Level's first win (js/data/level-letters.js): its star, Level 10's the signed photo
+    else if (cheer) prize.append(el('span', `pc-prize-mat ${starClass(cheer)}`, m.photo ? '🖼️' : '⭐'), el('b', 'pc-prize-n', m.photo ? 'Signed photo' : `Level ${cheer}`));
     else if (recipe) {
       const img = el('img', 'pc-prize-ball pixel');
       Object.assign(img, { src: `assets/items/${recipe.sprite}.png`, alt: '', draggable: false });
@@ -359,7 +375,7 @@ const PAGES = {
         sheet.append(el('span', 'pc-claimed', read ? 'READ' : 'CLAIMED'));
         wrap.classList.add('paid');
         const me = trainerName().toUpperCase();
-        speak(code ? `Open the Trainers app on your Pokédex to add a friend.` : mat ? `${me} put ${mat.name} ×${m.mat.n} in the Satchel!` : recipe ? `Kurt can make the ${recipe.name} now. Visit his Workshop!` : `${me} received ${paid.toLocaleString()} PokéCoins!`);
+        speak(code ? `Open the Trainers app on your Pokédex to add a friend.` : mat ? `${me} put ${mat.name} ×${m.mat.n} in the Satchel!` : recipe ? `Kurt can make the ${recipe.name} now. Visit his Workshop!` : m.photo ? 'The signed photo is in your Secret Base: Decorate, Wall.' : cheer ? `Keep climbing, ${me}!` : `${me} received ${paid.toLocaleString()} PokéCoins!`);
       });
       kids.push(ok);
     }
@@ -402,34 +418,6 @@ const PAGES = {
     notes.append(inTheGame({ icons: false }));
     glass.replaceChildren(head('IN THE GAME'), notes);
     speak('Everything in the game so far.');
-  },
-  buddy() {
-    const save = getSave(), now = buddy(save), all = buddyChoices(save);
-    const card = el('div', 'pc-pick');
-    const img = el('img', 'pixel pc-pick-mon');
-    Object.assign(img, { src: now.src, alt: '' });
-    card.append(img, el('b', 'pc-pick-name', now.name.toUpperCase()), el('small', 'pc-pick-note', 'walks with you'));
-    const explain = el('p', 'pc-explain', 'Your walking buddy follows you in the Clearing, your Secret Base and the Poké Mall. It is not your Pokédex partner, the one on your Pokédex cover and Trainer Card: choose that by tapping the partner on your Trainer Card.');
-    const anyShiny = all.some(m => m.shiny);
-    if (!anyShiny || buddyShiny == null) buddyShiny = anyShiny && !!now.shiny;
-    const grid = el('div', 'pc-box');
-    grid.append(...all.filter(m => !!m.shiny === buddyShiny).map(m => monTile(m.src, m.name, m.key === now.key || (!now.key && m.src === now.src), () => {
-      if (m.src === buddy().src) return;
-      updateSave(d => { d.buddy = m.key; });
-      playCry(m.cry);
-      show('buddy');
-      speak(`${m.name} will walk with you.`);
-    })));
-    const h = head('WALKING BUDDY');
-    if (anyShiny) {
-      const t = el('button', `pc-shiny${buddyShiny ? ' on' : ''}`, '✨ Shiny');
-      t.type = 'button';
-      t.setAttribute('aria-pressed', buddyShiny ? 'true' : 'false');
-      t.addEventListener('click', () => { buddyShiny = !buddyShiny; playSound('select'); show('buddy'); });
-      h.append(t);
-    }
-    glass.replaceChildren(h, card, explain, grid);
-    speak('Only first forms fit on the paths. Bigger Pokémon rest in the box.');
   },
   residents() {
     // the room you're standing in, from the base's Storage PC; the main room from the Clearing's
