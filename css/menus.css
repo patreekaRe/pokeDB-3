@@ -789,6 +789,15 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .prep-coins { padding: 3px 7px; border-radius: 4px; background: #1f3a14; color: #b6d68e; }
 .prep-coins .smooth-icon { width: 12px; height: 12px; }
 .prep-coins[hidden] { display: none; }
+/* The Champion's Crown a Level 10 win earns, shown from Level 5 up until it's yours (js/ui.js's crownArt()). */
+.prep-crown { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;
+  line-height: 1.5; color: #f8d048; background: #1f3a14; }
+.prep-crown[hidden] { display: none; }
+.prep-crown-art { flex: none; width: 24px; filter: drop-shadow(0 0 3px rgba(255, 220, 120, 0.7)); }
+.prep-crown-art svg, .tc-crown-mini svg { display: block; width: 100%; }
+/* A Level's Super Saiyan aura, from Level 6 up (js/ui.js's auraArt()): its flames beside the line, in the star's colour. */
+.prep-aura { color: #ffe8f0; }
+.prep-aura-art { position: relative; flex: none; overflow: hidden; }
 .prep-all { margin-left: auto; }
 .prep-all summary { cursor: pointer; list-style: none; text-align: right; text-transform: uppercase; }
 .prep-all summary::-webkit-details-marker { display: none; }
@@ -875,12 +884,11 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .mv-tabs { display: flex; gap: 5px; }
 .mv-tab {
   --c1: #9aa2c8; --c2: #565d84;
-  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px 5px;
+  flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 7px 0 6px;
   border: 3px solid var(--shell-rim); border-radius: 9px; background: #e4f0cc; color: #1f3a14; cursor: pointer;
   font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 var(--shell-rim);
 }
-.mv-tab .smooth-icon { width: 24px; height: 24px; }
-.mv-tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-tab .smooth-icon, .mv-tab .type-badge { width: 24px; height: 24px; flex: none; }
 .mv-tab.type-fire { --c1: #ff8f4d; --c2: #b8321a; }
 .mv-tab.type-grass { --c1: #72dc70; --c2: #257a38; }
 .mv-tab.type-water { --c1: #5cbcff; --c2: #1d58b8; }
@@ -892,8 +900,8 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .mv-tab.type-flying { --c1: #c8c0ff; --c2: #5a50b0; }
 .mv-tab.type-dark { --c1: #a8907c; --c2: #3e2e26; }
 .mv-tab[aria-selected="true"] { background: var(--c1); color: #fff; text-shadow: 1px 1px 0 var(--c2); translate: 0 2px; box-shadow: 0 1px 0 var(--shell-rim), inset 0 0 0 2px rgba(255, 255, 255, 0.4); }
-.mv-tab[aria-selected="true"] .smooth-icon { filter: drop-shadow(0 1px 1px rgba(20, 10, 30, 0.45)); }
-.mv-tab:not([aria-selected="true"]) .smooth-icon { filter: grayscale(0.5) opacity(0.75); }
+.mv-tab[aria-selected="true"] :is(.smooth-icon, .type-badge) { filter: drop-shadow(0 1px 1px rgba(20, 10, 30, 0.45)); }
+.mv-tab:not([aria-selected="true"]) :is(.smooth-icon, .type-badge) { filter: grayscale(0.5) opacity(0.75); }
 .mv-tools { display: flex; justify-content: space-between; gap: 8px; }
 .mv-keys { display: flex; border: 2px solid #1f3a14; border-radius: 6px; overflow: hidden; background: #d6e8b8; }
 .mv-key {
@@ -1217,6 +1225,8 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 }
 .depths .hofx-pedestal { background: linear-gradient(90deg, #3e2482, #9a70e0 35%, #e0d0ff 50%, #8a5ad0 65%, #3e2482); }
 .depths .hofx-pedestal::before { background: radial-gradient(ellipse at 50% 40%, #f4ecff, #b48ae8 60%, #5a3a98); box-shadow: 0 2px 0 #d8b048; }
+.hofx.master .hofx-pedestal { background: repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.3) 0 3cqw, transparent 3cqw 8cqw), linear-gradient(90deg, #284a8a, #7ac4ec 35%, #ffffff 50%, #7ac4ec 65%, #284a8a); }
+.hofx.master .hofx-pedestal::before { background: radial-gradient(ellipse at 50% 40%, #ffffff, #b8ecff 55%, #5ab0e0); box-shadow: 0 2px 0 #f8d048, 0 4px 0 #b07af0; }
 .hofx-replay { text-align: center; }
 @media (prefers-reduced-motion: reduce) { .hofx-light { animation: none; } }
 
@@ -1405,6 +1415,41 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tc-pick:hover, .tc-pick:focus-visible { background: rgba(48, 48, 56, 0.18); outline: none; }
 .tc-pick.on, .tc-pick-auto.on { box-shadow: 0 0 0 3px var(--tc2), 0 0 0 5px #303038; }
 .tc-partner img { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; }
+/* The Champion's Crown (js/data/difficulty.js's wearsCrown(), a Level 10 win) floating over the partner, bobbing like the
+   walking buddy's. */
+.tc-crown { position: absolute; z-index: 2; left: 50%; top: -6px; width: 36px; translate: -50% 0; pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(255, 220, 120, 0.8)); animation: tc-crown-bob 2.8s ease-in-out infinite; }
+.tc-crown svg { display: block; width: 100%; }
+@keyframes tc-crown-bob { 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .tc-crown { animation: none; } }
+.tc-crown-key.on { border-color: #b07a10; background: #d8a020; }
+.tc-crown-locked { display: flex; align-items: center; justify-content: center; gap: 4px; opacity: 0.75; cursor: default; }
+.tc-crown-mini { width: 16px; filter: grayscale(1); }
+/* The Super Saiyan aura a Level 6-10 win earns (js/data/difficulty.js's auraWorn()), the walking buddy's frames stepped
+   behind the partner and, from 9 up, over it: a strip of frames slid one frame at a time. */
+.tc-partner img { position: relative; }
+.tc-aura { position: absolute; left: 50%; translate: -50% 0; overflow: hidden; pointer-events: none; }
+.tc-partner img + .tc-aura { z-index: 1; opacity: 0.9; }
+.aura-strip { display: block; width: calc(100% * var(--n)); height: 100%; image-rendering: pixelated;
+  animation: aura-run var(--ms) steps(var(--n)) infinite; }
+@keyframes aura-run { to { transform: translateX(-100%); } }
+html.calm-fx .aura-strip { animation: none; }
+@media (prefers-reduced-motion: reduce) { .aura-strip { animation: none; } }
+.tc-aura.aura-lv6 { filter: drop-shadow(0 0 3px rgba(255, 58, 92, 0.6)); }
+.tc-aura.aura-lv7 { filter: drop-shadow(0 0 3px rgba(52, 232, 120, 0.6)); }
+.tc-aura.aura-lv8 { filter: drop-shadow(0 0 4px rgba(62, 144, 255, 0.65)); }
+.tc-aura.aura-lv9 { filter: drop-shadow(0 0 4px rgba(180, 98, 255, 0.7)); }
+.tc-aura.aura-lv10 { filter: drop-shadow(0 0 5px rgba(255, 208, 64, 0.8)); }
+.tc-aura-key.on { color: #fff; border-color: #303038; }
+.tc-aura-key.aura-key-lv6 { background: #d8284a; }
+.tc-aura-key.aura-key-lv7 { background: #18a052; }
+.tc-aura-key.aura-key-lv8 { background: #2a6ee0; }
+.tc-aura-key.aura-key-lv9 { background: #8a3ee0; }
+.tc-aura-key.aura-key-lv10 { background: linear-gradient(90deg, #e8484a, #e8a020, #38b048, #2a7ee0, #8a3ee0); }
+.tc-aura-mini { position: relative; flex: none; overflow: hidden; filter: grayscale(1); }
+/* A Pokémon Master's title (js/data/difficulty.js's isMaster(), a Level 10 win): a dark chip with a rainbow underline, like the rainbow star. */
+.tc-lines dd.tc-master { justify-self: end; padding: 3px 7px 4px; border-radius: 4px; color: #f8d048;
+  background: linear-gradient(90deg, #ff5a5a, #ffd84a, #6ee86e, #5ac8ff, #b07af0) 0 100% / 100% 2px no-repeat, #1f3a14; }
 .tc-case-label { display: block; margin: 14px 0 6px; font-size: 0.75rem; color: #fff; text-shadow: 1px 1px 0 var(--tc3); }
 .tc-case { display: grid; gap: 8px; padding: 10px; border-radius: var(--round-sm); background: #2a3048;
   box-shadow: 0 0 0 3px #181820, inset 0 3px 0 rgba(0, 0, 0, 0.35); }
@@ -1983,3 +2028,12 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tn-welcome .tn-name { letter-spacing: 0.12em; user-select: all; }
 .trn-code { flex-wrap: wrap; }
 .trn-help { margin-left: auto; padding: 6px 10px 5px; }
+
+/* A champion's star climbs with the best Trainer Level won (js/data/difficulty.js's starClass()): gold at 5, then ruby,
+   emerald, sapphire, amethyst, and a rainbow-rimmed star at 10 (still: no repaint a frame). The span tints the ⭐ whether it's the emoji or its smooth icon. */
+.star-lv5, .star-lv6, .star-lv7, .star-lv8, .star-lv9, .star-lv10 { display: inline-block; }
+.star-lv6 { filter: hue-rotate(-50deg) saturate(1.8); }
+.star-lv7 { filter: hue-rotate(80deg) saturate(1.4); }
+.star-lv8 { filter: hue-rotate(170deg) saturate(1.6); }
+.star-lv9 { filter: hue-rotate(235deg) saturate(1.5); }
+.star-lv10 { filter: hue-rotate(300deg) saturate(1.4) drop-shadow(1px 0 0 #ff5a5a) drop-shadow(-1px 0 0 #5ac8ff) drop-shadow(0 1px 0 #6ee86e) drop-shadow(0 -1px 0 #ffd84a); }

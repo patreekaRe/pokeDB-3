@@ -16,7 +16,7 @@
 import { STARTERS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES, CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
-import { LEVELS, MAX_LEVEL, MEWTWO_MODE, isMewtwoRun } from './data/difficulty.js';
+import { LEVELS, MAX_LEVEL, CHAMPION_LEVEL, MEWTWO_MODE, isMewtwoRun, bestWin, starClass, starName, isMaster, auraBest } from './data/difficulty.js';
 import { sealOn, shardsPlaced } from './data/towns.js';
 import { strengthOf } from './data/camp.js';
 import { COIN_LEVEL_BONUS } from './data/shop.js';
@@ -31,8 +31,9 @@ import { playCry, playSound } from './audio.js';
 import { showMenuScene } from './scene.js';
 import { selectSky } from './select-sky.js';
 import { smoothIcon } from './smooth-icons.js';
-import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
+import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck, crownArt, auraArt } from './ui.js';
 import { HELD_BY_ID, POUCH } from './data/held.js';
+import { typeText } from './type-badge.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
 // Mewtwo (secret) has no portrait here: it is reached by its own doors, the open gate and the Depths camp, straight to
@@ -123,6 +124,8 @@ export const pickedStarter = () => picked;
 const inTab = () => listed(tab);
 const usable = (s) => isStarterUnlocked(s) && !s.comingSoon;
 const level5Wins = (s) => getSave().stats.level5WinsBy[s.id] || 0;
+/** A champion's star, tinted by the best Level won with the starter. */
+const starTitle = (s, wins = 0) => { const lv = bestWin(getSave(), s.id); return `${starName(lv)} star: won on Trainer Level ${lv}${wins > 1 ? `, ${wins} wins from Level 5 up` : ''}`; };
 const winsOf = (s) => getSave().stats.winsBy[s.id] || 0;
 
 function pick(starter, quiet = false) {
@@ -162,7 +165,7 @@ function renderStrip() {
     fitThumb(img);
     btn.append(img);
     if (!unlocked) btn.append(el('span', 'sel-lock', '🔒'));
-    if (unlocked && level5Wins(starter)) btn.append(Object.assign(el('span', 'sel-star', '⭐'), { title: 'Won on Trainer Level 5' }));
+    if (unlocked && bestWin(getSave(), starter.id) >= 5) btn.append(Object.assign(el('span', `sel-star ${starClass(bestWin(getSave(), starter.id))}`, '⭐'), { title: starTitle(starter) }));
     if (unlocked && winsOf(starter)) btn.append(Object.assign(el('span', 'sel-thumb-wins', `🏆${winsOf(starter)}`),
       { title: `${winsOf(starter)} run${winsOf(starter) > 1 ? 's' : ''} won` }));
     if (unlocked && getSave().shiny.owned.includes(starter.id)) btn.append(el('span', `sel-sparkle${isShiny(starter.id) ? ' on' : ''}`, '✨'));
@@ -185,11 +188,11 @@ function show(starter) {
 
   $('sel-name').textContent = unlocked ? starter.line[0].name : '???';
   const wins = unlocked ? level5Wins(starter) : 0;
-  if (wins) $('sel-name').append(Object.assign(el('span', 'sel-name-star', '⭐'),
-    { title: `Won on Trainer Level 5${wins > 1 ? ` ${wins} times` : ''}` }));
+  if (unlocked && bestWin(getSave(), starter.id) >= 5) $('sel-name').append(Object.assign(el('span', `sel-name-star ${starClass(bestWin(getSave(), starter.id))}`, '⭐'),
+    { title: starTitle(starter, wins) }));
   const hp = BASE_HP + (getSave().passives.hpBoost || 0) * 5;
   $('sel-hp').textContent = `❤️ ${hp}/${hp}`;
-  $('sel-type').textContent = [type.icon, type.label].filter(Boolean).join(' ');
+  $('sel-type').replaceChildren(typeText(hiddenType ? '' : starter.type, type.icon, type.label));
   $('sel-type').className = `chip sel-type${hiddenType ? '' : ` type-${starter.type}`}`;
   const won = winsOf(starter);
   $('sel-wins').hidden = !unlocked;
@@ -381,6 +384,8 @@ function renderLevel() {
       ? ` There its Sealed Weakness holds it to ${strengthOf(shardsPlaced(getSave()))}% of its damage: every town Waystone mended gives some back.`
       : ' Every town Waystone is lit: it goes down at full strength.'}`;
     $('level-coins').hidden = true;
+    $('level-crown').hidden = true;
+    $('level-aura').hidden = true;
     $('level-rules').closest('details').hidden = true;
     return;
   }
@@ -393,6 +398,18 @@ function renderLevel() {
     : `${LEVELS[level].text}${level > 1 ? ` Plus the rules of Levels 1-${level - 1}.` : ''}`;
   $('level-coins').textContent = level ? `💰 Coins +${Math.round(level * COIN_LEVEL_BONUS * 100)}%` : '';
   $('level-coins').hidden = !level;
+  // from the champion's Levels up, the crown a Level 10 win earns, until it's yours (the user's pick, 2026-10-23)
+  const tease = level >= CHAMPION_LEVEL && !isMaster(getSave());
+  $('level-crown').hidden = !tease;
+  if (tease) $('level-crown').replaceChildren(crownArt('prep-crown-art'), level >= MAX_LEVEL ? 'Win this Level to wear the Champion\'s Crown.' : `Win on Level ${MAX_LEVEL} to wear the Champion's Crown.`);
+  // from Level 6 up, the Super Saiyan aura a win there earns, growing each Level (the user's go, 2026-10-23)
+  const aura = level > CHAMPION_LEVEL;
+  $('level-aura').hidden = !aura;
+  if (aura) {
+    const mine = auraBest(getSave()) >= level, art = auraArt(level, { cls: 'prep-aura-art', s: 14 }).back;
+    $('level-aura').replaceChildren(art, mine ? `The ${starName(level)} aura is yours: pick it on the Trainer Card.`
+      : `Win this Level and your buddy wears the ${starName(level)} aura${level >= MAX_LEVEL ? ', a Super Saiyan blaze' : ''}.`);
+  }
   const rules = Array.from({ length: level }, (_, i) => el('li', '', `${i + 1}. ${LEVELS[i + 1].text}`));
   if (max < MAX_LEVEL) rules.push(el('li', 'level-locked', `🔒 Win on Level ${max} to unlock Level ${max + 1}.`));
   $('level-rules').replaceChildren(...rules);

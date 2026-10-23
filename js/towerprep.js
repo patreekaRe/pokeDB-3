@@ -219,7 +219,8 @@ let sky = null;   // the current size's layers and its frame loop
 
 function stopSky() {
   if (sky?.raf) cancelAnimationFrame(sky.raf);
-  if (sky) sky.raf = 0;
+  sky = null;
+  $('tower-sky').width = $('tower-sky').height = 0;   // the lobby closed: its layers and canvas aren't held through the climb
 }
 
 function startSky() {

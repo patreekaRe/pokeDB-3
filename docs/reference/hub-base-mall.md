@@ -17,11 +17,15 @@ The first section began as the note on playtesting the live site and grew into t
 
 - **The Clearing's PC** (2026-10-09, the user's ask; finished the same day): right of the plaza (`PC_AT`; a real 3D model since 2026-10-09, the user's ask, `pcModel()` in `js/hub-pc.js`, its screen's scan lines rolling, `livePc()`; was `pcArt()` in
   `js/hub-3d.js`, after Pokopia's Pokémon Center PC), a tap logs on to `js/pc.js`, full screen over the hub: Gen 3's menu,
-  the Mailbox (the big PokéCoin prizes, Pokédex / bonus / Safari pages, the whole Pokédex, a type's first Level 5 jackpot, feats' coins, are posted there as letters by `post()` in `js/mail.js`, `save.mail`, and claimed with a little moment: the envelope opens, the letter rises, the coins count up; an envelope bobs over the PC while one waits, `pcMail` in `js/hub-3d.js`; with the Signs title they're paid at once; `?mail` drops sample letters into an empty mailbox), Walking buddy and Base residents (straight off the menu since 2026-10-11, the user's ask; Bill's PC held them; both pickers say the buddy and the Pokédex partner differ), your PC (Rename, the same nickname as Settings'), Prof. Oak's PC (the Pokédex rating, a bar per page and a Next unlock card cycling hints, `rating()` / `hints()`), Decorations (your PC's: the base's furniture, in the room or in storage, Put away; every base owns one Storage PC, `FREE_PC` in `js/secret-base.js`, which tapped in the room opens it there, `logOn()` in `js/base-3d.js`), Sign in / Cloud save (the cloud save's window, `openCloud()`; the title corner's Sign in PC is hidden in hub mode since, `#title-account` in `css/hub.css`), the Hall of Fame / Record
+  the Mailbox (the big PokéCoin prizes, Pokédex / bonus / Safari pages, the whole Pokédex, a type's first Level 5 jackpot, feats' coins, are posted there as letters by `post()` in `js/mail.js`, `save.mail`, and claimed with a little moment: the envelope opens, the letter rises, the coins count up; an envelope bobs over the PC while one waits, `pcMail` in `js/hub-3d.js`; with the Signs title they're paid at once; `?mail` drops sample letters into an empty mailbox), Base residents (straight off the menu since 2026-10-11, the user's ask; Bill's PC held them; the Walking buddy page beside it moved out to the Buddy Projector on 2026-10-22, below), your PC (Rename, the same nickname as Settings'), Prof. Oak's PC (the Pokédex rating, a bar per page and a Next unlock card cycling hints, `rating()` / `hints()`), Decorations (your PC's: the base's furniture, in the room or in storage, Put away; every base owns one Storage PC, `FREE_PC` in `js/secret-base.js`, which tapped in the room opens it there, `logOn()` in `js/base-3d.js`), Sign in / Cloud save (the cloud save's window, `openCloud()`; the title corner's Sign in PC is hidden in hub mode since, `#title-account` in `css/hub.css`), the Hall of Fame / Record
   Book (the device's app, `onApp`) and Exit PC (was Log off) (`pc-on` / `pc-off`). **The walking buddy is not the Pokédex's partner**
   (the user's call): `buddy()` / `buddyChoices()` in `js/trainercard.js`, the save's `buddy`, only first forms of owned
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
   all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
+  **The PC's Secret Base side loads behind its boot screen** (2026-10-23, the user: the PC didn't open): `js/secret-base.js`
+  pulls in every furniture model (~170 modules), so `js/pc.js` imports it, the statues and the figures in `loadBaseKit()`
+  rather than up front, and the boot screen waits on it; `warmPC()` starts it as you head for the PC (`goTo()` in
+  `js/hub-3d.js`). Keep them out of `js/pc.js`'s static imports, or a tap on the PC waits on all of it again.
   Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`). A resident whose
   Safari shiny is yours comes out shiny, named "Shiny X" in the pickers (`resident(id, mine)`; 2026-10-19), and twinkles
   in the base now and then (`liveGuest()`); a friend's base's stay plain.
@@ -826,3 +830,16 @@ kept on screen): Smeargle's Garden catalogue only once the save has a backyard (
 Gardevoir's Grand catalogue always. Re-read on each walk in. The Garden pond
 (`pond`) is now `layer: 'rug'`, walked over like the Koi and Frozen ponds (the user couldn't tell what it was or why it
 blocked them).
+
+## The Buddy Projector (2026-10-22)
+
+The user's ask: a hologram of the walking buddy, on a device of its own just for changing it, not over the PC; then the
+PC's WALKING BUDDY page taken out. It stands at tile (11, 10), left of the quest board, where Halloween's dead tree
+stood (the user marked the spot and had the tree removed). `makeHolo()` in `js/hub-holo.js`: a white pedestal banded in
+red (merged, `stand`), a lens throwing an additive cyan cone up to the buddy's GIF frames repainted in light (cropped by
+`spriteFit()`, scan lines, a rolling band, a rare glitch slice, a flicker; still under `calmFx()`), turning gently over a
+painted ring of dashes; about seven draws. `swapBuddy()` / `refreshBuddy()` call `holo.show(mate)`, which scans the new
+one in from the feet up. Its light takes no tap. Tapped, the place card's Change buddy opens `openBuddyPicker()` in
+`js/holo-pick.js`: a narrow cyan panel (`.holo-pick` in `css/hub.css`), the `buddyChoices()` grid, and a Shiny switch
+that is always there (the user's ask): every buddy's shiny, greyed and locked till it's bought at the Game Corner.
+A pick saves `save.buddy`, cries and closes; the buddy hops out in place.

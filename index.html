@@ -161,6 +161,7 @@
           <div class="set-opt" data-opt="scenery"><span class="set-name">Scenery</span><small>Hybrid: pixel art in soft light</small></div>
           <div class="set-opt" data-opt="sharpness"><span class="set-name">Sharpness</span><small>Max is crispest, Soft runs lightest</small></div>
           <div class="set-opt" data-opt="titleHub"><span class="set-name">Title screen</span><small>Walk the Clearing, or the menu signs</small></div>
+          <div class="set-opt" data-opt="foil"><span class="set-name">Foil cards</span><small>A starter won on Level 6 and up wears foil cards</small></div>
           <div class="set-opt" data-opt="calmFx"><span class="set-name">Flashing &amp; shake</span><small>Reduced: no shaking, softer flashes</small></div>
         </section>
         <section class="set-group" data-tone="battle">
@@ -298,6 +299,8 @@
           </div>
           <p class="prep-lname" id="level-name"></p>
           <p class="prep-rule" id="level-rule"></p>
+          <p class="prep-crown" id="level-crown" hidden></p>
+          <p class="prep-crown prep-aura" id="level-aura" hidden></p>
           <div class="prep-foot">
             <span class="prep-coins" id="level-coins"></span>
             <details class="prep-all"><summary>All rules</summary><ul id="level-rules"></ul></details>
@@ -510,10 +513,11 @@
         <div class="player-zone" id="player-zone">
           <img id="player-sprite" class="pixel" alt="Your Pokémon">
           <div class="intro-ball" id="intro-ball" hidden><span class="pokeball"></span></div>
+          <div class="swap-hint" id="swap-hint" aria-hidden="true" hidden><span>hold to swap</span></div>
         </div>
 
         <div class="nameplate" id="player-plate">
-          <div class="nameplate-title"><strong id="player-name"></strong><button type="button" id="player-bench" class="bench-chip" hidden></button><span id="player-type" class="chip"></span></div>
+          <div class="nameplate-title"><strong id="player-name"></strong><span id="player-type" class="chip"></span></div>
           <button type="button" id="switch-go" class="switch-go" hidden></button>
           <div class="gb-hp" id="player-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
@@ -868,6 +872,8 @@
       <canvas id="sp-sky" class="sp-sky" aria-hidden="true"></canvas>
       <img id="sp-gate-mon" class="sp-gate-mon pixel" alt="">
       <button type="button" class="mdex-btn sp-duo-key" id="sp-duo"><span class="mdex-ico" data-icon="duo"></span><span class="mdex-label">Duo</span></button>
+      <img id="sp-gate-mon2" class="sp-gate-mon sp-gate-second pixel" alt="" hidden>
+      <p id="sp-gate-note" class="sp-gate-note" hidden></p>
     </div>
     <div class="tdev-glass sp-glass" id="sp-glass"><div class="tower-base sp-base" id="sp-base">
       <div class="sp-today" id="sp-today"></div>

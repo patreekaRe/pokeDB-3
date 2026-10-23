@@ -221,7 +221,7 @@ await ready();
 s = await B(() => { const b = window.__battle(); return { look: b.starter.line.map(l => l.id).join(), type: b.starter.type, intim: b.ability?.amount, weak: b.enemy.weak, its: b.enemy.strength, hand: b.hand.length, intent: window.__intent(), attacks: b.def.moves.some(m => ['attack', 'drain'].includes(m.kind)) }; });
 check(s.look === 'sandile,krokorok,krookodile' && s.type === 'dark', `Sandile plays Deino's deck (${s.look})`);
 check(s.intim === 2 && s.weak >= 2 && s.hand === 6, `Darkinium Z: Intimidate applies 2 Weak and a card more (${JSON.stringify(s)})`);
-check(s.its === -2, `Dread Plate: Steal 1 at the start, Dark Memory's 1 more (${s.its})`);
+check(s.its === -1, `Dread Plate: Steal 1 at the start, Dark Memory's 1 more only on a card's (${s.its})`);
 check(!s.attacks || s.intent === 'attack' || s.intent === 'drain', `Razor Claw: its first intent is an attack (${s.intent})`);
 const keepRelics = () => B(() => window.__battle().relics).then(async (r) => { await fresh(); await B((list) => { window.__battle().relics = list; }, r); });
 await keepRelics();
@@ -236,7 +236,11 @@ check(await B(() => window.__battle().enemy.strength) === -2, 'Dark Memory: Stea
 await keepRelics();
 await B(() => window.__item({ block: 8, steal: 2 }));
 s = await B(() => { const b = window.__battle(); return { block: b.block, its: b.enemy.strength }; });
-check(s.block === 8 && s.its === -3, `Dark Gem: 8 block, Steal 2 (Dark Memory's 1 more) (${JSON.stringify(s)})`);
+check(s.block === 8 && s.its === -2, `Dark Gem: 8 block, Steal 2 (Dark Memory's 1 more only on a card's) (${JSON.stringify(s)})`);
+await keepRelics();
+await B(() => window.__play('magician'));
+await B(() => window.__begin());
+check(await B(() => window.__battle().enemy.strength) === -1, 'Magician: Steal 1 a turn, Dark Memory adds nothing to it (2026-10-20)');
 s = await B(async () => { const b = window.__battle(); const h = b.hand.length, b0 = b.block; await window.__item({ disguise: 1, draw: 2 }); return { d: b.disguised, drew: b.hand.length - h, block: b.block - b0 }; });
 check(s.d && s.drew === 2 && s.block === 3, `Smoke Ball: Disguise (Reveal Glass's 3 block), draw 2 (${JSON.stringify(s)})`);
 

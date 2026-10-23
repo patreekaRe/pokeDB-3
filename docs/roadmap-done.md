@@ -3372,3 +3372,135 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Duo Run picker: locked types show only ??? (2026-10-20, cloud)
+The user's call: a type not caught yet shows its ??? name and no "Catch X in the Safari" hint, so players find out
+themselves (`hintFor()` gone from `js/duoprep.js`).
+
+### Sky Pillar F100 combo pass: targeted nerfs and a lift (2026-10-21, cloud)
+A friend's ~12-card Turtwig deck climbed to floor 100. Fixes 1-4 of the sweep's lean plus a lift: Growth Spurt+ keeps
+Exhaust (cost 0), Overgrowth+ costs 0 at x1 (not x2), Ice Core and Electric Seed give half a copy, Dark Memory adds only
+to a card's Steal (not Magician's), Lum Berry no longer draws; Flame Wall and Mat Block 9 block (12 upgraded) for Fire and
+Fighting. Bot: Fire 68 / 46 / 24 -> 79 / 55 / 32 (L0 / L3 / L5), Grass and Water unchanged within noise, the 36 Safari pairs
+65.8 -> 67.6 (Fighting +8, Fire +4), a 10-flight Sky Pillar climb's reach to floor 100 Fire 27 -> 40%, Grass 30 -> 23%. Branch `claude/sky-pillar-f100-fixes-jaspxf` (both repos), pushed to `main`. Detail in
+`docs/reference/cards.md`'s last section and pokeDB-sim's README; follow-ups under Ideas ("After the Sky Pillar F100 combo pass").
+
+## A shiny switch in the Duo picker (2026-10-21, the user's ask; branch `claude/choosing-shinies-62dr4q`)
+Each Duo pool portrait wears a ✨ button on its top-right corner when you own the shown look's shiny (first under the
+arrows, moved the same day: it made the cards uneven): the same `save.shiny.on` switch as the character select's ✨ Shiny,
+so the portrait, the gate and the battle follow (`portrait()` in `js/duoprep.js`). Pushed to `main`.
+
+### Moves app: icon-only type tabs (2026-10-21, cloud)
+The user's call from a phone screenshot: the 11 type tabs cut their names to "F…", "G…", so they show only the round
+type badge (`typeBadge()`, as everywhere since 2026-10-20; the name is the tab's tooltip and aria-label). The old
+`smoothIcon` type art had none for Flying or Dark. Branch `claude/top-icon-cleanup-cz0xzz`, also pushed to main.
+
+### Perf audit: the Clearing, the Safari's new areas and the Duo Run (2026-10-21, cloud)
+The user's ask after the Duo Run and six areas went live: an fps, draw-call and memory check of all of it. Measured headless
+(swiftshader, an iPhone 17 Pro's size): `tools/budget-check.mjs` passed every place (Clearing 257 draws / 125 MB, towns
+359-493 draws, three Clearing -> mall -> base trips +1.9 MB, 0 listeners). New `tools/fps-probe.mjs` (JS a frame by the file
+that scheduled it, GC, style and layout, long tasks, animations running unseen): the Clearing ~7 ms of JS a frame, towns
+7-8, the base 2.7; all twelve Safari areas' scenery 0.2-0.7 ms a frame, a boss's storm under 1.3 ms, the six new areas no
+dearer than the old. `tools/run-probe.mjs --duo=fire,water --area=powerplant` (new): eight Duo fights, no leak (flat at
+~150 MB from fight 6 on, once the warmed ? room is built; +5 listeners). Fixed: the map's badges animated a drop-shadow
+(the Safari's new rare-spawn grass and a town's material badge), ~200 ms a second of main thread on a Duo map: now a halo
+fading in and out (`docs/reference/map-screen.md`); a room's blink an opacity ring. Duo map 500 -> 296 ms/s. The Safari and
+Sky Pillar lobbies' backdrops let their canvases go on close (~5 MB each held through a run). The Power Plant and Night
+Alley added to the budget check.
+
+
+## Trainer Levels 6-10 and Apple Acid+ (2026-10-22, the user: too easy at Level 5, Grass and healing most of all; branch `claude/game-difficulty-healing-balance-e107sm`)
+Five Levels above 5, StS's Ascension 15-20 in five steps (`LEVELS` in `js/data/difficulty.js`): 6 Bitter Medicine (healing in
+battle x0.8), 7 Worn Out (starting max HP x0.9), 8 Seasoned Foes (enemies +2 in all, elites x1.25 HP), 9 No Second Wind
+(evolving heals nothing, Centers 5%), 10 Champion's Trial (bosses x1.2 HP, +4). A win from 5 up stays a champion's
+(`isChampion()`). Apple Acid+ 11 + Vulnerable 2 -> 10 + Vulnerable 1 (it beat Seed Bomb, the 2 PP Bash, outright).
+Human bot, 150 a cell, grass / fire / water: L5 27.3 / 32.7 / 28.0, L6 19.3 / 34.7 / 28.7, L7 12.7 / 33.3 / 14.7, L8 6.7 /
+27.3 / 11.3, L9 4.7 / 14.7 / 7.3, L10 2.7 / 8.7 / 7.3 (L10 at 300: see below). Bitter Medicine lands on Grass alone, as
+meant; the user plays well above this bot (it wins ~30% at Level 5, where the user found the game easy). L10 at 300 a
+cell: 3.0 / 10.3 / 6.3. Grass ends lowest (69% of its losses in biome 1): if it plays too hard at the top, Bitter
+Medicine goes to 15%.
+Rewards (the user: "send it", same day): the climbing star and a first-win jackpot per Level (600-900, 2000 at 10);
+see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, trophies and Master Badges stay on the roadmap.
+
+## A Pokémon Master: the Level 10 title and crystal pedestal (2026-10-22, the roadmap's Level 6-10 reward 3; branch `claude/pokemon-master-title-cape-b33c37`)
+
+- A run won on Trainer Level 10 makes you a Pokémon Master (`isMaster()`, read from the Record Book): a TITLE line on the
+  Trainer Card and a 👑 line on your Trainers page for friends; a crystal pedestal and the title "Pokémon Master" in the
+  Hall of Fame scene and the Collection's handheld. `?master` lends the title. Detail:
+  `docs/reference/economy-and-hall-of-fame.md`'s "A Pokémon Master". A Champion's Cape (painted on the walking buddy, a
+  stand in the Safari Outfitter) was built too, then taken out: the user's call, "no outfits". Checked headless: the
+  card's lines, the scene's class, title and pedestal, no page errors.
+
+- **Level 6-10 rewards 6, 7 and 10** (2026-10-23, the user's picks "6 7 and 10"; one session, branch
+  `claude/cloud-build-shells-letters-jggbf4`, on `main` too). **Foil decks** (`js/foil.js`, css/cards.css's foil block):
+  `bestWin()` of the run's starter sets `data-foil` on `<html>` at each map and battle (`wearFoil()`), cleared off a run's
+  screens; 6-9 a metallic edge in the star's gem colour (the card face's border showing a second background, so no mask),
+  10 a rainbow edge and a `::before` holo, both following `--foil-x` / `--foil-y` (pointer, or `deviceorientation`; an
+  iPhone asks as Settings' Foil cards is turned on). Not in the Safari; still under `calmFx()`. **Shells**:
+  `LEVEL_SHELLS` / `shellEarned()` in `js/data/difficulty.js`, Gilded at 8 and Clear (translucent rgba shell colours) at
+  10, said in the result window. **Letters**: `js/data/level-letters.js`, three friends a Level for 6-9 and the Nietos at
+  10, posted from `level5Rewards()` once per Level (`stats.levelLetters`, only with a PC), shown with the Level's star;
+  the photo (`leaderphoto`, `js/base-furniture-gym.js`, modelled as a gilt `picture`, model-check iou 0.9) is earned by
+  furniture's `level` source (a Record Book win on 10). Budget check: run-map within budget.
+
+## The Champion's Crown (2026-10-23, in place of the cape; on `main`)
+
+- The user saw the cape at `e3f047fc` ("looks retarded") and asked for "a really sick pokemon champion crown". A Level 10
+  win's buddy wears a low-poly 3D gold crown floating over its head, turning and bobbing, five points tipped with the
+  rainbow star's gems that the bloom makes glow (`wearCrown()` / `crownModel()` in `js/hd2d.js`, `wearsCrown()` in
+  `js/data/difficulty.js`); the Trainer Card's partner wears a pixel one with a Crown key. Detail:
+  `docs/reference/economy-and-hall-of-fame.md`'s "The Champion's Crown". Checked headless: six more draws a frame with it
+  on (Clearing 242 -> 245, Secret Base 83 -> 89, mall hall 332 -> 338), memory unchanged, about 21px wide and 15px over
+  Charmander's head on a phone, the key takes it off and puts it back, no page errors, 391 tests pass.
+
+## A preview of the Champion's Crown (2026-10-23, on `main`)
+
+- The user picked two of four ideas. The Trainer Level picker, from Level 5 up until you're a Master, shows the pixel
+  crown and "Win on Level 10 to wear the Champion's Crown." (at 10, "Win this Level..."; `#level-crown`, `renderLevel()`
+  in `js/select.js`); the Trainer Card shows a greyed crown, "Win Lv 10", where a Master's Crown key goes. `crownArt()`
+  moved to `js/ui.js` for both. Checked headless with `?levels`, `?levels&master` and a fresh save; no errors, 391 tests pass.
+
+## The Super Saiyan aura for Trainer Levels 6-10 (2026-10-23, the user's go; on `main`)
+
+- The walking buddy (Clearing, Secret Base, mall) wears the aura of the highest Level won from 6 up, in that star's
+  colour and bigger each Level: 6 a ruby glow at the feet, 7 emerald flames up the sides, 8 sapphire to the head, 9
+  amethyst with lightning, 10 a towering rainbow-gold blaze with lightning and rising sparks, under the crown. Flat
+  additive billboards on the sprite's board, sheets painted once on canvases (`js/aura-art.js`, `wearAura()` in
+  `js/hd2d.js`), still under Calm effects. The Trainer Card's partner wears the same frames in CSS, with an Aura key
+  (earned auras, then off; `save.aura`) and a greyed "Win Lv 6" preview; the Level picker previews each Level's aura
+  (`#level-aura`). `?aura=6..10` lends one (10 the crown too). Detail: `docs/reference/economy-and-hall-of-fame.md`'s
+  "The Super Saiyan aura". Checked headless: every Level builds with no page errors, calm holds one frame with no
+  bolts, the key cycles, budget check within budget (base 83 -> 96 draws and mall hall 332 -> 345 with `?aura=10`, the
+  crown's six included); 396 tests pass (`tests/aura.test.mjs` new).
+- Follow-up the same day: the user found `?aura=10` "laggy af" in the Clearing. Measured headless, JS a frame unchanged
+  and the GPU's share about 6% more at 10 (none at 8); cut 10 from five draws to three (front licks, lightning and
+  sparks one sheet, `auraFront()`), offsets set only on a new frame, `calmFx()` read once a second. After it, the
+  aura shown or hidden times the same.
+- Second follow-up the same day (the user: "I love the aura but the crown is hard to see now it's like behind the aura
+  and maybe tone down the size"): every Level's aura smaller (10 from 2 x the sprite's height to 1.4), the crown drawn
+  after it in the transparent pass so no flame adds onto it (headless, the crown's own pixels change by 0 with the aura
+  on, 5.4 before), and each aura sheet drawn once instead of twice (`forceSinglePass`; 10 is now +3 draws). Found on the
+  way: behind the title the Clearing hides the buddy, so the earlier Clearing timings (and budget-check's `clearing`)
+  never had the aura in them; retimed with the title tapped away, no GPU time beyond the noise.
+
+- **Buddy Projector** (2026-10-22, the user's ask, built in the Desktop app): a hologram of the walking buddy on a
+  pedestal of its own left of the Clearing's quest board (Halloween's dead tree there removed), tapped to pick the buddy
+  with an always-on Shiny switch; the PC's WALKING BUDDY page removed. v1.29 "Champion Levels" cut with it. The phone
+  budget check wasn't run (it needs the cloud's Chromium): a cloud session should run `--only=clearing` once.
+  Notes: `docs/reference/hub-base-mall.md`'s last section.
+
+- **The PC opens straight away** (2026-10-23, the user: "PC doesn't open when I click on it"; on `main`): a tap on the
+  Clearing's PC first downloaded `js/secret-base.js` and every furniture model with it (177 modules) before anything
+  showed, ~2.3 s more even headless, far longer on a phone, and a failed fetch left the tap doing nothing. `js/pc.js` now
+  loads that side behind its boot screen (`loadBaseKit()`), the hub starts it as you set off for the PC (`warmPC()`), and
+  a failed load says to reload. The Buddy Projector's budget check ran too: `clearing` within budget (254 draws, 124 MB).
+### Perf check after the Level 6-10 rewards and the Buddy Projector (2026-10-23, local)
+- `tools/budget-check.mjs`, all 23 places and the trips, run on this PC for the first time (playwright in a scratch folder,
+  `PW_CHROMIUM` pointing at the installed Chrome; `tools/probe-kit.mjs` reads it): every place within budget, the Clearing
+  247 draws / 128 MB with the projector, the mall/base trips x3 growing 0.1 MB and no listeners. The aura, crown and
+  hologram cost nothing measurable (`fps-probe.mjs`'s new `clearing-master`: 2.3 ms of JS a frame, as plain; the
+  hologram's tick 0.015 ms). Fixed: Level 10 foil wrote `--foil-x/y` on `<html>`, so every tilt event restyled the whole
+  page (`battle-foil`: style 1.4 -> 41.6 ms/s); now on each card face, at most 30 a second, skipping drift a still phone
+  reports (11.4 ms/s). Also paused the hidden select screen's pulsing A button behind the Clearing and 3D places, and the
+  see-through run-map Poké Ball's wobble. Not taken: the run map's scenery timer (`scene.js`, ~25 ms/s), as measured on
+  2026-10-21.
