@@ -14,8 +14,8 @@ import { GYM_LEADERS } from './gym.js';
 import { RING, mended, townState } from './towns.js';
 import { MAX_LEVEL } from './difficulty.js';
 
-/* Players see none of it until the user's playtest says go (as TOWNS_LIVE was): `?houses` shows it for a page load. */
-export const HOUSES_LIVE = false;
+/* Live since 2026-10-23 (the user's go after the branch playtest); `?houses` kept its flag for the playtest links. */
+export const HOUSES_LIVE = true;
 const flag = () => (typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('houses'));
 export const housesOpen = () => HOUSES_LIVE || flag() !== null;
 /** `?houses=all` lends every earned house and puts the seasonal ones on sale for the page load (nothing is saved for it,

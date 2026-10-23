@@ -865,6 +865,9 @@ Packing says what's inside.
 
 ## Secret Base houses, session 1 (2026-10-23, behind `HOUSES_LIVE`)
 
+**Live since 2026-10-23** (`HOUSES_LIVE` true, the user's go after the branch playtest): everything below behind the switch is
+now what every player sees; `?houses` is a no-op flag kept for old playtest links.
+
 The roadmap's "Secret Base houses" (mock-up `docs/mockups/secret-base-houses.html`). Built behind `HOUSES_LIVE` (false,
 `js/data/houses.js`) as the towns were: `?houses` shows it all for a page load, and a buy, move or repaint made with it
 is saved like any other. With it off the Clearing is exactly as before (the Ancient Tree, no stand).

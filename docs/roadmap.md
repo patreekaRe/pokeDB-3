@@ -1195,83 +1195,11 @@ answered yet): a tab left open on one device only learns the other played at its
 Re-checking on return would take the newer cloud save quietly when this device hadn't changed (a reload mid-play, so ask
 the user first). ▶ Run in: CLOUD, effort medium.
 
-**Secret Base houses: the Ancient Tree's lot becomes a house from a catalogue** (the user's idea, 2026-10-23: "changing it
-from a tree to a really cool looking house... a catalogue of houses with tiers, some by coins, some by challenges or
-achievements... give players the option to buy their first aesthetic change too"). Mock-up of 18 houses:
-`docs/mockups/secret-base-houses.html` (published: https://claude.ai/artifact/TJEmBMmgxcH7FEJYzSDkuE). Claude's proposal,
-waiting on the user's picks: every new base starts in a **Starter Cottage** (same 1,500 price, same lot at `TREE_AT`, garden
-arch kept); a HOUSE CATALOGUE page beside the PC's HOUSE UPGRADES; tiers **Homestead** (coins 1,500-2,000: Log Cabin,
-Seaside Bungalow, Mushroom Cottage, Red Barn), **Estate** (5,000-8,000: Machiya Townhouse, Lighthouse Cottage, Glasshouse
-Villa, Victorian Manor), **Earned**, never sold (Gym Hall: every Gym Leader; Hot-Spring Ryokan: every Waystone mended; Ranger
-Lodge: every Safari page; Sky Spire: the Sky Pillar's top; Poké Ball Dome: the Master Badge), **Seasonal** (Haunted Chateau
-in October, Snow Chalet in December, 3,000, kept for good), **Legendary** (Crystal Palace: beat Eternatus; the Ancient Tree:
-kept by every base bought before, else the Clearing Badge). The first aesthetic change anyone can buy: three paint jobs a
-house, 250 PokéCoins a repaint. Only the outside changes (rooms, furniture, yard, residents stay). Friends seeing it is
-new work (the user asked how, 2026-10-23: today Visit opens straight inside, `openBase3d({ guest })`): Visit starts on a
-small front lawn (an outdoor room like the yard: their house, their buddy, a mailbox with their name; the door goes in),
-and the Trainers page and Plaza blurb carry the house id and paint for a small picture.
-Where the catalogue lives: **a kiosk** (the user's call, 2026-10-23, over the PC): a builder's
-kiosk beside the lot (a Timburr crew's stand), because picking a house can show it built on your real lot as a try-on,
-the way wallpaper is tried on in the base (`trying` in `js/base-3d.js`); the PC's HOUSE UPGRADES keeps rooms and the yard
-and gets one row pointing to the kiosk. Before the base is bought the stand shows the cottage FOR SALE. One more model
-in the Clearing, so it goes through the budget check.
-**Session 1 built (2026-10-23, cloud), behind `HOUSES_LIVE` (false), waiting on the user's playtest**: the save field,
-the Starter Cottage / Log Cabin / Seaside Bungalow as 3D models, the tree repaintable (Spring / Autumn / Twilight), Timburr
-& Co.'s stand at tile 17,4 with its try-on catalogue, repaints at 250, the PC's YOUR HOUSE row (detail:
-`docs/reference/hub-base-mall.md`'s last section; the archive has the line). The catalogue was restyled after the user's first playtest ("doesn't look that great"): the shops' cream merchant card with a
-picture of each house; they liked seeing the house built on the lot as they pick. Playtest only on the branch's githack
-link (never the live site): `?houses&coins=5000`, and `?houses&tree` for an old save. Was: the live site with
-`?houses&coins=5000` (and a save that already owns the tree, to see it kept and the cottage free). Still open: which of the
-18 to keep, the prices, friends' visits (front lawn). Sessions left (A, B and C done, below):
-optional insides per house (medium), and the friends' front lawn. All CLOUD. The coin houses were session A (below).
-**The rest, the user's ask (2026-10-23): every house of the mock-up, 7 more to make 25, and many more paints each.**
-Claude's proposal for the 7 (the sessions use it unless the user says otherwise): Treehouse (Homestead, 2,000: a cabin
-up in a tree, a rope ladder), Windmill Farmhouse (Homestead, 1,800), Desert Riad (Estate, 6,500: Sunwell Bazaar's
-style), Lantern Pagoda (Estate, 7,000: Lantern Village's), Champion's Keep (Earned: a Trainer Level 10 win), Stargazer
-Observatory (Earned: the whole Pokédex), Cherry Blossom Teahouse (Seasonal: April, 3,000). Tiers then: Starter 1,
-Homestead 6, Estate 6, Earned 7, Seasonal 3, Legendary 2. Paints: 8 a house (the first 3 as they are), repaint still
-250; with 8 the swatches won't fit their row, so the card gets a paint strip that scrolls or a palette that opens over
-it, the card staying about 267 px tall (the user's ask: see the house). Three sessions, all CLOUD, all on the branch:
-**the playtest rule (the user's, 2026-10-23): everything stays on `houses-playtest`, never `main`, until the user's
-playtest says go;** each session runs `tools/save-check.mjs` (a well-played save must start the Clearing) and the
-Clearing's budget, checks each model with `tools/house-check.mjs` (text, no screenshots), and gives a pinned githack link.
-- ~~**A**~~ **done 2026-10-23** (cloud, branch `houses-playtest`; detail: `docs/reference/hub-base-mall.md`, "Session A"):
-  the six coin houses as 3D models (Mushroom Cottage, Red Barn; Machiya Townhouse, Lighthouse Cottage, Glasshouse Villa,
-  Victorian Manor at the mock-up's prices), 8 paints for every house (the tree's five new ones crown colours), the
-  catalogue's paint strip (the card still 267 px), `tools/house-check.mjs` for text elevations. Within budget, save check
-  passed. **Next: the user playtests** the branch's githack link (`?houses&coins=20000`, and `&tree` for an old save):
-  each house on the lot, its paints, and says what to change before B.
-- ~~**B**~~ **done 2026-10-23** (cloud, branch `houses-playtest`, e8cecd7; detail: `docs/reference/hub-base-mall.md`, "Session B"):
-  the Gym Hall, Hot-Spring Ryokan, Ranger Lodge, Sky Spire, Poké Ball Dome, Crystal Palace, Haunted Chateau (October)
-  and Snow Chalet (December, both 3,000, kept for good) as 3D models, 8 paints each; their checks in `EARN`
-  (`js/data/houses.js`, tested), stored for good once seen, a TIMBURR & CO. letter in the Mailbox for each; greyed LOCKED
-  cards with Timburr saying what earns each (and how far along); the Ancient Tree earned by the Clearing Badge;
-  `?houses=all` lends them all, `?houses&livein=<id>` lives in one. Also the user's ask the same day: long names no longer
-  cut off (the name on its own line the card's width, the paint's name under it; card 267 -> 280 px). Within budget, save
-  check passed. **Next: the user playtests** the githack link (`?houses=all&coins=20000`), then C.
-- ~~**Tree by default**~~ **done 2026-10-23** (cloud, branch `houses-playtest`; the user: "make it default for new
-  players to start with the tree. Why would they want to downgrade"): every new base lives in the Ancient Tree, the
-  Starter Cottage owned free beside it (pick either at the stand when buying the lot); the tree no longer earned by the
-  Clearing Badge, so Legendary is the Crystal Palace alone. Tests, save check and the Clearing's budget pass.
-- ~~**C**~~ **done 2026-10-23** (cloud, branch `houses-playtest`; detail: `docs/reference/hub-base-mall.md`, "Session C"):
-  the Treehouse (Homestead 2,000) and Windmill Farmhouse (Homestead 1,800), the Desert Riad (Estate 6,500) and Lantern
-  Pagoda (Estate 7,000), the Champion's Keep (earned: a Trainer Level 10 win) and Stargazer Observatory (earned: the
-  Pokédex Badge's whole Pokédex), the Cherry Blossom Teahouse (April, 3,000), 8 paints each: 25 houses. Lived in, 268 to
-  274 draws and about 120 MB, inside the Clearing's budget; save check passed; no name cut off in the catalogue.
-  **Next: the user playtests** the githack link (`?houses=all&coins=20000`), then says go for going live.
-- **Insides and the friends' lawn, talked over (2026-10-23; the user: "wouldn't that take a while? My friends have been
-  designing their homes already too. Wouldn't the lawn thing feel weird too?")**. Claude's take, waiting on the user's call:
-  insides per house risk friends' rooms (a round or narrow room breaks furniture laid out for the square one), so either
-  drop them or keep them to looks that don't move a wall (floor, wall paper, window frames per house). The lawn adds a
-  walk before every visit; instead, a short arrival shot (the camera on the friend's house, the door opens, cut inside,
-  no walking) plus the house's picture on their Trainers page and Plaza blurb.
-  Mock-up of both (the user asked, 2026-10-23): https://claude.ai/artifact/DEh9vUss4bD1StvwxzSrC2 (the lawn's three
-  screens, and the arrival shot beside them). **The lawn built for a playtest (2026-10-23, the user: "let's try a
-  playtest"; branch `houses-playtest`)**: `js/front-lawn.js`, detail in `docs/reference/hub-base-mall.md`, "Front lawn".
-  **Decided (2026-10-23, the user: "I think the lawn is okay", asking Claude to pick): the lawn stays; no arrival
-  shot.** Insides still waiting on their call (Claude's pick: drop them, for friends' rooms' sake).
-Going live is its own step after the user's go: merge `main` into the branch, HOUSES_LIVE true, the patch note out of
-HELD, and only then onto `main`.
+**Secret Base houses: still open after launch (2026-10-23).** The houses went live (archive: "Secret Base houses").
+Waiting on the user: **insides per house** (Claude's pick: drop them, since a round or narrow room breaks friends' laid-out
+rooms; a safe middle is house-themed floors, wallpaper and window frames only). Watch for: a friend's lawn shows the
+Ancient Tree until they open the game after launch (their page then carries `lot`); the first real Trainers-app visit
+through the lawn is its first test with the cloud (a githack link has none).
 
 **The game feels too easy, Grass most of all; healing feels overpowered** (2026-10-22, the user, after a Servine run where
 Apple Acid+ (1 PP, 11 + Vulnerable 2) sat beside Seed Bomb (2 PP, 10 + Vulnerable 2)). The human bot, 150 a cell, sim

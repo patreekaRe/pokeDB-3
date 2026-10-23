@@ -3554,3 +3554,13 @@ cloud replaces is kept (`?runback`). A run that fails to load is kept the same w
 ### The Halloween ghosts no longer greet you (2026-10-23, cloud)
 The user found the walk-up greeting on every Clearing visit annoying. Cut from `js/hub-spooky.js` (and the `greets` lines
 from `js/data/spooky-lines.js`); the random lines over their heads and tap talks stay, nickname lines included.
+
+### Secret Base houses (2026-10-23, cloud, branch `houses-playtest`, live on `main` the same day)
+The user's idea: the Ancient Tree's lot becomes a house from a catalogue. Timburr & Co.'s stand by the lot tries each of
+25 houses on the real lot before you buy (Starter: the Ancient Tree, every new base's home, and the Starter Cottage free
+beside it; 6 Homestead and 6 Estate for coins; 7 earned by feats; 3 seasonal; the Crystal Palace), 8 paints each, 250 a
+repaint; friends' visits start on their front lawn (`js/front-lawn.js`; the lawn over a quick arrival shot, the user's
+call). Built in sessions 1, A, B and C plus the lawn, each playtested on the branch's githack link; the mock-up
+`docs/mockups/secret-base-houses.html`, the lawn's https://claude.ai/artifact/DEh9vUss4bD1StvwxzSrC2. Detail:
+`docs/reference/hub-base-mall.md`, "Secret Base houses" onwards.
+

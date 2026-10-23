@@ -21,7 +21,6 @@
    hand-made `sections`, each [icon, heading, lines].
    ============================================================ */
 
-import { HOUSES_LIVE } from './houses.js';
 
 /** Where a note goes: its heading, in this order. A new group needs a smooth or pixel icon for its emoji. */
 export const GROUPS = {
@@ -46,7 +45,6 @@ export const NEXT_MAX = 20;
 /** Lines for something built but held behind its switch, each [on, [group, line]]: they join NEXT by themselves the
     day the switch goes on, so players never read of what they can't see. */
 const HELD = [
-  [HOUSES_LIVE, ['base', 'Your Secret Base can be a house: Timburr & Co.\'s stand by your lot builds 25 houses, tried on before you buy, in eight paints; big feats earn rarer ones. Friends\' visits start on their front lawn.']],
 ];
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
@@ -54,6 +52,7 @@ export const NEXT = [
   ['hub', 'A Berry Booth by the Clearing\'s gate is where you pack your Berry Pouch and run kit now, with a guide to how the pouch works; what you pack stays packed.'],
   ['fixes', 'The Clearing\'s PC opens as soon as you reach it, instead of waiting, sometimes for good, on the Secret Base\'s furniture to load, Level 10 foil cards no longer slow a fight while their sheen follows your phone\'s tilt, and cloud save stops asking "Two saves found" over your own phone\'s save, or swapping out a run in progress without asking.'],
   ['hub', 'The Clearing\'s Halloween ghosts no longer walk up to greet you each visit; they still chat at random and when tapped.'],
+  ['base', 'Your Secret Base can be a house: Timburr & Co.\'s stand by your lot builds 25 houses, tried on before you buy, in eight paints; big feats earn rarer ones. Friends\' visits start on their front lawn.'],
   ['base', 'Every room of your Secret Base, the backyard too, picks from all your Safari catches, up to 6 a room, and your first two catches move in by themselves.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];

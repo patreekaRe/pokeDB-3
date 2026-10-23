@@ -4,8 +4,8 @@ import { HOUSES, HOUSES_BY_ID, TIERS, REPAINT_PRICE, HOUSES_LIVE, housesOf, home
 import { GYM_LEADERS } from '../js/data/gym.js';
 import { RING } from '../js/data/towns.js';
 
-test('players see no houses until the playtest says go', () => {
-  assert.equal(HOUSES_LIVE, false);
+test('houses are live (the user\'s go, 2026-10-23)', () => {
+  assert.equal(HOUSES_LIVE, true);
 });
 
 test('every house has a tier and eight paints, the tree its crown\'s colours', () => {
