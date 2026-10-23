@@ -197,6 +197,8 @@ function init() {
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
   // ?coins=5000: sets the PokéCoins for a playtest (a branch preview starts on its own empty save)
   if (query.has('coins')) updateSave(d => { d.coins = Math.max(0, parseInt(query.get('coins'), 10) || 0); });
+  // ?houses&tree: a save whose Secret Base was bought before houses (the Ancient Tree kept, the Starter Cottage free)
+  if (query.has('houses') && query.has('tree')) updateSave(d => { d.baseOwned = true; delete d.houses; });
   if (query.has('walk')) updateSave(d => { d.titleHub = true; });   // Settings' Title screen, by URL (?signs only for the page load)
   if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.

@@ -15,7 +15,11 @@
    takes the cloud's when this device has no progress, and asks otherwise.
    ============================================================ */
 
-import { FIREBASE_CONFIG } from './cloud-config.js';
+import { FIREBASE_CONFIG as REAL_CONFIG } from './cloud-config.js';
+
+// only the live site (and a local server) talks to the cloud: a playtest link on githack has a throwaway save of its own,
+// and signing in there would sync it over the player's real one (2026-10-23, the houses playtest)
+const FIREBASE_CONFIG = typeof location === 'undefined' || /^(patreekare\.github\.io|localhost|127\.0\.0\.1)$/.test(location.hostname) ? REAL_CONFIG : null;
 import { SAVE_KEYS, onSaveWrite } from './storage.js';
 import { STARTERS, STARTERS_BY_ID, stageName } from './data/starters.js';
 import { biomeAt } from './data/enemies.js';
