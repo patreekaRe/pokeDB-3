@@ -1204,7 +1204,12 @@ kept by every base bought before, else the Clearing Badge). The first aesthetic 
 house, 250 PokéCoins a repaint. Only the outside changes (rooms, furniture, yard, residents stay). Friends seeing it is
 new work (the user asked how, 2026-10-23: today Visit opens straight inside, `openBase3d({ guest })`): Visit starts on a
 small front lawn (an outdoor room like the yard: their house, their buddy, a mailbox with their name; the door goes in),
-and the Trainers page and Plaza blurb carry the house id and paint for a small picture. Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
+and the Trainers page and Plaza blurb carry the house id and paint for a small picture.
+Where the catalogue lives (the user asked PC or kiosk, 2026-10-23; Claude's lean, waiting on their call): a builder's
+kiosk beside the lot (a Timburr crew's stand), because picking a house can show it built on your real lot as a try-on,
+the way wallpaper is tried on in the base (`trying` in `js/base-3d.js`); the PC's HOUSE UPGRADES keeps rooms and the yard
+and gets one row pointing to the kiosk. Before the base is bought the stand shows the cottage FOR SALE. One more model
+in the Clearing, so it goes through the budget check. Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
 check on the Clearing). Sessions: 1 the system plus Cottage, Tree and two Homestead (high), 2 the coin houses (medium), 3
 earned and seasonal with unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium). All CLOUD.
 
