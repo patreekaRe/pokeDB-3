@@ -888,13 +888,21 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   only with houses on): `makeKiosk()` (counter, orange-and-cream awning, the crew's name board, a FOR SALE panel before
   the base is bought, HOUSES after, a hard hat and a cone) and Timburr behind the counter as a still board that hops now
   and then (`kiosk.tick()`). Its card's Catalogue opens `js/house-kiosk.js`.
-- **The catalogue** (`openKiosk()` in `js/house-kiosk.js`, `.hk-*` in `css/hub.css`): a sheet in the Pokédex's shell over
-  the lower half, the hub's bar and card hidden (`.hub.browsing`), the camera easing over and in to the lot
-  (`browsing`, `BROWSE_NEAR`). Rows by tier (HOME / Owned / price / Locked), a picked house's paints, blurb and one key:
-  Buy (a confirm, then built and moved in), Move in, Repaint · 250 (and moves in), or the base itself (Buy · 1,500)
-  before there is one, other houses saying "Lot first". Every pick and paint is built on the lot as a try-on
-  (`tryOn()` -> `rebuildLot()`, which disposes only the lot's group and takes its lights out of `glowMats`); closing puts
-  back the house lived in, or rebuilds the places if anything was bought.
+- **The catalogue** (`openKiosk()` in `js/house-kiosk.js`, `.hk-*` in `css/hub.css`; restyled the same day, the user:
+  "doesn't look that great", it was a red Pokédex sheet with a list): a merchant's card in the shops' look (the garden
+  catalogue's `.gmerch`: cream, gold rim, white keyline), the crew's orange (`--ink`), low on the screen; Timburr's name
+  tag askew over its top edge, the coins and a round ✕ beside it; Timburr's line (`.hk-say`: what just happened, why a
+  key is greyed, else the picked house's `blurb`); a sideways row of house cards (`.hk-card`), each a still of its real
+  model in a spotlit box (`snap` = `houseStill()` in `js/hub-3d.js`: `makeHouse()` turned three-quarters on the shared
+  turntable, `js/turntable.js`, one at a time and cached for the page load; the tree its painting) with HOME / OWNED /
+  a coin price / LOCKED; then the picked house's name, tier and how, the gold `room-ok` key, and its paints as round
+  two-tone swatches with the picked paint's name. Keys: Buy (a confirm, then built and moved in), Move in, Repaint · 250
+  (and moves in), or the base itself (Buy · 1,500) before there is one, other houses saying "Lot first". The hub's bar
+  and card hide (`.hub.browsing`) and the camera frames the lot in the room left above the card on any screen
+  (`browseAt()`: how far forward, and how near, `BROWSE_NEAR` 0.8 easing to 1 where the house wouldn't fit, as on an
+  iPad on its side). Every pick and paint is built on the lot as a try-on (`tryOn()` -> `rebuildLot()`, which disposes
+  only the lot's group and takes its lights out of `glowMats`); closing puts back the house lived in, or rebuilds the
+  places if anything was bought.
 - **The PC**: HOUSE UPGRADES shows a YOUR HOUSE row (the house and its paint) on every tab, its Go there logging off and
   walking you to the stand (`onKiosk` in `openPC()`).
 - **Budgets**: `tools/budget-check.mjs` measures `clearing-houses` (`?houses`, a new save's boarded cottage) on its own

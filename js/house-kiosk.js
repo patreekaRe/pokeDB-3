@@ -1,36 +1,41 @@
 /* ============================================================
    house-kiosk.js  -  Timburr & Co.'s catalogue, opened at their stand beside the Secret Base's lot in the Clearing
    (docs/roadmap.md's "Secret Base houses", the user's call, 2026-10-23: a kiosk over the PC, so a pick is built on your
-   real lot as a try-on before you pay). A sheet in the Pokédex's shell over the lower half of the screen, the lot in view
-   above it (js/hub-3d.js turns the camera to it): the houses by tier, each with its tag (HOME, Owned, a price, Locked),
-   and the picked one's paints, blurb and one key: Buy (its first paint job free), Move in (free), Repaint (250) or the
-   Secret Base itself before there is one. The rules are js/data/houses.js's.
+   real lot as a try-on before you pay). A merchant's card in the shops' look (Smeargle's garden catalogue, `.gmerch`)
+   low on the screen, the lot in view above it (js/hub-3d.js turns the camera to it): Timburr's name tag and a line in
+   its voice, a row of house cards each a still of its own 3D model (`snap`) with HOME / Owned / a price / Locked, and
+   for the picked one its paints and one key: Buy (its first paint job free), Move in (free), Repaint (250) or the
+   Secret Base itself before there is one. Restyled the same day (the user: "doesn't look that great"). The rules are
+   js/data/houses.js's.
    ============================================================ */
 
 import { HOUSES, HOUSES_BY_ID, TIERS, REPAINT_PRICE, housesOf, cantBuy, buyHouse, moveIn, repaint } from './data/houses.js';
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
 import { el, confirmDialog, refreshCoins } from './ui.js';
+import { smoothIcon } from './smooth-icons.js';
 
-const BASE_PRICE = 1500;
+const BASE_PRICE = 1500, PIC = 180;
 let sheet = null;
+const pics = new Map();   // `${id}:${paint}` -> a still of that house, drawn once a page load
+let queue = Promise.resolve();
 
 /** `tryOn({ id, paint } | null)` builds that house on the lot (null: the one lived in); `buyBase(paint)` buys the
-    Secret Base itself, true once bought; `onClose(changed)` once shut, `changed` if anything was bought or moved. */
-export function openKiosk({ parent, tryOn, buyBase, rebuild, onClose }) {
+    Secret Base itself, true once bought; `snap(id, paint, canvas)` draws a still of a house; `onClose(changed)` once
+    shut, `changed` if anything was bought or moved. */
+export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
   if (sheet) return;
-  const save = getSave(), h = housesOf(save);
+  const h = housesOf(getSave());
   let pick = h.home || 'cottage', paint = h.paint[pick] || 0, changed = false, note = '';
   sheet = el('div', 'hk-sheet');
   sheet.setAttribute('role', 'dialog');
   sheet.setAttribute('aria-label', 'House catalogue');
-  const head = el('div', 'hk-head'), coins = el('span', 'hk-coins'), shut = el('button', 'hk-x', '✕');
+  const who = el('span', 'hk-who', 'TIMBURR & CO.'), coins = el('span', 'hk-coins'), shut = el('button', 'hk-x', '✕');
   shut.type = 'button';
   shut.setAttribute('aria-label', 'Close the catalogue');
-  head.append(el('b', 'hk-title', 'TIMBURR & CO.'), coins, shut);
-  const list = el('div', 'hk-list'), card = el('div', 'hk-card');
-  sheet.append(head, el('div', 'hk-screen'));
-  sheet.lastChild.append(list, card);
+  const line = el('p', 'hk-say'), row = el('div', 'hk-cards'), pickRow = el('div', 'hk-pick'), paints = el('div', 'hk-paints');
+  line.setAttribute('aria-live', 'polite');
+  sheet.append(who, coins, shut, line, row, pickRow, paints);
   parent.append(sheet);
   requestAnimationFrame(() => sheet?.classList.add('up'));
 
@@ -53,74 +58,92 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, onClose }) {
   shut.addEventListener('click', close);
   const say = (text) => { note = text; render(); };
 
-  const swatch = (house, i) => {
+  // a house's picture: drawn from the cache, or queued (the stills share one renderer, one at a time)
+  const picture = (id, n) => {
+    const c = el('canvas', 'hk-pic');
+    c.width = c.height = PIC;
+    const key = `${id}:${n}`, put = () => c.getContext('2d').drawImage(pics.get(key), 0, 0);
+    if (pics.has(key)) put();
+    else queue = queue.then(async () => {
+      if (!pics.has(key)) {
+        const art = document.createElement('canvas');
+        art.width = art.height = PIC;
+        try { await snap(id, n, art); } catch (err) { console.warn('house still failed', id, err); return; }
+        pics.set(key, art);
+      }
+      put();
+    });
+    return c;
+  };
+  const dots = (house, i) => {
     const p = house.paints[i];
     return house.id === 'tree' ? [p.shade[1][0], p.lobe[1]] : [p.roof, p.wall];
   };
   function tagOf(house, now) {
     if (now.home === house.id) return ['HOME', 'home'];
-    if (now.owned.includes(house.id)) return ['Owned', 'own'];
-    if (house.price == null) return ['Locked', 'lock'];
-    return [(house.id === 'cottage' ? BASE_PRICE : house.price).toLocaleString(), ''];
+    if (now.owned.includes(house.id)) return ['OWNED', 'own'];
+    if (house.price == null) return ['LOCKED', 'lock'];
+    return [(house.id === 'cottage' ? BASE_PRICE : house.price).toLocaleString(), 'price'];
   }
 
   function render() {
     if (!sheet) return;
     const s = getSave(), now = housesOf(s), base = !!s.baseOwned, house = HOUSES_BY_ID[pick];
-    coins.textContent = `${(s.coins ?? 0).toLocaleString()} coins`;
-    list.replaceChildren();
-    for (const t of TIERS) {
-      const ofTier = HOUSES.filter(x => x.tier === t.id && (x.id !== 'tree' || now.owned.includes('tree')));
-      if (!ofTier.length) continue;
-      list.append(el('span', 'hk-tier', t.name));
-      for (const x of ofTier) {
-        const b = el('button', `hk-row${x.id === pick ? ' on' : ''}`), [tag, kind] = tagOf(x, now), [c1, c2] = swatch(x, x.id === pick ? paint : now.paint[x.id] || 0);
-        b.type = 'button';
-        const dot = el('i', 'hk-dot');
-        dot.style.background = `linear-gradient(${c1} 50%, ${c2} 50%)`;
-        b.append(dot, el('span', 'hk-name', x.name), el('span', `hk-tag ${kind}`, tag));
-        b.addEventListener('click', () => {
-          if (pick === x.id) return;
-          playSound('select');
-          pick = x.id; paint = housesOf(getSave()).paint[pick] || 0; note = '';
-          render(); show();
-        });
-        list.append(b);
-      }
+    coins.replaceChildren(smoothIcon('coin', 'hk-coin'), (s.coins ?? 0).toLocaleString());
+
+    // the cards, by tier; the tree only for a base that has it
+    const keep = row.scrollLeft;
+    row.replaceChildren();
+    for (const t of TIERS) for (const x of HOUSES.filter(o => o.tier === t.id && (o.id !== 'tree' || now.owned.includes('tree')))) {
+      const on = x.id === pick, b = el('button', `hk-card${on ? ' on' : ''}`), [tag, kind] = tagOf(x, now);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(on));
+      const box = el('span', 'hk-box');
+      box.append(picture(x.id, on ? paint : now.paint[x.id] || 0));
+      const price = el('span', `hk-tag ${kind}`);
+      if (kind === 'price') price.append(smoothIcon('coin', 'hk-coin'));
+      price.append(tag);
+      b.append(box, el('span', 'hk-name', x.name), price);
+      b.addEventListener('click', () => {
+        if (pick === x.id) return;
+        playSound('select');
+        pick = x.id; paint = housesOf(getSave()).paint[pick] || 0; note = '';
+        render(); show();
+      });
+      row.append(b);
     }
-    // the picked house: its name, where it comes from, its paints and its one key
-    const tier = TIERS.find(t => t.id === house.tier).name;
-    const sws = el('div', 'hk-paints');
-    house.paints.forEach((p, i) => {
-      const b = el('button', `hk-sw${i === paint ? ' on' : ''}`), [c1, c2] = swatch(house, i);
+    row.scrollLeft = keep;
+
+    // the picked house: its name, where it comes from, and its one key
+    const key = el('button', 'room-ok hk-go');
+    key.type = 'button';
+    const owned = now.owned.includes(pick), worn = now.paint[pick] || 0, tier = TIERS.find(t => t.id === house.tier).name;
+    let tip = '';
+    if (!base) {
+      if (pick === 'cottage') { key.textContent = `Buy · ${BASE_PRICE.toLocaleString()}`; key.onclick = buyFirst; tip = 'This lot\'s for sale, the Starter Cottage with it! Pick its paint, and it\'s your Secret Base.'; }
+      else { key.textContent = 'Lot first'; key.disabled = true; tip = 'Buy the lot with its Starter Cottage first. Then the crew can build any house on it!'; }
+    } else if (pick === now.home && paint === worn) { key.textContent = 'Your home'; key.disabled = true; }
+    else if (owned && paint === worn) { key.textContent = 'Move in'; key.onclick = moveHere; tip = 'It\'s yours already. Moving back is free!'; }
+    else if (owned) { key.textContent = `Repaint · ${REPAINT_PRICE}`; key.onclick = repaintHere; tip = `${house.paints[paint].name}? A fresh coat is ${REPAINT_PRICE} PokéCoins${pick === now.home ? '' : ', and you move in'}.`; }
+    else if (house.price == null) { key.textContent = 'Locked'; key.disabled = true; tip = `This one can't be bought. ${house.how}.`; }
+    else { key.textContent = `Buy · ${house.price.toLocaleString()}`; key.onclick = buyHere; }
+    const name = el('span', 'hk-pick-name');
+    name.append(el('b', '', house.name), el('small', '', `${tier} · ${house.how}`));
+    pickRow.replaceChildren(name, key);
+
+    // its paints: a round swatch each, two-tone like the house, and the picked one's name (the first paint job comes free
+    // with a new house)
+    paints.replaceChildren(...house.paints.map((p, i) => {
+      const b = el('button', `hk-sw${i === paint ? ' on' : ''}`), [c1, c2] = dots(house, i);
       b.type = 'button';
       b.title = p.name;
       b.setAttribute('aria-label', `${p.name} paint`);
       b.setAttribute('aria-pressed', String(i === paint));
-      b.style.background = `linear-gradient(${c1} 50%, ${c2} 50%)`;
+      b.style.background = `linear-gradient(135deg, ${c1} 50%, ${c2} 50%)`;
       b.addEventListener('click', () => { if (paint === i) return; playSound('select'); paint = i; note = ''; render(); show(); });
-      sws.append(b);
-    });
-    const key = el('button', 'room-ok hk-go');
-    key.type = 'button';
-    const owned = now.owned.includes(pick), worn = now.paint[pick] || 0;
-    let tip = '';
-    if (!base) {
-      if (pick === 'cottage') { key.textContent = `Buy · ${BASE_PRICE.toLocaleString()}`; key.onclick = buyFirst; tip = 'Your Secret Base: this lot and its Starter Cottage, in the paint you pick.'; }
-      else { key.textContent = 'Lot first'; key.disabled = true; tip = 'First the lot: buy it with its Starter Cottage, then any house can go up on it.'; }
-    } else if (pick === now.home && paint === worn) { key.textContent = 'You live here'; key.disabled = true; }
-    else if (owned && paint === worn) { key.textContent = 'Move in'; key.onclick = moveHere; tip = 'Moving is free once a house is yours.'; }
-    else if (owned) { key.textContent = `Repaint · ${REPAINT_PRICE}`; key.onclick = repaintHere; tip = pick === now.home ? `${house.paints[paint].name} for ${REPAINT_PRICE} PokéCoins.` : `${house.paints[paint].name} for ${REPAINT_PRICE} PokéCoins, and you move in.`; }
-    else if (house.price == null) { key.textContent = 'Locked'; key.disabled = true; tip = `${house.how}.`; }
-    else { key.textContent = `Buy · ${house.price.toLocaleString()}`; key.onclick = buyHere; tip = 'Its first paint job comes with it. Only the outside changes: your rooms, furniture and yard stay as they are.'; }
-    card.replaceChildren(
-      el('b', 'hk-pick', house.name),
-      el('small', 'hk-how', `${tier} · ${house.how}`),
-      el('p', 'hk-blurb', house.blurb),
-      (() => { const r = el('div', 'hk-row2'); r.append(sws, el('span', 'hk-paint', house.paints[paint].name), key); return r; })(),
-      el('p', 'hk-note', note || tip),
-    );
-    card.lastChild.setAttribute('aria-live', 'polite');
+      return b;
+    }), el('span', 'hk-paint-name', house.paints[paint].name));
+    line.textContent = note || tip || house.blurb;
   }
 
   async function buyFirst() {
@@ -128,11 +151,11 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, onClose }) {
     if (!sheet || !(await buyBase(paint))) return render();
     changed = true;
     rebuild();
-    say('It\'s yours! The planks are off the door: close the catalogue and walk in, or pick a new house any time.');
+    say('It\'s all yours! The planks are off the door. Close the catalogue and walk in, or pick a new house any time.');
   }
   async function buyHere() {
     const house = HOUSES_BY_ID[pick], why = cantBuy(getSave(), pick);
-    if (why === 'coins') { playSound('cancel'); return say(`You need ${(house.price - (getSave().coins ?? 0)).toLocaleString()} more PokéCoins.`); }
+    if (why === 'coins') { playSound('cancel'); return say(`That's ${(house.price - (getSave().coins ?? 0)).toLocaleString()} PokéCoins short. Come back when you've saved up!`); }
     if (why) { playSound('cancel'); return render(); }
     if (!(await confirmDialog(`Build a ${house.name} (${house.paints[paint].name}) on your lot for ${house.price.toLocaleString()} PokéCoins? You move in at once, and can move back any time for free.`, `Buy (${house.price.toLocaleString()})`))) return;
     let ok = false;
@@ -141,7 +164,7 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, onClose }) {
     changed = true;
     playSound('buy');
     refreshCoins();
-    say(`The crew built your ${house.name}! It's your home now; every house you own stays yours to move back to.`);
+    say(`Built! Your ${house.name} is home now. Your rooms and furniture moved in with you.`);
     show();
   }
   function moveHere() {
@@ -150,21 +173,24 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, onClose }) {
     if (!ok) { playSound('cancel'); return; }
     changed = true;
     playSound('item-get');
-    say(`You moved into your ${HOUSES_BY_ID[pick].name}.`);
+    say(`Welcome back to your ${HOUSES_BY_ID[pick].name}!`);
     show();
   }
   function repaintHere() {
-    if ((getSave().coins ?? 0) < REPAINT_PRICE) { playSound('cancel'); return say(`A repaint is ${REPAINT_PRICE} PokéCoins, and you have ${(getSave().coins ?? 0).toLocaleString()}.`); }
+    if ((getSave().coins ?? 0) < REPAINT_PRICE) { playSound('cancel'); return say(`A fresh coat is ${REPAINT_PRICE} PokéCoins, and you have ${(getSave().coins ?? 0).toLocaleString()}.`); }
     let ok = false;
     updateSave(d => { ok = repaint(d, pick, paint) && moveIn(d, pick); });
     if (!ok) { playSound('cancel'); return render(); }
     changed = true;
     playSound('buy');
     refreshCoins();
-    say(`Fresh paint: your ${HOUSES_BY_ID[pick].name} is ${HOUSES_BY_ID[pick].paints[paint].name} now.`);
+    say(`Fresh paint! Your ${HOUSES_BY_ID[pick].name} is ${HOUSES_BY_ID[pick].paints[paint].name} now.`);
     show();
   }
 
   render();
   show();
+  // the picked card in the middle of its row, by hand: scrollIntoView can shove a whole page on an iPhone
+  const on = row.querySelector('.hk-card.on');
+  if (on) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
 }

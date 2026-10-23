@@ -3659,6 +3659,26 @@ function buildKiosk(g) {
   }, () => {});
 }
 
+/** A still of house `id` in paint `n` on canvas `c`, for its card in the catalogue: the model turned three-quarters on
+    the shared turntable (js/turntable.js, no context of its own beside the Clearing), or the tree's painting. */
+async function houseStill(id, n, c) {
+  const g = c.getContext('2d'), def = HOUSES_BY_ID[id], p = def.paints[n] || def.paints[0];
+  if (id === 'tree') {
+    const art = ancientArt(false, !baseOwned(), p), k = Math.min(c.width / art.width, c.height / art.height) * 0.92;
+    g.drawImage(art, (c.width - art.width * k) / 2, c.height - art.height * k - c.height * 0.04, art.width * k, art.height * k);
+    return;
+  }
+  const { turntableStage, snapTurn } = await import('./turntable.js');
+  const st = await turntableStage(), pivot = new THREE.Group();
+  const made = makeHouse(THREE, { id, p, x: 0, z: 0, winter: SEASON === 'winter', fine, texOf, merge: mergeStatic });
+  const box = new THREE.Box3().setFromObject(made.group), mid = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
+  made.group.position.set(-mid.x, -box.min.y, -mid.z);
+  pivot.add(made.group);
+  const shot = { pivot, h: size.y, r: Math.hypot(Math.hypot(size.x, size.z) / 2, size.y / 2) };
+  if (!snapTurn(st, shot, c)) { await turntableStage(); snapTurn(st, shot, c); }
+  dispose(pivot);
+}
+
 let browsing = null;   // while the stand's catalogue is open, where the view looks: the lot, over the sheet
 let near = 1;          // the view's distance, eased in to BROWSE_NEAR while it does, so the house tried on reads on a phone
 const BROWSE_NEAR = 0.8;
@@ -3667,6 +3687,31 @@ const sameLot = (a, b) => a?.id === b?.id && a?.paint === b?.paint;
 
 /** The stand's catalogue (js/house-kiosk.js), a sheet over the lower half: a pick builds that house on the lot as a
     try-on (rebuildLot()), and shutting it puts back the one lived in. */
+/** Where the view looks while the catalogue is up, and how near: forward enough that the house stands in the middle of
+    the screen left above the catalogue's card (`frac` of the screen's height), as near as lets it fit there (an iPad on
+    its side has less room than a phone). */
+function browseAt(frac) {
+  const at = new THREE.Vector3(), was = near, want = Math.min(0.7, frac), free = 1 - frac;
+  const ndc = (y, dz = -1) => at.set(tileX(TREE_AT.tx), y, tileZ(TREE_AT.ty) + dz).project(camera).y;
+  let z = browsing.z;
+  for (const k of [BROWSE_NEAR, 0.9, 1]) {
+    near = k;
+    let lo = tileZ(TREE_AT.ty), hi = tileZ(TREE_AT.ty) + 10;
+    for (let i = 0; i < 20; i++) {
+      const mid = (lo + hi) / 2;
+      aimCamera(browsing.x, mid);
+      if (ndc(1.3) < want) lo = mid; else hi = mid;
+    }
+    z = (lo + hi) / 2;
+    aimCamera(browsing.x, z);
+    if ((ndc(3.4, -2.3) - ndc(0, 0.7)) / 2 <= free * 0.9) break;   // its chimney top to its step, within the room left
+  }
+  const k = near;
+  near = was;
+  aimCamera(camX, camZ);
+  return { z, near: k };
+}
+
 async function openKiosk() {
   if (entering || document.querySelector('.hk-sheet')) return;
   hideCard();
@@ -3674,12 +3719,13 @@ async function openKiosk() {
   let mod;
   try { mod = await import('./house-kiosk.js'); } catch { playSound('cancel'); return; }
   playCry('timburr');
-  browsing = { x: tileX(TREE_AT.tx) - 0.2, z: tileZ(TREE_AT.ty) + 2.6 };
+  browsing = { x: tileX(TREE_AT.tx) - 0.2, z: tileZ(TREE_AT.ty) + 2.6, near: BROWSE_NEAR };
   root.classList.add('browsing');
   mod.openKiosk({
     parent: root,
     tryOn: (lot) => { trying = lot; if (!sameLot(lotNow(), lotShown)) rebuildLot(); },
     rebuild: () => rebuildLot(),
+    snap: houseStill,
     buyBase: (paint) => buyBase(paint, true),
     onClose: (changed) => {
       browsing = null;
@@ -3690,6 +3736,7 @@ async function openKiosk() {
       refreshCoins();
     },
   });
+  Object.assign(browsing, browseAt(root.querySelector('.hk-sheet')?.offsetHeight / view.clientHeight || 0.45));
 }
 
 const FIX = 1100;
@@ -4501,7 +4548,7 @@ function placeCamera(dt) {
   const wantZ = browsing ? browsing.z : backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
-  near += ((browsing ? BROWSE_NEAR : 1) - near) * k;
+  near += ((browsing?.near ?? 1) - near) * k;
   aimCamera(camX, camZ);
   followSun();
 }

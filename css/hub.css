@@ -1227,61 +1227,83 @@ img.shade, .sx-mon.unknown img { filter: brightness(0); opacity: 0.75; }
 @keyframes holoIn { from { opacity: 0; transform: scaleY(0.04); } to { opacity: 1; transform: none; } }
 @keyframes holoOut { to { opacity: 0; transform: scaleY(0.04); } }
 
-/* Timburr & Co.'s house catalogue (js/house-kiosk.js): a sheet in the Pokédex's shell over the lower half, the lot in
-   view above it; the hub's bar and card stand down while it's up */
+/* Timburr & Co.'s house catalogue (js/house-kiosk.js): a merchant's card in the shops' look (the garden catalogue's
+   `.gmerch`: cream, a gold rim, a white keyline), low on the screen so the lot's try-on shows above it; the crew's
+   orange from their awning. The hub's bar and card stand down while it's up. Restyled 2026-10-23 (the user: "doesn't
+   look that great", a red Pokédex sheet with a list). */
 .hub.browsing .hub-bar, .hub.browsing .hub-card { visibility: hidden; }
 .hk-sheet {
-  position: absolute; left: 50%; bottom: 0; z-index: 3; width: min(100%, 560px); max-height: 50%; box-sizing: border-box;
-  display: flex; flex-direction: column; gap: 6px; padding: 8px 10px max(10px, env(safe-area-inset-bottom));
-  border-radius: 18px 18px 0 0; background: var(--shell); color: #fff;
-  box-shadow: inset 0 3px 0 var(--shell-hi), inset 0 0 0 3px var(--shell-rim), 0 -6px 24px #0006;
-  translate: -50% calc(100% + 20px); transition: translate 0.3s cubic-bezier(.2, .9, .3, 1);
+  --ink: #e8782a; --ink-deep: #a8501a;
+  position: absolute; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 3;
+  width: min(560px, calc(100% - 20px)); box-sizing: border-box; padding: 24px 14px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  border: 3px solid #e2b648; border-radius: 28px; outline: 2px solid #fff6dc; outline-offset: -9px;
+  background: linear-gradient(#fffaf0, #f4e8cc); color: #6a5440; font-family: var(--pixel-font);
+  box-shadow: 0 4px 0 #b88a2a, 0 14px 34px #0008;
+  translate: -50% calc(100% + 40px); transition: translate 0.35s cubic-bezier(.2, 1.2, .3, 1);
 }
 .hk-sheet.up { translate: -50% 0; }
-.hk-head { display: flex; align-items: center; gap: 8px; padding: 2px 4px 0; }
-.hk-title { font-size: 0.75rem; letter-spacing: 0.04em; text-shadow: 0 2px 0 var(--shell-deep); }
+/* the crew's name tag, pinned askew over the top edge like the shopkeepers' */
+.hk-who {
+  position: absolute; left: 18px; top: -16px; padding: 8px 14px 7px; border-radius: 999px;
+  background: linear-gradient(#ffb060, var(--ink)); color: #fff; font-size: 12px; letter-spacing: 0.06em;
+  text-shadow: 0 1px 0 var(--ink-deep); rotate: -4deg; box-shadow: 0 3px 0 var(--ink-deep);
+}
 .hk-coins {
-  margin-left: auto; padding: 3px 10px; border-radius: 999px; background: #1e2a1e; color: #b8f070;
-  box-shadow: inset 0 0 0 2px var(--shell-rim); font-size: 0.75rem; white-space: nowrap;
+  position: absolute; right: 54px; top: -14px; display: flex; align-items: center; gap: 5px; padding: 6px 12px 5px;
+  border-radius: 999px; background: #fffaf0; color: #5a3a10; font-size: 12px; box-shadow: inset 0 0 0 2px #e2b648, 0 3px 0 #c8a04a;
 }
+.hk-coin { width: 16px; height: 16px; flex: none; }
 .hk-x {
-  width: 32px; height: 32px; flex: none; border: 2px solid var(--shell-deep); border-radius: 50%; padding: 0;
-  background: var(--shell-lo); color: #fff; font: 0.875rem var(--pixel-font); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  position: absolute; right: 10px; top: -16px; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%;
+  background: #fffaf0; color: #8a6a48; font: 14px/1 var(--pixel-font); cursor: pointer;
+  box-shadow: inset 0 0 0 3px #e2b648, 0 3px 0 #b88a2a; -webkit-tap-highlight-color: transparent;
 }
-.hk-x:active { translate: 0 2px; }
-.hk-screen {
-  display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 8px; min-height: 0; overflow: hidden;
-  padding: 8px; border-radius: 12px; background: #eef4e8; color: #22301e; box-shadow: inset 0 0 0 3px var(--shell-rim);
+.hk-x:active { translate: 0 2px; box-shadow: inset 0 0 0 3px #e2b648, 0 1px 0 #b88a2a; }
+/* Timburr's line: what the picked house is, or what just happened */
+.hk-say {
+  margin: 0; min-height: 2.9em; padding: 0 2px; font-size: 12px; line-height: 1.45; color: #6a5440; text-align: left;
 }
-.hk-list { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
-.hk-tier { padding: 4px 4px 0; font-size: 0.75rem; color: #5a7050; text-transform: uppercase; }
-.hk-row {
-  display: flex; align-items: center; gap: 6px; padding: 6px; border: 0; border-radius: 8px; background: none; color: inherit;
-  font: 0.75rem var(--pixel-font); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+/* the house cards, one row that scrolls sideways, each a still of the house in a spotlit box */
+.hk-cards {
+  position: relative; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain;
+  margin: 0 -6px; padding: 4px 6px 8px; scroll-snap-type: x proximity; scrollbar-width: none;
 }
-.hk-row.on { background: #ffe27a; box-shadow: inset 0 0 0 2px #c8a020; }
-.hk-dot, .hk-sw { flex: none; border-radius: 50%; box-shadow: inset 0 0 0 2px #0003; }
-.hk-dot { width: 14px; height: 14px; }
-.hk-name { flex: 1; min-width: 0; line-height: 1.3; }
-.hk-tag { flex: none; padding: 2px 6px; border-radius: 999px; background: #dfe8d4; font-size: 0.75rem; white-space: nowrap; }
-.hk-tag.home { background: #2f8f5a; color: #fff; }
-.hk-tag.own { background: #cfe8d8; color: #1f5a38; }
-.hk-tag.lock { background: #e9e2f2; color: #5a4380; }
-.hk-card { display: flex; flex-direction: column; gap: 5px; min-height: 0; overflow-y: auto; }
-.hk-pick { font-size: 0.875rem; }
-.hk-how, .hk-blurb, .hk-note { margin: 0; font: 0.75rem/1.5 var(--pixel-font); }
-.hk-how { color: #5a7050; }
-.hk-note { color: #8a3a20; min-height: 1.4em; }
-.hk-row2 { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-.hk-paints { display: flex; gap: 6px; }
-.hk-sw { width: 28px; height: 28px; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.hk-sw.on { box-shadow: 0 0 0 3px #22301e, 0 0 0 5px #ffd84a; }
-.hk-paint { font-size: 0.75rem; flex: 1; min-width: 60px; }
-.hk-go { margin-left: auto; }
-@media (max-width: 420px) {
-  .hk-screen { grid-template-columns: 1fr; grid-template-rows: minmax(0, 0.8fr) auto; }
-  .hk-list { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; align-items: center; }
-  .hk-tier { display: none; }
-  .hk-row { flex: none; }
+.hk-cards::-webkit-scrollbar { display: none; }
+.hk-card {
+  flex: none; width: 92px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 6px 8px;
+  border: 0; border-radius: 18px; background: #fffaf0; color: #4a3424; font: 12px/1.2 var(--pixel-font);
+  box-shadow: 0 3px 0 #d8c8a4; cursor: pointer; scroll-snap-align: center; -webkit-tap-highlight-color: transparent;
+  transition: translate 0.15s, box-shadow 0.15s;
 }
-@media (prefers-reduced-motion: reduce) { .hk-sheet { transition: none; } }
+.hk-card:active { translate: 0 2px; box-shadow: 0 1px 0 #d8c8a4; }
+.hk-card.on { translate: 0 -2px; box-shadow: 0 0 0 3px var(--ink), 0 5px 0 var(--ink-deep), 0 6px 14px #e8782a55; }
+.hk-box {
+  display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: 14px; overflow: hidden;
+  background: radial-gradient(circle at 50% 34%, #fffbea 0%, color-mix(in srgb, var(--ink) 22%, #fbf0d8) 50%, color-mix(in srgb, var(--ink) 50%, #2a1e24) 100%);
+  box-shadow: inset 0 0 0 2px #e2b648, inset 0 5px 12px #0003;
+}
+.hk-pic { width: 100%; height: 100%; display: block; }
+.hk-name { min-height: 2.5em; display: grid; place-items: center; text-align: center; line-height: 1.25; }
+.hk-tag {
+  display: flex; align-items: center; gap: 4px; padding: 3px 8px 2px; border-radius: 999px; font-size: 12px;
+  background: #f4e8cc; color: #5a3a10; white-space: nowrap;
+}
+.hk-tag.home { background: #3a9a5a; color: #fff; }
+.hk-tag.own { background: #d4ecd8; color: #24603a; }
+.hk-tag.lock { background: #ece4f2; color: #5a4380; }
+/* the picked house's name and its key, then its paints */
+.hk-pick { display: flex; align-items: center; gap: 10px; padding: 8px 4px 0; border-top: 2px dashed #e2cfa0; }
+.hk-pick-name { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.hk-pick-name b { font-size: 15px; font-weight: normal; color: #4a3424; }
+.hk-pick-name small { font-size: 12px; color: #a08a6c; }
+.hk-go { height: 38px; min-width: 112px; }
+.hk-paints { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
+.hk-sw {
+  width: 34px; height: 34px; flex: none; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  box-shadow: inset 0 0 0 2px #0002, 0 0 0 3px #fffaf0, 0 3px 0 3px #d8c8a4; -webkit-tap-highlight-color: transparent;
+  transition: translate 0.12s, box-shadow 0.12s;
+}
+.hk-sw.on { translate: 0 -2px; box-shadow: inset 0 0 0 2px #0002, 0 0 0 3px #fffaf0, 0 0 0 6px var(--ink), 0 4px 0 6px var(--ink-deep); }
+.hk-paint-name { margin-left: 6px; font-size: 12px; color: #6a5440; }
+@media (prefers-reduced-motion: reduce) { .hk-sheet, .hk-card, .hk-sw { transition: none; } }
