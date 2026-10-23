@@ -422,15 +422,18 @@ export function makeKiosk(THREE, { x, z, sale, fine, texOf, merge }) {
   const add = (geo, m, px, py, pz, shadow = true) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = shadow; o.receiveShadow = true; still.add(o); return o; };
   const box = (w, h, d, m, px, py, pz, shadow) => add(new THREE.BoxGeometry(w, h, d), m, px, py, pz, shadow);
   const wood = std({ color: '#a26a3a' }), dark = std({ color: '#6a4424' }), top = std({ color: '#c89a68', roughness: 0.6 });
-  const W = 1.05, H = 0.78, Dp = 0.5;
+  // a low counter and a high awning, so Timburr behind it shows from the waist up, its beam clear of the awning (it was
+  // two-thirds hidden: the user, 2026-10-23); UP the posts' height
+  const W = 1.05, H = 0.5, Dp = 0.5, UP = 2.5;
   box(W, H, Dp, wood, 0, H / 2, 0);
   box(W + 0.1, 0.06, Dp + 0.12, top, 0, H + 0.03, 0.02);
-  add(new THREE.PlaneGeometry(W - 0.08, (W - 0.08) * 0.6), std({ map: texOf(panelArt(fine, sale)), roughness: 0.7 }), 0, H * 0.5, Dp / 2 + 0.006, false);
-  for (const sx of [-1, 1]) box(0.08, 2.0, 0.08, dark, sx * (W / 2 - 0.02), 1.0, -Dp / 2 + 0.02);
-  const aw = add(new THREE.PlaneGeometry(W + 0.24, 0.82), std({ map: texOf(awningArt(fine)), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }), 0, 1.86, 0.1);
+  add(new THREE.PlaneGeometry((H - 0.06) / 0.6, H - 0.06), std({ map: texOf(panelArt(fine, sale)), roughness: 0.7 }), 0, H * 0.5, Dp / 2 + 0.006, false);
+  for (const sx of [-1, 1]) box(0.08, UP, 0.08, dark, sx * (W / 2 - 0.02), UP / 2, -Dp / 2 + 0.02);
+  const aw = add(new THREE.PlaneGeometry(W + 0.24, 0.82), std({ map: texOf(awningArt(fine)), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }), 0, UP - 0.14, 0.1);
   aw.rotation.x = -1.15;
-  box(W + 0.2, 0.3, 0.05, std({ map: texOf(crewArt(fine)), roughness: 0.7 }), 0, 2.2, -Dp / 2 + 0.02);
+  box(W + 0.2, 0.3, 0.05, std({ map: texOf(crewArt(fine)), roughness: 0.7 }), 0, UP + 0.2, -Dp / 2 + 0.02);
   // the catalogue on the counter, open, and a yellow hard hat
+  box(0.5, 0.22, 0.34, wood, 0.08, 0.11, -0.4);
   box(0.34, 0.03, 0.24, std({ color: '#f6f0e0' }), -0.18, H + 0.075, 0.05, false);
   box(0.02, 0.035, 0.24, std({ color: '#c0392b' }), -0.18, H + 0.08, 0.05, false);
   const hat = add(new THREE.SphereGeometry(0.12, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#f8c820', roughness: 0.4 }), 0.3, H + 0.06, 0.06);

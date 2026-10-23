@@ -3633,7 +3633,7 @@ function rebuildLot() {
   g.traverse(o => { const m = o.material; if (m && glowMats.includes(m)) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow; });
 }
 
-const KIOSK_CREW = 'assets/pokemon/timburr-front.gif';
+const KIOSK_CREW = 'assets/pokemon/timburr-front.gif', KIOSK_CRATE = 0.22;
 
 /** The builders' stand, and Timburr behind its counter, hopping now and then to be noticed. */
 function buildKiosk(g) {
@@ -3650,7 +3650,7 @@ function buildKiosk(g) {
     if (!g.parent || kiosk !== k) { dispose(m.group); return; }
     m.board.rotation.x = -PITCH;
     m.group.scale.setScalar(0.85);
-    m.group.position.set(x + 0.08, 0, z - 0.38);
+    m.group.position.set(x + 0.08, KIOSK_CRATE, z - 0.38);   // on a crate behind the counter, so it shows from the waist up
     const p = places.find(q => q.id === 'kiosk');
     m.group.traverse(o => { o.userData.place = p; });
     drawMon(m, { facing: 'front' }, 0);
