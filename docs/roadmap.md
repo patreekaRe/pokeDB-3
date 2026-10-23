@@ -1180,8 +1180,6 @@ Trainer Mail through the PC (Easy Chat-style phrase parts, a stationery pick, an
 `adds/`), Friends tabs on the Safari / Sky Pillar / Arcade boards, the visit guestbook of stamps, and trading spare
 furniture or Safari Pokémon (hardest: both sides must agree at once). All need `firestore.rules` published first.
 
-## Ideas, not agreed yet (ask the user before building)
-
 **A Berry Booth by the Clearing's gate** (2026-10-23, the user's idea, with a screenshot circling the lawn left of the gate,
 between the route sign `SIGN_AT` 12,-1 and the gate's left pillar, the Pokéstop's mirror at `STOP_AT` 18,-1). **A digital
 booth, like the Safari's** (the user's correction the same day: not a stall with a Pokémon behind it): a small kiosk with a
@@ -1201,11 +1199,13 @@ the Berry Pouch (`POUCH` 3, `canHold()` / `holdFromPouch()` in `js/data/held.js`
   west if it needs the room.
 - **Guide** app: a few steps on the LCD (slot 1 is held; fill the pouch; pick a kit item), then a played demo of the map's
   Bag on the window (Hold, a swap while uneaten, eaten, the next one waits for the next biome); auto-opens the first time.
-Open questions for the user: none left but the read-only line below. **Prepare loses its Pack panel** (the user's lean, 2026-10-23: "it should right?"): the Berry Pouch, the kit picker and
-the pinned "▼ Berry Pouch · Run kit" tab come off the starter prep screen, the booth being the one place to pack; Claude's
-suggestion, to confirm: Prepare keeps one read-only line of the saved loadout (held, pouch, kit) so a run never starts
-with an unseen or empty pouch by surprise. If agreed, ▶ Run in: CLOUD, effort
+All agreed (2026-10-23). **Prepare loses its Pack panel** (the user's call: "it should right?"): the Berry Pouch, the kit
+picker and the pinned "▼ Berry Pouch · Run kit" tab come off the starter prep screen; the booth is the one place to pack.
+**Prepare keeps one read-only reminder line** (the user's pick, option A): e.g. "Bringing: Oran (held) · Pecha · Lum ·
+Kit: Revive", nothing editable, or "Nothing packed: visit the Berry Booth" when the pouch and kit are empty. Ready to build: ▶ Run in: CLOUD, effort
 medium (the kiosk, the device window, the guide and Prepare's change; no sim), then LOCAL for the kiosk's look.
+
+## Ideas, not agreed yet (ask the user before building)
 
 **The game feels too easy, Grass most of all; healing feels overpowered** (2026-10-22, the user, after a Servine run where
 Apple Acid+ (1 PP, 11 + Vulnerable 2) sat beside Seed Bomb (2 PP, 10 + Vulnerable 2)). The human bot, 150 a cell, sim
