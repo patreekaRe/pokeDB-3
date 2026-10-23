@@ -263,8 +263,11 @@ async function start(e) {
   pressed = true;
   // the power-on's dex-on is the tap's answer; with motion off there's no power-on, so the blip stands in (the user heard silence)
   if (still()) playSound('confirm');
-  const setup = needsSetup();
-  const first = actions.firstLaunch?.() ?? false;
+  // `?master` is for seeing the crown on the Clearing: an empty playtest save would otherwise ask a name, a buddy and
+  // open How to play first, hiding the buddy behind them (the user found the link "doesn't work", 2026-10-23)
+  const peek = new URLSearchParams(location.search).has('master');
+  const setup = !peek && needsSetup();
+  const first = !peek && (actions.firstLaunch?.() ?? false);
   const dex = $('title-dex');
   if (setup) await onboard(dex);
   else if (!still()) await powerOn(dex);

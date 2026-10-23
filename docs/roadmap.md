@@ -1222,6 +1222,17 @@ things for the Secret Base. **The user: "send it"; 1-3 built the same day** (arc
    crown somewhere?"). **(a) and (c) done 2026-10-23 on `main`** (the user: "Let's just do 1 and 3"; archive): the Level
    picker shows the pixel crown and how to earn it from Level 5 up, and the Trainer Card a greyed crown, "Win Lv 10".
    Not picked: (b) a glass case with the 3D crown in the mall or the Clearing, (d) a "try it on" there.
+   `?master` now skips the new-player setup and How to play (2026-10-23: the user's playtest link "doesn't work", as an
+   empty githack save hid the buddy behind them).
+   **A Super Saiyan aura for each Level won** (2026-10-23, the user: "should we give the player something aesthetic each
+   time for 6-10? like a super saiyan aura or something along the way? and a crazier one at level 10?"; Claude's plan,
+   waiting on a go): the walking buddy wears the aura of the highest Level won, in the star's colour, growing each Level:
+   6 a soft ruby glow at the feet, 7 emerald flames licking up, 8 a sapphire flame aura to the head, 9 amethyst flames with
+   sparks of lightning crackling through, 10 a towering rainbow-gold Super Saiyan blaze with lightning and rising motes,
+   under the crown. A choice of which earned aura to wear (on the Trainer Card, like the Crown key), a preview on the
+   Level picker beside the crown's, and the Trainer Card partner wearing it too. Built like the crown: a few flat
+   billboards behind the sprite with additive, unlit textures that the bloom lights (no new context; check the budget),
+   still under `calmFx()`. ▶ CLOUD, effort: high.
 4. **Trophies for the Secret Base**: a cup for each of Levels 6-9 and the Champion's Trophy for 10, earned furniture
    (each a painting and a hand-built model). ▶ CLOUD, effort: high.
 5. **Master Badges**: a Level 10 win with a Fire, a Water and a Grass starter, and all three (each a `LOOK` line). ▶

@@ -62,7 +62,7 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   and friends' buddies in the Plaza don't wear one yet (their name tag sits there). The Trainer Card's partner wears a
   pixel one (`crownArt()` in `js/ui.js`, `.tc-crown`, bobbing, still under reduced motion). **Previews** (2026-10-23):
   until you're a Master, the Trainer Card shows a greyed crown, "Win Lv 10" (`.tc-crown-locked`), and the Level picker
-  from Level 5 up a line with the crown and how to earn it (`#level-crown`, `renderLevel()` in `js/select.js`).
+  from Level 5 up a line with the crown and how to earn it (`#level-crown`, `renderLevel()` in `js/select.js`). `?master` skips the new-player setup and How to play (`start()` in `js/title.js`), so an empty playtest save lands on the crowned buddy.
 - **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
   `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
   `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character
