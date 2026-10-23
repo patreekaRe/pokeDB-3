@@ -397,10 +397,11 @@ function init() {
   if (params.has('base') || params.has('3d')) {
     if (params.has('flat')) return import('./secret-base.js').then(m => m.openBase());
     // &asfriend: your own saved base as a friend visiting it sees it (the Trainers app's Visit), nothing saved
-    if (params.has('asfriend') && getSave().secretBase) return (async () => {
-      // with ?houses, through your own front lawn first, as a friend arrives (your house, your buddy at the mailbox)
-      const [{ pageBase }, { trainerName }, { buddyKey }] = await Promise.all([import('./trainers.js'), import('./leaderboard.js'), import('./trainercard.js')]);
-      const json = JSON.stringify(pageBase(getSave()));
+    if (params.has('asfriend') && (getSave().secretBase || housesOpen())) return (async () => {
+      // with ?houses, through your own front lawn first, as a friend arrives (your house, your buddy at the mailbox); a
+      // save with no base stored yet lends a fresh one, so a branch link's empty save can try it
+      const [{ pageBase }, { trainerName }, { buddyKey }, { loadBase }] = await Promise.all([import('./trainers.js'), import('./leaderboard.js'), import('./trainercard.js'), import('./secret-base.js')]);
+      const json = JSON.stringify(pageBase({ ...getSave(), secretBase: getSave().secretBase || loadBase() }));
       if (housesOpen() && await (await import('./front-lawn.js')).openLawn({ name: trainerName(), json, buddyKey: buddyKey() }) === 'left') return location.assign(location.pathname);
       return (await import('./base-3d.js')).openBase3d({ guest: { name: 'A FRIEND', json } });
     })();
