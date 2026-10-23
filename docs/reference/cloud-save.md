@@ -42,6 +42,12 @@ and an upload of it alone made the other device ask). `deviceName()` says "iPhon
 Checked headless with a stand-in Firebase (the old code asked in the lost-rev case; another device's real progress still
 asks).
 
+**Never quietly over a run** (2026-10-23, the user's report: Continue gone after Menu, again and again, only while signed
+in). On load, `reconcile()` took a moved cloud copy silently whenever this device wasn't dirty and the title showed, so
+another browser's upload (a PC, Safari beside the Home Screen app, a playtest link) wiped the run you'd just left on
+the map; reproduced headless with a stand-in Firebase. It now asks instead when this device holds a run the cloud's copy
+doesn't, and `takeCloud()` keeps a run it replaces in `pokedb.run.lost` (`stashLostRun()`, `?runback` puts it back).
+
 ## Trainers: friend codes and the friends list (2026-10-17, session 1 of the roadmap's "Friends list and base visits")
 
 Signed-in players only. `js/trainers.js` (network and the app) and `js/data/trainers.js` (pure: codes, the list, the

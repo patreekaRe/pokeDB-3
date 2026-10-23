@@ -3536,3 +3536,8 @@ explained, both sides the same, the cloud's "on iPhone"). The iPhone froze or re
 and its rev being noted, so the next upload met its own copy. Each browser now signs its uploads (`from`) and the state
 keeps a fingerprint of the agreed progress (`sum`); play time alone no longer counts as a change. Detail:
 `docs/reference/cloud-save.md`. Shipped on `main`.
+
+### Cloud save: a run in progress is never swapped out quietly (2026-10-23, cloud)
+The user lost runs after Menu, only while signed in (incognito was fine): on load, the cloud's copy from another browser
+replaced the save silently, run and all. It now asks when this device holds a run the cloud's doesn't, and a run the
+cloud replaces is kept (`?runback`). A run that fails to load is kept the same way. Detail: `docs/reference/cloud-save.md`.

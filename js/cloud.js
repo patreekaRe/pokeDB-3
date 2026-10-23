@@ -20,7 +20,7 @@
    ============================================================ */
 
 import { FIREBASE_CONFIG } from './cloud-config.js';
-import { SAVE_KEYS, onSaveWrite } from './storage.js';
+import { SAVE_KEYS, onSaveWrite, stashLostRun } from './storage.js';
 import { STARTERS, STARTERS_BY_ID, stageName } from './data/starters.js';
 import { biomeAt } from './data/enemies.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
@@ -153,7 +153,9 @@ async function reconcile() {
     writeState({ ...now, rev: cloud.rev, dirty: true });
     return upload();
   }
-  if (!now.dirty && (first || onTitle())) return takeCloud(cloud);
+  // never quietly over a run the cloud's copy lacks (2026-10-23: the user's run vanished after Menu while signed in)
+  const keepsRun = !local.run || local.run === cloud.run;
+  if (!now.dirty && keepsRun && (first || onTitle())) return takeCloud(cloud);
   ask(cloud);
 }
 
@@ -188,6 +190,8 @@ async function upload() {
 }
 
 function takeCloud(cloud) {
+  const mine = store.get(SAVE_KEYS.run);   // a run the cloud's copy replaces can come back with ?runback
+  if (mine && mine !== cloud.run) { try { stashLostRun(JSON.parse(mine), 'replaced by the cloud save'); } catch (err) { /* unreadable */ } }
   store.set(SAVE_KEYS.save, cloud.save);
   store.set(SAVE_KEYS.run, cloud.run);
   writeState({ uid: user.uid, rev: cloud.rev, sum: progressOf(cloud), dirty: false, localAt: cloud.savedAt });

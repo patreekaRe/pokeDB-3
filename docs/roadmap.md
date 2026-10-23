@@ -1548,13 +1548,6 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
-- **A run lost after Menu, with berries packed** (2026-10-23): the user packed held berries and a kit item at the Berry
-  Booth, started a run, tapped Menu on the map (the "Your run is saved" confirm) and Continue was gone. Not reproduced:
-  begin → Menu → Clearing → Continue keeps the run every time (60 packed runs too, and on the build where the Clearing
-  failed for saves with Kurt's Workshop open, 541f30b's fix). A run that fails to load is now kept in `pokedb.run.lost`
-  with its error (`?runback` puts it back). Likeliest cause: the cloud save's false "Two saves found" on the iPhone the same day (fixed in ebc14f4): picking the
-  Cloud copy, saved before the run began, overwrites the run. Waiting on whether the user saw that window, and on whether it happens again;
-  if it does, `JSON.parse(localStorage['pokedb.run.lost']).why` names the cause. ▶ Run in: CLOUD, effort high.
 - **The Nietos' mansion** (2026-10-20, branch `claude/nieto-house-extravagant-mansion-sf3f5m`, on `main` too; archive):
   the cottage is now a white château (turrets, portico, golden Kangaskhan at the gate) and inside a marble-and-gilt hall
   with chandeliers and a family portrait. Walk up to it in the Clearing (south-east), and go in with `?nietos&gymwins=1`
