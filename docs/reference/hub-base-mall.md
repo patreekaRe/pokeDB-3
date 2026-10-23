@@ -955,10 +955,10 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   floor 100; master / eternatus / clearing: the badge, or what it reads). `housesOf()` counts an earned house owned the
   moment it's earned (with a base); `claimEarned()` stores it in `houses.owned` for good and returns the new ones, which
   `houseMail()` in `js/mail.js` turns into a letter from TIMBURR & CO. (a `builders` sender) on coming home to the
-  Clearing and right after the base is bought. An old save's tree is no new house (no letter). The **Ancient Tree** is
-  now earned by the Clearing Badge for a base bought with houses on. **Seasonal**: `season` is a month (the chateau 10,
+  Clearing and right after the base is bought. An old save's tree is no new house (no letter). The **Ancient Tree** was
+  earned by the Clearing Badge (session B); since 2026-10-23 every base comes with it (below). **Seasonal**: `season` is a month (the chateau 10,
   the chalet 12), `onSale()` by the UTC month, `cantBuy()` says 'season' out of it; once bought it's kept. Tiers: Starter,
-  Homestead, Estate, Earned, Seasonal, Legendary (the Crystal Palace and the tree).
+  Homestead, Estate, Earned, Seasonal, Legendary (the Crystal Palace).
 - **The catalogue**: every house shows, the tree too. A house not yet earned (or out of season) is a greyed card tagged
   LOCKED (or its month: OCT, DEC), its key "Locked" / "Oct only", and Timburr says what earns it with the count so far
   where there is one (`earnProgress()`: gyms, Waystones, the Sky Pillar's floor). Earned before the lot is bought: EARNED.
@@ -968,3 +968,9 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
 - **Flags**: `?houses=all` lends every earned house and puts both seasonal ones on sale for the page load (nothing
   stored for it; no letter). `?houses&livein=<id>` saves a base living in that house (for checks and a githack link).
   `tools/kiosk-probe.mjs` prints the catalogue in text: each card's tag, key, Timburr's line, and any name cut off.
+- **Every base starts in the Ancient Tree** (the user's call, 2026-10-23: "why would they want to downgrade"): the tree
+  is a Starter house (price 0, no `earn`; the Clearing Badge earns nothing now), and `FREE` (`['tree', 'cottage']`) is
+  what every base owns, the first lived in. `firstHouse(d, n, id)` moves into either; before the base is bought the lot
+  shows the boarded tree, the stand's catalogue opens on it, and its key buys the lot moving into the tree or the cottage
+  (whichever is picked), the other owned free. Old saves were already the tree; one bought on the branch as a cottage
+  gets the tree owned on read (`housesOf()`), still living in the cottage.

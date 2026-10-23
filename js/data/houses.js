@@ -4,9 +4,10 @@
    bought from the Timburr crew's stand beside it (js/house-kiosk.js) and built there in 3D (js/hub-houses.js). Only the
    outside changes: rooms, furniture, the yard and residents stay as they are. No DOM here (tests/houses.test.mjs).
 
-   The save keeps `houses` { owned: [id], home: id, paint: { id: n } }. A save without it is read by housesOf(): a base
-   bought before houses keeps the Ancient Tree and has the Starter Cottage free; no base, no houses. The first write
-   (a buy, a move, a repaint) stores what it read.
+   The save keeps `houses` { owned: [id], home: id, paint: { id: n } }. Every base comes with the Ancient Tree, lived in,
+   and the Starter Cottage, both free (the user's call, 2026-10-23: "why would they want to downgrade"), so a save
+   without `houses` is read by housesOf() as that; no base, no houses. The first write (a buy, a move, a repaint) stores
+   what it read.
    ============================================================ */
 
 import { GYM_LEADERS } from './gym.js';
@@ -36,6 +37,20 @@ export const TIERS = [
    (roof and wall unless named); the tree's are its crown's (ancientArt() in js/hub-3d.js), the first exactly as it always
    was. */
 export const HOUSES = [
+  {
+    id: 'tree', name: 'Ancient Tree', tier: 'starter', price: 0, how: 'Comes with the Secret Base',
+    blurb: 'The old tree every Secret Base begins in, its door in the roots.',
+    paints: [
+      { name: 'Spring', lobe: ['#1c5a26', '#2e7c34'], shade: [['#a8e078', '#6cc058'], ['#7cc860', '#48a044'], ['#5aac4a', '#2e7c34'], ['#3a8a3a', '#1c5a26']], leaf: ['#c8f090', '#8ad468'], bloom: ['#ffffff', '#f8c8e0'] },
+      { name: 'Autumn', lobe: ['#6a2a10', '#9a4418'], shade: [['#f8c860', '#e89a38'], ['#e8903a', '#c8642a'], ['#c86a2a', '#9a4418'], ['#9a4a20', '#6a2a10']], leaf: ['#ffe08a', '#f0a848'], bloom: ['#ffe0a0', '#fff4d0'] },
+      { name: 'Twilight', lobe: ['#1c2a5a', '#2c4078'], shade: [['#a8c0f0', '#7a94d8'], ['#7a94d8', '#5a74b8'], ['#5a74b8', '#3a5a8a'], ['#3a5088', '#1c2a5a']], leaf: ['#d0dcff', '#9ab0e8'], bloom: ['#e0d0ff', '#ffffff'] },
+      { name: 'Sakura', lobe: ['#8a3a5a', '#b05a7a'], shade: [['#ffe4ee', '#ffc4d8'], ['#ffc4d8', '#f09ab8'], ['#f09ab8', '#d0709a'], ['#c0608a', '#8a3a5a']], leaf: ['#fff0f6', '#ffd0e0'], bloom: ['#ffffff', '#fff0b0'] },
+      { name: 'Golden', lobe: ['#7a5a10', '#a07a18'], shade: [['#fff0a0', '#f8d850'], ['#f8d850', '#e8b830'], ['#e0b030', '#b88a20'], ['#a88020', '#7a5a10']], leaf: ['#fff8c8', '#f8e070'], bloom: ['#ffffff', '#ffe8a0'] },
+      { name: 'Crimson', lobe: ['#5a1018', '#8a1c24'], shade: [['#f87a6a', '#e84a40'], ['#e04a40', '#c02a2a'], ['#b02a28', '#8a1c24'], ['#801a20', '#5a1018']], leaf: ['#ffb0a0', '#f06a5a'], bloom: ['#ffe0a0', '#ffffff'] },
+      { name: 'Frost', lobe: ['#4a6a80', '#6a8aa0'], shade: [['#ffffff', '#e8f4fc'], ['#e0eef8', '#c0d8ea'], ['#b0cce0', '#8aaac4'], ['#7a9ab4', '#4a6a80']], leaf: ['#ffffff', '#d8ecf8'], bloom: ['#ffffff', '#c8f0ff'] },
+      { name: 'Haunter', lobe: ['#2a1440', '#44206a'], shade: [['#c8a0f0', '#a070e0'], ['#9a64d8', '#7a48b8'], ['#6c3ca8', '#522a88'], ['#4a2478', '#2a1440']], leaf: ['#e8d0ff', '#b890f0'], bloom: ['#ff7ab0', '#f8e0ff'] },
+    ],
+  },
   {
     id: 'cottage', name: 'Starter Cottage', tier: 'starter', price: 0, how: 'Comes with the Secret Base',
     blurb: 'A cream cottage under a gabled roof, shutters on its windows and a red mailbox by the gate.',
@@ -274,24 +289,12 @@ export const HOUSES = [
       { name: 'Diamond', wall: '#f4f6fa', crystal: '#a8d0f0', crystal2: '#dff2ff', door: '#3a4a6a' },
     ],
   },
-  {
-    id: 'tree', name: 'Ancient Tree', tier: 'legendary', price: null, earn: 'clearing', how: 'Defeat the Whispering Clearing\'s boss',
-    blurb: 'The old tree the Secret Base began in, its door in the roots.',
-    paints: [
-      { name: 'Spring', lobe: ['#1c5a26', '#2e7c34'], shade: [['#a8e078', '#6cc058'], ['#7cc860', '#48a044'], ['#5aac4a', '#2e7c34'], ['#3a8a3a', '#1c5a26']], leaf: ['#c8f090', '#8ad468'], bloom: ['#ffffff', '#f8c8e0'] },
-      { name: 'Autumn', lobe: ['#6a2a10', '#9a4418'], shade: [['#f8c860', '#e89a38'], ['#e8903a', '#c8642a'], ['#c86a2a', '#9a4418'], ['#9a4a20', '#6a2a10']], leaf: ['#ffe08a', '#f0a848'], bloom: ['#ffe0a0', '#fff4d0'] },
-      { name: 'Twilight', lobe: ['#1c2a5a', '#2c4078'], shade: [['#a8c0f0', '#7a94d8'], ['#7a94d8', '#5a74b8'], ['#5a74b8', '#3a5a8a'], ['#3a5088', '#1c2a5a']], leaf: ['#d0dcff', '#9ab0e8'], bloom: ['#e0d0ff', '#ffffff'] },
-      { name: 'Sakura', lobe: ['#8a3a5a', '#b05a7a'], shade: [['#ffe4ee', '#ffc4d8'], ['#ffc4d8', '#f09ab8'], ['#f09ab8', '#d0709a'], ['#c0608a', '#8a3a5a']], leaf: ['#fff0f6', '#ffd0e0'], bloom: ['#ffffff', '#fff0b0'] },
-      { name: 'Golden', lobe: ['#7a5a10', '#a07a18'], shade: [['#fff0a0', '#f8d850'], ['#f8d850', '#e8b830'], ['#e0b030', '#b88a20'], ['#a88020', '#7a5a10']], leaf: ['#fff8c8', '#f8e070'], bloom: ['#ffffff', '#ffe8a0'] },
-      { name: 'Crimson', lobe: ['#5a1018', '#8a1c24'], shade: [['#f87a6a', '#e84a40'], ['#e04a40', '#c02a2a'], ['#b02a28', '#8a1c24'], ['#801a20', '#5a1018']], leaf: ['#ffb0a0', '#f06a5a'], bloom: ['#ffe0a0', '#ffffff'] },
-      { name: 'Frost', lobe: ['#4a6a80', '#6a8aa0'], shade: [['#ffffff', '#e8f4fc'], ['#e0eef8', '#c0d8ea'], ['#b0cce0', '#8aaac4'], ['#7a9ab4', '#4a6a80']], leaf: ['#ffffff', '#d8ecf8'], bloom: ['#ffffff', '#c8f0ff'] },
-      { name: 'Haunter', lobe: ['#2a1440', '#44206a'], shade: [['#c8a0f0', '#a070e0'], ['#9a64d8', '#7a48b8'], ['#6c3ca8', '#522a88'], ['#4a2478', '#2a1440']], leaf: ['#e8d0ff', '#b890f0'], bloom: ['#ff7ab0', '#f8e0ff'] },
-    ],
-  },
 ];
 export const HOUSES_BY_ID = Object.fromEntries(HOUSES.map(h => [h.id, h]));
 
 const hasBase = (save) => !!save?.baseOwned;
+/** The houses every Secret Base comes with, the first the one moved into. */
+export const FREE = ['tree', 'cottage'];
 
 const badge = (save, id) => (save?.badges || []).includes(id);
 /** What earns each earned house (a house's `earn`), read from what the save already keeps, so an old save has on day
@@ -304,13 +307,11 @@ export const EARN = {
   summit: (save) => (save.tower?.bestEver || 0) >= 100 || (save.tower?.summits || 0) > 0 || badge(save, 'tower-100'),
   master: (save) => badge(save, 'master'),
   eternatus: (save) => badge(save, 'depths') || (save.feats || []).includes('eternatus') || !!save.stats?.bossesDefeated?.[4],
-  clearing: (save) => badge(save, 'clearing') || !!save.stats?.bossesDefeated?.[1],
 };
 /** What a letter says the trainer did, by a house's `earn`. */
 export const EARN_DID = {
   gyms: 'beat every Gym Leader', waystones: 'mended every town\'s Waystone', safari: 'caught every Pokémon in the Safari Pokédex',
   summit: 'reached the top of the Sky Pillar', master: 'earned the Master Badge', eternatus: 'beat Eternatus in the Crystal Depths',
-  clearing: 'beat the Whispering Clearing\'s boss',
 };
 /** How far along a save is to an earned house, where it counts: [done, of], or null. */
 export function earnProgress(save, earn) {
@@ -331,8 +332,8 @@ export const seasonName = (house) => MONTHS[house.season - 1];
 export function housesOf(save) {
   const h = save?.houses;
   if (!hasBase(save) && !h) return { owned: [], home: null, paint: {} };
-  const owned = h ? [...new Set((h.owned || []).filter(id => HOUSES_BY_ID[id]))] : ['cottage', 'tree'];
-  if (hasBase(save) && !owned.includes('cottage')) owned.unshift('cottage');
+  const owned = h ? [...new Set((h.owned || []).filter(id => HOUSES_BY_ID[id]))] : [...FREE];
+  if (hasBase(save)) owned.unshift(...FREE.filter(id => !owned.includes(id)));
   if (hasBase(save)) for (const id of earnedOf(save)) if (!owned.includes(id)) owned.push(id);
   const home = !h ? (hasBase(save) ? 'tree' : null) : owned.includes(h.home) ? h.home : owned[0] ?? null;
   const paint = {};
@@ -340,12 +341,12 @@ export function housesOf(save) {
   return { owned, home, paint };
 }
 
-/** What the lot is called in a line ('the Ancient Tree', 'your Log Cabin', or before the base 'the Starter Cottage'),
+/** What the lot is called in a line ('the Ancient Tree', 'your Log Cabin'),
     so the garden arch, the PC and the hints name what stands there. */
 export function lotWord(save) {
   const home = housesOpen() && homeOf(save);
   if (!housesOpen() || home?.id === 'tree') return 'the Ancient Tree';
-  return home ? `your ${HOUSES_BY_ID[home.id].name}` : 'the Starter Cottage';
+  return home ? `your ${HOUSES_BY_ID[home.id].name}` : 'the Ancient Tree';
 }
 const upper = (s) => s[0].toUpperCase() + s.slice(1);
 export const LotWord = (save) => upper(lotWord(save));
@@ -375,11 +376,11 @@ export function cantBuy(save, id, date) {
     Mailbox's letter; none without a base, which then gets them all at once when it's bought. */
 export function claimEarned(d) {
   if (!hasBase(d)) return [];
-  const kept = d.houses ? (d.houses.owned || []) : ['cottage', 'tree'];
+  const kept = d.houses ? (d.houses.owned || []) : FREE;
   const got = earnedOf(d, false).filter(id => !kept.includes(id));
   if (!got.length) return [];
-  const now = housesOf(d), owned = [...new Set(['cottage', ...kept, ...got])].filter(id => HOUSES_BY_ID[id]);
-  store(d, { owned, home: owned.includes(now.home) ? now.home : d.houses ? owned[0] : 'tree', paint: Object.fromEntries(Object.entries(now.paint).filter(([id]) => owned.includes(id))) });
+  const now = housesOf(d), owned = [...new Set([...FREE, ...kept, ...got])].filter(id => HOUSES_BY_ID[id]);
+  store(d, { owned, home: owned.includes(now.home) ? now.home : owned[0], paint: Object.fromEntries(Object.entries(now.paint).filter(([id]) => owned.includes(id))) });
   return got;
 }
 
@@ -394,9 +395,11 @@ export function buyHouse(d, id, n = 0, date) {
   return true;
 }
 
-/** On a save draft: the Secret Base itself, bought with houses on: it comes as a Starter Cottage in paint `n`. */
-export function firstHouse(d, n = 0) {
-  d.houses = { owned: ['cottage'], home: 'cottage', paint: n > 0 && n < HOUSES_BY_ID.cottage.paints.length ? { cottage: n } : {} };
+/** On a save draft: the Secret Base itself, bought with houses on: it comes with the free houses, moved into `id` (one of
+    them) in paint `n`. */
+export function firstHouse(d, n = 0, id = FREE[0]) {
+  if (!FREE.includes(id)) id = FREE[0];
+  d.houses = { owned: [...FREE], home: id, paint: n > 0 && n < HOUSES_BY_ID[id].paints.length ? { [id]: n } : {} };
 }
 
 /** On a save draft: into a house already owned, free. */

@@ -9,7 +9,7 @@
    js/data/houses.js's.
    ============================================================ */
 
-import { HOUSES, HOUSES_BY_ID, TIERS, REPAINT_PRICE, housesOf, cantBuy, buyHouse, moveIn, repaint, earnedOf, earnProgress, onSale, seasonName } from './data/houses.js';
+import { HOUSES, HOUSES_BY_ID, TIERS, REPAINT_PRICE, housesOf, cantBuy, buyHouse, moveIn, repaint, earnedOf, earnProgress, onSale, seasonName, FREE } from './data/houses.js';
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
 import { el, confirmDialog, refreshCoins, fitText } from './ui.js';
@@ -26,7 +26,7 @@ let queue = Promise.resolve();
 export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
   if (sheet) return;
   const h = housesOf(getSave());
-  let pick = h.home || 'cottage', paint = h.paint[pick] || 0, changed = false, note = '';
+  let pick = h.home || FREE[0], paint = h.paint[pick] || 0, changed = false, note = '';
   sheet = el('div', 'hk-sheet');
   sheet.setAttribute('role', 'dialog');
   sheet.setAttribute('aria-label', 'House catalogue');
@@ -86,7 +86,7 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
     if (now.owned.includes(house.id)) return ['OWNED', 'own'];
     if (house.earn) return earnedOf(save).includes(house.id) ? ['EARNED', 'own'] : ['LOCKED', 'lock'];
     if (!onSale(house)) return [seasonName(house).slice(0, 3).toUpperCase(), 'lock'];
-    return [(house.id === 'cottage' ? BASE_PRICE : house.price).toLocaleString(), 'price'];
+    return [(FREE.includes(house.id) ? BASE_PRICE : house.price).toLocaleString(), 'price'];
   }
   // Timburr on a house that can't be bought: what earns it (and how far along), or the month it's sold in
   function lockedLine(house, save) {
@@ -130,14 +130,14 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
     const owned = now.owned.includes(pick), worn = now.paint[pick] || 0;
     let tip = '';
     if (!base) {
-      if (pick === 'cottage') { key.textContent = `Buy · ${BASE_PRICE.toLocaleString()}`; key.onclick = buyFirst; tip = 'This lot\'s for sale, the Starter Cottage with it! Pick its paint, and it\'s your Secret Base.'; }
-      else { key.textContent = 'Lot first'; key.disabled = true; tip = 'Buy the lot with its Starter Cottage first. Then the crew can build any house on it!'; }
+      if (FREE.includes(pick)) { key.textContent = `Buy · ${BASE_PRICE.toLocaleString()}`; key.onclick = buyFirst; tip = 'This lot\'s for sale, the Ancient Tree and the Starter Cottage with it! Pick one and its paint, and it\'s your Secret Base.'; }
+      else { key.textContent = 'Lot first'; key.disabled = true; tip = 'Buy the lot first, the Ancient Tree with it. Then the crew can build any house on it!'; }
     } else if (pick === now.home && paint === worn) { key.textContent = 'Your home'; key.disabled = true; }
     else if (owned && paint === worn) { key.textContent = 'Move in'; key.onclick = moveHere; tip = house.earn ? `You earned this one, so it's built free. Moving in is free too, and so is moving back.` : 'It\'s yours already. Moving back is free!'; }
     else if (owned) { key.textContent = `Repaint · ${REPAINT_PRICE}`; key.onclick = repaintHere; tip = `${house.paints[paint].name}? A fresh coat is ${REPAINT_PRICE} PokéCoins${pick === now.home ? '' : ', and you move in'}.`; }
     else if (house.price == null || !onSale(house)) { key.textContent = house.earn ? 'Locked' : `${seasonName(house).slice(0, 3)} only`; key.disabled = true; tip = lockedLine(house, s); }
     else { key.textContent = `Buy · ${house.price.toLocaleString()}`; key.onclick = buyHere; }
-    if (!base && house.earn && earnedOf(s).includes(pick)) tip = `You've earned this one! Buy the lot with its Starter Cottage first, and the crew builds it free.`;
+    if (!base && house.earn && earnedOf(s).includes(pick)) tip = `You've earned this one! Buy the lot first, and the crew builds it free.`;
     // its name on a line of its own, the card's whole width (the user, 2026-10-23: long names were cut off), shrunk
     // only if even that is too narrow; under it the paint picked over its eight paints, the key beside them (the paints
     // scroll sideways where a narrow phone can't fit them)
@@ -167,8 +167,9 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
   }
 
   async function buyFirst() {
-    if (!(await confirmDialog(`Make this lot and its Starter Cottage (${HOUSES_BY_ID.cottage.paints[paint].name}) your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?`, `Buy (${BASE_PRICE.toLocaleString()})`))) return;
-    if (!sheet || !(await buyBase(paint))) return render();
+    const house = HOUSES_BY_ID[pick];
+    if (!(await confirmDialog(`Make this lot your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins, moving into the ${house.name} (${house.paints[paint].name})? The ${HOUSES_BY_ID[FREE.find(id => id !== pick)].name} comes with it too.`, `Buy (${BASE_PRICE.toLocaleString()})`))) return;
+    if (!sheet || !(await buyBase(paint, pick))) return render();
     changed = true;
     rebuild();
     say('It\'s all yours! The planks are off the door. Close the catalogue and walk in, or pick a new house any time.');

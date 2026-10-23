@@ -16,7 +16,7 @@ test('every house has a tier and eight paints, the tree its crown\'s colours', (
     for (const p of h.paints) assert.ok(p.name, h.id);
   }
   for (const p of HOUSES_BY_ID.tree.paints) assert.equal(p.shade.length, 4);
-  assert.equal(HOUSES_BY_ID.tree.price, null);
+  assert.equal(HOUSES_BY_ID.tree.price, 0);
 });
 
 test('every paint names each colour its house is built from, and its swatch\'s two', () => {
@@ -43,7 +43,7 @@ test('the coin houses: two more Homesteads at 2,000 and four Estates from 5,000 
 
 test('an old save keeps the Ancient Tree and has the Starter Cottage free', () => {
   const save = { baseOwned: true, coins: 0 };
-  assert.deepEqual(housesOf(save), { owned: ['cottage', 'tree'], home: 'tree', paint: {} });
+  assert.deepEqual(housesOf(save), { owned: ['tree', 'cottage'], home: 'tree', paint: {} });
   assert.deepEqual(homeOf(save), { id: 'tree', paint: 0 });
   assert.equal(cantBuy(save, 'tree'), 'owned');
 });
@@ -56,19 +56,24 @@ test('no base, no houses, and nothing to buy but the base', () => {
   assert.equal(buyHouse(save, 'cabin'), false);
 });
 
-test('a base bought with houses on is a Starter Cottage, in the paint picked', () => {
+test('a base bought with houses on lives in the Ancient Tree, the Starter Cottage free beside it', () => {
   const d = { baseOwned: true };
   firstHouse(d, 2);
-  assert.deepEqual(housesOf(d), { owned: ['cottage'], home: 'cottage', paint: { cottage: 2 } });
+  assert.deepEqual(housesOf(d), { owned: ['tree', 'cottage'], home: 'tree', paint: { tree: 2 } });
   assert.equal(TIERS.map(t => t.id).join(), 'starter,homestead,estate,earned,seasonal,legendary');
-  assert.equal(cantBuy(d, 'tree'), 'earned');
+  assert.equal(cantBuy(d, 'tree'), 'owned');
+  const c = { baseOwned: true };
+  firstHouse(c, 1, 'cottage');
+  assert.deepEqual(housesOf(c), { owned: ['tree', 'cottage'], home: 'cottage', paint: { cottage: 1 } });
+  firstHouse(c, 0, 'cabin');
+  assert.equal(homeOf(c).id, 'tree');
 });
 
 test('buying pays, moves in and keeps the first paint job free', () => {
   const d = { baseOwned: true, coins: 1600 };
   assert.equal(buyHouse(d, 'cabin', 1), true);
   assert.equal(d.coins, 100);
-  assert.deepEqual(housesOf(d), { owned: ['cottage', 'tree', 'cabin'], home: 'cabin', paint: { cabin: 1 } });
+  assert.deepEqual(housesOf(d), { owned: ['tree', 'cottage', 'cabin'], home: 'cabin', paint: { cabin: 1 } });
   assert.equal(cantBuy(d, 'bungalow'), 'coins');
   assert.equal(buyHouse(d, 'bungalow'), false);
   assert.equal(d.coins, 100);
@@ -98,12 +103,12 @@ test('a repaint costs 250, and not for the paint it already wears', () => {
 
 test('a stored list with unknown ids or a lost cottage is mended on read', () => {
   const save = { baseOwned: true, houses: { owned: ['castle', 'cabin'], home: 'castle', paint: { cabin: 9, cottage: 1 } } };
-  assert.deepEqual(housesOf(save), { owned: ['cottage', 'cabin'], home: 'cottage', paint: { cottage: 1 } });
+  assert.deepEqual(housesOf(save), { owned: ['tree', 'cottage', 'cabin'], home: 'tree', paint: { cottage: 1 } });
 });
 
 test('the earned houses are never sold, each earned by what the save already keeps', () => {
   const earned = HOUSES.filter(h => h.earn).map(h => [h.id, h.earn]);
-  assert.deepEqual(earned, [['gymhall', 'gyms'], ['ryokan', 'waystones'], ['lodge', 'safari'], ['spire', 'summit'], ['balldome', 'master'], ['crystal', 'eternatus'], ['tree', 'clearing']]);
+  assert.deepEqual(earned, [['gymhall', 'gyms'], ['ryokan', 'waystones'], ['lodge', 'safari'], ['spire', 'summit'], ['balldome', 'master'], ['crystal', 'eternatus']]);
   for (const [id, key] of earned) { assert.equal(HOUSES_BY_ID[id].price, null, id); assert.equal(typeof EARN[key], 'function', id); assert.equal(EARN[key]({}), false, id); }
   assert.equal(EARN.gyms({ gym: Object.fromEntries(GYM_LEADERS.map(l => [l.id, 1])) }), true);
   assert.equal(EARN.gyms({ gym: Object.fromEntries(GYM_LEADERS.slice(1).map(l => [l.id, 3])) }), false);
@@ -114,27 +119,26 @@ test('the earned houses are never sold, each earned by what the save already kee
   assert.equal(EARN.summit({ tower: { bestEver: 99 } }), false);
   assert.equal(EARN.master({ badges: ['master'] }), true);
   assert.equal(EARN.eternatus({ feats: ['eternatus'] }), true);
-  assert.equal(EARN.clearing({ badges: ['clearing'] }), true);
   assert.equal(cantBuy({ baseOwned: true, coins: 1e6 }, 'gymhall'), 'earned');
 });
 
 test('an earned house is owned as soon as it is earned, and stored for good once claimed', () => {
   const d = { baseOwned: true, badges: ['master'] };
   firstHouse(d);
-  assert.deepEqual(housesOf(d).owned, ['cottage', 'balldome']);
+  assert.deepEqual(housesOf(d).owned, ['tree', 'cottage', 'balldome']);
   assert.equal(moveIn(d, 'balldome'), true);
   assert.deepEqual(claimEarned(d), []);
-  d.badges.push('clearing');
-  assert.deepEqual(claimEarned(d), ['tree']);
+  d.badges.push('depths');
+  assert.deepEqual(claimEarned(d), ['crystal']);
   d.badges = [];
-  assert.deepEqual(housesOf(d).owned, ['cottage', 'balldome', 'tree']);
+  assert.deepEqual(housesOf(d).owned, ['tree', 'cottage', 'balldome', 'crystal']);
   assert.deepEqual(claimEarned(d), []);
 });
 
 test('an old save keeps its tree without a letter for it, and no base claims nothing', () => {
   const old = { baseOwned: true, badges: ['clearing', 'depths'] };
   assert.deepEqual(claimEarned(old), ['crystal']);
-  assert.deepEqual(old.houses, { owned: ['cottage', 'tree', 'crystal'], home: 'tree', paint: {} });
+  assert.deepEqual(old.houses, { owned: ['tree', 'cottage', 'crystal'], home: 'tree', paint: {} });
   const none = { badges: ['master'] };
   assert.deepEqual(claimEarned(none), []);
   assert.equal(none.houses, undefined);

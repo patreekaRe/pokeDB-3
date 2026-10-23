@@ -2426,7 +2426,7 @@ function makePlaces() {
     {
       id: 'base', name: 'Secret Base', step: { x: TREE_AT.tx, y: TREE_AT.ty + 1 }, tiles: [...rect(TREE_AT.tx - 3, TREE_AT.ty - 2, TREE_AT.tx + 3, TREE_AT.ty - 1), ...rect(TREE_AT.tx - 3, TREE_AT.ty, ARCH_AT.tx - 1, TREE_AT.ty)], tag: [TREE_AT.tx, 3.2, TREE_AT.ty], open: true,
       line: lotLine(),
-      buttons: [[baseOwned() ? 'Go in' : 'Unlock', baseOwned() ? enterBase : buyBase]],
+      buttons: [[baseOwned() ? 'Go in' : 'Unlock', baseOwned() ? enterBase : () => buyBase()]],
       build: (g) => buildLot(g, lotNow()),
     },
     {
@@ -2446,7 +2446,7 @@ function makePlaces() {
       // the Timburr crew's stand beside the lot (houses on): its catalogue tries a house on the lot before you pay
       id: 'kiosk', name: 'Timburr & Co.', step: { x: KIOSK_AT.tx, y: KIOSK_AT.ty + 1 }, tiles: [[KIOSK_AT.tx, KIOSK_AT.ty]], tag: [KIOSK_AT.tx, 2.6, KIOSK_AT.ty], open: true,
       line: baseOwned() ? 'Timburr & Co., builders. Their catalogue builds a new house on your lot, tried on before you buy, and repaints the one you have.'
-        : `Timburr & Co., builders. FOR SALE: the lot beside them, a Starter Cottage on it. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
+        : `Timburr & Co., builders. FOR SALE: the lot beside them, the Ancient Tree on it. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
       buttons: [['Catalogue', openKiosk]],
       build: (g) => buildKiosk(g),
     }] : []),
@@ -3574,10 +3574,10 @@ const yardOwned = () => { const y = getSave().secretBase?.house?.yard; return !!
 /* ---------- the house on the lot, and the builders' stand (js/data/houses.js; behind HOUSES_LIVE / ?houses) ---------- */
 
 /** What stands on the lot: with houses off, always the Ancient Tree; on, the house tried on from the stand's catalogue,
-    else the one lived in, else (no base yet) the Starter Cottage for sale. */
+    else the one lived in, else (no base yet) the Ancient Tree for sale. */
 function lotNow() {
   if (!housesOpen()) return { id: 'tree', paint: 0 };
-  return trying || homeOf(getSave()) || { id: 'cottage', paint: 0 };
+  return trying || homeOf(getSave()) || { id: 'tree', paint: 0 };
 }
 
 function lotLine() {
@@ -3726,7 +3726,7 @@ async function openKiosk() {
     tryOn: (lot) => { trying = lot; if (!sameLot(lotNow(), lotShown)) rebuildLot(); },
     rebuild: () => rebuildLot(),
     snap: houseStill,
-    buyBase: (paint) => buyBase(paint, true),
+    buyBase: (paint, house) => buyBase(paint, house),
     onClose: (changed) => {
       browsing = null;
       root.classList.remove('browsing');
@@ -3751,18 +3751,19 @@ function liveSign(now) {
 }
 
 /** The boarded door's price: too few coins says how many more; else a yes pays, pulls the planks off and walks in. */
-async function buyBase(paint = 0, fromKiosk = false) {
+async function buyBase(paint = 0, house = null) {
+  const fromKiosk = !!house;
   if (entering) return false;
   hideCard();
   walker.path = []; aim = null;
-  const coins = getSave().coins ?? 0, cottage = housesOpen();
+  const coins = getSave().coins ?? 0;
   if (coins < BASE_PRICE) {
     playSound('cancel');
     await confirmDialog(`The Secret Base costs ${BASE_PRICE.toLocaleString()} PokéCoins, and you have ${coins.toLocaleString()}.`, 'OK');
     return false;
   }
-  if (!fromKiosk && !(await confirmDialog(cottage ? `Make the Starter Cottage your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?` : `Make the Ancient Tree your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?`, `Buy (${BASE_PRICE.toLocaleString()})`))) return false;
-  updateSave(d => { d.coins -= BASE_PRICE; d.baseOwned = true; if (cottage) firstHouse(d, paint); });
+  if (!fromKiosk && !(await confirmDialog(`Make the Ancient Tree your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?`, `Buy (${BASE_PRICE.toLocaleString()})`))) return false;
+  updateSave(d => { d.coins -= BASE_PRICE; d.baseOwned = true; if (housesOpen()) firstHouse(d, paint, house || undefined); });
   if (houseMail()) pcMarks();   // the houses earned before there was a lot to build them on
   refreshCoins();
   playSound('buy');

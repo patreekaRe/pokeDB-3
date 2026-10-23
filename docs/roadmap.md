@@ -1249,6 +1249,10 @@ Clearing's budget, checks each model with `tools/house-check.mjs` (text, no scre
   `?houses=all` lends them all, `?houses&livein=<id>` lives in one. Also the user's ask the same day: long names no longer
   cut off (the name on its own line the card's width, the paint's name under it; card 267 -> 280 px). Within budget, save
   check passed. **Next: the user playtests** the githack link (`?houses=all&coins=20000`), then C.
+- ~~**Tree by default**~~ **done 2026-10-23** (cloud, branch `houses-playtest`; the user: "make it default for new
+  players to start with the tree. Why would they want to downgrade"): every new base lives in the Ancient Tree, the
+  Starter Cottage owned free beside it (pick either at the stand when buying the lot); the tree no longer earned by the
+  Clearing Badge, so Legendary is the Crystal Palace alone. Tests, save check and the Clearing's budget pass.
 - **C** (effort: medium, the pattern is set by then): the same opening, then: "Build the 7 new houses from the roadmap
   (Treehouse, Windmill Farmhouse, Desert Riad, Lantern Pagoda, Champion's Keep, Stargazer Observatory, Cherry Blossom
   Teahouse) with 8 paints each and their unlocks, the earned and seasonal ones as session B set them up. Same checks,
