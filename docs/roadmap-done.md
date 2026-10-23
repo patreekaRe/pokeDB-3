@@ -3536,6 +3536,8 @@ Seaside Bungalow as 3D models on the lot (`js/hub-houses.js`), the tree in three
 17,4 whose catalogue (`js/house-kiosk.js`) builds each pick on the lot as a try-on, repaints at 250, a YOUR HOUSE row on
 the PC's HOUSE UPGRADES. Off for players until the user's playtest says go (`?houses` shows it); budget line
 `clearing-houses` 275 draws / 119 MB (the Clearing 257 / 124). Its patch note waits in `HELD`.
+Session A (2026-10-23, same branch): the six coin houses (Mushroom Cottage, Red Barn, Machiya Townhouse, Lighthouse
+Cottage, Glasshouse Villa, Victorian Manor), 8 paints a house, the catalogue's paint strip, `tools/house-check.mjs`.
 
 ### Cloud save: no "Two saves found" over your own save (2026-10-23, cloud)
 The user's report: it popped after every berry Kurt

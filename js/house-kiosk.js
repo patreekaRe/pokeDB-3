@@ -77,7 +77,7 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
   };
   const dots = (house, i) => {
     const p = house.paints[i];
-    return house.id === 'tree' ? [p.shade[1][0], p.lobe[1]] : [p.roof, p.wall];
+    return house.id === 'tree' ? [p.shade[1][0], p.lobe[1]] : (house.swatch || ['roof', 'wall']).map(k => p[k]);
   };
   function tagOf(house, now) {
     if (now.home === house.id) return ['HOME', 'home'];
@@ -128,13 +128,16 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
     else if (owned) { key.textContent = `Repaint · ${REPAINT_PRICE}`; key.onclick = repaintHere; tip = `${house.paints[paint].name}? A fresh coat is ${REPAINT_PRICE} PokéCoins${pick === now.home ? '' : ', and you move in'}.`; }
     else if (house.price == null) { key.textContent = 'Locked'; key.disabled = true; tip = `This one can't be bought. ${house.how}.`; }
     else { key.textContent = `Buy · ${house.price.toLocaleString()}`; key.onclick = buyHere; }
-    // its name over its paints, the key beside them: one row, so the card stays low and the lot shows above it
-    const name = el('span', 'hk-pick-name');
-    name.append(el('b', '', house.name), paints);
+    // its name and the paint picked over its eight paints, the key beside them: one row, so the card stays low and the
+    // lot shows above it (the paints scroll sideways where a narrow phone can't fit them)
+    const name = el('span', 'hk-pick-name'), title = el('span', 'hk-pick-title');
+    title.append(el('b', '', house.name), el('span', 'hk-paint-name', house.paints[paint].name));
+    name.append(title, paints);
     pickRow.replaceChildren(name, key);
 
     // its paints: a round swatch each, two-tone like the house, and the picked one's name (the first paint job comes free
     // with a new house)
+    const strip = paints.scrollLeft;
     paints.replaceChildren(...house.paints.map((p, i) => {
       const b = el('button', `hk-sw${i === paint ? ' on' : ''}`), [c1, c2] = dots(house, i);
       b.type = 'button';
@@ -144,7 +147,10 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
       b.style.background = `linear-gradient(135deg, ${c1} 50%, ${c2} 50%)`;
       b.addEventListener('click', () => { if (paint === i) return; playSound('select'); paint = i; note = ''; render(); show(); });
       return b;
-    }), el('span', 'hk-paint-name', house.paints[paint].name));
+    }));
+    paints.scrollLeft = strip;
+    const sw = paints.children[paint];
+    if (sw && (sw.offsetLeft < paints.scrollLeft || sw.offsetLeft + sw.offsetWidth > paints.scrollLeft + paints.clientWidth)) paints.scrollLeft = sw.offsetLeft - (paints.clientWidth - sw.offsetWidth) / 2;
     line.textContent = note || tip || house.blurb;
   }
 

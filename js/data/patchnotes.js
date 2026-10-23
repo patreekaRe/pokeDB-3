@@ -46,7 +46,7 @@ export const NEXT_MAX = 20;
 /** Lines for something built but held behind its switch, each [on, [group, line]]: they join NEXT by themselves the
     day the switch goes on, so players never read of what they can't see. */
 const HELD = [
-  [HOUSES_LIVE, ['base', 'Your Secret Base can be a house: the Timburr crew\'s stand by your lot builds a Log Cabin or a Seaside Bungalow, tried on before you buy, and repaints yours for 250.']],
+  [HOUSES_LIVE, ['base', 'Your Secret Base can be a house: Timburr & Co.\'s stand by your lot builds eight, from a Log Cabin to a Victorian Manor, tried on before you buy, each in eight paints.']],
 ];
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */

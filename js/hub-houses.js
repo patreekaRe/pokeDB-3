@@ -1,7 +1,8 @@
 /* hub-houses.js  -  the Secret Base's houses on the Ancient Tree's lot, and the Timburr crew's builders' stand beside it
    (docs/roadmap.md's "Secret Base houses", the user's idea, 2026-10-23; js/data/houses.js holds what's sold and owned).
    Each house is a real model like the Nietos' mansion, built only while it stands on the lot (the one lived in, or the
-   one tried on from the stand's catalogue): a Starter Cottage, a Log Cabin, a Seaside Bungalow. The Ancient Tree stays
+   one tried on from the stand's catalogue): a Starter Cottage, a Log Cabin, a Seaside Bungalow, a Mushroom Cottage, a Red
+   Barn, a Machiya Townhouse, a Lighthouse Cottage, a Glasshouse Villa, a Victorian Manor. The Ancient Tree stays
    js/hub-3d.js's painted billboard. A house's door is its only tap (as the tree's, 2026-10-15) and swings open as your
    partner walks in. Paint colours multiply over grey paintings (siding, shingles, logs), so a repaint is a colour, not
    a new picture. js/hub-3d.js builds them as its 'base' and 'kiosk' places (makePlaces()). */
@@ -70,6 +71,41 @@ function stoneArt(fine) {
         g.beginPath(); g.roundRect(x + 0.3, y + 0.3, 4.4, h - 0.5, 1.4); g.fill();
       }
     });
+    return c;
+  });
+}
+/** Roof tiles in ribs running down the slope (kawara on the machiya, barrel tiles on the villa). */
+function tileArt(fine) {
+  return once('tile', () => {
+    const { c, g, lin } = fine(16, 16, 4);
+    g.fillStyle = '#9a9a9a'; g.fillRect(0, 0, 16, 16);
+    for (let x = 0; x < 16; x += 4) { g.fillStyle = lin(x, 0, x + 4, 0, ['#8a8a8a', '#e8e8e8', '#ffffff', '#c4c4c4', '#7a7a7a']); g.fillRect(x + 0.3, 0, 3.4, 16); }
+    for (let y = 0; y < 16; y += 4) { g.fillStyle = 'rgba(40,40,40,0.35)'; g.fillRect(0, y + 3.5, 16, 0.5); }
+    return c;
+  });
+}
+/** Cut stone in courses, the joints staggered: the villa's walls. */
+function ashlarArt(fine) {
+  return once('ashlar', () => {
+    const { c, g, lin } = fine(16, 16, 4);
+    g.fillStyle = '#a8a8a8'; g.fillRect(0, 0, 16, 16);
+    for (let r = 0; r < 4; r++) for (let x = (r % 2) * -4; x < 16; x += 8) {
+      g.fillStyle = lin(0, r * 4, 0, r * 4 + 4, ['#ffffff', '#f0f0f0', '#d8d8d8']);
+      g.fillRect(x + 0.25, r * 4 + 0.25, 7.5, 3.5);
+    }
+    return c;
+  });
+}
+/** Fish-scale shingles, round-bottomed in staggered rows: the manor's gable. */
+function scaleArt(fine) {
+  return once('scale', () => {
+    const { c, g, lin } = fine(16, 16, 4);
+    g.fillStyle = '#b8b8b8'; g.fillRect(0, 0, 16, 16);
+    for (let r = 0; r < 5; r++) for (let i = -1; i < 5; i++) {
+      const x = i * 4 + (r % 2) * 2, y = r * 4 - 4;
+      g.fillStyle = lin(0, y, 0, y + 6, ['#ffffff', '#ececec', '#c8c8c8']);
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + 4, y); g.lineTo(x + 4, y + 4); g.arc(x + 2, y + 4, 2, 0, Math.PI); g.closePath(); g.fill();
+    }
     return c;
   });
 }
@@ -210,22 +246,38 @@ export function makeHouse(THREE, { id, p, x, z, boarded = false, winter = false,
     geo.computeVertexNormals();
     return add(geo, m, px, py, pz);
   };
-  // a lit window with a frame, a sill and (`shutters`) a shutter either side
-  const win = (wx, wy, wz, w, h, frameM, { shutters = null, box: flowers = null } = {}) => {
-    add(new THREE.PlaneGeometry(w, h), winMat, wx, wy, wz + 0.012, { shadow: false });
-    for (const sy of [-1, 1]) box(w + 0.08, 0.05, 0.05, frameM, wx, wy + sy * (h / 2 + 0.02), wz + 0.02, { shadow: false });
-    for (const sx of [-1, 1]) box(0.05, h + 0.1, 0.05, frameM, wx + sx * (w / 2 + 0.02), wy, wz + 0.02, { shadow: false });
-    if (shutters) for (const sx of [-1, 1]) box(w * 0.36, h + 0.04, 0.035, shutters, wx + sx * (w / 2 + w * 0.2 + 0.05), wy, wz + 0.02);
+  // a lit window with a frame, a sill and (`shutters`) a shutter either side; `arch` rounds its top, `to` a turned group
+  // (a window on a turret's face)
+  const win = (wx, wy, wz, w, h, frameM, { shutters = null, box: flowers = null, arch = false, to = still } = {}) => {
+    add(new THREE.PlaneGeometry(w, h), winMat, wx, wy, wz + 0.012, { shadow: false, to });
+    if (arch) {
+      add(new THREE.CircleGeometry(w / 2, 12, 0, Math.PI), winMat, wx, wy + h / 2, wz + 0.012, { shadow: false, to });
+      add(new THREE.TorusGeometry(w / 2 + 0.02, 0.025, 6, 14, Math.PI), frameM, wx, wy + h / 2, wz + 0.02, { shadow: false, to });
+    } else box(w + 0.08, 0.05, 0.05, frameM, wx, wy + h / 2 + 0.02, wz + 0.02, { shadow: false, to });
+    box(w + 0.08, 0.05, 0.05, frameM, wx, wy - h / 2 - 0.02, wz + 0.02, { shadow: false, to });
+    for (const sx of [-1, 1]) box(0.05, h + 0.1, 0.05, frameM, wx + sx * (w / 2 + 0.02), wy, wz + 0.02, { shadow: false, to });
+    if (shutters) for (const sx of [-1, 1]) box(w * 0.36, h + 0.04, 0.035, shutters, wx + sx * (w / 2 + w * 0.2 + 0.05), wy, wz + 0.02, { to });
     if (flowers) {
       box(w + 0.12, 0.1, 0.12, flowers, wx, wy - h / 2 - 0.09, wz + 0.07);
       for (let i = 0; i < 5; i++) add(new THREE.SphereGeometry(0.045, 8, 6), std({ color: ['#f86a8a', '#ffd84a', '#ffffff', '#f86a8a', '#b08af8'][i] }), wx - w / 2 + 0.06 + i * (w - 0.12) / 4, wy - h / 2 - 0.01, wz + 0.08, { shadow: false });
     }
   };
   // a porthole: a round lit window in a ring
-  const porthole = (wx, wy, wz, r, ringM) => {
-    add(new THREE.CircleGeometry(r, 20), winMat, wx, wy, wz + 0.012, { shadow: false });
-    add(new THREE.TorusGeometry(r + 0.015, 0.03, 8, 24), ringM, wx, wy, wz + 0.02, { shadow: false });
+  const porthole = (wx, wy, wz, r, ringM, to = still) => {
+    add(new THREE.CircleGeometry(r, 20), winMat, wx, wy, wz + 0.012, { shadow: false, to });
+    add(new THREE.TorusGeometry(r + 0.015, 0.03, 8, 24), ringM, wx, wy, wz + 0.02, { shadow: false, to });
   };
+  // a group at (px, py, pz) turned `ry` about y, for what sits on a round or angled face
+  const turned = (px, py, pz, ry) => { const g = new THREE.Group(); g.position.set(px, py, pz); g.rotation.y = ry; still.add(g); return g; };
+  // one InstancedMesh of `geo` at each [x, y, z, ry?] of `at`
+  const many = (geo, m, list, shadow = true) => {
+    const o = new THREE.Object3D(), im = new THREE.InstancedMesh(geo, m, list.length);
+    list.forEach(([px, py, pz, ry = 0], i) => { o.position.set(px, py, pz); o.rotation.set(0, ry, 0); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+    im.castShadow = shadow; im.receiveShadow = true;
+    still.add(im);
+    return im;
+  };
+  const tint = (hex, k) => '#' + new THREE.Color(hex).multiplyScalar(k).getHexString();
 
   // the door: on a hinge at its left edge, plank leaf in the paint's door colour, arched or square, a brass knob; the
   // warm room behind it shows as it swings out (open()), and a hit box over it is the house's only tap
@@ -270,9 +322,7 @@ export function makeHouse(THREE, { id, p, x, z, boarded = false, winter = false,
   const trim = std({ color: p.trim || '#ffffff', roughness: 0.6 });
   const stone = tiled(stoneArt(fine), 2, { roughness: 1 });
   let door;
-  if (id === 'cabin') door = cabin();
-  else if (id === 'bungalow') door = bungalow();
-  else door = cottage();
+  door = ({ cabin, bungalow, mushroom, barn, machiya, lighthouse, glasshouse, victorian }[id] || cottage)();
   merge(still);
   still.traverse(o => { if (o.isMesh) o.raycast = () => {}; });
 
@@ -408,6 +458,349 @@ export function makeHouse(THREE, { id, p, x, z, boarded = false, winter = false,
     }
     for (let i = 0; i < 3; i++) add(new THREE.SphereGeometry(0.07, 8, 6), std({ color: '#7a5a2a' }), px + Math.cos(i * 2.1) * 0.08, py - 0.06, pz + Math.sin(i * 2.1) * 0.08, { shadow: false });
     return doorAt(0, D, { arch: true, colour: p.door, frameM: trim });
+  }
+
+  /** The Mushroom Cottage: a round stalk for walls, a spotted cap for a roof (gills under its brim), round windows, a
+      stovepipe through the cap, a glowing toadstool lamp by the door and little mushrooms about the step. */
+  function mushroom() {
+    const Z = -0.95, R = 1.1, H = 1.4, CR = 1.75, CY = 1.3, CK = 0.62;
+    const stalk = std({ color: p.wall, roughness: 0.9 }), cap = std({ color: p.cap, roughness: 0.5 }), spot = std({ color: p.spot, roughness: 0.6 });
+    const wood = std({ color: '#c8a070' });
+    cyl(R, R, H, stalk, 0, H / 2, Z, 32);
+    // the cap: a squashed dome, a rolled brim, gills underneath
+    const dome = add(new THREE.SphereGeometry(CR, 36, 14, 0, Math.PI * 2, 0, Math.PI / 2), cap, 0, CY, Z);
+    dome.scale.y = CK;
+    const brim = add(new THREE.TorusGeometry(CR - 0.04, 0.09, 8, 40), cap, 0, CY, Z);
+    brim.rotation.x = Math.PI / 2;
+    add(new THREE.CircleGeometry(CR - 0.04, 36), std({ color: tint(p.wall, 0.78), side: THREE.DoubleSide }), 0, CY - 0.02, Z, { shadow: false }).rotation.x = Math.PI / 2;
+    // its spots, lenses half sunk in the dome along its normal: [round from the front, up from the brim, size]
+    const at = new THREE.Vector3(), nor = new THREE.Vector3(), out = new THREE.Vector3(0, 0, 1), lens = new THREE.SphereGeometry(1, 10, 6);
+    for (const [a, e, r] of [[0, 0.55, 0.3], [-0.85, 0.32, 0.28], [0.8, 0.4, 0.3], [-0.4, 1.0, 0.22], [0.45, 0.92, 0.2], [1.6, 0.3, 0.26], [-1.6, 0.5, 0.25], [0.05, 1.35, 0.18], [2.4, 0.6, 0.24], [-2.5, 0.38, 0.24], [3.1, 0.85, 0.2], [-0.25, 0.18, 0.16], [1.15, 0.12, 0.15]]) {
+      const ux = Math.cos(e) * Math.sin(a), uy = Math.sin(e), uz = Math.cos(e) * Math.cos(a);
+      at.set(CR * ux, CR * CK * uy, CR * uz);
+      nor.set(ux / CR, uy / (CR * CK), uz / CR).normalize();
+      const s = add(lens, spot, at.x, CY + at.y, Z + at.z, { shadow: false });
+      s.scale.set(r, r, r * 0.22);
+      s.quaternion.setFromUnitVectors(out, nor);
+    }
+    // round windows either side, turned to the stalk's face
+    for (const a of [-0.8, 0.8]) porthole(0, 0.82, R + 0.005, 0.16, wood, turned(0, 0, Z, a));
+    // the stovepipe out of the cap, with a little hat
+    const pipe = std({ color: '#7a7a82', metalness: 0.4, roughness: 0.5 });
+    cyl(0.07, 0.07, 0.9, pipe, 0.9, 2.3, Z - 0.5, 10);
+    add(new THREE.ConeGeometry(0.15, 0.12, 10), pipe, 0.9, 2.82, Z - 0.5);
+    // the doorway: a wooden arch standing proud of the stalk, a flat stone step
+    const DZ = Z + R + 0.02;
+    box(DW + 0.18, 0.1, 0.5, stone, 0, 0.05, DZ + 0.12);
+    box(DW + 0.2, DH + 0.1, 0.12, wood, 0, 0.1 + (DH + 0.1) / 2, DZ - 0.065);
+    // a toadstool lamp by the door, lit after dark
+    const glow = lit(std({ color: '#fff0c0', emissive: new THREE.Color('#ffc860'), roughness: 0.4 }), 1.4, 0.3);
+    cyl(0.035, 0.045, 0.62, wood, 0.62, 0.31, DZ + 0.22, 8);
+    const shade = add(new THREE.SphereGeometry(0.17, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2), glow, 0.62, 0.6, DZ + 0.22, { shadow: false });
+    shade.scale.y = 0.7;
+    // little mushrooms about the step: [x, z, size, cap colour]
+    for (const [mx, mz, k, c] of [[-1.2, 0.32, 1, p.cap], [-0.95, 0.55, 0.65, '#e8a040'], [1.3, 0.28, 0.85, p.cap], [1.62, -0.05, 0.6, '#e8a040'], [-1.65, -0.2, 0.7, p.cap]]) {
+      cyl(0.045 * k, 0.06 * k, 0.24 * k, stalk, mx, 0.12 * k, mz, 8);
+      const top = add(new THREE.SphereGeometry(0.15 * k, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), c === p.cap ? cap : std({ color: c, roughness: 0.5 }), mx, 0.22 * k, mz);
+      top.scale.y = 0.75;
+    }
+    // grass tufts round the stalk's foot, none before the door
+    const tuft = [];
+    for (let i = 0; i < 16; i++) { const a = 0.55 + i / 16 * (Math.PI * 2 - 1.1); tuft.push([Math.sin(a) * (R + 0.08), 0.05, Z + Math.cos(a) * (R + 0.08), a]); }
+    many(new THREE.SphereGeometry(0.13, 8, 5).scale(1, 0.6, 1), std({ color: winter ? '#9ab0a0' : '#5a9a44', roughness: 0.9 }), tuft, false);
+    return doorAt(DZ, 0.1, { arch: true, colour: p.door, frameM: wood });
+  }
+
+  /** The Red Barn: board walls under a gambrel roof, its ridge front to back; big doors slid open on their rail either
+      side of the door, a hayloft over them with a hoist beam, a rooster weathervane, a silo and a stack of hay bales. */
+  function barn() {
+    const F = 0.1, BW = 2.5, BD = 2.2, WH = 1.25, E = F + WH;
+    const wall = tiled(plankArt(fine), 2, { color: p.wall, roughness: 0.85 }), roof = tiled(shingleArt(fine), 1.7, { color: p.roof, roughness: 0.75 });
+    box(BW + 0.16, F, BD + 0.16, stone, 0, F / 2, -BD / 2);
+    box(BW, WH, BD, wall, 0, F + WH / 2, -BD / 2);
+    // the gambrel, built as gable() is (ridge along its x, turned to run front to back): a steep lower pitch to the knee,
+    // a shallow upper one to the ridge, and the end walls' outline under them
+    const g = new THREE.Group(), h = BW / 2, K = [0.8, 0.72], RY = 1.14, T = 0.07, OH = 0.16, L = BD + 0.3;
+    g.position.set(0, E, -BD / 2); g.rotation.y = Math.PI / 2;
+    still.add(g);
+    const slab = (z0, y0, z1, y1, s, over) => {
+      const a = Math.atan2(y0 - y1, z1 - z0), len = Math.hypot(z1 - z0, y1 - y0) + over;
+      const o = add(worldUV(new THREE.BoxGeometry(L, T, len)), roof, 0, (y0 + y1) / 2 + Math.cos(a) * T / 2 - Math.sin(a) * over / 2, s * ((z0 + z1) / 2 + Math.sin(a) * T / 2 + Math.cos(a) * over / 2), { to: g });
+      o.rotation.x = s * a;
+    };
+    for (const s of [-1, 1]) { slab(0, RY, K[0], K[1], s, 0.03); slab(K[0], K[1], h, 0, s, OH); }
+    add(new THREE.CylinderGeometry(0.05, 0.05, L, 8), roof, 0, RY + 0.05, 0, { to: g }).rotation.z = Math.PI / 2;
+    const end = new THREE.Shape([[-h, 0], [h, 0], [K[0], K[1]], [0, RY], [-K[0], K[1]]].map(([a, b]) => new THREE.Vector2(a, b)));
+    for (const sx of [-1, 1]) { const geo = new THREE.ShapeGeometry(end); geo.rotateY(sx * Math.PI / 2); add(geo, wall, sx * BD / 2, 0, 0, { to: g }); }
+    // trim on the corners and along the eaves' line
+    for (const sx of [-1, 1]) box(0.08, WH, 0.08, trim, sx * BW / 2, F + WH / 2, 0, { shadow: false });
+    box(BW + 0.1, 0.07, 0.07, trim, 0, E, 0.01, { shadow: false });
+    // the big doors, slid open on their rail: planks, a trim frame and a trim X each
+    const dm = std({ color: p.door, roughness: 0.8 }), rail = std({ color: '#3a3a40', metalness: 0.5, roughness: 0.5 });
+    const PW = 0.55, PH = 1.02;
+    for (const sx of [-1, 1]) {
+      const cx = sx * (DW / 2 + 0.05 + PW / 2), cy = F + PH / 2;
+      box(PW, PH, 0.05, dm, cx, cy, 0.04);
+      for (const sy of [-1, 1]) box(PW, 0.06, 0.03, trim, cx, cy + sy * (PH / 2 - 0.03), 0.075, { shadow: false });
+      for (const ex of [-1, 1]) box(0.06, PH, 0.03, trim, cx + ex * (PW / 2 - 0.03), cy, 0.075, { shadow: false });
+      for (const d of [-1, 1]) { const b = box(Math.hypot(PW, PH) - 0.1, 0.05, 0.025, trim, cx, cy, 0.08, { shadow: false }); b.rotation.z = d * Math.atan2(PH, PW); }
+    }
+    box(BW - 0.3, 0.05, 0.05, rail, 0, F + PH + 0.05, 0.08, { shadow: false });
+    // the hayloft: a dark opening in the gable, hay spilling over its sill, a hoist beam and its hook over it
+    box(0.52, 0.46, 0.02, std({ color: '#2a1a10' }), 0, E + 0.38, 0.012, { shadow: false });
+    for (const sy of [-1, 1]) box(0.6, 0.06, 0.05, trim, 0, E + 0.38 + sy * 0.25, 0.03, { shadow: false });
+    for (const sx of [-1, 1]) box(0.06, 0.56, 0.05, trim, sx * 0.29, E + 0.38, 0.03, { shadow: false });
+    const hay = std({ color: '#e8c450', roughness: 1 });
+    for (let i = 0; i < 6; i++) { const b = box(0.04, 0.16, 0.03, hay, -0.18 + i * 0.07, E + 0.2, 0.05, { shadow: false }); b.rotation.z = (i % 2 ? 0.4 : -0.3); }
+    box(0.08, 0.08, 0.5, std({ color: '#6a4424' }), 0, E + 0.9, 0.2);
+    add(new THREE.TorusGeometry(0.04, 0.012, 6, 12), rail, 0, E + 0.8, 0.4, { shadow: false });
+    // the weathervane: a pole on the front of the ridge, the arrow and the rooster in gold
+    const gold = std({ color: '#e8b040', metalness: 0.6, roughness: 0.35 });
+    cyl(0.018, 0.018, 0.5, rail, 0, E + RY + 0.25, -0.25, 6);
+    box(0.4, 0.025, 0.025, gold, 0, E + RY + 0.42, -0.25, { shadow: false });
+    const bird = new THREE.Shape([[-0.12, 0], [0.1, 0], [0.13, 0.08], [0.09, 0.1], [0.08, 0.17], [0.04, 0.2], [0.02, 0.12], [-0.06, 0.08], [-0.13, 0.18], [-0.15, 0.06]].map(([a, b]) => new THREE.Vector2(a, b)));
+    add(new THREE.ShapeGeometry(bird), std({ color: '#e8b040', metalness: 0.6, roughness: 0.35, side: THREE.DoubleSide }), 0, E + RY + 0.47, -0.25);
+    // windows down the left side
+    for (const wz of [-0.55, -1.65]) win(0, F + 0.7, 0, 0.36, 0.36, trim, { to: turned(-BW / 2, 0, wz, -Math.PI / 2) });
+    // the silo: banded, under a metal dome
+    const silo = std({ color: '#cfc9be', roughness: 0.9 }), metal = std({ color: '#8a8f99', metalness: 0.45, roughness: 0.45 });
+    cyl(0.42, 0.44, 2.5, silo, 1.78, 1.25, -1.35, 20);
+    for (let y = 0.5; y < 2.5; y += 0.5) { const b = add(new THREE.TorusGeometry(0.435, 0.018, 6, 24), metal, 1.78, y, -1.35, { shadow: false }); b.rotation.x = Math.PI / 2; }
+    add(new THREE.SphereGeometry(0.44, 20, 8, 0, Math.PI * 2, 0, Math.PI / 2), metal, 1.78, 2.5, -1.35);
+    // hay bales stacked by the left corner, and a lamp over the doors
+    for (const [bx, by, bz, r] of [[-1.62, 0.15, 0.32, 0.2], [-1.98, 0.15, -0.05, -0.3], [-1.75, 0.45, 0.12, 0.1]]) {
+      const b = box(0.42, 0.3, 0.3, hay, bx, by, bz); b.rotation.y = r;
+      for (const sx of [-1, 1]) { const t = box(0.025, 0.31, 0.31, std({ color: '#b08a30' }), bx + Math.cos(r) * sx * 0.1, by, bz - Math.sin(r) * sx * 0.1, { shadow: false }); t.rotation.y = r; }
+    }
+    const lamp = lit(std({ color: '#fff0c0', emissive: new THREE.Color('#ffc860'), roughness: 0.3 }), 1.4, 0.3);
+    box(0.03, 0.03, 0.2, rail, 0, F + PH + 0.22, 0.12, { shadow: false });
+    add(new THREE.ConeGeometry(0.1, 0.08, 12, 1, true), rail, 0, F + PH + 0.2, 0.22, { shadow: false });
+    add(new THREE.SphereGeometry(0.04, 8, 6), lamp, 0, F + PH + 0.16, 0.22, { shadow: false });
+    return doorAt(0.02, F, { colour: p.door, frameM: trim });
+  }
+
+  /** The Machiya Townhouse: a timber ground storey with lit lattice either side of the door, a tiled pent roof, a plaster
+      upper storey with its slatted window, a tiled gable over all with onigawara at the ridge's ends, a noren over the
+      door, red paper lanterns and a potted pine. */
+  function machiya() {
+    const F = 0.1, BW = 3.2, BD = 2.1, G = 1.3, U = 0.95, E = F + G + U;
+    const timber = std({ color: p.wall, roughness: 0.85 }), plaster = std({ color: p.plaster, roughness: 0.9 });
+    const tile = tiled(tileArt(fine), 2.4, { color: p.roof, roughness: 0.7 }), dark = std({ color: tint(p.roof, 0.7), roughness: 0.7 });
+    box(BW + 0.12, F, BD + 0.12, stone, 0, F / 2, -BD / 2);
+    box(BW, G, BD, timber, 0, F + G / 2, -BD / 2);
+    box(BW - 0.1, U, BD - 0.3, plaster, 0, F + G + U / 2, -BD / 2 - 0.15);
+    for (const x of [-1.5, -0.55, 0.55, 1.5]) box(0.08, U, 0.06, timber, x, F + G + U / 2, -0.29);
+    box(BW - 0.1, 0.07, 0.06, timber, 0, E - 0.05, -0.29);
+    // the pent roof between the storeys, and the main gable
+    const pent = add(worldUV(new THREE.BoxGeometry(BW + 0.3, 0.07, 0.8)), tile, 0, F + G + 0.16, 0.08);
+    pent.rotation.x = Math.atan2(0.28, 0.75);
+    box(BW + 0.3, 0.05, 0.05, dark, 0, F + G + 0.03, 0.46, { shadow: false });
+    gable(BW - 0.1, BD - 0.3, 0.7, 0.3, tile, plaster, 0, E, -BD / 2 - 0.15);
+    box(BW + 0.3, 0.12, 0.16, dark, 0, E + 0.76, -BD / 2 - 0.15);
+    for (const sx of [-1, 1]) { box(0.16, 0.26, 0.2, dark, sx * (BW / 2 + 0.12), E + 0.8, -BD / 2 - 0.15); box(0.1, 0.08, 0.22, dark, sx * (BW / 2 + 0.22), E + 0.93, -BD / 2 - 0.15).rotation.z = sx * 0.6; }
+    // the lattice: a lit screen behind thin slats, either side of the door, and the upper window's thick slats
+    const glow = lit(std({ color: '#3a2a1a', emissive: new THREE.Color('#ffcf7a'), roughness: 0.9 }), 0.9, 0.12);
+    const slats = [], LY = F + 0.55;
+    for (const [x0, x1] of [[-1.5, -0.42], [0.42, 1.5]]) {
+      box(x1 - x0, 0.78, 0.02, glow, (x0 + x1) / 2, LY, 0.01, { shadow: false });
+      for (const sy of [-1, 1]) box(x1 - x0 + 0.06, 0.06, 0.06, timber, (x0 + x1) / 2, LY + sy * 0.42, 0.04, { shadow: false });
+      for (let x = x0 + 0.03; x < x1; x += 0.07) slats.push([x, LY, 0.035]);
+    }
+    many(new THREE.BoxGeometry(0.025, 0.8, 0.03), std({ color: tint(p.wall, 1.25), roughness: 0.8 }), slats, false);
+    box(1.9, 0.4, 0.02, glow, 0, F + G + 0.5, -0.285, { shadow: false });
+    const bars = [];
+    for (let x = -0.92; x <= 0.93; x += 0.12) bars.push([x, F + G + 0.5, -0.26]);
+    many(new THREE.BoxGeometry(0.07, 0.42, 0.05), plaster, bars, false);
+    // the noren over the doorway: three flaps on a pole, the middle one crested
+    const cloth = std({ color: p.noren, side: THREE.DoubleSide, roughness: 0.95 });
+    for (const x of [-0.18, 0, 0.18]) add(new THREE.PlaneGeometry(0.17, 0.3), cloth, x, F + DH + 0.2, 0.08, { shadow: false });
+    box(0.66, 0.03, 0.03, timber, 0, F + DH + 0.36, 0.08, { shadow: false });
+    add(new THREE.CircleGeometry(0.055, 16), std({ color: '#ffffff' }), 0, F + DH + 0.22, 0.086, { shadow: false });
+    add(new THREE.CircleGeometry(0.025, 12), cloth, 0, F + DH + 0.22, 0.088, { shadow: false });
+    // paper lanterns hung from the pent roof's edge
+    const paper = lit(std({ color: '#e04a3a', emissive: new THREE.Color('#ff7a4a'), roughness: 0.6 }), 1.3, 0.35), ink = std({ color: '#22222a' });
+    for (const sx of [-1, 1]) {
+      const x = sx * 1.32;
+      add(new THREE.SphereGeometry(0.13, 14, 10), paper, x, F + G - 0.28, 0.32, { shadow: false }).scale.y = 1.3;
+      for (const dy of [-0.18, 0.18]) cyl(0.07, 0.07, 0.04, ink, x, F + G - 0.28 + dy, 0.32, 10, { shadow: false });
+      cyl(0.008, 0.008, 0.14, ink, x, F + G - 0.04, 0.32, 4, { shadow: false });
+    }
+    // a pine in a glazed pot by the right corner
+    cyl(0.17, 0.13, 0.26, std({ color: '#3a4a6a', roughness: 0.4 }), 1.9, 0.13, 0.22, 14);
+    cyl(0.03, 0.04, 0.4, std({ color: '#6a4a2a' }), 1.9, 0.42, 0.22, 6);
+    const pine = std({ color: winter ? '#6a8a7a' : '#2f6a3a', roughness: 0.9 });
+    for (const [dx, dy, r] of [[-0.12, 0.62, 0.17], [0.1, 0.72, 0.15], [0, 0.86, 0.12]]) add(new THREE.SphereGeometry(r, 10, 6), pine, 1.9 + dx, dy, 0.22).scale.y = 0.45;
+    return doorAt(0, F, { colour: tint(p.wall, 0.62), frameM: timber });
+  }
+
+  /** The Lighthouse Cottage: a clapboard keeper's cottage, and joined to its right a tapering lighthouse in bands of its
+      stripe, a gallery and railing round the lamp room (lit after dark) under a cone roof; an anchor by the left corner. */
+  function lighthouse() {
+    const F = 0.14, CX = -0.6, BW = 2.7, BD = 1.8, WH = 1.15, E = F + WH;
+    const wall = tiled(sidingArt(fine), 2, { color: p.wall }), roof = tiled(shingleArt(fine), 1.7, { color: p.roof, roughness: 0.75 });
+    box(BW + 0.16, F, BD + 0.16, stone, CX, F / 2, -BD / 2);
+    box(BW, WH, BD, wall, CX, F + WH / 2, -BD / 2);
+    box(BW + 0.12, 0.08, BD + 0.12, trim, CX, E - 0.02, -BD / 2, { shadow: false });
+    for (const sx of [-1, 1]) box(0.08, WH, 0.08, trim, CX + sx * BW / 2, F + WH / 2, 0, { shadow: false });
+    gable(BW, BD, 0.8, 0.2, roof, wall, CX, E, -BD / 2);
+    win(-1.45, F + 0.62, 0, 0.42, 0.46, trim, { shutters: std({ color: p.roof, roughness: 0.6 }) });
+    win(-0.72, F + 0.62, 0, 0.34, 0.46, trim);
+    // the tower: bands of wall and stripe tapering up, its base in stone
+    const TX = 1.4, TZ = -0.85, TH = 3.0, r0 = 0.62, r1 = 0.46, band = std({ color: p.stripe, roughness: 0.6 }), white = std({ color: p.wall, roughness: 0.6 });
+    const rAt = (y) => r0 + (r1 - r0) * y / TH;
+    for (let i = 0; i < 6; i++) { const y0 = i * TH / 6, y1 = y0 + TH / 6; cyl(rAt(y1), rAt(y0), TH / 6, i % 2 ? band : white, TX, (y0 + y1) / 2, TZ, 24); }
+    cyl(r0 + 0.06, r0 + 0.08, 0.2, stone, TX, 0.1, TZ, 24);
+    for (const y of [1.15, 2.15]) win(TX, y, TZ + rAt(y) - 0.01, 0.16, 0.28, trim, { arch: true });
+    // the gallery and its railing, the lamp room, the roof
+    const iron = std({ color: '#33363e', metalness: 0.5, roughness: 0.5 });
+    cyl(r1 + 0.22, r1 + 0.16, 0.08, iron, TX, TH + 0.04, TZ, 24);
+    const ring = add(new THREE.TorusGeometry(r1 + 0.2, 0.015, 6, 32), iron, TX, TH + 0.3, TZ, { shadow: false });
+    ring.rotation.x = Math.PI / 2;
+    const posts = [];
+    for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; posts.push([TX + Math.sin(a) * (r1 + 0.2), TH + 0.18, TZ + Math.cos(a) * (r1 + 0.2)]); }
+    many(new THREE.BoxGeometry(0.02, 0.26, 0.02), iron, posts, false);
+    const lamp = lit(std({ color: '#fff6d0', emissive: new THREE.Color('#fff0a0'), roughness: 0.2 }), 1.8, 0.45);
+    cyl(0.3, 0.3, 0.46, lamp, TX, TH + 0.31, TZ, 16);
+    for (let i = 0; i < 4; i++) { const a = Math.PI / 4 + i * Math.PI / 2; box(0.03, 0.48, 0.03, iron, TX + Math.sin(a) * 0.31, TH + 0.31, TZ + Math.cos(a) * 0.31, { shadow: false }); }
+    cyl(0.36, 0.36, 0.04, iron, TX, TH + 0.56, TZ, 16);
+    add(new THREE.ConeGeometry(0.4, 0.46, 16), std({ color: p.roof, roughness: 0.6 }), TX, TH + 0.81, TZ);
+    add(new THREE.SphereGeometry(0.06, 10, 8), std({ color: '#e8c040', metalness: 0.6, roughness: 0.3 }), TX, TH + 1.08, TZ);
+    // the porch lamp, the step, and an anchor leant on the left corner
+    const glow = lit(std({ color: '#fff0c0', emissive: new THREE.Color('#ffc860'), roughness: 0.3 }), 1.4, 0.3);
+    box(0.04, 0.12, 0.06, iron, 0.42, F + 0.86, 0.03, { shadow: false });
+    box(0.1, 0.14, 0.1, glow, 0.42, F + 0.76, 0.07, { shadow: false });
+    box(0.9, 0.12, 0.34, stone, 0, 0.06, 0.17);
+    const ax = -1.95, az = 0.28;
+    box(0.06, 0.7, 0.06, iron, ax, 0.42, az);
+    box(0.34, 0.05, 0.05, iron, ax, 0.68, az);
+    add(new THREE.TorusGeometry(0.06, 0.018, 6, 12), iron, ax, 0.82, az, { shadow: false });
+    const arm = add(new THREE.TorusGeometry(0.2, 0.03, 6, 16, Math.PI), iron, ax, 0.27, az);
+    arm.rotation.z = Math.PI;
+    for (const sx of [-1, 1]) add(new THREE.ConeGeometry(0.05, 0.12, 4), iron, ax + sx * 0.2, 0.3, az).rotation.z = -sx * 0.5;
+    return doorAt(0, F, { arch: true, colour: p.door, frameM: trim });
+  }
+
+  /** The Glasshouse Villa: an ashlar villa under a tiled hip roof, quoins at its corners, arched windows, a balcony with
+      an iron rail over the door; to its right a glass conservatory with a barrel vault, plants inside and lit after dark;
+      a cypress at the left and potted flowers by the step. */
+  function glasshouse() {
+    const F = 0.14, BW = 2.0, BD = 2.0, WH = 1.75, E = F + WH;
+    const wall = tiled(ashlarArt(fine), 2, { color: p.wall, roughness: 0.9 }), roof = tiled(tileArt(fine), 2.4, { color: p.roof, roughness: 0.7 });
+    box(BW + 0.16, F, BD + 0.16, stone, 0, F / 2, -BD / 2);
+    box(BW, WH, BD, wall, 0, F + WH / 2, -BD / 2);
+    box(BW + 0.12, 0.1, BD + 0.12, trim, 0, E, -BD / 2);
+    hip(BW + 0.5, BD + 0.5, 0.75, roof, 0, E + 0.05, -BD / 2);
+    for (const sx of [-1, 1]) for (let y = F + 0.1, i = 0; y < E - 0.1; y += 0.22, i++) box(i % 2 ? 0.14 : 0.22, 0.18, 0.04, trim, sx * (BW / 2 - (i % 2 ? 0.07 : 0.11)), y + 0.09, 0.015, { shadow: false });
+    for (const sx of [-1, 1]) { win(sx * 0.6, F + 0.55, 0, 0.32, 0.5, trim, { arch: true }); win(sx * 0.6, F + 1.38, 0, 0.28, 0.36, trim, { arch: true }); }
+    win(0, F + 1.36, 0, 0.36, 0.38, trim, { arch: true });
+    // the balcony over the door: a slab on brackets, an iron rail
+    const iron = std({ color: '#2e2e34', metalness: 0.5, roughness: 0.5 });
+    box(0.86, 0.06, 0.34, trim, 0, F + 1.08, 0.17);
+    for (const sx of [-1, 1]) box(0.06, 0.14, 0.2, trim, sx * 0.33, F + 0.99, 0.1, { shadow: false });
+    box(0.86, 0.03, 0.03, iron, 0, F + 1.38, 0.32, { shadow: false });
+    for (const sx of [-1, 1]) box(0.03, 0.03, 0.32, iron, sx * 0.42, F + 1.38, 0.17, { shadow: false });
+    const rails = [];
+    for (let x = -0.4; x <= 0.41; x += 0.08) rails.push([x, F + 1.24, 0.32]);
+    for (const sx of [-1, 1]) for (let z = 0.08; z < 0.3; z += 0.08) rails.push([sx * 0.42, F + 1.24, z]);
+    many(new THREE.BoxGeometry(0.015, 0.28, 0.015), iron, rails, false);
+    // the conservatory: a stone footing, glass walls and a barrel vault, white frames, plants and a warm light inside
+    const X0 = BW / 2, X1 = 2.2, CX = (X0 + X1) / 2, CW = X1 - X0, Z0 = -0.25, Z1 = -1.75, CZ = (Z0 + Z1) / 2, CD = Z0 - Z1, B = F + 0.3, TOP = 1.2, VR = CW / 2;
+    box(CW, B, CD, stone, CX, B / 2, CZ);
+    const glass = std({ color: '#d8f2ff', transparent: true, opacity: 0.3, roughness: 0.1, metalness: 0.1, depthWrite: false, side: THREE.DoubleSide });
+    for (const z of [Z0, Z1]) {
+      add(new THREE.PlaneGeometry(CW, TOP - B), glass, CX, (B + TOP) / 2, z, { shadow: false });
+      add(new THREE.CircleGeometry(VR, 16, 0, Math.PI), glass, CX, TOP, z, { shadow: false });
+    }
+    add(new THREE.PlaneGeometry(CD, TOP - B), glass, X1, (B + TOP) / 2, CZ, { shadow: false }).rotation.y = Math.PI / 2;
+    const vault = new THREE.CylinderGeometry(VR, VR, CD, 16, 1, true, Math.PI / 2, Math.PI);
+    vault.rotateX(Math.PI / 2);
+    add(vault, glass, CX, TOP, CZ, { shadow: false });
+    const frames = [];
+    for (const z of [Z0, Z1]) for (let i = 0; i <= 3; i++) frames.push([X0 + i * CW / 3, (B + TOP) / 2, z]);
+    for (const z of [Z0 - 0.5, Z0 - 1]) frames.push([X1, (B + TOP) / 2, z]);
+    many(new THREE.BoxGeometry(0.035, TOP - B, 0.035), trim, frames, false);
+    for (const z of [Z0, Z0 - 0.5, Z0 - 1, Z1]) add(new THREE.TorusGeometry(VR, 0.02, 6, 16, Math.PI), trim, CX, TOP, z, { shadow: false });
+    for (const y of [B, TOP]) { box(0.035, 0.035, CD, trim, X1, y, CZ, { shadow: false }); box(CW, 0.035, 0.035, trim, CX, y, Z0, { shadow: false }); }
+    box(0.035, 0.035, CD, trim, CX, TOP + VR, CZ, { shadow: false });
+    add(new THREE.SphereGeometry(0.05, 8, 6), std({ color: '#e8b040', metalness: 0.6, roughness: 0.3 }), CX, TOP + VR + 0.06, Z0);
+    const inside = lit(std({ color: '#2a3a2a', emissive: new THREE.Color('#ffd68c'), roughness: 0.9 }), 0.7, 0.08);
+    add(new THREE.PlaneGeometry(CW - 0.1, 0.8), inside, CX, B + 0.42, Z1 + 0.04, { shadow: false });
+    const leaves = [std({ color: winter ? '#6a9a6a' : '#3f9446', roughness: 0.9 }), std({ color: winter ? '#7aaa7a' : '#58b052', roughness: 0.9 })];
+    for (const [px, py, pz, r, m] of [[1.3, B + 0.25, -0.6, 0.24, 0], [1.85, B + 0.3, -0.75, 0.28, 1], [1.5, B + 0.45, -1.3, 0.3, 0], [1.95, B + 0.2, -1.4, 0.2, 1]]) add(new THREE.SphereGeometry(r, 10, 8), leaves[m], px, py, pz);
+    for (const [px, py, pz, c] of [[1.42, B + 0.48, -0.55, '#e86a8a'], [1.8, B + 0.58, -0.8, '#f0c040'], [1.6, B + 0.72, -1.25, '#e86a8a']]) add(new THREE.SphereGeometry(0.05, 8, 6), std({ color: c }), px, py, pz, { shadow: false });
+    // a cypress at the left, terracotta pots of flowers by the step
+    cyl(0.04, 0.05, 0.3, std({ color: '#6a4a2a' }), -1.6, 0.15, -0.35, 6);
+    add(new THREE.ConeGeometry(0.28, 1.55, 10), std({ color: winter ? '#5a7a6a' : '#2f5a32', roughness: 0.9 }), -1.6, 1.05, -0.35);
+    const pot = std({ color: '#c0643a', roughness: 0.8 }), bloom = std({ color: '#e84a5a', roughness: 0.7 });
+    for (const sx of [-1, 1]) { cyl(0.11, 0.08, 0.18, pot, sx * 0.55, 0.09, 0.22, 10); add(new THREE.SphereGeometry(0.12, 10, 6), bloom, sx * 0.55, 0.22, 0.22).scale.y = 0.6; }
+    box(0.8, 0.1, 0.3, stone, 0, 0.05, 0.15);
+    return doorAt(0, F, { arch: true, colour: p.door, frameM: trim });
+  }
+
+  /** The Victorian Manor: two storeys of clapboard under a steep roof, a front gable of fish-scale shingles over a bay
+      window, an octagonal turret at the left with its spire, a porch on white columns before the door, trim bands, a tall
+      brick chimney and a bush by the bay. */
+  function victorian() {
+    const F = 0.16, CX = 0.3, BW = 2.8, BD = 2.0, WH = 2.0, E = F + WH, MID = F + 1.05;
+    const wall = tiled(sidingArt(fine), 2.4, { color: p.wall }), roof = tiled(shingleArt(fine), 1.9, { color: p.roof, roughness: 0.75 });
+    const scales = tiled(scaleArt(fine), 2.6, { color: p.wall });
+    box(BW + 0.16, F, BD + 0.16, stone, CX, F / 2, -BD / 2);
+    box(BW, WH, BD, wall, CX, F + WH / 2, -BD / 2);
+    box(BW + 0.1, 0.07, BD + 0.1, trim, CX, MID, -BD / 2, { shadow: false });
+    box(BW + 0.14, 0.1, BD + 0.14, trim, CX, E - 0.03, -BD / 2, { shadow: false });
+    for (const sx of [-1, 1]) box(0.09, WH, 0.09, trim, CX + sx * BW / 2, F + WH / 2, 0, { shadow: false });
+    gable(BW, BD, 1.0, 0.18, roof, wall, CX, E, -BD / 2);
+    // the front gable over the bay, its triangle in fish scales, a round window in it
+    const GX = 1.15, GW = 1.1;
+    gable(0.92, GW, 0.85, 0.12, roof, scales, GX, E, -0.44, { alongZ: true });
+    porthole(GX, E + 0.33, 0.03, 0.11, trim);
+    // the bay: three lit windows under a little hip roof
+    const BX = GX, BWd = 0.92, BP = 0.3;
+    box(BWd, 1.0, BP, wall, BX, F + 0.5, BP / 2);
+    hip(BWd + 0.16, BP + 0.16, 0.18, roof, BX, F + 1.0, BP / 2);
+    for (const dx of [-0.2, 0.2]) win(BX + dx, F + 0.58, BP, 0.28, 0.6, trim);
+    for (const sx of [-1, 1]) win(0, F + 0.58, 0, 0.16, 0.6, trim, { to: turned(BX + sx * BWd / 2, 0, BP / 2, sx * Math.PI / 2) });
+    win(GX, MID + 0.45, 0, 0.36, 0.5, trim, { arch: true });
+    win(0, MID + 0.45, 0, 0.34, 0.5, trim, { arch: true });
+    win(-0.72, MID + 0.45, 0, 0.26, 0.5, trim);
+    // the turret: eight sides, a window on each front face, a spire and its finial
+    const TX = -1.55, TZ = -0.4, TR = 0.5, TH = 2.6, face = TR * Math.cos(Math.PI / 8);
+    const tur = cyl(TR, TR, TH - F, wall, TX, F + (TH - F) / 2, TZ, 8);
+    tur.geometry.rotateY(Math.PI / 8);
+    cyl(TR + 0.05, TR + 0.05, F, stone, TX, F / 2, TZ, 8).geometry.rotateY(Math.PI / 8);
+    for (const y of [MID, TH - 0.03]) cyl(TR + 0.04, TR + 0.04, 0.07, trim, TX, y, TZ, 8, { shadow: false }).geometry.rotateY(Math.PI / 8);
+    for (const a of [-Math.PI / 4, 0, Math.PI / 4]) {
+      const g = turned(TX, 0, TZ, a);
+      win(0, F + 0.5, face, 0.18, 0.42, trim, { arch: true, to: g });
+      win(0, MID + 0.45, face, 0.18, 0.46, trim, { arch: true, to: g });
+    }
+    const spire = add(new THREE.ConeGeometry(TR + 0.12, 1.3, 8), std({ color: p.roof, roughness: 0.7 }), TX, TH + 0.65, TZ);
+    spire.geometry.rotateY(Math.PI / 8);
+    const gold = std({ color: '#e8c040', metalness: 0.6, roughness: 0.3 });
+    cyl(0.015, 0.015, 0.3, gold, TX, TH + 1.42, TZ, 6, { shadow: false });
+    add(new THREE.SphereGeometry(0.05, 8, 6), gold, TX, TH + 1.36, TZ, { shadow: false });
+    // the porch: a floor, white columns, a roof on them, spindle rails beside the steps
+    const PW = 1.1, PD = 0.58, PF = 0.2;
+    box(PW, PF, PD, std({ color: tint(p.trim, 0.85) }), 0, PF / 2, PD / 2);
+    for (let i = 0; i < 2; i++) box(0.6, PF / 2, 0.16, stone, 0, PF / 4 * (2 - i), PD + 0.08 + i * 0.12);
+    for (const sx of [-1, 1]) cyl(0.04, 0.045, 1.0, trim, sx * (PW / 2 - 0.05), PF + 0.5, PD - 0.05, 10);
+    hip(PW + 0.2, PD + 0.18, 0.22, roof, 0, PF + 1.0, PD / 2);
+    box(PW + 0.2, 0.06, PD + 0.18, trim, 0, PF + 0.99, PD / 2, { shadow: false });
+    const spindles = [];
+    for (const sx of [-1, 1]) {
+      for (let x = 0.32; x < PW / 2 - 0.04; x += 0.07) spindles.push([sx * x, PF + 0.17, PD - 0.05]);
+      box(PW / 2 - 0.3, 0.035, 0.035, trim, sx * (PW / 4 + 0.15), PF + 0.34, PD - 0.05, { shadow: false });
+    }
+    many(new THREE.BoxGeometry(0.025, 0.3, 0.025), trim, spindles, false);
+    // the brick chimney, a lamp by the door, a bush by the bay
+    const brick = std({ color: '#a85a44' });
+    box(0.32, 1.7, 0.32, brick, 1.25, E + 0.6, -1.45);
+    box(0.4, 0.08, 0.4, std({ color: '#7a3e30' }), 1.25, E + 1.47, -1.45);
+    const glow = lit(std({ color: '#fff0c0', emissive: new THREE.Color('#ffc860'), roughness: 0.3 }), 1.4, 0.3);
+    box(0.1, 0.16, 0.1, glow, 0.38, PF + 0.72, 0.07, { shadow: false });
+    const bush = std({ color: winter ? '#7a9a8a' : '#3f8a3e', roughness: 0.9 });
+    for (const [bx, bz, r] of [[1.9, 0.22, 0.26], [2.05, -0.12, 0.2], [-0.95, 0.25, 0.2]]) add(new THREE.SphereGeometry(r, 10, 8), bush, bx, r * 0.7, bz).scale.y = 0.8;
+    return doorAt(0, PF, { arch: true, colour: p.door, frameM: trim });
   }
 }
 

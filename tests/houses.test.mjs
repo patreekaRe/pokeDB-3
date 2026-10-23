@@ -6,14 +6,37 @@ test('players see no houses until the playtest says go', () => {
   assert.equal(HOUSES_LIVE, false);
 });
 
-test('every house has a tier and three paints, the tree its crown\'s colours', () => {
+test('every house has a tier and eight paints, the tree its crown\'s colours', () => {
   for (const h of HOUSES) {
     assert.ok(TIERS.some(t => t.id === h.tier), h.id);
-    assert.equal(h.paints.length, 3, h.id);
+    assert.equal(h.paints.length, 8, h.id);
+    assert.equal(new Set(h.paints.map(p => p.name)).size, 8, h.id);
     for (const p of h.paints) assert.ok(p.name, h.id);
   }
   for (const p of HOUSES_BY_ID.tree.paints) assert.equal(p.shade.length, 4);
   assert.equal(HOUSES_BY_ID.tree.price, null);
+});
+
+test('every paint names each colour its house is built from, and its swatch\'s two', () => {
+  for (const h of HOUSES) {
+    const keys = Object.keys(h.paints[0]).sort();
+    for (const p of h.paints) assert.deepEqual(Object.keys(p).sort(), keys, `${h.id} ${p.name}`);
+    if (h.id === 'tree') continue;
+    for (const k of h.swatch || ['roof', 'wall']) assert.match(h.paints[0][k], /^#[0-9a-f]{6}$/, `${h.id} ${k}`);
+    for (const p of h.paints) for (const k of keys) if (k !== 'name') assert.match(p[k], /^#[0-9a-f]{6}$/, `${h.id} ${p.name} ${k}`);
+  }
+});
+
+test('the coin houses: two more Homesteads at 2,000 and four Estates from 5,000 to 8,000', () => {
+  const tier = (t) => HOUSES.filter(h => h.tier === t).map(h => [h.id, h.price]);
+  assert.deepEqual(tier('homestead'), [['cabin', 1500], ['bungalow', 1500], ['mushroom', 2000], ['barn', 2000]]);
+  assert.deepEqual(tier('estate'), [['machiya', 5000], ['lighthouse', 6000], ['glasshouse', 6000], ['victorian', 8000]]);
+  const d = { baseOwned: true, coins: 8000 };
+  assert.equal(cantBuy(d, 'victorian'), null);
+  assert.equal(buyHouse(d, 'victorian', 7), true);
+  assert.equal(d.coins, 0);
+  assert.deepEqual(homeOf(d), { id: 'victorian', paint: 7 });
+  assert.equal(cantBuy(d, 'machiya'), 'coins');
 });
 
 test('an old save keeps the Ancient Tree and has the Starter Cottage free', () => {
@@ -65,6 +88,7 @@ test('a repaint costs 250, and not for the paint it already wears', () => {
   assert.equal(repaint(d, 'tree', 1), true);
   assert.equal(d.coins, 10);
   assert.equal(repaint(d, 'cottage', 2), false);
+  assert.equal(repaint(d, 'tree', 8), false);
   assert.equal(repaint(d, 'cabin', 1), false);
   assert.deepEqual(housesOf(d).paint, { tree: 1 });
 });

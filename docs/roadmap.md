@@ -1222,8 +1222,8 @@ the Starter Cottage / Log Cabin / Seaside Bungalow as 3D models, the tree repain
 picture of each house; they liked seeing the house built on the lot as they pick. Playtest only on the branch's githack
 link (never the live site): `?houses&coins=5000`, and `?houses&tree` for an old save. Was: the live site with
 `?houses&coins=5000` (and a save that already owns the tree, to see it kept and the cottage free). Still open: which of the
-18 to keep, the prices, friends' visits (front lawn). Sessions left: 2 the coin houses (medium), 3 earned and seasonal with
-unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium), and the friends' front lawn. All CLOUD.
+18 to keep, the prices, friends' visits (front lawn). Sessions left: B (earned and seasonal, below), C (the 7 new houses),
+optional insides per house (medium), and the friends' front lawn. All CLOUD. The coin houses were session A (below).
 **The rest, the user's ask (2026-10-23): every house of the mock-up, 7 more to make 25, and many more paints each.**
 Claude's proposal for the 7 (the sessions use it unless the user says otherwise): Treehouse (Homestead, 2,000: a cabin
 up in a tree, a rope ladder), Windmill Farmhouse (Homestead, 1,800), Desert Riad (Estate, 6,500: Sunwell Bazaar's
@@ -1234,18 +1234,13 @@ Homestead 6, Estate 6, Earned 7, Seasonal 3, Legendary 2. Paints: 8 a house (the
 it, the card staying about 267 px tall (the user's ask: see the house). Three sessions, all CLOUD, all on the branch:
 **the playtest rule (the user's, 2026-10-23): everything stays on `houses-playtest`, never `main`, until the user's
 playtest says go;** each session runs `tools/save-check.mjs` (a well-played save must start the Clearing) and the
-Clearing's budget, and gives a pinned githack link.
-- **A** (effort: high): "▶ Run in: CLOUD. Effort: high. Attach pokeDB-3 and pokeDB-sim. `git checkout houses-playtest`
-  (never push to main: the user playtests on the branch's githack link first). Read CLAUDE.md, docs/roadmap.md's
-  'Secret Base houses' and the last section of docs/reference/hub-base-mall.md, and open
-  docs/mockups/secret-base-houses.html. Build the six coin houses (Mushroom Cottage and Red Barn in Homestead; Machiya
-  Townhouse, Lighthouse Cottage, Glasshouse Villa, Victorian Manor in Estate; prices from the mock-up) as makeHouse()
-  builders in js/hub-houses.js, each a real model like the first three, inside the lot (half-width 2.25, clear of the
-  garden arch). Give every house 8 paints (keep the first 3; the tree's are crown colours) and make the catalogue's
-  paints fit 8 without the card growing past ~270 px (js/house-kiosk.js). Update tests/houses.test.mjs. Check each model
-  with text elevations (no screenshots), run NODE_PATH=$(npm root -g) node tools/save-check.mjs and tools/budget-check.mjs
-  --only=clearing,clearing-houses, update the roadmap and reference, push houses-playtest only, and give the githack
-  links (?houses&coins=20000, and &tree)."
+Clearing's budget, checks each model with `tools/house-check.mjs` (text, no screenshots), and gives a pinned githack link.
+- ~~**A**~~ **done 2026-10-23** (cloud, branch `houses-playtest`; detail: `docs/reference/hub-base-mall.md`, "Session A"):
+  the six coin houses as 3D models (Mushroom Cottage, Red Barn; Machiya Townhouse, Lighthouse Cottage, Glasshouse Villa,
+  Victorian Manor at the mock-up's prices), 8 paints for every house (the tree's five new ones crown colours), the
+  catalogue's paint strip (the card still 267 px), `tools/house-check.mjs` for text elevations. Within budget, save check
+  passed. **Next: the user playtests** the branch's githack link (`?houses&coins=20000`, and `&tree` for an old save):
+  each house on the lot, its paints, and says what to change before B.
 - **B** (effort: high): the same opening, then: "Build the eight earned and seasonal houses (Gym Hall: every Gym Leader;
   Hot-Spring Ryokan: every Waystone mended; Ranger Lodge: every Safari page; Sky Spire: the Sky Pillar's top; Poké Ball
   Dome: the Master Badge; Crystal Palace: beat Eternatus; Haunted Chateau in October and Snow Chalet in December, 3,000

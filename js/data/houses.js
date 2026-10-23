@@ -18,11 +18,14 @@ export const REPAINT_PRICE = 250;
 export const TIERS = [
   { id: 'starter', name: 'Starter' },
   { id: 'homestead', name: 'Homestead' },
+  { id: 'estate', name: 'Estate' },
   { id: 'legendary', name: 'Legendary' },
 ];
 
-/* A house's paints are its three looks, the first what it's built in. The houses' colour keys are what their builders
-   in js/hub-houses.js read; the tree's are its crown's (ancientArt() in js/hub-3d.js), the first exactly as it always was. */
+/* A house's paints are its eight looks (the user's ask, 2026-10-23: "many more paints"), the first what it's built in.
+   The houses' colour keys are what their builders in js/hub-houses.js read, and `swatch` the two a catalogue swatch shows
+   (roof and wall unless named); the tree's are its crown's (ancientArt() in js/hub-3d.js), the first exactly as it always
+   was. */
 export const HOUSES = [
   {
     id: 'cottage', name: 'Starter Cottage', tier: 'starter', price: 0, how: 'Comes with the Secret Base',
@@ -31,6 +34,11 @@ export const HOUSES = [
       { name: 'Pallet Red', roof: '#d24a3c', wall: '#f6f1e6', trim: '#ffffff', door: '#8a5a34' },
       { name: 'Cerulean Blue', roof: '#3a74c4', wall: '#f3f0e4', trim: '#ffffff', door: '#3a5a8a' },
       { name: 'Viridian Green', roof: '#3c8a52', wall: '#f1ead4', trim: '#ffffff', door: '#6a4a2a' },
+      { name: 'Lavender Purple', roof: '#7a5aa8', wall: '#f2eef4', trim: '#ffffff', door: '#4a3a6a' },
+      { name: 'Vermilion Orange', roof: '#e0782e', wall: '#fbf1e0', trim: '#ffffff', door: '#8a4a24' },
+      { name: 'Saffron Yellow', roof: '#e8b830', wall: '#fff8e4', trim: '#ffffff', door: '#a0602a' },
+      { name: 'Fuchsia Pink', roof: '#d0508a', wall: '#fbeef2', trim: '#ffffff', door: '#7a3a5a' },
+      { name: 'Pewter Grey', roof: '#5c626e', wall: '#e8e6e0', trim: '#ffffff', door: '#3a3e48' },
     ],
   },
   {
@@ -40,6 +48,11 @@ export const HOUSES = [
       { name: 'Pine', wall: '#a26a3a', roof: '#3f7a4a', trim: '#efe0bc', door: '#5a3a20' },
       { name: 'Redwood', wall: '#8f4a32', roof: '#4a4a52', trim: '#efe0bc', door: '#5a3a20' },
       { name: 'Birch', wall: '#d2b48a', roof: '#a8452f', trim: '#efe0bc', door: '#6a4a2a' },
+      { name: 'Cedar', wall: '#b8784a', roof: '#6a4a3a', trim: '#f4e4c4', door: '#4a2a18' },
+      { name: 'Ebony', wall: '#5a4436', roof: '#2e3036', trim: '#e8d8b8', door: '#a8452f' },
+      { name: 'Maple', wall: '#c08a52', roof: '#d0662a', trim: '#f6e8c8', door: '#6a3a1a' },
+      { name: 'Snowcap', wall: '#e2d6c2', roof: '#4a6a9a', trim: '#ffffff', door: '#8a3a2a' },
+      { name: 'Mossy', wall: '#8a8a62', roof: '#5a7a3a', trim: '#ece2c4', door: '#4a3a24' },
     ],
   },
   {
@@ -49,6 +62,95 @@ export const HOUSES = [
       { name: 'Lagoon', wall: '#a9d4e8', roof: '#356aa3', trim: '#ffffff', door: '#f0c45a' },
       { name: 'Coral', wall: '#f6c6b4', roof: '#e0705a', trim: '#ffffff', door: '#4aa0b0' },
       { name: 'Sandbar', wall: '#f2e2b8', roof: '#4c8a7a', trim: '#ffffff', door: '#d8603e' },
+      { name: 'Seafoam', wall: '#c8eedc', roof: '#3a9a8a', trim: '#ffffff', door: '#e8803a' },
+      { name: 'Sunset', wall: '#f8d8a8', roof: '#d8503e', trim: '#ffffff', door: '#5a6ab0' },
+      { name: 'Starfish', wall: '#fbe89a', roof: '#e88a3a', trim: '#ffffff', door: '#3a8ab0' },
+      { name: 'Driftwood', wall: '#d8cbb4', roof: '#6a7078', trim: '#ffffff', door: '#4a8a9a' },
+      { name: 'Deep Sea', wall: '#5a7aa8', roof: '#24345a', trim: '#ffffff', door: '#f0c45a' },
+    ],
+  },
+  {
+    id: 'mushroom', name: 'Mushroom Cottage', tier: 'homestead', price: 2000, how: '2,000 PokéCoins', swatch: ['cap', 'spot'],
+    blurb: 'A round house in a giant mushroom\'s stalk, its spotted cap for a roof and a stovepipe out the top.',
+    paints: [
+      { name: 'Shroomish Red', cap: '#d8443a', spot: '#fff6e8', wall: '#f2e2c4', door: '#8a5a34' },
+      { name: 'Breloom Green', cap: '#4f9a4a', spot: '#f4f0c8', wall: '#f2e2c4', door: '#8a5a34' },
+      { name: 'Amoonguss Pink', cap: '#c95a9a', spot: '#f8e8f4', wall: '#f4e6d4', door: '#5a3a5a' },
+      { name: 'Paras Orange', cap: '#e8823a', spot: '#fff0c0', wall: '#f6e6c8', door: '#8a4a24' },
+      { name: 'Morelull Blue', cap: '#5a8ad8', spot: '#e8f4ff', wall: '#f0ecf4', door: '#4a4a8a' },
+      { name: 'Toedscool Gold', cap: '#e8c040', spot: '#fffbe8', wall: '#f0e4c8', door: '#7a5a2a' },
+      { name: 'Cocoa Button', cap: '#9a6a40', spot: '#f4e2c4', wall: '#f2e4cc', door: '#5a3a20' },
+      { name: 'Midnight Glow', cap: '#3a3a7a', spot: '#a8f0ff', wall: '#e4e0ec', door: '#2a2a50' },
+    ],
+  },
+  {
+    id: 'barn', name: 'Red Barn', tier: 'homestead', price: 2000, how: '2,000 PokéCoins',
+    blurb: 'A gambrel barn, its big doors slid open under the hayloft, a silo beside it and a rooster on top.',
+    paints: [
+      { name: 'Barn Red', wall: '#c0392b', roof: '#5b5f66', trim: '#ffffff', door: '#a52f24' },
+      { name: 'Moomoo Cream', wall: '#efe0bc', roof: '#7a4a32', trim: '#7a4a32', door: '#d8b880' },
+      { name: 'Weathered', wall: '#8a7a6a', roof: '#4a4a4a', trim: '#ffffff', door: '#6a5a4a' },
+      { name: 'Tauros Brown', wall: '#8a5232', roof: '#3a3a40', trim: '#f4e8d0', door: '#6a3a20' },
+      { name: 'Sage', wall: '#8aa080', roof: '#4a4a44', trim: '#ffffff', door: '#6a8060' },
+      { name: 'Prairie Yellow', wall: '#e0b84a', roof: '#6a4a32', trim: '#ffffff', door: '#c0392b' },
+      { name: 'Slate Blue', wall: '#4a6a8a', roof: '#3a3e46', trim: '#ffffff', door: '#3a5470' },
+      { name: 'Midnight Black', wall: '#34363c', roof: '#202226', trim: '#ffffff', door: '#c0392b' },
+    ],
+  },
+  {
+    id: 'machiya', name: 'Machiya Townhouse', tier: 'estate', price: 5000, how: '5,000 PokéCoins', swatch: ['noren', 'plaster'],
+    blurb: 'A Kyoto townhouse: lit timber lattice, a tiled roof over each storey, a noren and paper lanterns.',
+    paints: [
+      { name: 'Lantern Night', wall: '#5a3b28', plaster: '#f1ead9', roof: '#4a5160', noren: '#2c3e7a' },
+      { name: 'Cherry', wall: '#6a3a2a', plaster: '#f1ead9', roof: '#3a3a40', noren: '#c0405a' },
+      { name: 'Bamboo', wall: '#7a6a3a', plaster: '#ece6c8', roof: '#3f5a4a', noren: '#3a7a5a' },
+      { name: 'Persimmon', wall: '#5a3b28', plaster: '#f4ead4', roof: '#4a5160', noren: '#e0702a' },
+      { name: 'Matcha', wall: '#4a4030', plaster: '#e4e8c8', roof: '#3f4a40', noren: '#6a8a3a' },
+      { name: 'Plum', wall: '#4a2a2a', plaster: '#f2e8e4', roof: '#3a3440', noren: '#7a3a6a' },
+      { name: 'Wisteria', wall: '#4a3a3a', plaster: '#f0ecf4', roof: '#4a4a5a', noren: '#8a7ad0' },
+      { name: 'Snow Tile', wall: '#3a2a20', plaster: '#ffffff', roof: '#7a808c', noren: '#2a2a2a' },
+    ],
+  },
+  {
+    id: 'lighthouse', name: 'Lighthouse Cottage', tier: 'estate', price: 6000, how: '6,000 PokéCoins', swatch: ['stripe', 'wall'],
+    blurb: 'A keeper\'s cottage joined to a striped lighthouse, its lamp lit after dark, an anchor by the step.',
+    paints: [
+      { name: 'Olivine', wall: '#fffaf0', roof: '#2f5f8f', stripe: '#d8443a', trim: '#ffffff', door: '#2f5f8f' },
+      { name: 'Harbour Green', wall: '#fffaf0', roof: '#2f6a52', stripe: '#2f6a52', trim: '#ffffff', door: '#2f6a52' },
+      { name: 'Midnight', wall: '#e8e6f0', roof: '#2c2c48', stripe: '#2c2c48', trim: '#ffffff', door: '#c8a040' },
+      { name: 'Cerulean Cape', wall: '#fffaf0', roof: '#3a74c4', stripe: '#3a74c4', trim: '#ffffff', door: '#d8443a' },
+      { name: 'Sunset Orange', wall: '#fff6ea', roof: '#5a4a6a', stripe: '#e8803a', trim: '#ffffff', door: '#5a4a6a' },
+      { name: 'Mossdeep', wall: '#f4f8f4', roof: '#2a5a5a', stripe: '#3a9a8a', trim: '#ffffff', door: '#2a5a5a' },
+      { name: 'Black Band', wall: '#f8f6f0', roof: '#2a2a30', stripe: '#2a2a30', trim: '#ffffff', door: '#d8443a' },
+      { name: 'Lemon', wall: '#fffaf0', roof: '#3a5a8a', stripe: '#e8c040', trim: '#ffffff', door: '#3a5a8a' },
+    ],
+  },
+  {
+    id: 'glasshouse', name: 'Glasshouse Villa', tier: 'estate', price: 6000, how: '6,000 PokéCoins',
+    blurb: 'A stone villa under a tiled roof, a balcony over the door and a glass conservatory full of plants.',
+    paints: [
+      { name: 'Lavender', wall: '#ddcfb6', roof: '#6b4e8a', trim: '#f7f7f2', door: '#3f6b4a' },
+      { name: 'Terracotta', wall: '#ddcfb6', roof: '#b45a3a', trim: '#f7f7f2', door: '#4a5a7a' },
+      { name: 'Slate', wall: '#c8ccd0', roof: '#3a4a5a', trim: '#f7f7f2', door: '#8a3a3a' },
+      { name: 'Rose', wall: '#e6d4c8', roof: '#b05a72', trim: '#f7f7f2', door: '#5a6a4a' },
+      { name: 'Ivy', wall: '#d4d0b8', roof: '#3a6a3a', trim: '#f7f7f2', door: '#7a4a2a' },
+      { name: 'Sandstone', wall: '#e8cc98', roof: '#a0522d', trim: '#fffaf0', door: '#3a5a7a' },
+      { name: 'Azure', wall: '#f2eee4', roof: '#2a6aa8', trim: '#ffffff', door: '#2a6aa8' },
+      { name: 'Charcoal', wall: '#9a9a98', roof: '#2a2a2e', trim: '#f2f2ee', door: '#b8862a' },
+    ],
+  },
+  {
+    id: 'victorian', name: 'Victorian Manor', tier: 'estate', price: 8000, how: '8,000 PokéCoins',
+    blurb: 'A turreted manor: a spired tower, a fish-scale gable, a bay window and a porch on white columns.',
+    paints: [
+      { name: 'Lavender Town', wall: '#7b5ea7', roof: '#3c3350', trim: '#f4ead8', door: '#b34a58' },
+      { name: 'Robin Egg', wall: '#8cc6c4', roof: '#4a4a5a', trim: '#f4ead8', door: '#c04a5a' },
+      { name: 'Butter', wall: '#f0d890', roof: '#6a3a3a', trim: '#f4ead8', door: '#3a5a7a' },
+      { name: 'Rose Garden', wall: '#e8a0b0', roof: '#5a3a4a', trim: '#fff6ee', door: '#5a3a4a' },
+      { name: 'Sage Manor', wall: '#9ab08a', roof: '#3a4a3a', trim: '#f4ead8', door: '#8a3a2a' },
+      { name: 'Painted Lady', wall: '#f0a070', roof: '#4a3a5a', trim: '#fff6ee', door: '#3a6a7a' },
+      { name: 'Ivory', wall: '#f2ecd8', roof: '#3a4a6a', trim: '#ffffff', door: '#3a4a6a' },
+      { name: 'Gothic', wall: '#44444e', roof: '#1e1e26', trim: '#c8b8a0', door: '#8a2a3a' },
     ],
   },
   {
@@ -58,6 +160,11 @@ export const HOUSES = [
       { name: 'Spring', lobe: ['#1c5a26', '#2e7c34'], shade: [['#a8e078', '#6cc058'], ['#7cc860', '#48a044'], ['#5aac4a', '#2e7c34'], ['#3a8a3a', '#1c5a26']], leaf: ['#c8f090', '#8ad468'], bloom: ['#ffffff', '#f8c8e0'] },
       { name: 'Autumn', lobe: ['#6a2a10', '#9a4418'], shade: [['#f8c860', '#e89a38'], ['#e8903a', '#c8642a'], ['#c86a2a', '#9a4418'], ['#9a4a20', '#6a2a10']], leaf: ['#ffe08a', '#f0a848'], bloom: ['#ffe0a0', '#fff4d0'] },
       { name: 'Twilight', lobe: ['#1c2a5a', '#2c4078'], shade: [['#a8c0f0', '#7a94d8'], ['#7a94d8', '#5a74b8'], ['#5a74b8', '#3a5a8a'], ['#3a5088', '#1c2a5a']], leaf: ['#d0dcff', '#9ab0e8'], bloom: ['#e0d0ff', '#ffffff'] },
+      { name: 'Sakura', lobe: ['#8a3a5a', '#b05a7a'], shade: [['#ffe4ee', '#ffc4d8'], ['#ffc4d8', '#f09ab8'], ['#f09ab8', '#d0709a'], ['#c0608a', '#8a3a5a']], leaf: ['#fff0f6', '#ffd0e0'], bloom: ['#ffffff', '#fff0b0'] },
+      { name: 'Golden', lobe: ['#7a5a10', '#a07a18'], shade: [['#fff0a0', '#f8d850'], ['#f8d850', '#e8b830'], ['#e0b030', '#b88a20'], ['#a88020', '#7a5a10']], leaf: ['#fff8c8', '#f8e070'], bloom: ['#ffffff', '#ffe8a0'] },
+      { name: 'Crimson', lobe: ['#5a1018', '#8a1c24'], shade: [['#f87a6a', '#e84a40'], ['#e04a40', '#c02a2a'], ['#b02a28', '#8a1c24'], ['#801a20', '#5a1018']], leaf: ['#ffb0a0', '#f06a5a'], bloom: ['#ffe0a0', '#ffffff'] },
+      { name: 'Frost', lobe: ['#4a6a80', '#6a8aa0'], shade: [['#ffffff', '#e8f4fc'], ['#e0eef8', '#c0d8ea'], ['#b0cce0', '#8aaac4'], ['#7a9ab4', '#4a6a80']], leaf: ['#ffffff', '#d8ecf8'], bloom: ['#ffffff', '#c8f0ff'] },
+      { name: 'Haunter', lobe: ['#2a1440', '#44206a'], shade: [['#c8a0f0', '#a070e0'], ['#9a64d8', '#7a48b8'], ['#6c3ca8', '#522a88'], ['#4a2478', '#2a1440']], leaf: ['#e8d0ff', '#b890f0'], bloom: ['#ff7ab0', '#f8e0ff'] },
     ],
   },
 ];

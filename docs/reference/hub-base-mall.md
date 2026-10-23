@@ -910,3 +910,30 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   line: 275 draws, 119 MB against the Clearing's 257 / 124 (the tree's big painting outweighs a house's textures). By
   the lot: tree 265, cottage 278, cabin 284, bungalow 280 draws.
 - **The patch note** waits in `HELD` in `js/data/patchnotes.js` and joins `NEXT` by itself when `HOUSES_LIVE` goes on.
+
+### Session A: the six coin houses and eight paints (2026-10-23, branch `houses-playtest`)
+
+- **The houses** (`js/hub-houses.js`, each a builder inside `makeHouse()`, door at x 0, inside |x| <= 2.25): the
+  **Mushroom Cottage** (Homestead, 2,000: a round stalk, a spotted cap with gills under its brim, round windows, a
+  stovepipe, a lit toadstool lamp, little mushrooms), the **Red Barn** (Homestead, 2,000: board walls under a gambrel
+  roof built as `gable()` is, big X-braced doors slid open either side of the door, a hayloft and hoist, a rooster
+  weathervane, a banded silo, hay bales), the **Machiya Townhouse** (Estate, 5,000: a lit timber lattice, a tiled pent
+  roof, a plaster upper storey with its slatted window, onigawara, a noren, paper lanterns, a potted pine), the
+  **Lighthouse Cottage** (Estate, 6,000: a clapboard cottage and a banded tower to its right, a gallery, a lamp room lit
+  after dark, an anchor), the **Glasshouse Villa** (Estate, 6,000: ashlar, quoins, a tiled hip roof, arched windows, a
+  balcony with an iron rail, a glass conservatory with a barrel vault, plants and a light inside, a cypress) and the
+  **Victorian Manor** (Estate, 8,000: two storeys, a fish-scale cross gable over a bay window, an octagonal turret and
+  spire, a porch on columns, a brick chimney). New paintings tinted by the paint as the others: `tileArt` (ribbed roof
+  tiles), `ashlarArt`, `scaleArt`. `win()` takes `arch` and `to` (a turned group, `turned()`), `many()` instances small
+  repeats (slats, rails, spindles), `tint()` darkens a paint colour.
+- **Eight paints a house** (the user's ask): the first three as they were; a house's `swatch` names the two colours its
+  catalogue swatch shows (roof and wall unless named: the mushroom's cap and spots, the machiya's noren and plaster, the
+  lighthouse's stripe and wall). The tree's five new ones are crown colours (Sakura, Golden, Crimson, Frost, Haunter).
+  `TIERS` gained Estate. `tests/houses.test.mjs` checks every paint names all its house's colours.
+- **The catalogue's paints**: the paint's name moved up beside the house's (`.hk-pick-title`), and the eight swatches
+  (24 px) share the row below in a strip that scrolls sideways only where a phone is too narrow (on a 402 px phone all
+  eight fit; at 320 they scroll, the picked one kept in view). The card stays 267 px on a phone.
+- **Checks**: `tools/house-check.mjs` (new) prints each house's draws, triangles, bounding box and a front, side and plan
+  view in text. Lived in on the lot (a fresh save, `tools/budget-check.mjs`'s counts): tree 279 draws / 124.9 MB, cottage
+  264, cabin 287, bungalow 285, mushroom 283, barn 286, machiya 285, lighthouse 283, glasshouse 285, victorian 282, every
+  house about 119.4 MB; `clearing` 268, `clearing-houses` 283, within budget.

@@ -1294,14 +1294,19 @@ img.shade, .sx-mon.unknown img { filter: brightness(0); opacity: 0.75; }
 /* the picked house's name and its key, then its paints */
 .hk-pick { display: flex; align-items: center; gap: 10px; padding: 8px 2px 0; border-top: 2px dashed #e2cfa0; }
 .hk-pick-name { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; text-align: left; }
-.hk-pick-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: normal; color: #4a3424; }
+.hk-pick-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hk-pick-title b { font-size: 15px; font-weight: normal; color: #4a3424; }
 .hk-go { height: 38px; min-width: 104px; flex: none; }
-.hk-paints { display: flex; align-items: center; gap: 9px; padding: 0 3px; }
+.hk-paints {
+  position: relative; display: flex; align-items: center; gap: 5px; min-width: 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain;
+  padding: 7px 7px 10px; margin: -7px -7px -10px; scrollbar-width: none;
+}
+.hk-paints::-webkit-scrollbar { display: none; }
 .hk-sw {
-  width: 26px; height: 26px; flex: none; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
-  box-shadow: inset 0 0 0 2px #0002, 0 0 0 3px #fffaf0, 0 3px 0 3px #d8c8a4; -webkit-tap-highlight-color: transparent;
+  width: 24px; height: 24px; flex: none; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  box-shadow: inset 0 0 0 2px #0002, 0 0 0 2px #fffaf0, 0 2px 0 2px #d8c8a4; -webkit-tap-highlight-color: transparent;
   transition: translate 0.12s, box-shadow 0.12s;
 }
-.hk-sw.on { translate: 0 -2px; box-shadow: inset 0 0 0 2px #0002, 0 0 0 3px #fffaf0, 0 0 0 6px var(--ink), 0 4px 0 6px var(--ink-deep); }
-.hk-paint-name { margin-left: 4px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #6a5440; }
+.hk-sw.on { translate: 0 -2px; box-shadow: inset 0 0 0 2px #0002, 0 0 0 2px #fffaf0, 0 0 0 5px var(--ink), 0 3px 0 5px var(--ink-deep); }
+.hk-paint-name { margin-left: 8px; font-size: 12px; color: #6a5440; }
 @media (prefers-reduced-motion: reduce) { .hk-sheet, .hk-card, .hk-sw { transition: none; } }
