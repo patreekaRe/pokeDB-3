@@ -256,3 +256,12 @@ nodes), so an animation that repaints on the main thread costs it dearly. A badg
 `townBlink` on opacity), not a blinking `border-color`. A new map animation: `translate`, `scale`, `rotate`, `transform`
 or `opacity` only.
 
+
+## Abandon run beside the floor (2026-10-23, the user's ask)
+
+The run card's top row has an Abandon run key right of the floor (`#map-flee`, in the top bar after `.floor-tag`; the
+floor gives up its auto margin to it), only on a run's map, not a Sky Pillar climb's bar. It asks through
+`requestAbandon()` in `js/main.js`, the same as the device's Settings and the title's Run key. Its glyph is a Game & Watch
+runner (`gameWatchRunner()` in `js/smooth-icons.js`): three segments printed on the LCD (stride, passing step, stride),
+each lit in turn by `gwTick` (opacity, `step-end`, 0.75 s) while the unlit ones stay as faint ghosts, as on the real
+handhelds; reduced motion lights only the middle one.

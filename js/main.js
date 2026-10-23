@@ -60,7 +60,7 @@ import { curtain } from './hd2d.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection, openPokedex, openDeviceApp, openHowto, bootHowto, splash } from './collection.js';
 import { hideDevice } from './device.js';
-import { smoothIcon, roundKey } from './smooth-icons.js';
+import { smoothIcon, roundKey, gameWatchRunner } from './smooth-icons.js';
 import { initPlayTime, buddy } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
@@ -186,6 +186,8 @@ function initPokedexButton() {
   $('map-dex-btn').addEventListener('click', () => (runSafariArea() !== undefined ? openDeviceApp('safari', runSafariArea()) : openDeviceApp('dex', runBiome())));
   // leaving from inside the device puts it away once the confirm (if any) has said yes
   $('abandon-btn').addEventListener('click', async () => { if (await requestAbandon()) hideDevice(); });
+  $('map-flee').append(gameWatchRunner());
+  $('map-flee').addEventListener('click', () => requestAbandon());
 }
 
 /* ---------- start everything ---------- */

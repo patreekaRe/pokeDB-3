@@ -3564,3 +3564,8 @@ call). Built in sessions 1, A, B and C plus the lawn, each playtested on the bra
 `docs/mockups/secret-base-houses.html`, the lawn's https://claude.ai/artifact/DEh9vUss4bD1StvwxzSrC2. Detail:
 `docs/reference/hub-base-mall.md`, "Secret Base houses" onwards.
 
+
+## Abandon run on the map, a Game & Watch runner (2026-10-23, the user's ask; branch `claude/abandon-run-button-animation-sz67vy`, and `main`)
+
+A key right of the map's floor tag opens the abandon confirm; its runner ticks across three LCD segments with ghosts.
+Detail: `docs/reference/map-screen.md`, "Abandon run beside the floor".

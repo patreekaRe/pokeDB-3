@@ -54,6 +54,7 @@ export const NEXT = [
   ['hub', 'The Clearing\'s Halloween ghosts no longer walk up to greet you each visit; they still chat at random and when tapped.'],
   ['base', 'Your Secret Base can be a house: Timburr & Co.\'s stand by your lot builds 25 houses, tried on before you buy, in eight paints; big feats earn rarer ones. Friends\' visits start on their front lawn.'],
   ['base', 'Every room of your Secret Base, the backyard too, picks from all your Safari catches, up to 6 a room, and your first two catches move in by themselves.'],
+  ['runs', 'The run map has an Abandon run key beside the floor, a Game & Watch runner dashing across it.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

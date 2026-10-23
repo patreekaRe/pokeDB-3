@@ -1120,6 +1120,28 @@ body[data-screen="map-screen"] .floor-tag { display: flex; }
   display: block; width: 18px; height: 18px; background: #fff8e0;
   clip-path: polygon(0 100%, 0 67%, 33% 67%, 33% 33%, 67% 33%, 67% 0, 100% 0, 100% 100%);
 }
+/* Abandon run beside the map's floor, a key on the run card's LCD like the title's (css/menus.css .title-abandon): a
+   Game & Watch runner (gameWatchRunner() in js/smooth-icons.js) whose three printed segments light one at a time, in
+   steps, the unlit ones left as the LCD's faint ghosts. Only over a run's map, not a Sky Pillar climb's bar */
+.map-flee {
+  display: none; place-items: center; width: 50px; height: 28px; margin: 0 auto 0 10px; padding: 0 3px; flex: none;
+  border: 2px solid currentColor; border-radius: 4px; background: rgba(31, 58, 20, 0.08); color: #1f3a14; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none;
+}
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .map-flee { display: grid; }
+body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .floor-tag { margin-right: 0; }
+.map-flee svg { width: 40px; height: 18px; overflow: visible; pointer-events: none; }
+.map-flee:active { translate: 0 1px; }
+.map-flee:focus-visible { outline: none; background: #1f3a14; color: #c8e0a0; border-color: #1f3a14; }
+@media (hover: hover) { .map-flee:hover { background: #1f3a14; color: #c8e0a0; border-color: #1f3a14; } }
+.gw-seg { opacity: 0.14; }
+.gw-seg:nth-child(2) { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .gw-seg { animation: gwTick 0.75s step-end infinite; }
+  .gw-seg:nth-child(2) { animation-delay: -0.5s; }
+  .gw-seg:nth-child(3) { animation-delay: -0.25s; }
+}
+@keyframes gwTick { 0% { opacity: 1; } 33.3%, 100% { opacity: 0.14; } }
 /* your HP on every choice screen (showChoiceHp() in js/rewards.js): just the bar and its numbers over the scene, no
    window behind them (the user's call, 2026-10-03), the numbers outlined like the map's floor tag */
 .hp-plate {
