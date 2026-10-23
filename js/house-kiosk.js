@@ -35,7 +35,7 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
   shut.setAttribute('aria-label', 'Close the catalogue');
   const line = el('p', 'hk-say'), row = el('div', 'hk-cards'), pickRow = el('div', 'hk-pick'), paints = el('div', 'hk-paints');
   line.setAttribute('aria-live', 'polite');
-  sheet.append(who, coins, shut, line, row, pickRow, paints);
+  sheet.append(who, coins, shut, line, row, pickRow);
   parent.append(sheet);
   requestAnimationFrame(() => sheet?.classList.add('up'));
 
@@ -98,12 +98,13 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
       const on = x.id === pick, b = el('button', `hk-card${on ? ' on' : ''}`), [tag, kind] = tagOf(x, now);
       b.type = 'button';
       b.setAttribute('aria-pressed', String(on));
+      b.setAttribute('aria-label', `${x.name}, ${tag}`);
       const box = el('span', 'hk-box');
       box.append(picture(x.id, on ? paint : now.paint[x.id] || 0));
       const price = el('span', `hk-tag ${kind}`);
       if (kind === 'price') price.append(smoothIcon('coin', 'hk-coin'));
       price.append(tag);
-      b.append(box, el('span', 'hk-name', x.name), price);
+      b.append(box, price);
       b.addEventListener('click', () => {
         if (pick === x.id) return;
         playSound('select');
@@ -117,7 +118,7 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
     // the picked house: its name, where it comes from, and its one key
     const key = el('button', 'room-ok hk-go');
     key.type = 'button';
-    const owned = now.owned.includes(pick), worn = now.paint[pick] || 0, tier = TIERS.find(t => t.id === house.tier).name;
+    const owned = now.owned.includes(pick), worn = now.paint[pick] || 0;
     let tip = '';
     if (!base) {
       if (pick === 'cottage') { key.textContent = `Buy · ${BASE_PRICE.toLocaleString()}`; key.onclick = buyFirst; tip = 'This lot\'s for sale, the Starter Cottage with it! Pick its paint, and it\'s your Secret Base.'; }
@@ -127,8 +128,9 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
     else if (owned) { key.textContent = `Repaint · ${REPAINT_PRICE}`; key.onclick = repaintHere; tip = `${house.paints[paint].name}? A fresh coat is ${REPAINT_PRICE} PokéCoins${pick === now.home ? '' : ', and you move in'}.`; }
     else if (house.price == null) { key.textContent = 'Locked'; key.disabled = true; tip = `This one can't be bought. ${house.how}.`; }
     else { key.textContent = `Buy · ${house.price.toLocaleString()}`; key.onclick = buyHere; }
+    // its name over its paints, the key beside them: one row, so the card stays low and the lot shows above it
     const name = el('span', 'hk-pick-name');
-    name.append(el('b', '', house.name), el('small', '', `${tier} · ${house.how}`));
+    name.append(el('b', '', house.name), paints);
     pickRow.replaceChildren(name, key);
 
     // its paints: a round swatch each, two-tone like the house, and the picked one's name (the first paint job comes free

@@ -895,8 +895,9 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   key is greyed, else the picked house's `blurb`); a sideways row of house cards (`.hk-card`), each a still of its real
   model in a spotlit box (`snap` = `houseStill()` in `js/hub-3d.js`: `makeHouse()` turned three-quarters on the shared
   turntable, `js/turntable.js`, one at a time and cached for the page load; the tree its painting) with HOME / OWNED /
-  a coin price / LOCKED; then the picked house's name, tier and how, the gold `room-ok` key, and its paints as round
-  two-tone swatches with the picked paint's name. Keys: Buy (a confirm, then built and moved in), Move in, Repaint · 250
+  a coin price / LOCKED (its name only in its `aria-label`; made shorter the same day, the user: "so we can see the house
+  more", 359 -> 267 px on a phone); then one row: the picked house's name over its paints (round two-tone swatches and
+  the picked paint's name), the gold `room-ok` key beside them. Keys: Buy (a confirm, then built and moved in), Move in, Repaint · 250
   (and moves in), or the base itself (Buy · 1,500) before there is one, other houses saying "Lot first". The hub's bar
   and card hide (`.hub.browsing`) and the camera frames the lot in the room left above the card on any screen
   (`browseAt()`: how far forward, and how near, `BROWSE_NEAR` 0.8 easing to 1 where the house wouldn't fit, as on an
