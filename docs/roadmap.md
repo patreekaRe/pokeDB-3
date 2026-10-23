@@ -1268,8 +1268,8 @@ Clearing's budget, checks each model with `tools/house-check.mjs` (text, no scre
   Mock-up of both (the user asked, 2026-10-23): https://claude.ai/artifact/DEh9vUss4bD1StvwxzSrC2 (the lawn's three
   screens, and the arrival shot beside them). **The lawn built for a playtest (2026-10-23, the user: "let's try a
   playtest"; branch `houses-playtest`)**: `js/front-lawn.js`, detail in `docs/reference/hub-base-mall.md`, "Front lawn".
-  **Next: the user playtests** (`?base&asfriend&houses`, `&livein=<id>` for another house) and says keep the lawn, swap
-  it for the arrival shot, or drop both. Insides still waiting on their call.
+  **Decided (2026-10-23, the user: "I think the lawn is okay", asking Claude to pick): the lawn stays; no arrival
+  shot.** Insides still waiting on their call (Claude's pick: drop them, for friends' rooms' sake).
 Going live is its own step after the user's go: merge `main` into the branch, HOUSES_LIVE true, the patch note out of
 HELD, and only then onto `main`.
 
