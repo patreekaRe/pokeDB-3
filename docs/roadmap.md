@@ -1135,6 +1135,22 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Secret Base houses: the Ancient Tree's lot becomes a house from a catalogue** (the user's idea, 2026-10-23: "changing it
+from a tree to a really cool looking house... a catalogue of houses with tiers, some by coins, some by challenges or
+achievements... give players the option to buy their first aesthetic change too"). Mock-up of 18 houses:
+`docs/mockups/secret-base-houses.html` (published: https://claude.ai/artifact/TJEmBMmgxcH7FEJYzSDkuE). Claude's proposal,
+waiting on the user's picks: every new base starts in a **Starter Cottage** (same 1,500 price, same lot at `TREE_AT`, garden
+arch kept); a HOUSE CATALOGUE page beside the PC's HOUSE UPGRADES; tiers **Homestead** (coins 1,500-2,000: Log Cabin,
+Seaside Bungalow, Mushroom Cottage, Red Barn), **Estate** (5,000-8,000: Machiya Townhouse, Lighthouse Cottage, Glasshouse
+Villa, Victorian Manor), **Earned**, never sold (Gym Hall: every Gym Leader; Hot-Spring Ryokan: every Waystone mended; Ranger
+Lodge: every Safari page; Sky Spire: the Sky Pillar's top; Poké Ball Dome: the Master Badge), **Seasonal** (Haunted Chateau
+in October, Snow Chalet in December, 3,000, kept for good), **Legendary** (Crystal Palace: beat Eternatus; the Ancient Tree:
+kept by every base bought before, else the Clearing Badge). The first aesthetic change anyone can buy: three paint jobs a
+house, 250 PokéCoins a repaint. Only the outside changes (rooms, furniture, yard, residents stay); friends visiting see
+your house. Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
+check on the Clearing). Sessions: 1 the system plus Cottage, Tree and two Homestead (high), 2 the coin houses (medium), 3
+earned and seasonal with unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium). All CLOUD.
+
 **A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
 catching, ~33% longer) over more floors per area (more fights, not more Pokémon). It needs a bot check of the day's win rate
