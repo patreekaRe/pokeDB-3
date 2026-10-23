@@ -9,11 +9,13 @@ export const AURA = {
   6: { ink: ['#ffd8e0', '#ff3a5c', '#b0123a'], gain: 0.75, tall: 0.55, wide: 1.35, lick: 0.3, hollow: 0.15, glow: 0.6 },
   7: { ink: ['#d8ffe2', '#34e878', '#0c8a42'], gain: 0.95, tall: 0.95, wide: 1.4, lick: 0.6, hollow: 0.5, glow: 0.65 },
   8: { ink: ['#dceeff', '#3e90ff', '#1640b8'], gain: 1, tall: 1.35, wide: 1.5, lick: 0.65, hollow: 0.55, glow: 0.75 },
-  9: { ink: ['#f2e0ff', '#b462ff', '#5c1ab4'], gain: 1.05, tall: 1.5, wide: 1.6, lick: 0.75, hollow: 0.55, glow: 0.85, front: true, bolts: [1, 2, 5] },
-  10: { ink: ['#fffbe0', '#ffd040', '#ff9a10'], gain: 1.1, tall: 2.0, wide: 1.95, lick: 0.9, hollow: 0.6, glow: 1, front: true, bolts: [1, 4, 5, 7], sparks: true, rainbow: true },
+  9: { ink: ['#f2e0ff', '#b462ff', '#5c1ab4'], gain: 1.05, tall: 1.5, wide: 1.6, lick: 0.75, hollow: 0.55, glow: 0.85, front: true, bolts: [1, 2, 7] },
+  10: { ink: ['#fffbe0', '#ffd040', '#ff9a10'], gain: 1.1, tall: 2.0, wide: 1.95, lick: 0.9, hollow: 0.6, glow: 1, front: true, bolts: [1, 5, 6, 10], sparks: true, rainbow: true },
 };
-export const AURA_FRAMES = 8;
-export const SPARK_FRAMES = 12;
+export const AURA_FRAMES = 12;
+export const AURA_FPS = 14;
+/** The frame shown under Calm effects: one with no lightning in it. */
+export const CALM_FRAME = 0;
 
 function hash(x, y, s) {
   let h = (x * 374761393 + y * 668265263 + s * 1442695041) | 0;
@@ -87,10 +89,18 @@ function rand(seed) {
   return () => { s = (s + 0x6d2b79f5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 
-/** Lightning crackling through the aura (9 and 10): AURA_FRAMES frames, a jagged bolt or two in the ones AURA[level].bolts
-    names and nothing in the rest, so cycling them is the crackle. A white core one pixel wide in the star's light colour,
-    edged in its mid. */
-export function auraBolts(level, w, h) {
+/** What is drawn over the sprite at 9 and 10, in one sheet so it is one draw (the user found 10 laggy, 2026-10-23): the
+    low licks, lightning in the frames AURA[level].bolts names (cycling them is the crackle; none in CALM_FRAME) and at
+    10 the sparks rising. */
+export function auraFront(level, w, h) {
+  const c = auraFlames(level, w, h, true), g = c.getContext('2d');
+  g.drawImage(auraBolts(level, w, h), 0, 0);
+  if (AURA[level].sparks) g.drawImage(auraSparks(w, h), 0, 0);
+  return c;
+}
+
+/** Lightning: a jagged bolt or two a frame named, a white core one pixel wide edged in the star's mid colour. */
+function auraBolts(level, w, h) {
   const a = AURA[level], c = document.createElement('canvas');
   c.width = w * AURA_FRAMES; c.height = h;
   const g = c.getContext('2d'), r = rand(level * 97 + 13);
@@ -114,16 +124,16 @@ export function auraBolts(level, w, h) {
   return c;
 }
 
-/** Sparks rising through the blaze at 10: SPARK_FRAMES frames of motes drifting up and round again, gold and the
-    rainbow's colours, a few with a one-pixel tail. */
-export function auraSparks(w, h) {
+/** Sparks rising through the blaze at 10: motes drifting up and round again, gold and the rainbow's colours, a few with
+    a one-pixel tail. */
+function auraSparks(w, h) {
   const c = document.createElement('canvas');
-  c.width = w * SPARK_FRAMES; c.height = h;
+  c.width = w * AURA_FRAMES; c.height = h;
   const g = c.getContext('2d'), r = rand(1010);
   const cols = ['#fff6c0', '#ffd040', '#ff8a8a', '#8ad8ff', '#a8f0a0', '#d8a8ff'];
   const motes = Array.from({ length: 18 }, () => ({ x: 0.12 + r() * 0.76, at: r(), laps: r() < 0.3 ? 2 : 1, sway: r() * 6.28, col: cols[Math.floor(r() * cols.length)] }));
-  for (let k = 0; k < SPARK_FRAMES; k++) for (const m of motes) {
-    const v = (m.at + (k / SPARK_FRAMES) * m.laps) % 1, x = k * w + m.x * w + Math.sin(m.sway + v * 6.28) * 2, y = h * (0.95 - v * 0.9);
+  for (let k = 0; k < AURA_FRAMES; k++) for (const m of motes) {
+    const v = (m.at + (k / AURA_FRAMES) * m.laps) % 1, x = k * w + m.x * w + Math.sin(m.sway + v * 6.28) * 2, y = h * (0.95 - v * 0.9);
     if (x < k * w + 1 || x > (k + 1) * w - 2) continue;
     g.globalAlpha = v > 0.8 ? 0.5 : 1;
     g.fillStyle = m.col;

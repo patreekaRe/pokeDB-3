@@ -3472,3 +3472,7 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   "The Super Saiyan aura". Checked headless: every Level builds with no page errors, calm holds one frame with no
   bolts, the key cycles, budget check within budget (base 83 -> 96 draws and mall hall 332 -> 345 with `?aura=10`, the
   crown's six included); 396 tests pass (`tests/aura.test.mjs` new).
+- Follow-up the same day: the user found `?aura=10` "laggy af" in the Clearing. Measured headless, JS a frame unchanged
+  and the GPU's share about 6% more at 10 (none at 8); cut 10 from five draws to three (front licks, lightning and
+  sparks one sheet, `auraFront()`), offsets set only on a new frame, `calmFx()` read once a second. After it, the
+  aura shown or hidden times the same.

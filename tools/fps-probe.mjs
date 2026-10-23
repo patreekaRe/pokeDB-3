@@ -12,7 +12,7 @@ const args = process.argv.slice(2), opt = (k, d) => args.find(a => a.startsWith(
 const SECS = Number(opt('secs', 6)), SETTLE = 11000;
 const AREAS = ['meadow', 'forest', 'wetland', 'marsh', 'peak', 'desert', 'powerplant', 'icecave', 'dojomountain', 'quarry', 'windycliffs', 'nightalley'];
 const PLACES = {
-  clearing: '/', 'clearing-night': '/?time=night', 'clearing-graves': '/?graves=8', base: '/?base', 'mall-hall': '/?mall',
+  clearing: '/', 'clearing-aura': '/?aura=10', 'clearing-night': '/?time=night', 'clearing-graves': '/?graves=8', base: '/?base', 'mall-hall': '/?mall',
   'town-shrine': '/?town=shrine&towns', 'town-ruins': '/?town=ruins&towns', 'run-map': '/?biome=ruins&starter=charmander',
   ...Object.fromEntries(AREAS.map(a => [`safari-${a}`, `/?area=${a}&intro=0`])),
   ...Object.fromEntries(AREAS.map(a => [`boss-${a}`, `/?area=${a}&intro=0&stage=3&kind=boss`])),

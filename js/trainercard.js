@@ -647,7 +647,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const aura = auraWorn(save) ? auraArt(auraWorn(save)) : null;
   if (aura) {
     // its feet on the partner's: the picture is 96px tall under the button's 6px padding
-    for (const box of [aura.back, ...(aura.front?.children || [])]) box.style.top = `${104 - aura.h}px`;
+    for (const box of [aura.back, aura.front].filter(Boolean)) box.style.top = `${104 - aura.h}px`;
     pic.append(aura.back);
   }
   pic.append(img);

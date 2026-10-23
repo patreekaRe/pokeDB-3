@@ -1226,7 +1226,9 @@ things for the Secret Base. **The user: "send it"; 1-3 built the same day** (arc
    empty githack save hid the buddy behind them).
    ~~**A Super Saiyan aura for each Level won**~~ done 2026-10-23 on `main` (archive). **Next: the user playtests**
    `?aura=6` to `?aura=10` (walk the Clearing; the Trainer Card's Aura key; the Level picker from 6 up) and says if 10 is
-   crazy enough or any Level too strong. Maybe later: friends' buddies in the Plaza wearing theirs. ▶ Playtest on the live site.
+   crazy enough or any Level too strong. The user found 10 "laggy af" in the Clearing (2026-10-23): cut to three draws
+   (front licks, lightning and sparks in one sheet); headless it now times the same as no aura. **Ask if it still lags**,
+   and if so whether `?master` (crown alone) does too. Maybe later: friends' buddies in the Plaza wearing theirs. ▶ Playtest on the live site.
 4. **Trophies for the Secret Base**: a cup for each of Levels 6-9 and the Champion's Trophy for 10, earned furniture
    (each a painting and a hand-built model). ▶ CLOUD, effort: high.
 5. **Master Badges**: a Level 10 win with a Fire, a Water and a Grass starter, and all three (each a `LOOK` line). ▶

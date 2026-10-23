@@ -74,10 +74,12 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   sprite's own board (so they lean with it) with unlit, additive sheets painted once on canvases by `js/aura-art.js`
   (value noise looping up the frame, three stepped shades; at most 576 x 80 a sheet), a frame being a step of the
   texture's offset (no re-upload), plus a glow on the ground. Their depth is the sprite's upright one (`feetDepth(m,
-  bias)`), a hair behind it for the back flames and in front for the licks, bolts and sparks. One draw at 6-8 plus the
-  ground glow, up to five at 10 (budget check with `?aura=10`, the crown's six included: Secret Base 83 -> 96 draws, mall
-  hall 332 -> 345, the Clearing within its noise, memory up 1-2 MB).
-  Under `calmFx()` it holds one frame: no lightning, no pulse. The Trainer Card's partner wears the same frames stepped
+  bias)`), a hair behind it for the back flames and in front for the front sheet. **Three draws at most** (2026-10-23,
+  the user found 10 "laggy af" on their phone): the front licks, lightning and sparks are one sheet (`auraFront()`), so
+  6-8 are the flames and the ground glow, 9-10 one more; 12 frames at 14 fps, a texture offset set only when the frame
+  changes, and `calmFx()` read once a second, not a `matchMedia()` each frame. Timed headless with each frame drawn to
+  completion, the Clearing at `?aura=10` takes the same with the aura shown or hidden (it was about 6% more as five draws).
+  Under `calmFx()` it holds `CALM_FRAME` (no lightning in it) and the glow doesn't pulse. The Trainer Card's partner wears the same frames stepped
   by CSS (`auraArt()` in `js/ui.js`, `.tc-aura`, `.aura-strip`; still under Calm effects and reduced motion), and an
   Aura key next to Crown steps through the earned auras, then off (`.tc-aura-key`, in the Level's colour); before any
   is earned a greyed preview, "Win Lv 6". The Level picker shows each Level's aura from 6 up and whether it's yours

@@ -5,7 +5,7 @@
 import { spriteFit } from './data/sprite-fit.js';
 import { decodeGif } from './gif-frames.js';
 import { sharpness, calmFx } from './prefs.js';
-import { AURA, AURA_FRAMES, SPARK_FRAMES, auraFlames, auraBolts, auraSparks, auraGlow } from './aura-art.js';
+import { AURA, AURA_FRAMES, AURA_FPS, CALM_FRAME, auraFlames, auraFront, auraGlow } from './aura-art.js';
 
 // the minified build (half the bytes to fetch and parse); index.html preloads it, so keep the two URLs the same
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
@@ -632,53 +632,50 @@ function crownModel(k) {
     they lean with it: the flames behind the sprite, and from 9 up low licks and lightning in front of it, sparks rising
     at 10, with a glow on the ground under it. Their sheets are painted once on canvases (js/aura-art.js) and uploaded
     once; a frame is a step of the texture's offset. Unlit and added on, bright enough for the bloom to light. Under
-    calmFx() it holds one frame, without the lightning or the glow's pulse. Built when first worn, again for another Level. */
+    calmFx() it holds one frame, without lightning, and the glow doesn't pulse. Built when first worn, again for another Level. */
 function wearAura(m) {
   const level = m.aura() || 0;
   if (m.halo && m.halo.level !== level) { dropAura(m.halo); m.halo = null; }
   if (!level) return;
-  const h = m.halo ??= auraModel(m, level), calm = calmFx(), t = performance.now() / 1000;
+  const h = m.halo ??= auraModel(m, level), now = performance.now();
+  // Calm effects read once a second, not a matchMedia() every frame
+  if (!(now < h.calmAt)) { h.calm = calmFx(); h.calmAt = now + 1000; }
   h.ground.visible = m.board.visible;
-  const step = calm ? 2 : Math.floor(t * 11);
-  for (const l of h.flames) l.map.offset.x = ((step + l.lag) % AURA_FRAMES) / AURA_FRAMES;
-  if (h.bolts) {
-    const k = Math.floor(t * 9) % AURA_FRAMES;
-    h.bolts.visible = !calm && AURA[level].bolts.includes(k);
-    h.bolts.material.map.offset.x = k / AURA_FRAMES;
+  const step = h.calm ? CALM_FRAME : Math.floor(now / 1000 * AURA_FPS);
+  if (step !== h.step) {
+    h.step = step;
+    h.back.map.offset.x = (step % AURA_FRAMES) / AURA_FRAMES;
+    if (h.front) h.front.map.offset.x = (step % AURA_FRAMES) / AURA_FRAMES;
   }
-  if (h.sparks) h.sparks.material.map.offset.x = ((calm ? 0 : Math.floor(t * 10)) % SPARK_FRAMES) / SPARK_FRAMES;
-  h.ground.material.opacity = calm ? 0.85 : 0.75 + Math.sin(t * 3.1) * 0.2;
+  h.ground.material.opacity = h.calm ? 0.85 : 0.75 + Math.sin(now / 1000 * 3.1) * 0.2;
 }
 
+/** The aura's billboards: the flames behind the sprite, and at 9 and 10 one sheet in front (licks, lightning, sparks),
+    plus the ground glow; three draws at most. */
 function auraModel(m, level) {
   const a = AURA[level], tall = a.tall * m.top, wide = a.wide * Math.max(m.wide, m.top * 0.7), px = m.px || MON_PX;
   const fw = Math.min(160, Math.round(wide / px)), fh = Math.min(200, Math.round(tall / px));
-  const lit = (canvas, frames, bias) => {
+  const board = (canvas, bias) => {
     const map = tex(canvas);
-    map.repeat.set(1 / frames, 1);
+    map.repeat.set(1 / AURA_FRAMES, 1);
     const mat = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false });
     feetDepth(mat, bias);
-    return mat;
-  };
-  const board = (mat, w, hh, lift = 0) => {
-    const geo = new THREE.PlaneGeometry(w, hh);
-    geo.translate(0, hh / 2 + lift, 0);
+    const geo = new THREE.PlaneGeometry(wide, tall);
+    geo.translate(0, tall / 2 - 0.04 * m.top, 0);
     const o = new THREE.Mesh(geo, mat);
     o.raycast = () => {};
     m.board.add(o);
     return o;
   };
-  const halo = { level, meshes: [], flames: [] };
-  const back = board(lit(auraFlames(level, fw, fh), AURA_FRAMES, 0.0003), wide, tall, -0.04 * m.top);
-  halo.flames.push({ map: back.material.map, lag: 0 });
+  const halo = { level, meshes: [], step: -1 };
+  const back = board(auraFlames(level, fw, fh), 0.0003);
+  halo.back = back.material;
   halo.meshes.push(back);
   if (a.front) {
-    const fr = board(lit(auraFlames(level, fw, fh, true), AURA_FRAMES, -0.002), wide, tall, -0.04 * m.top);
-    halo.flames.push({ map: fr.material.map, lag: 3 });
-    halo.bolts = board(lit(auraBolts(level, fw, fh), AURA_FRAMES, -0.0025), wide, tall, -0.04 * m.top);
-    halo.meshes.push(fr, halo.bolts);
+    const front = board(auraFront(level, fw, fh), -0.002);
+    halo.front = front.material;
+    halo.meshes.push(front);
   }
-  if (a.sparks) halo.meshes.push(halo.sparks = board(lit(auraSparks(fw, fh), SPARK_FRAMES, -0.0025), wide, tall, 0));
   const r = a.glow * Math.max(m.wide, m.top * 0.7);
   const ground = halo.ground = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r), new THREE.MeshBasicMaterial({ map: tex(auraGlow(level)), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
   ground.rotation.x = -Math.PI / 2;
