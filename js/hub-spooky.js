@@ -2,9 +2,8 @@
    about between the decorations, and bats circling the Ancient Tree. Now and then one blurts a short line in a little
    speech window over its head (.spook-bubble, the cream look of the Furniture store's, its tail pointing at who
    said it), and when tapped it speaks in that store's speech window over the bar (.mall-line in css/hub.css: its
-   name on a tilted pink tag), a line or a whole story tapped through (js/data/spooky-lines.js). The
-   first time the Clearing shows on a page load, one walks up to your partner and greets you by your nickname, and
-   your name turns up among their lines after that, the four taking turns at it (the last greeter kept per device). */
+   name on a tilted pink tag), a line or a whole story tapped through (js/data/spooky-lines.js), your nickname turning up among them. None walks
+   up to greet you any more (the user's call, 2026-10-23: it got annoying). */
 
 import { SPOOKS } from './data/spooky-lines.js';
 import { batArt } from './hub-season.js';
@@ -12,12 +11,8 @@ import { playCry, playSound } from './audio.js';
 import { trainerName } from './leaderboard.js';
 
 const QUIP_MS = 4200;         // how long a line over a head stays
-const GREET_MS = 6500;        // and the greeting
 const PAUSE = [3000, 6000];   // the quiet between one ghost's stroll and the next's (ms)
 const ROAM = 5;               // how far (tiles) a stroll goes at most
-
-const GREETER_KEY = 'pokedb.spookGreeter';
-let greeted = false;          // once a page load
 
 const shuffled = (a) => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(([, x]) => x);
 const between = ([a, b]) => a + Math.random() * (b - a);
@@ -31,7 +26,7 @@ export function makeSpooks(H) {
   const { THREE } = H;
   const ghosts = [];
   let turn = 0, nextWalk = performance.now() + between(PAUSE);
-  let talking = null, timed = null, greeter = null, calmFrom = 0, nextQuip = performance.now() + 7000, bats = null, gone = false;
+  let talking = null, timed = null, nextQuip = performance.now() + 7000, bats = null, gone = false;
 
   const foot = document.createElement('div');
   foot.className = 'mall-foot spook-foot';
@@ -139,7 +134,6 @@ export function makeSpooks(H) {
     if (talking?.g === g) return sayNext();
     hush();
     unblurt();
-    if (greeter?.g === g) greeter = null;
     talking = { g, lines: deal(g), i: -1 };
     face(g, partner);
     sayNext();
@@ -161,37 +155,6 @@ export function makeSpooks(H) {
     return true;
   }
 
-  /** The greeting: the ghosts take turns (Sableye spawned nearest every time), the next in line heading for a free
-   *  tile beside your partner, then saying hello by name. */
-  function startGreet(partner, now) {
-    greeted = true;
-    let last = -1;
-    try { last = SPOOKS.findIndex(d => d.id === localStorage.getItem(GREETER_KEY)); } catch {}
-    const def = SPOOKS[(last + 1) % SPOOKS.length];
-    const g = ghosts.find(x => x.def === def) || ghosts[0];
-    try { localStorage.setItem(GREETER_KEY, g.def.id); } catch {}
-    let best = null;
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, -1], [0, 1]]) {
-      const to = { x: partner.tile.x + dx, y: partner.tile.y + dy };
-      if (!standable(to, g)) continue;
-      const path = to.x === g.w.tile.x && to.y === g.w.tile.y ? [] : H.route(g.w.tile, to);
-      const end = path.at(-1) ?? g.w.tile;
-      if (end.x !== to.x || end.y !== to.y) continue;
-      if (!best || path.length < best.length) best = path;
-    }
-    g.w.path = best || [];
-    greeter = { g, until: now + 7000 };
-  }
-
-  function greet(partner) {
-    const { g } = greeter;
-    greeter = null;
-    face(g, partner);
-    nextWalk = performance.now() + GREET_MS;
-    g.greetedAt = performance.now();
-    show(g, g.def.greets[Math.floor(Math.random() * g.def.greets.length)], { ms: GREET_MS });
-  }
-
   /** The ghost whose turn it is sets off somewhere it may stand. True if it found somewhere. */
   function stroll(g, partner) {
     const { tile } = g.w;
@@ -208,7 +171,7 @@ export function makeSpooks(H) {
   function step(g, dt, now) {
     const w = g.w, next = w.path[0];
     if (!next) return;
-    const tx = H.tileX(next.x), tz = H.tileZ(next.y), dx = tx - w.x, dz = tz - w.z, d = Math.hypot(dx, dz), move = dt / 1000 * g.def.speed * (greeter?.g === g ? 1.5 : 1);
+    const tx = H.tileX(next.x), tz = H.tileZ(next.y), dx = tx - w.x, dz = tz - w.z, d = Math.hypot(dx, dz), move = dt / 1000 * g.def.speed;
     if (Math.abs(dx) > 0.01) w.flip = dx > 0;
     if (d <= move) { w.x = tx; w.z = tz; w.tile = next; w.path.shift(); if (!w.path.length) nextWalk = now + between(PAUSE); }
     else { w.x += dx / d * move; w.z += dz / d * move; }
@@ -229,7 +192,7 @@ export function makeSpooks(H) {
     hush,
 
     tick(now, dt, { calm, quiet, partner }) {
-      if (!quiet && !greeter && now > nextWalk && ghosts.length && !ghosts.some(g => g.w.path.length)) {
+      if (!quiet && now > nextWalk && ghosts.length && !ghosts.some(g => g.w.path.length)) {
         nextWalk = now + 1000;
         for (let k = 0; k < ghosts.length; k++) {
           const g = ghosts[turn++ % ghosts.length];
@@ -238,10 +201,7 @@ export function makeSpooks(H) {
       }
       for (const g of ghosts) {
         const w = g.w;
-        if (talking?.g !== g && !quiet) {
-          if (w.path.length) step(g, dt, now);
-          else if (greeter?.g === g) greet(partner);
-        }
+        if (talking?.g !== g && !quiet && w.path.length) step(g, dt, now);
         const t = now / 1000 + g.phase, moving = w.path.length > 0, mv = g.def.move;
         let y = 0;
         if (!calm) {
@@ -250,7 +210,7 @@ export function makeSpooks(H) {
           else if (mv === 'hop') y = moving ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 3)) * 0.22 : Math.abs(Math.sin(t * 1.4)) * 0.04;
           else y = moving ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.08 : Math.sin(t * 1.6) * 0.03 + 0.03;
         }
-        if (talking?.g === g || now - (g.greetedAt || -1e9) < GREET_MS) w.flip = partner.x > w.x;
+        if (talking?.g === g) w.flip = partner.x > w.x;
         g.m.group.position.set(w.x, 0, w.z);
         g.m.board.position.y = y;
         g.m.board.scale.x = w.flip ? -1 : 1;
@@ -265,13 +225,10 @@ export function makeSpooks(H) {
         if (!calm) b.material = bats.mats[Math.floor((now + u.flap) / 110) % 2];
       }
 
-      if (quiet) { calmFrom = 0; hush(); unblurt(); if (line.classList.contains('on')) fade(); return; }
+      if (quiet) { hush(); unblurt(); if (line.classList.contains('on')) fade(); return; }
       if (quip && now > quip.until) unblurt();
       if (quip) bubble.hidden = !place(quip.g);
-      calmFrom ||= now;
-      if (greeter && now > greeter.until) greet(partner);
-      if (!greeted && ghosts.length === SPOOKS.length && now - calmFrom > 900 && !ghosts.some(g => g.w.path.length)) startGreet(partner, now);
-      if (!quip && !timed && !talking && !greeter && greeted && now > nextQuip && ghosts.length) {
+      if (!quip && !timed && !talking && now > nextQuip && ghosts.length) {
         nextQuip = now + 7000 + Math.random() * 9000;
         const g = ghosts[Math.floor(Math.random() * ghosts.length)];
         if (!g.quips.length) g.quips = shuffled(g.def.quips);

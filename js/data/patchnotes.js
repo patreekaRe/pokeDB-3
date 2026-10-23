@@ -45,6 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['hub', 'A Berry Booth by the Clearing\'s gate is where you pack your Berry Pouch and run kit now, with a guide to how the pouch works; what you pack stays packed.'],
   ['fixes', 'The Clearing\'s PC opens as soon as you reach it, instead of waiting, sometimes for good, on the Secret Base\'s furniture to load, Level 10 foil cards no longer slow a fight while their sheen follows your phone\'s tilt, and cloud save stops asking "Two saves found" over your own phone\'s save, or swapping out a run in progress without asking.'],
+  ['hub', 'The Clearing\'s Halloween ghosts no longer walk up to greet you each visit; they still chat at random and when tapped.'],
   ['base', 'Every room of your Secret Base, the backyard too, picks from all your Safari catches, up to 6 a room, and your first two catches move in by themselves.'],
 ];
 

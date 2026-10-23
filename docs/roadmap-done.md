@@ -3541,3 +3541,7 @@ keeps a fingerprint of the agreed progress (`sum`); play time alone no longer co
 The user lost runs after Menu, only while signed in (incognito was fine): on load, the cloud's copy from another browser
 replaced the save silently, run and all. It now asks when this device holds a run the cloud's doesn't, and a run the
 cloud replaces is kept (`?runback`). A run that fails to load is kept the same way. Detail: `docs/reference/cloud-save.md`.
+
+### The Halloween ghosts no longer greet you (2026-10-23, cloud)
+The user found the walk-up greeting on every Clearing visit annoying. Cut from `js/hub-spooky.js` (and the `greets` lines
+from `js/data/spooky-lines.js`); the random lines over their heads and tap talks stay, nickname lines included.
