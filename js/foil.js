@@ -27,13 +27,20 @@ export function takeOffFoil() {
   follow(false);
 }
 
-let on = false, queued = false, x = 0.5, y = 0.5;
+let on = false, queued = false, x = 0.5, y = 0.5, px = -1, py = -1, count = -1, paintedAt = -1e9;
+const faces = typeof document !== 'undefined' ? document.getElementsByClassName('card-face') : [];
 const clamp = (v) => Math.max(0, Math.min(1, v));
-function paint() {
+/* Written on each card face, not on <html>: a custom property there restyled the whole page every frame the phone's tilt
+   fired (2026-10-23, tools/fps-probe.mjs's battle-foil: style 1.4 -> 41.6 ms/s); faces under a hidden screen cost nothing.
+   Each write still restyles the cards (about 1 ms on this PC), so at most 30 a second. */
+function paint(now) {
   queued = false;
-  const s = document.documentElement.style;
-  s.setProperty('--foil-x', x.toFixed(3));
-  s.setProperty('--foil-y', y.toFixed(3));
+  // a phone held still still reports a little drift: skip what can't be seen, unless cards came or went
+  if (Math.abs(x - px) < 0.008 && Math.abs(y - py) < 0.008 && faces.length === count) return;
+  if (now - paintedAt < 30) { queue(); return; }
+  paintedAt = now; px = x; py = y; count = faces.length;
+  const fx = x.toFixed(3), fy = y.toFixed(3);
+  for (const f of faces) { f.style.setProperty('--foil-x', fx); f.style.setProperty('--foil-y', fy); }
 }
 const queue = () => { if (!queued) { queued = true; requestAnimationFrame(paint); } };
 const onPointer = (e) => { x = clamp(e.clientX / innerWidth); y = clamp(e.clientY / innerHeight); queue(); };
@@ -42,7 +49,7 @@ const onTilt = (e) => { if (e.gamma == null) return; x = clamp(0.5 + e.gamma / 6
 
 function follow(want) {
   if (want === on) return;
-  on = want;
+  on = want; count = -1;
   const how = want ? 'addEventListener' : 'removeEventListener';
   window[how]('pointermove', onPointer, { passive: true });
   window[how]('deviceorientation', onTilt, { passive: true });

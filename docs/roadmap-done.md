@@ -3494,3 +3494,13 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   showed, ~2.3 s more even headless, far longer on a phone, and a failed fetch left the tap doing nothing. `js/pc.js` now
   loads that side behind its boot screen (`loadBaseKit()`), the hub starts it as you set off for the PC (`warmPC()`), and
   a failed load says to reload. The Buddy Projector's budget check ran too: `clearing` within budget (254 draws, 124 MB).
+### Perf check after the Level 6-10 rewards and the Buddy Projector (2026-10-23, local)
+- `tools/budget-check.mjs`, all 23 places and the trips, run on this PC for the first time (playwright in a scratch folder,
+  `PW_CHROMIUM` pointing at the installed Chrome; `tools/probe-kit.mjs` reads it): every place within budget, the Clearing
+  247 draws / 128 MB with the projector, the mall/base trips x3 growing 0.1 MB and no listeners. The aura, crown and
+  hologram cost nothing measurable (`fps-probe.mjs`'s new `clearing-master`: 2.3 ms of JS a frame, as plain; the
+  hologram's tick 0.015 ms). Fixed: Level 10 foil wrote `--foil-x/y` on `<html>`, so every tilt event restyled the whole
+  page (`battle-foil`: style 1.4 -> 41.6 ms/s); now on each card face, at most 30 a second, skipping drift a still phone
+  reports (11.4 ms/s). Also paused the hidden select screen's pulsing A button behind the Clearing and 3D places, and the
+  see-through run-map Poké Ball's wobble. Not taken: the run map's scenery timer (`scene.js`, ~25 ms/s), as measured on
+  2026-10-21.

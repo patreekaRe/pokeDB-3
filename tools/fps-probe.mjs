@@ -21,7 +21,13 @@ const PLACES = {
   'duo-map': ['/?duorun&duopool&coins=500&powerplant', (page) => startDuo(page, ['fire', 'water'])],
   'duo-battle': ['/?duorun&duopool&coins=500&powerplant', (page) => startDuo(page, ['fire', 'water']).then(() => intoFight(page))],
   'duo-battle-ice': ['/?duorun&duopool&coins=500&icecave', (page) => startDuo(page, ['grass', 'water']).then(() => intoFight(page))],
+  'clearing-master': '/?master&aura=10',
+  // a fight with and without Level 10's foil, the phone's tilt firing every frame as a held phone's does
+  battle: ['/?biome=ruins&starter=charmander', (page) => intoFight(page).then(() => tilt(page))],
+  'battle-foil': ['/?biome=ruins&starter=charmander&foil=10', (page) => intoFight(page).then(() => tilt(page))],
 };
+
+const tilt = (page) => page.evaluate(() => { const go = (t) => { dispatchEvent(Object.assign(new Event('deviceorientation'), { alpha: 0, beta: 45 + Math.sin(t / 900) * 8, gamma: Math.sin(t / 700) * 10 })); requestAnimationFrame(go); }; requestAnimationFrame(go); });
 
 /** From the map into its first fight (tools/duo-probe.mjs's steps). */
 async function intoFight(page) {

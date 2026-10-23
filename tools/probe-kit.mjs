@@ -37,13 +37,13 @@ export async function threeCopy(named) {
   }
   const dir = join(tmpdir(), 'pokedb-three');
   await mkdir(dir, { recursive: true });
-  execFileSync('npm', ['pack', 'three@0.160.0', '--silent'], { cwd: dir });
+  execFileSync('npm', ['pack', 'three@0.160.0', '--silent'], { cwd: dir, shell: process.platform === 'win32' });   // npm is npm.cmd on Windows
   execFileSync('tar', ['xzf', 'three-0.160.0.tgz'], { cwd: dir });
   return join(dir, 'package/build/three.module.min.js');
 }
 
 export const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1';
-export const launch = () => playwright().chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--js-flags=--expose-gc', '--autoplay-policy=no-user-gesture-required'] });
+export const launch = () => playwright().chromium.launch({ executablePath: process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium', args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--js-flags=--expose-gc', '--autoplay-policy=no-user-gesture-required'] });
 
 /** A fresh phone: instrumented, three.js served locally, Firebase turned away, errors collected in `errors`. */
 export async function phone(browser, three) {

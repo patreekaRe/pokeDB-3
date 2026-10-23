@@ -171,6 +171,9 @@
    (2026-10-19); the title's fade out (.away) shows them again as the select comes in */
 body:has(#title-screen.hub-mode:not([hidden]):not(.away)) :is(#start-screen, #backdrop, #scene-bg, #scene-light),
 body:has(> .base3d) :is(#start-screen, #backdrop, #scene-bg, #scene-light) { visibility: hidden; }
+/* hidden, its A button's glow still ticked every frame (tools/fps-probe.mjs, 2026-10-23) */
+body:has(#title-screen.hub-mode:not([hidden]):not(.away)) #start-screen *,
+body:has(> .base3d) #start-screen * { animation-play-state: paused; }
 
 /* the walk between the hub and the Secret Base fades through black (curtain() in js/hd2d.js) */
 .hd2d-curtain { position: fixed; inset: 0; z-index: 2000; background: #000; opacity: 0; pointer-events: none; transition: opacity 320ms ease; }

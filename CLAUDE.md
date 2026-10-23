@@ -245,7 +245,7 @@ There's no automated test suite. Before committing:
    just reading the code.
 3. **The phone's budgets** (a cloud session, 2026-10-19, the user's ask: the reload and lag fixes kept by a check): any
    change to a 3D place, a screen's animations or what the game keeps in memory runs
-   `NODE_PATH=$(npm root -g) node tools/budget-check.mjs` (`--only=name,...` for the places touched; the full run takes
+   `NODE_PATH=$(npm root -g) node tools/budget-check.mjs` (on the Windows PC: `npm i playwright` in a scratch folder, its `node_modules` as `NODE_PATH`, and `PW_CHROMIUM` set to Chrome's `chrome.exe`; 2026-10-23) (`--only=name,...` for the places touched; the full run takes
    several minutes) before pushing. `tools/fps-probe.mjs` times a place's JS, style and GC a frame (`--only=`; the Safari areas and Duo Run included). Over budget is a bug to fix, not to record; a change meant to cost more reruns it with
    `--update` and says so in its commit. Its header says what it counts.
 4. If it's a balance change (card damage, achievement difficulty, drop
