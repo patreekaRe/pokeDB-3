@@ -35,10 +35,10 @@ import { SAFARI_AREA_COINS } from './data/safari.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
-import { PIECES, KINDS_OF, icon, loadBase, decorations, freshDesigns, seeDesign, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './secret-base.js';
+import { PIECES, KINDS_OF, icon, loadBase, decorations, freshDesigns, seeDesign, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, monRoom, monsIn, placeMon, saveBase, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './secret-base.js';
 import { loadStatues, statuesIn, statueReady } from './base-furniture-statues.js';
 import { loadFigures, figuresToLoad } from './base-figures.js';
-import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, pipUsed, entryOf, shapeOf, yardKind } from './data/house.js';
+import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, pipUsed, entryOf, shapeOf, yardKind, roomName, roomTag } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
 import { pcNew, markPcSeen, pcLookedAt } from './pc-news.js';
@@ -47,9 +47,10 @@ import { friendsOpen, friendsNews } from './data/friends.js';
 import { openDeviceApp } from './collection.js';
 import { MATERIALS_BY_ID } from './data/satchel.js';
 
-/** Safari catches living in the Secret Base at once. */
+/** Safari catches living in each room of the Secret Base at once. */
 export const RESIDENTS = 6;
-/** How many Safari catches can live in the base: six, and one more for each Ranger Task Board task that gives room. */
+/** How many Safari catches can live in each room of the base, the yard too: six, and one more for each Ranger Task
+    Board task that gives room. */
 export const residentCap = (save = getSave()) => RESIDENTS + rangerSlots(save);
 
 /** Every catch that can live in the base, and the ones that do: the save's pick, or before one is made the first
@@ -240,7 +241,7 @@ const PAGES = {
       [journal ? `TRAINER'S JOURNAL (${journal})` : 'TRAINER\'S JOURNAL', journal ? `${journal} task${journal === 1 ? '' : 's'} done! Claim ${journal === 1 ? 'it' : 'them'} for PokéCoins.` : 'Goals for the whole game, from your first win to the top of the Sky Pillar, each paying PokéCoins.',
         () => import('./ranger.js').then(m => m.openJournal(() => show('home'))), journal > 0],
       ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
-      ['BASE RESIDENTS', `Choose up to ${residentCap()} Safari catches to live in your Secret Base.`, () => show('residents')],
+      ['BASE RESIDENTS', `Choose which Safari catches live in your Secret Base, up to ${residentCap()} a room.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save) || freshDesigns(loadBase()).length > 0],
       ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; yardTab = false; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
       ...(friendsOpen(save) ? [['FRIENDS', 'Your friends\' hearts live in your Pokédex now, by the Quests app. This opens it there.', () => { logOff(); openDeviceApp('friends'); }, friendsNews(save), { sub: 'Opens in your Pokédex' }]] : []),
@@ -431,23 +432,25 @@ const PAGES = {
     speak('Only first forms fit on the paths. Bigger Pokémon rest in the box.');
   },
   residents() {
-    const save = getSave(), { all, shown } = residents(save);
+    // the room you're standing in, from the base's Storage PC; the main room from the Clearing's
+    const save = getSave(), { all, shown } = residents(save), b = save.secretBase ? loadBase() : {}, room = inBase ? b.here || 'main' : 'main';
+    const mine = monsIn(b, shown, room), where = b.house ? roomName(b.house, room) : 'Secret Base';
     const grid = el('div', 'pc-box');
-    const order = [...shown, ...all.filter(id => !shown.includes(id))];
-    grid.append(...order.map(id => monTile(resident(id).image, resident(id).name, shown.includes(id), () => {
-      const now = residents().shown, def = resident(id);
-      if (now.includes(id)) { setResidents(now.filter(x => x !== id)); playSound('cancel'); show('residents'); speak(`${def.name} went back into the box.`); return; }
-      if (now.length >= residentCap()) { playSound('cancel'); speak(`${residentCap()} can live in the base at once. Send one back first.`); return; }
-      setResidents([...now, id]);
+    const order = [...mine, ...shown.filter(id => !mine.includes(id)), ...all.filter(id => !shown.includes(id))];
+    grid.append(...order.map(id => monTile(resident(id).image, resident(id).name, mine.includes(id), () => {
+      const def = resident(id), did = placeMon(b, residents().shown, id, room, residentCap());
+      if (did === 'full') { playSound('cancel'); speak(`${residentCap()} can live in each room. Send one back first.`); return; }
+      if (save.secretBase) saveBase(b); else setResidents(b.mons);
+      if (did === 'out') { playSound('cancel'); show('residents'); speak(`${def.name} went back into the box.`); return; }
       playCry(def.cry);
       show('residents');
-      speak(`${def.name} moved into your Secret Base.`);
-    }, shown.includes(id) ? '✓' : '')));
-    const count = el('span', 'pc-count', `${shown.length}/${residentCap()}`);
-    const h = head('BASE RESIDENTS');
+      speak(`${def.name} moved into your ${where}.`);
+    }, mine.includes(id) ? '✓' : shown.includes(id) ? roomTag(b.house, monRoom(b, id)) : '')));
+    const count = el('span', 'pc-count', `${mine.length}/${residentCap()}`);
+    const h = head(b.house && room !== 'main' ? roomName(b.house, room).toUpperCase() : 'BASE RESIDENTS');
     h.append(count);
     glass.replaceChildren(h, all.length ? grid : el('p', 'pc-empty', 'No catches yet.'));
-    speak(all.length ? 'Tap a Pokémon to move it in or send it back.' : 'Catch Pokémon in the Safari Zone and they can live in your Secret Base.');
+    speak(all.length ? `Tap a Pokémon to move it into the ${where} or send it back. A tag says which room one lives in now.` : 'Catch Pokémon in the Safari Zone and they can live in your Secret Base.');
   },
   mine() {
     menu(`${trainerName().toUpperCase()}'S PC`, [

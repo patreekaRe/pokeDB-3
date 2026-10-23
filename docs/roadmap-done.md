@@ -3372,3 +3372,13 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Secret Base: residents room by room (2026-10-23, cloud)
+The user's call: the yard's Pokémon tab listing only the six living indoors "doesn't make sense". Now every room, the
+backyard too, lists the whole Safari list and holds up to `residentCap()` (6, plus the Ranger Task Board's) of its own;
+a Pokémon lives in one room at a time (`secretBase.at`, `placeMon()` / `monRoom()` in `js/secret-base.js`), tagged with
+its room (`ROOM_KINDS`' `tag`) on the other rooms' tabs, and a tap there moves it. Only the room you're in loads its
+guests. The PC's Base Residents picks for the main room (the room you're in from the base's Storage PC). An old save's
+`out` moves over; a room taken down sends its residents back to the box. `tests/base-residents.test.mjs`; checked
+headless (both tabs and the PC), the base and yard within their phone budget. Branch
+`claude/backyard-garden-pokemon-allowlist-u7kn5b`, pushed to `main` too.

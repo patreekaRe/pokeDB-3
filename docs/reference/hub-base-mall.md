@@ -22,7 +22,8 @@ The first section began as the note on playtesting the live site and grew into t
   (the user's call): `buddy()` / `buddyChoices()` in `js/trainercard.js`, the save's `buddy`, only first forms of owned
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
   all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
-  Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`). A resident whose
+  Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6 a room, shared with `js/base-3d.js`; since
+  2026-10-23 it picks for the main room, or from the base's Storage PC the room you're in, as Pokémon out in the yard below). A resident whose
   Safari shiny is yours comes out shiny, named "Shiny X" in the pickers (`resident(id, mine)`; 2026-10-19), and twinkles
   in the base now and then (`liveGuest()`); a friend's base's stay plain.
 - **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins; balanced the same day, the
@@ -88,10 +89,15 @@ The first section began as the note on playtesting the live site and grew into t
   and a held piece aims at the lawn as drawn (`groundHit()` in `aimFrom()`). Seats (bench, picnic bench, lounger) carry
   a shape `seat` for part c. The lamp post and string lights switch (`light`), the barbecue burns (`fire`).
 - **Pokémon out in the yard** (2026-10-14, part c): outdoors the sheet shows the Pokémon tab as well as Furniture
-  (`.base3d.outdoors .b3-tab`); there it lists the residents on show, a tap letting one out or calling it in
-  (`secretBase.out`, `letOut()` in `js/base-3d.js`; the indoor tab tags those out "Yard", and taking one off show drops
-  it from `out`). `livesOut()` / `homeHere()` / `present()`: a guest is drawn, lives, blocks tiles and takes taps only
-  in its own place (the yard, or whichever room indoors). `YARD_SEATS` / `YARD_SPOTS` say what each yard piece is for and
+  (`.base3d.outdoors .b3-tab`). **Residents room by room** (2026-10-23, the user's call, replacing the yard's list of
+  the six indoors and `secretBase.out`): every room's Pokémon tab, the yard's too, lists the whole Safari list, the
+  ones living in that room first, then those in another room tagged with it (`ROOM_KINDS`' `tag`, `roomTag()`), then
+  the rest; up to `residentCap()` a room, a Pokémon in one room at a time (`secretBase.at`, by id, none for the main
+  room; `placeMon()` / `monRoom()` / `monsIn()` in `js/secret-base.js`). A tap moves one in from wherever it was, or
+  sends one living here back to the box (a twinkle). A resident of a room that isn't there (a lent yard) is in none;
+  a room taken down (`takeDown()`) sends its residents back to the box; an old save's `out` becomes `at` 'yard'
+  (`movedOut()`). `syncGuests()` loads only the room you're in (a friend's, 12 a room at most), on every `showRoom()`;
+  `homeHere()` / `present()`: a guest is drawn, lives, blocks tiles and takes taps only in its own room. `YARD_SEATS` / `YARD_SPOTS` say what each yard piece is for and
   where on it a Pokémon goes (in the piece's frame, turned with it by `seatSpots()`): the swing set's two swings, the
   picnic bench's four places on its benches, two in the rock pond and the inflatable pool. `seatsFor()`: a Water type
   (`ENEMY_DEFS[id].type`) takes only the water where there is a pond or pool, the rest anything but; your partner sits
@@ -441,7 +447,7 @@ ones, and `save.ranger.log` for the rest (`logCatch()` / `logDay()`, fed by `ran
 log only starts counting from 2026-10-16, so ball, night, first-turn and unhurt tasks count from then; Pokédex tasks
 count every catch ever made. Claimed ids are `save.ranger.claimed`.
 - **Rewards** (`rewardText()`): PokéCoins (`awardCoins()`), a ball pack (`save.balls`), room for one more Safari catch to
-  live in the Secret Base (`rangerSlots()`; `residentCap()` in `js/pc.js` is `RESIDENTS` plus it, read by the PC and
+  live in each room of the Secret Base (`rangerSlots()`; `residentCap()` in `js/pc.js` is `RESIDENTS` plus it, read by the PC and
   `js/base-3d.js`), or a piece of the **Safari set** (`RANGER_FURNITURE`, painted in `js/base-furniture-safari.js`, earned
   through `js/data/furniture.js`'s `ranger` source: pennant, lantern, acacia, ball rack, rug, expedition map table, tent,
   jeep). Nothing helps a first try score higher, so the leaderboard stays fair. Each claim counts toward the **Ranger
