@@ -23,6 +23,7 @@ import { SAFARI_ROSTER } from './data/safari.js';
 
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
+const LOST_KEY = 'pokedb.run.lost';
 
 /** The two localStorage keys, for the cloud save (js/cloud.js), which copies them as they are. */
 export const SAVE_KEYS = { save: KEY, run: RUN_KEY };
@@ -386,4 +387,19 @@ export function clearRunData() {
   try { localStorage.removeItem(RUN_KEY); }
   catch (err) { /* blocked: nothing to clear */ }
   wrote();
+}
+
+/* A run that wouldn't load used to vanish without a trace (2026-10-23: the user lost a run with berries packed and
+   nothing showed why). The last one is kept here with its error, and ?runback puts it back to try again. */
+export function stashLostRun(saved, err) {
+  try { localStorage.setItem(LOST_KEY, JSON.stringify({ at: Date.now(), why: String(err?.stack || err), saved })); }
+  catch (e) { /* storage full or blocked */ }
+}
+
+export function restoreLostRun() {
+  try {
+    const lost = JSON.parse(localStorage.getItem(LOST_KEY));
+    if (lost?.saved) saveRunData(lost.saved);
+    return lost;
+  } catch (err) { return null; }
 }

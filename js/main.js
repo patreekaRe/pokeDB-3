@@ -37,7 +37,7 @@ import { sealOn, shardsPlaced } from './data/towns.js';
 import { runLines, landLine } from './data/camp.js';
 import { campNews } from './towns.js';
 import { gymTalk } from './gym.js';
-import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { getSave, updateSave, clearRunData, loadRunData, restoreLostRun, isShiny } from './storage.js';
 import { meowthDue } from './meowth.js';
 import { sampleMail } from './mail.js';
 import { checkBadges } from './progress.js';
@@ -197,6 +197,7 @@ function init() {
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
   // ?coins=5000: sets the PokéCoins for a playtest (a branch preview starts on its own empty save)
   if (query.has('coins')) updateSave(d => { d.coins = Math.max(0, parseInt(query.get('coins'), 10) || 0); });
+  if (query.has('runback') && !loadRunData()) console.log('Lost run put back:', restoreLostRun()?.why);   // stashLostRun()'s
   if (query.has('walk')) updateSave(d => { d.titleHub = true; });   // Settings' Title screen, by URL (?signs only for the page load)
   if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
