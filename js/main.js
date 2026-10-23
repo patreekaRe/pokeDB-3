@@ -80,7 +80,7 @@ import { biomeIntro, placeIntro } from './biome-intro.js';
 import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
 import { GYM_LEADERS } from './data/gym.js';
-import { HOUSES_BY_ID } from './data/houses.js';
+import { HOUSES_BY_ID, housesOpen } from './data/houses.js';
 
 /* ---------- moving between screens ---------- */
 
@@ -362,6 +362,11 @@ function init() {
     hideDevice();
     await curtain(true);
     leaveTitle();
+    // with houses on, a visit to the house starts outside it, on their front lawn (the yard keeps its own way in)
+    if (housesOpen() && guest.start !== 'yard' && await (await import('./front-lawn.js')).openLawn({ name: guest.name, json: guest.json, buddyKey: guest.buddy }) === 'left') {
+      await showHome(); curtain(false);
+      return 'left';
+    }
     const went = await (await import('./base-3d.js')).openBase3d({ onLeave: showHome, guest, start: guest.start });
     if (went === false) { await showHome(); curtain(false); }
     return went;
@@ -392,7 +397,13 @@ function init() {
   if (params.has('base') || params.has('3d')) {
     if (params.has('flat')) return import('./secret-base.js').then(m => m.openBase());
     // &asfriend: your own saved base as a friend visiting it sees it (the Trainers app's Visit), nothing saved
-    if (params.has('asfriend') && getSave().secretBase) return import('./base-3d.js').then(m => m.openBase3d({ guest: { name: 'A FRIEND', json: JSON.stringify(getSave().secretBase) } }));
+    if (params.has('asfriend') && getSave().secretBase) return (async () => {
+      // with ?houses, through your own front lawn first, as a friend arrives (your house, your buddy at the mailbox)
+      const [{ pageBase }, { trainerName }, { buddyKey }] = await Promise.all([import('./trainers.js'), import('./leaderboard.js'), import('./trainercard.js')]);
+      const json = JSON.stringify(pageBase(getSave()));
+      if (housesOpen() && await (await import('./front-lawn.js')).openLawn({ name: trainerName(), json, buddyKey: buddyKey() }) === 'left') return location.assign(location.pathname);
+      return (await import('./base-3d.js')).openBase3d({ guest: { name: 'A FRIEND', json } });
+    })();
     return import('./base-3d.js').then(m => m.openBase3d());
   }
   // ?yard: out in the Secret Base's backyard, lent for the page load if it isn't bought (js/secret-base.js's loadBase())

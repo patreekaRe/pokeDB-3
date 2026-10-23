@@ -34,6 +34,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { shinyImage } from './data/shinies.js';
 import { isStarterUnlocked } from './progress.js';
 import { shelfApp, typed } from './bagdex.js';
+import { housesOpen, homeOf } from './data/houses.js';
 import { playCry, playSound } from './audio.js';
 import { $, el, fitText } from './ui.js';
 import { showTrainerNotices, showTrainerWelcome, noticeOpen } from './trainer-notice.js';
@@ -122,7 +123,7 @@ export function publishTrainer() {
       const s = await cloudSession();
       if (!s.user) return null;
       const code = await ensureCode(s), save = getSave(), b = buddyKey(save);
-      const doc = trainerDoc({ code, name: trainerName(), card: myCard(save), buddy: b, base: save.secretBase });
+      const doc = trainerDoc({ code, name: trainerName(), card: myCard(save), buddy: b, base: pageBase(save) });
       if (checkTrainer(doc)) return code;
       const page = s.F.doc(s.db, TRAINERS, s.user.uid);
       // rules published before the card's newer numbers refuse them: the page still goes up without, the newest off first
@@ -236,6 +237,10 @@ function hasYard(json) {
    loads the furniture to draw the app. It resolves false if their base couldn't be read, 'run' during a run. */
 let visitor = null;
 export const onVisit = (fn) => { visitor = fn; };
+
+/** The base a page carries: with houses on, the house lived in rides along as `lot` ({ id, paint }), for a friend's
+    front lawn (js/front-lawn.js); the rules check only the JSON's length, so no new key is needed on the page. */
+export const pageBase = (save) => (housesOpen() && save.secretBase && homeOf(save) ? { ...save.secretBase, lot: homeOf(save) } : save.secretBase);
 
 const atOf = (doc) => (typeof doc?.at?.toMillis === 'function' ? doc.at.toMillis() : +doc?.at || 0);
 const playTime = (min) => `${Math.floor(min / 60)}h ${min % 60}m`;
@@ -560,7 +565,7 @@ export function trainersApp() {
       visit.addEventListener('click', async () => {
         visit.disabled = true;
         playSound('confirm');
-        const went = await visitor({ name: doc.name, json: doc.base, start });
+        const went = await visitor({ name: doc.name, json: doc.base, start, buddy: doc.buddy });
         if (went !== false && went !== 'run') return;
         playSound('cancel');
         visit.textContent = went === 'run' ? 'Not mid-run' : 'Can\'t open it';
@@ -656,7 +661,7 @@ export function trainersApp() {
     remount();
     if (myCardSample()) {
       const save = getSave();
-      docs = new Map([[MY_CARD, readDoc({ ...trainerDoc({ code: 'AAAAAAAA', name: trainerName(), card: myCard(save), buddy: buddyKey(save), base: save.secretBase }), at: Date.now() })]]);
+      docs = new Map([[MY_CARD, readDoc({ ...trainerDoc({ code: 'AAAAAAAA', name: trainerName(), card: myCard(save), buddy: buddyKey(save), base: pageBase(save) }), at: Date.now() })]]);
       state = 'sample';
       remount();
       return;

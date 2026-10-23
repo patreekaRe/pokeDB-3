@@ -121,7 +121,7 @@ const LIGHT = {
   night: { sky: '#6878c0', ground: '#141830', amb: 0.8, sun: '#a0b4f8', sunI: 0.8, at: [4, 14, 6], bg: '#101830', glow: 1.6, lamp: 3, bugs: 'fireflies', bugsI: 1, air: 'clearing-night' },
 };
 // the Secret Base's backyard (js/base-3d.js) grows the same trees under the same sky
-export { P as CLEARING_LOOK, LIGHT as CLEARING_LIGHT, treeArt, bushArt };
+export { P as CLEARING_LOOK, LIGHT as CLEARING_LIGHT, treeArt, bushArt, ancientArt };
 const AIRS = ['clearing-day', 'clearing-night'];
 const BUGS = 90;
 
