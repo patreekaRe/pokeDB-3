@@ -80,7 +80,7 @@ runs: L0 69 / 78 / 71, L3 60 / 62 / 64, L5 37 / 32 / 38).
 ## Held berries (2026-10-15, the user's ask)
 
 Like the games' held items: your Pokémon holds at most one at a time, `run.held = { id, used }`, packed from Kurt's
-Workshop before the run (docs/reference/towns.md's Kurt's Workshop: the Held berries shelf and Pack); a Run kit item packed
+Workshop before the run (docs/reference/towns.md's Kurt's Workshop: the Held berries shelf and Packing, at the Berry Booth since 2026-10-23); a Run kit item packed
 the same way is just an item in `run.items` from the start. `HELD` in `js/data/held.js` (pure, `tests/held.test.mjs`): each
 goes off by itself once, in battle, and is then eaten (`heldFires()` says when, `heldGoes()` in `js/battle.js` does it):
 - **Oran Berry**: the first time your HP is below half after losing some, heal 10.

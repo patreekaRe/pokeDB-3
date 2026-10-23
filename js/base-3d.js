@@ -28,13 +28,13 @@ import { isPlot, tendPlot, forgetPlots, liveGarden, openGarden } from './berry-g
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
-  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard, visitBase, readGuestBase, freshDesigns, seeDesign } from './secret-base.js';
+  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard, visitBase, readGuestBase, freshDesigns, seeDesign, monRoom, monsIn, placeMon } from './secret-base.js';
 import { lendTrainerShows } from './base-furniture-trainer.js';
 import { loadStatues, statuesIn } from './base-furniture-statues.js';
 import { loadFigures } from './base-figures.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
-import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
+import { roomById, roomName, roomTag, doorsOf, pipTile, floorName } from './data/house.js';
 import { publishTrainer } from './trainers.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
@@ -825,17 +825,15 @@ const rand = (a, b) => a + Math.random() * (b - a);
 /** The catches on show: the save's pick, or before one is made the first onShowMax() caught, so the room is never empty.
     `&guests` lends every Safari Pokémon as caught for the page load, to playtest without a full Safari Pokédex. */
 function onShow() {
-  if (host) { const all = base.mons.filter(id => ENEMY_DEFS[id] && SAFARI_DEX_PAGES.some(p => p.ids.includes(id))).slice(0, 12); return { all, shown: all }; }
+  if (host) { const all = base.mons.filter(id => ENEMY_DEFS[id] && SAFARI_DEX_PAGES.some(p => p.ids.includes(id))); return { all, shown: all }; }
   const lend = new URLSearchParams(location.search).has('guests');
   const caught = new Set(getSave().safariDex?.caught || []);
   const all = [...new Set(SAFARI_DEX_PAGES.flatMap(p => p.ids))].filter(id => (lend || caught.has(id)) && ENEMY_DEFS[id]);
   return { all, shown: (base.mons ?? all.slice(0, onShowMax())).filter(id => all.includes(id)) };
 }
 
-/** Whether a resident lives out in the yard (let out on the yard's Pokémon tab) rather than indoors. */
-const livesOut = (id) => !!roomById(base.house, 'yard') && !!base.out?.includes(id);
-/** The guests in the room you're in: out in the yard the ones let out, indoors the rest. */
-const homeHere = (g) => livesOut(g.id) === outdoors();
+/** Whether a resident lives in the room you're in: each lives in one room, the yard too (monRoom() in js/secret-base.js). */
+const homeHere = (g) => monRoom(base, g.id) === (base.here || 'main');
 const present = () => guests.filter(g => g.w && homeHere(g));
 
 /** Tiles someone stands on or is heading for, so two never pick the same one. */
@@ -856,9 +854,10 @@ function freeTiles(skip) {
   return out;
 }
 
-/** Bring the room's guests in line with the pick: new ones load in (a hop and hearts as they arrive), dropped ones go. */
+/** Bring the guests in line with the room you're in: only its residents are loaded (a friend's base, 12 a room at most),
+    new ones load in (a hop and hearts as they arrive), the rest go. */
 function syncGuests() {
-  const { shown } = onShow();
+  const shown = monsIn(base, onShow().shown, base.here || 'main').slice(0, host ? 12 : Infinity);
   for (const g of guests.filter(g => !shown.includes(g.id))) dropGuest(g);
   for (const id of shown) if (!guests.some(g => g.id === id)) addGuest(id);
 }
@@ -882,19 +881,9 @@ async function addGuest(id) {
   if (homeHere(g)) cheer(g, 2);
 }
 
-/** Out to the yard or back in, from the yard's Pokémon tab: let out, it hops in on a free patch of lawn with hearts;
-    called in, it's off its seat and gone in a twinkle. */
-function letOut(id) {
-  const g = guests.find(x => x.id === id), w = g?.w;
-  if (!w) return;
-  if (!homeHere(g)) {
-    for (let i = 0; i < 4; i++) setTimeout(() => puff('star', { x: w.x + rand(-0.3, 0.3), y: w.y, z: w.z }, { top: rand(0.1, 0.5) }), i * 60);
-    Object.assign(w, { seat: null, goal: null, jump: null, sleeping: false, path: [], y: 0 });
-    return;
-  }
-  const spots = freeTiles(w), t = spots.length ? spots[Math.floor(Math.random() * spots.length)] : nearestFree(walker.tile);
-  Object.assign(w, { seat: null, goal: null, jump: null, sleeping: false, path: [], y: 0, tile: t, x: tileX(t.x), z: tileZ(t.y), think: performance.now() + rand(1500, 3500) });
-  cheer(g, 3);
+/** Sent back to the box from the Pokémon tab: gone in a twinkle where it stood. */
+function twinkle(w) {
+  for (let i = 0; i < 4; i++) setTimeout(() => puff('star', { x: w.x + rand(-0.3, 0.3), y: w.y, z: w.z }, { top: rand(0.1, 0.5) }), i * 60);
 }
 
 /** The places on a piece a Pokémon can sit: a bed or a cushion its middle; a chair, sofa or bench one a tile, a
@@ -1392,7 +1381,7 @@ async function yardLines() {
     `${metSmeargle(base) ? 'Hello again!' : 'Hello there! I\'m Smeargle.'} So this is your backyard. What a lovely patch of lawn!`,
     `It's yours to furnish. Garden pieces come from my garden catalogue at the Poké Mall${metSmeargle(base) ? '' : ', which opens tomorrow'}: just tap me at the shop.`,
     'Whatever you buy waits in storage. Set it out with Furniture, the same as indoors.',
-    `And the Pokémon tab lets the ${onShowMax()} on show come out to play. They'll swim, swing and sit wherever you give them room.`,
+    `And on the Pokémon tab, up to ${onShowMax()} of your Safari catches can live out here. They'll swim, swing and sit wherever you give them room.`,
     'Oh! I left you a Berry plot in storage, too. Set it down, then tap it while walking to plant a berry.',
     'Cheri, Oran and Pecha Berries take a day, Sitrus two and Lum three. They ripen at midnight, UTC.',
     'Water a growing plot once a day, and it gives one more berry for every day it was watered.',
@@ -1740,28 +1729,18 @@ function tray(which = tab) {
     .forEach(s => add(s.name, () => paperArt(field, s.id), base[field] === s.id, () => paperTap(field, s), ownsPaper(base, field, s) ? '' : s.price.toLocaleString()));
   if (tab === 'wall') swatch(WALLPAPERS, 'wall');
   if (tab === 'floor') swatch(FLOORS, 'floor');
-  if (tab === 'mons' && outdoors()) {
-    // out in the yard: the ones on show, a tap letting one out onto the lawn or calling it back in
-    for (const id of onShow().shown) {
+  if (tab === 'mons') {
+    const { all, shown } = onShow(), mine = monsIn(base, shown, base.here || 'main');
+    // the ones in this room first, then the ones living in another room (tagged with it), then every other catch in Pokédex order
+    for (const id of [...mine, ...shown.filter(id => !mine.includes(id)), ...all.filter(id => !shown.includes(id))]) {
       const img = Object.assign(document.createElement('img'), { loading: 'lazy', src: resident(id).image, alt: '', draggable: false, className: 'pixel' });
-      add(resident(id).name, img, livesOut(id), () => {
-        base.out = livesOut(id) ? base.out.filter(x => x !== id) : [...(base.out || []), id];
-        playSound(livesOut(id) ? 'confirm' : 'cancel');
-        save(); letOut(id); tray(); refresh();
-      }, livesOut(id) ? '✓' : '');
-    }
-  } else if (tab === 'mons') {
-    const { all, shown } = onShow();
-    // the ones on show first, then every other catch in Pokédex order
-    for (const id of [...shown, ...all.filter(id => !shown.includes(id))]) {
-      const img = Object.assign(document.createElement('img'), { loading: 'lazy', src: resident(id).image, alt: '', draggable: false, className: 'pixel' });
-      add(resident(id).name, img, shown.includes(id), () => {
-        const now = onShow().shown;
-        if (now.includes(id)) { base.mons = now.filter(x => x !== id); base.out = base.out?.filter(x => x !== id); playSound('cancel'); }
-        else if (now.length >= onShowMax()) { playSound('cancel'); hushed = null; hud.hint.classList.remove('hush'); hud.hint.textContent = `${onShowMax()} can live here at once. Tap one to send it back first.`; return; }
-        else { base.mons = [...now, id]; playSound('confirm'); }
+      add(resident(id).name, img, mine.includes(id), () => {
+        const w = guests.find(g => g.id === id && homeHere(g))?.w, did = placeMon(base, onShow().shown, id, base.here || 'main', onShowMax());
+        if (did === 'full') { playSound('cancel'); hushed = null; hud.hint.classList.remove('hush'); hud.hint.textContent = `${onShowMax()} can live in each room. Tap one here to send it back first.`; return; }
+        if (did === 'out' && w) twinkle(w);
+        playSound(did === 'in' ? 'confirm' : 'cancel');
         save(); syncGuests(); tray(); refresh();
-      }, shown.includes(id) ? (livesOut(id) ? 'Yard' : '✓') : '');
+      }, mine.includes(id) ? '✓' : shown.includes(id) ? roomTag(base.house, monRoom(base, id)) : '');
     }
   }
 }
@@ -1854,8 +1833,7 @@ function refresh() {
     : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
     : tab === 'furniture' && outdoors() && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'No garden pieces in storage. Smeargle sells them at the Poké Mall: tap Smeargle for the garden catalogue.'
     : tab === 'furniture' && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
-    : tab === 'mons' && outdoors() && mons.shown.length ? 'Tap one to let it out in the yard, or call it back in.'
-    : tab === 'mons' ? (mons.all.length ? `Up to ${onShowMax()} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
+    : tab === 'mons' ? (mons.all.length ? `Up to ${onShowMax()} can live in each room. A tag says which room one lives in now.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : '';
   hud.hint.classList.toggle('hush', hud.hint.textContent === hushed);
   if (sel >= 0) {
@@ -2168,6 +2146,7 @@ function showRoom(spot = () => null) {
     const spots = freeTiles(w), t = spots.length ? spots[Math.floor(Math.random() * spots.length)] : walker.tile;
     Object.assign(w, { seat: null, goal: null, jump: null, sleeping: false, y: 0, path: [], tile: t, x: tileX(t.x), z: tileZ(t.y), think: performance.now() + rand(800, 3000) });
   }
+  syncGuests();
   zoom = 1; camZ = panZ = 0; follow = true;
   camX = panX = walker.x;
   shots = fitted = null;

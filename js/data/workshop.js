@@ -197,6 +197,30 @@ export function packPouch(ws, ids) {
   return { ws: { ...ws, kit }, berries };
 }
 
+/** The Berry Booth's saved loadout (`save.loadout`, js/berrybooth.js) held to what's still kept: { berries: held berry
+    recipe ids, up to POUCH, the first held as the run sets out; item: a run kit recipe id or null }. */
+export function fitLoadout(lo, ws) {
+  const room = { ...ws.kit };
+  const berries = (lo?.berries || []).slice(0, POUCH).filter(id => RECIPES_BY_ID[id]?.kind === 'held' && room[id]-- > 0);
+  const item = RECIPES_BY_ID[lo?.item]?.kind === 'kit' && ws.kit?.[lo.item] > 0 ? lo.item : null;
+  return { berries, item };
+}
+
+/** Whether the Berry Booth beckons (a "!" over the Clearing's kiosk): held berries kept and nothing packed. */
+export function boothBeckons(lo, ws) {
+  const now = fitLoadout(lo, ws);
+  return !now.berries.length && !now.item && packable(ws).some(o => o.recipe.kind === 'held');
+}
+
+/** Prepare's one line on what a run sets out with (the user's pick, 2026-10-23: read-only, packed at the Berry Booth). */
+export function loadoutLine({ berries, item }) {
+  if (!berries.length && !item) return 'Nothing packed: visit the Berry Booth by the Clearing\'s gate.';
+  const short = (id) => HELD_BY_ID[RECIPES_BY_ID[id].makes].name.replace(/ Berry$/, '');
+  const parts = berries.map((id, i) => (i ? short(id) : `${short(id)} (held)`));
+  if (item) parts.push(`Kit: ${RECIPES_BY_ID[item].name}`);
+  return `Bringing: ${parts.join(' · ')}`;
+}
+
 /** A gift handed to `leader`: one fewer held, their liking up (two for their favourite), and their favourite the first
     time makes them fond of you (their signature piece). Returns { ws, favourite, first }. */
 export function giveGift(ws, giftId, leader) {

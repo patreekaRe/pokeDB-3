@@ -17,12 +17,22 @@ The first section began as the note on playtesting the live site and grew into t
 
 - **The Clearing's PC** (2026-10-09, the user's ask; finished the same day): right of the plaza (`PC_AT`; a real 3D model since 2026-10-09, the user's ask, `pcModel()` in `js/hub-pc.js`, its screen's scan lines rolling, `livePc()`; was `pcArt()` in
   `js/hub-3d.js`, after Pokopia's Pokémon Center PC), a tap logs on to `js/pc.js`, full screen over the hub: Gen 3's menu,
-  the Mailbox (the big PokéCoin prizes, Pokédex / bonus / Safari pages, the whole Pokédex, a type's first Level 5 jackpot, feats' coins, are posted there as letters by `post()` in `js/mail.js`, `save.mail`, and claimed with a little moment: the envelope opens, the letter rises, the coins count up; an envelope bobs over the PC while one waits, `pcMail` in `js/hub-3d.js`; with the Signs title they're paid at once; `?mail` drops sample letters into an empty mailbox), Walking buddy and Base residents (straight off the menu since 2026-10-11, the user's ask; Bill's PC held them; both pickers say the buddy and the Pokédex partner differ), your PC (Rename, the same nickname as Settings'), Prof. Oak's PC (the Pokédex rating, a bar per page and a Next unlock card cycling hints, `rating()` / `hints()`), Decorations (your PC's: the base's furniture, in the room or in storage, Put away; every base owns one Storage PC, `FREE_PC` in `js/secret-base.js`, which tapped in the room opens it there, `logOn()` in `js/base-3d.js`), Sign in / Cloud save (the cloud save's window, `openCloud()`; the title corner's Sign in PC is hidden in hub mode since, `#title-account` in `css/hub.css`), the Hall of Fame / Record
+  the Mailbox (the big PokéCoin prizes, Pokédex / bonus / Safari pages, the whole Pokédex, a type's first Level 5 jackpot, feats' coins, are posted there as letters by `post()` in `js/mail.js`, `save.mail`, and claimed with a little moment: the envelope opens, the letter rises, the coins count up; an envelope bobs over the PC while one waits, `pcMail` in `js/hub-3d.js`; with the Signs title they're paid at once; `?mail` drops sample letters into an empty mailbox), Base residents (straight off the menu since 2026-10-11, the user's ask; Bill's PC held them; the Walking buddy page beside it moved out to the Buddy Projector on 2026-10-22, below), your PC (Rename, the same nickname as Settings'), Prof. Oak's PC (the Pokédex rating, a bar per page and a Next unlock card cycling hints, `rating()` / `hints()`), Decorations (your PC's: the base's furniture, in the room or in storage, Put away; every base owns one Storage PC, `FREE_PC` in `js/secret-base.js`, which tapped in the room opens it there, `logOn()` in `js/base-3d.js`), Sign in / Cloud save (the cloud save's window, `openCloud()`; the title corner's Sign in PC is hidden in hub mode since, `#title-account` in `css/hub.css`), the Hall of Fame / Record
   Book (the device's app, `onApp`) and Exit PC (was Log off) (`pc-on` / `pc-off`). **The walking buddy is not the Pokédex's partner**
   (the user's call): `buddy()` / `buddyChoices()` in `js/trainercard.js`, the save's `buddy`, only first forms of owned
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
   all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
-  Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`). A resident whose
+  **The PC's Secret Base side loads behind its boot screen** (2026-10-23, the user: the PC didn't open): `js/secret-base.js`
+  pulls in every furniture model (~170 modules), so `js/pc.js` imports it, the statues and the figures in `loadBaseKit()`
+  rather than up front, and the boot screen waits on it; `warmPC()` starts it as you head for the PC (`goTo()` in
+  `js/hub-3d.js`). Keep them out of `js/pc.js`'s static imports, or a tap on the PC waits on all of it again.
+  Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6 a room, shared with `js/base-3d.js`; since
+  2026-10-23 it picks for the main room, or from the base's Storage PC the room you're in, as Pokémon out in the yard below).
+  A new Safari player's first two catches (`FIRST_HOME`) move into the main room by themselves, the first with a
+  "🏠 A new housemate!" unlock window saying every catch can live there, 6 a room (`moveInFirst()` in `js/safari-home.js`,
+  called on a new Safari Pokédex catch in `js/run.js`, `save.safariHomeTold`; the user's call, 2026-10-23). Before the base
+  is bought that writes a `secretBase` of only `mons`, which `loadBase()` keeps, so "has a base" checks read
+  `baseOwned || secretBase?.v >= 2`. A resident whose
   Safari shiny is yours comes out shiny, named "Shiny X" in the pickers (`resident(id, mine)`; 2026-10-19), and twinkles
   in the base now and then (`liveGuest()`); a friend's base's stay plain.
 - **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins; balanced the same day, the
@@ -88,10 +98,15 @@ The first section began as the note on playtesting the live site and grew into t
   and a held piece aims at the lawn as drawn (`groundHit()` in `aimFrom()`). Seats (bench, picnic bench, lounger) carry
   a shape `seat` for part c. The lamp post and string lights switch (`light`), the barbecue burns (`fire`).
 - **Pokémon out in the yard** (2026-10-14, part c): outdoors the sheet shows the Pokémon tab as well as Furniture
-  (`.base3d.outdoors .b3-tab`); there it lists the residents on show, a tap letting one out or calling it in
-  (`secretBase.out`, `letOut()` in `js/base-3d.js`; the indoor tab tags those out "Yard", and taking one off show drops
-  it from `out`). `livesOut()` / `homeHere()` / `present()`: a guest is drawn, lives, blocks tiles and takes taps only
-  in its own place (the yard, or whichever room indoors). `YARD_SEATS` / `YARD_SPOTS` say what each yard piece is for and
+  (`.base3d.outdoors .b3-tab`). **Residents room by room** (2026-10-23, the user's call, replacing the yard's list of
+  the six indoors and `secretBase.out`): every room's Pokémon tab, the yard's too, lists the whole Safari list, the
+  ones living in that room first, then those in another room tagged with it (`ROOM_KINDS`' `tag`, `roomTag()`), then
+  the rest; up to `residentCap()` a room, a Pokémon in one room at a time (`secretBase.at`, by id, none for the main
+  room; `placeMon()` / `monRoom()` / `monsIn()` in `js/secret-base.js`). A tap moves one in from wherever it was, or
+  sends one living here back to the box (a twinkle). A resident of a room that isn't there (a lent yard) is in none;
+  a room taken down (`takeDown()`) sends its residents back to the box; an old save's `out` becomes `at` 'yard'
+  (`movedOut()`). `syncGuests()` loads only the room you're in (a friend's, 12 a room at most), on every `showRoom()`;
+  `homeHere()` / `present()`: a guest is drawn, lives, blocks tiles and takes taps only in its own room. `YARD_SEATS` / `YARD_SPOTS` say what each yard piece is for and
   where on it a Pokémon goes (in the piece's frame, turned with it by `seatSpots()`): the swing set's two swings, the
   picnic bench's four places on its benches, two in the rock pond and the inflatable pool. `seatsFor()`: a Water type
   (`ENEMY_DEFS[id].type`) takes only the water where there is a pond or pool, the rest anything but; your partner sits
@@ -441,7 +456,7 @@ ones, and `save.ranger.log` for the rest (`logCatch()` / `logDay()`, fed by `ran
 log only starts counting from 2026-10-16, so ball, night, first-turn and unhurt tasks count from then; Pokédex tasks
 count every catch ever made. Claimed ids are `save.ranger.claimed`.
 - **Rewards** (`rewardText()`): PokéCoins (`awardCoins()`), a ball pack (`save.balls`), room for one more Safari catch to
-  live in the Secret Base (`rangerSlots()`; `residentCap()` in `js/pc.js` is `RESIDENTS` plus it, read by the PC and
+  live in each room of the Secret Base (`rangerSlots()`; `residentCap()` in `js/pc.js` is `RESIDENTS` plus it, read by the PC and
   `js/base-3d.js`), or a piece of the **Safari set** (`RANGER_FURNITURE`, painted in `js/base-furniture-safari.js`, earned
   through `js/data/furniture.js`'s `ranger` source: pennant, lantern, acacia, ball rack, rug, expedition map table, tent,
   jeep). Nothing helps a first try score higher, so the leaderboard stays fair. Each claim counts toward the **Ranger
@@ -826,3 +841,24 @@ kept on screen): Smeargle's Garden catalogue only once the save has a backyard (
 Gardevoir's Grand catalogue always. Re-read on each walk in. The Garden pond
 (`pond`) is now `layer: 'rug'`, walked over like the Koi and Frozen ponds (the user couldn't tell what it was or why it
 blocked them).
+
+## The Buddy Projector (2026-10-22)
+
+The user's ask: a hologram of the walking buddy, on a device of its own just for changing it, not over the PC; then the
+PC's WALKING BUDDY page taken out. It stands at tile (11, 10), left of the quest board, where Halloween's dead tree
+stood (the user marked the spot and had the tree removed). `makeHolo()` in `js/hub-holo.js`: a white pedestal banded in
+red (merged, `stand`), a lens throwing an additive cyan cone up to the buddy's GIF frames repainted in light (cropped by
+`spriteFit()`, scan lines, a rolling band, a rare glitch slice, a flicker; still under `calmFx()`), turning gently over a
+painted ring of dashes; about seven draws. `swapBuddy()` / `refreshBuddy()` call `holo.show(mate)`, which scans the new
+one in from the feet up. Its light takes no tap. Tapped, the place card's Change buddy opens `openBuddyPicker()` in
+`js/holo-pick.js`: a narrow cyan panel (`.holo-pick` in `css/hub.css`), the `buddyChoices()` grid, and a Shiny switch
+that is always there (the user's ask): every buddy's shiny, greyed and locked till it's bought at the Game Corner.
+A pick saves `save.buddy`, cries and closes; the buddy hops out in place.
+
+**The Berry Booth** (2026-10-23, the user's idea): a digital kiosk (`boothArt()`, a teal body, a berry-pink canopy, a lit
+screen) at `BOOTH_AT` (13, 0). The same day, the user asked for it and New game's Pokéstop to stand closer to the road:
+both moved a row in front of the gate, right at the avenue's edges in line with its lamps (`STOP_AT` 17, 0; each pulled
+`ROADSIDE` 0.4 towards the road, their doorsteps on it at 14, 0 and 16, 0), and the route sign was taken out (the user's call: not needed
+now). Only once `workshopOpen()`; a yellow "!" (`boothMark`, `boothMarks()`) while
+held berries are kept and nothing's packed. A tap opens `openBerryBooth()` (js/berrybooth.js); docs/reference/towns.md's
+Packing says what's inside.

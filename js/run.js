@@ -35,9 +35,12 @@ import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.j
 import { runTypes, outStarter, runPool, runItems, fitsRun, newDuo, restoreDuo, syncDecks, duoGains, duoStarters } from './data/duo.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
+import { moveInFirst } from './safari-home.js';
 import { openSealed } from './data/exchange.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
-import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
+import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion, bestWin, starName, isMaster, LEVEL_SHELLS, shellEarned } from './data/difficulty.js';
+import { lettersFor } from './data/level-letters.js';
+import { wearFoil } from './foil.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner, BASICS, tabletUps, bonfireGift, flipState, rivalWants } from './data/events.js';
@@ -76,7 +79,7 @@ import { renderTower, hideTower, guardianIntro, towerFall, barReady, setTowerGra
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
-import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
+import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, duoRoad, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
@@ -166,6 +169,8 @@ const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : isTo
 export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 200 };   // winBonus 50 until 2026-09-28, 100 until 2026-10-16 (the user's calls: runs the best way to earn)
 /** PokéCoins for the first Trainer Level 5 win with each type (Coin Finder adds to it). */
 export const LEVEL5_JACKPOT = 500;
+/** PokéCoins for the first win ever on each Trainer Level above 5 (the user's pick, 2026-10-22; Coin Finder adds to it). */
+export const LEVEL_JACKPOT = { 6: 600, 7: 700, 8: 800, 9: 900, 10: 2000 };
 
 /** A coin reward at the run's Trainer Level (COIN_LEVEL_BONUS a level), before the Coin Finder. */
 const levelCoins = (amount) => Math.round(amount * (1 + COIN_LEVEL_BONUS * run.level));
@@ -520,7 +525,7 @@ export function continueRun(saved) {
 export function beginRun(starter, level = 0, peek = null, safari = null, tower = null, pack = null, duo = null) {
   dropNotes();
   const perks = !safari?.first && !tower;   // the Safari's first try of the day and every climb go without perks (fairTry())
-  const startHp = BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0);   // shop passive: Max HP Boost
+  const startHp = Math.round((BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0)) * (runMods(starter, level, 0).maxHpMult ?? 1));   // shop passive: Max HP Boost; Level 7's Worn Out
 
   run = {
     starter,
@@ -615,6 +620,7 @@ export function beginSafari(daily = safariDaily(), pair = null) {
   // ?powerplant / ?icecave / ?dojomountain / ?quarry / ?windycliffs / ?nightalley: a Duo Run whose first area is the Power
   // Plant, the Ice Cave, Dojo Mountain, the Quarry, the Windy Cliffs or Night Alley, before its day (several: the first ones, in that order); a playtest,
   // and a Duo Run is never posted
+  if (duo) daily = { ...daily, areas: duoRoad(daily) };
   const lent = duo ? ['powerplant', 'icecave', 'dojomountain', 'quarry', 'windycliffs', 'nightalley'].filter(id => new URLSearchParams(location.search).has(id)) : [];
   if (lent.length) {
     daily = { ...daily, areas: [...lent.map(id => SAFARI_AREAS_BY_ID[id]), ...daily.areas.filter(a => !lent.includes(a.id))].slice(0, daily.areas.length) };
@@ -1119,6 +1125,7 @@ function showMap() {
   scoping = rubbing = false;
   showBadgeNews();
   setTheme(outStarter(run).type);
+  wearFoil(run);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
   warmPlaces();
 
@@ -1798,7 +1805,11 @@ const rubbingReads = () => DEX_RUBBINGS[dexPerk('unown-rubbing')];
 const rubbingUsed = () => Object.values(run.map.byId).filter(n => n.read).length;   // saved with the map's nodes, like the Scope's
 
 /** Tracker's Eye's level and your type, for renderMap() (a peek at the map shows the marks too). */
-const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type });
+const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type, duoNew: isSafari() && !peeking ? duoNew : null });
+
+/** The new duo type a Safari wild would bring if caught (its line's look not in your pool yet), or null: the map marks its
+    room (the user's call, 2026-10-20). */
+const duoNew = (id) => Object.keys(duoGains([id], getSave().duoPool))[0] ?? null;
 
 function drawRubbing(nodes) {
   const total = rubbingReads(), left = total - rubbingUsed();
@@ -1875,7 +1886,7 @@ async function fight(node, { talked = false } = {}) {
   const last = !isTower() && run.biome === finalBiome(run.starter);   // a climb has no last boss
   if (node.type === 'boss' && !last && canEvolve()) preloadEvolution(run.starter, run.stage);
   if (node.type === 'boss' && last) {
-    preloadWinScene(run.starter, isMewtwoRun(run.starter) || run.level === MAX_LEVEL);
+    preloadWinScene(run.starter, isMewtwoRun(run.starter) || isChampion(run.level));
   }
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const intro = isTower() && node.type === 'boss' ? await guardianIntro({ def: ENEMY_DEFS[node.enemyId], floor: floorOf(run.tower.flight, node.floor) }) : null;
@@ -2673,14 +2684,19 @@ function afterFight(node, result) {
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
     if (shinyCatch && !lentShiny) run.tally.shinies = (run.tally.shinies || 0) + 1;   // the leaderboard's ✨
-    if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+    if (!peeking && markSafari('caught', node.enemyId)) {
+      dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+      const home = moveInFirst(node.enemyId, result.shiny && !lentShiny);
+      if (home?.told) unlocked.push(home.told);
+      else if (home) dexNews.push(`🏠 ${home.name} moved into your Secret Base too!`);
+    }
     if (shinyCatch) dexNews.unshift(shinyLine(ENEMY_DEFS[node.enemyId].name, shinyCatch) + (lentShiny ? ' (A playtest: nothing is saved.)' : ''));
     if (opened.length) dexNews.splice(shinyCatch ? 1 : 0, 0, ...opened.map(g => `🔓 Sealed capsule opened! ${shinyLine(ENEMY_DEFS[node.enemyId].name, g).replace(/^✨ /, '')}`));
     // a Ranger task this catch finishes, said now (it's logged as the rewards are collected)
     if (!peeking && isSafari()) for (const t of finishedBy(getSave(), rangerInfo(node, result))) dexNews.push(`📋 Ranger task done: ${t.title}! Claim it on the board at the Safari Outfitter.`);
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
   }
-  if (isSafari() && !peeking) dexNews.push(...creditSafari());   // before unlock(): a full Safari Pokédex is Rayquaza's
+  if (isSafari() && !peeking) dexNews.push(...creditSafari(unlocked));   // before unlock(): a full Safari Pokédex is Rayquaza's
   if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
   const drop = gleaning() && !gleaned(gleanKey(node, 'drop')) ? fightDrop(mainBiome().id, node.type, random) : null;   // a material for the Satchel
   if (drop) dexNews.unshift(matLine(drop));   // first: the final boss's window drops a finished Pokédex page's last line
@@ -2951,7 +2967,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
 /** Pays a Safari Pokédex page's reward once, the first won Safari fight after its last Pokémon is caught (any try: the
     coins don't touch the leaderboard; the rare boost waits for a replay, rareOdds()), and marks a full Safari Pokédex,
     Rayquaza's achievement. Returns the reward box's lines. */
-function creditSafari() {
+function creditSafari(windows) {
   const news = safariNews(getSave().safariDex);
   const lines = [];
   for (const area of news.areas) {
@@ -2965,19 +2981,28 @@ function creditSafari() {
     updateSave(d => { d.safariDex.complete = true; });
     lines.push('The Safari Pokédex is complete! Every Safari Pokémon is caught.');
   }
-  lines.push(...duoNews());
+  lines.push(...duoNews(windows));
   return lines;
 }
 
 /** A starter line's stage caught in the Safari adds its type to the duo pool, with that look (js/data/duo.js's
-    DUO_LINES). Catches already in the save count, so this also runs on opening the Duo app. */
-export function duoNews() {
+    DUO_LINES). Catches already in the save count. Given `windows`, each new starter gets the unlock window (the user's ask,
+    2026-10-20: a line in the catch box was easy to miss) instead of a line. */
+export function duoNews(windows) {
   const gains = duoGains(getSave().safariDex.caught, getSave().duoPool);
   const lines = [];
   for (const [type, looks] of Object.entries(gains)) {
     const fresh = !getSave().duoPool?.[type]?.length;
     updateSave(d => { d.duoPool = { ...d.duoPool, [type]: [...(d.duoPool?.[type] || []), ...looks] }; });
-    for (const look of looks) lines.push(`${STARTERS_BY_ID[look].line[0].name} joined your duo pool!${fresh ? ` ${type[0].toUpperCase()}${type.slice(1)} unlocked.` : ''}`);
+    const Type = `${type[0].toUpperCase()}${type.slice(1)}`;
+    looks.forEach((look, i) => {
+      const s = STARTERS_BY_ID[look], name = s.line[0].name, deck = STARTERS_BY_ID[s.skinOf]?.line[0].name;
+      if (!windows) return lines.push(`${name} joined your duo pool!${fresh && !i ? ` ${Type} unlocked.` : ''}`);
+      windows.push({ feat: true, kicker: '🔓 New duo starter!', name, sprite: spriteUrl(s, 'front', 0, false), cry: s.line[0].id,
+        text: fresh && !i ? `${name} joined your duo pool, and ${Type} is unlocked for Safari Duo Runs!`
+          : `${name} joined your duo pool: a new look for your ${Type} partner${deck ? `, playing ${deck}'s deck` : ''}.`,
+        hint: 'Pick it in the Safari lobby, in Duo Run.' });
+    });
   }
   return lines;
 }
@@ -5447,7 +5472,7 @@ function strikeGate(won, atLastBoss) {
     if (scene && sealOn()) return { scene: { ...scene, kind: 'camp' } };
     return scene && getSave().stats.deepestBiome < 4 ? { scene: { ...scene, kind: 'open' } } : null;
   }
-  const hp = won ? Math.max(run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - GATE_HIT[run.level]) : before;
+  const hp = won ? Math.max(isChampion(run.level) ? 0 : GATE_SLIVER, before - GATE_HIT[Math.min(run.level, GATE_HIT.length - 1)]) : before;
   const first = !getSave().gateSeen;
   updateSave(d => { d.gateHp = hp; d.gateSeen = true; });
   const name = stageName(run.starter, run.stage);
@@ -5459,7 +5484,7 @@ function strikeGate(won, atLastBoss) {
   setGateBar(bar, hp);
   const li = el('li', 'gate-line', text);
   li.append(bar, el('span', 'gate-hp', `HP ${hp} / ${GATE_HP}`));
-  const kind = !won ? 'loss' : run.level === MAX_LEVEL ? 'ultimate' : 'win';
+  const kind = !won ? 'loss' : isChampion(run.level) ? 'ultimate' : 'win';
   return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind, level: run.level, first, land: gateLand() } };
 }
 
@@ -5471,13 +5496,22 @@ function level5Rewards() {
   const { id, type } = run.starter;
   const name = run.starter.line[0].name;
   const save = getSave();
-  const lines = [`⭐ ${name} earned a gold star for winning on Trainer Level 5!`];
+  const was = bestWin(save, id), lv = run.level;
+  const lines = [lv > was && lv === 5 ? `⭐ ${name} earned a gold star for winning on Trainer Level 5!`
+    : lv > was ? `⭐ ${name}'s star climbs to ${starName(lv)} for winning on Trainer Level ${lv}!`
+    : `⭐ ${name} won on Trainer Level ${lv}! Its star stays ${starName(was)}.`];
   const shiny = !save.shiny.owned.includes(id) && !run.starter.comingSoon;
   const jackpot = !save.stats.level5Jackpot[type];
+  const levelPrize = LEVEL_JACKPOT[lv] && !save.stats.levelJackpot?.[lv] ? LEVEL_JACKPOT[lv] : 0;
+  const master = lv >= MAX_LEVEL && !isMaster(save);   // read before recordWin() puts this win in the Record Book
+  const shells = LEVEL_SHELLS.filter(sh => lv >= sh.level && !shellEarned(save, sh));
+  const letters = mailOn() && !save.stats.levelLetters?.[lv] ? lettersFor(lv, LEVELS[lv]?.name) : [];
   updateSave(d => {
     d.stats.level5WinsBy[id] = (d.stats.level5WinsBy[id] || 0) + 1;
     if (shiny) { d.shiny.owned.push(id); if (!d.shiny.on.includes(id)) d.shiny.on.push(id); }
     if (jackpot) d.stats.level5Jackpot[type] = true;
+    if (levelPrize) d.stats.levelJackpot = { ...d.stats.levelJackpot, [lv]: true };
+    if (letters.length) d.stats.levelLetters = { ...d.stats.levelLetters, [lv]: true };
   });
   if (shiny) lines.push(`✨ Shiny ${name} unlocked, and switched on!`);
   if (jackpot) {
@@ -5486,6 +5520,15 @@ function level5Rewards() {
     refreshCoins();
     lines.push(`💰 Jackpot for your first Level 5 win with a ${kind} Pokémon! ${paid}`);
   }
+  if (levelPrize) {
+    const paid = post('league', `Level ${lv} Jackpot!`, `Your first win on Trainer Level ${lv}, ${LEVELS[lv].name}! The League rewards a true champion.`, levelPrize);
+    refreshCoins();
+    lines.push(`💰 Jackpot for your first win on Trainer Level ${lv}! ${paid}`);
+  }
+  if (master) lines.push('👑 You are a POKéMON MASTER! The title is on your Trainer Card.');
+  for (const sh of shells) lines.push(`🎨 The ${sh.name} Pokédex shell is yours: put it on in Settings, Device colour.`);
+  for (const l of letters) post(l.from, l.title, l.text, 0, lv >= MAX_LEVEL ? { level: lv, photo: true } : { level: lv });
+  if (letters.length) lines.push(`💌 ${letters.length > 1 ? `${letters.length} Gym Leaders wrote` : 'The Gym Leaders wrote'} to you! The letters are in your PC's mailbox.`);
   return lines;
 }
 
@@ -5572,7 +5615,7 @@ function endRun(won, atLastBoss = false, loss = null) {
     });
 
     if (streak) streak = streakLine(true);
-    if (!mewtwoRun && run.level === MAX_LEVEL) level5 = level5Rewards();
+    if (!mewtwoRun && isChampion(run.level)) level5 = level5Rewards();
     // every win goes in the Record Book, with its win scene; a Level 5 one also enters the Hall of Fame. The first of each
     // unlocks its card in the Collection (a ??? until then).
     const entry = record = recordWin(run, getSave().shiny.on.includes(run.starter.id));
