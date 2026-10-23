@@ -1204,8 +1204,11 @@ the Berry Pouch (`POUCH` 3, `canHold()` / `holdFromPouch()` in `js/data/held.js`
   `canHold()` counts eaten berries a biome instead of `heldAte`). A bot check first: the sim mirrors held berries, and
   healing berries carry runs. It pulls against the user's 2026-10-22 worry that healing is already overpowered (the entry
   below), so a Second Helping might rather allow only the non-healing berries (Cheri, Pecha, Lum) twice.
-Open questions for the user: the perks' prices (or earned, e.g. Kurt's hearts), healing berries under Second Helping or
-not, and whether Prepare keeps its Pack panel or only shows the booth's loadout. If agreed, ▶ Run in: CLOUD, effort high
+Open questions for the user: the perks' prices (or earned, e.g. Kurt's hearts), and healing berries under Second Helping or
+not. **Prepare loses its Pack panel** (the user's lean, 2026-10-23: "it should right?"): the Berry Pouch, the kit picker and
+the pinned "▼ Berry Pouch · Run kit" tab come off the starter prep screen, the booth being the one place to pack; Claude's
+suggestion, to confirm: Prepare keeps one read-only line of the saved loadout (held, pouch, kit) so a run never starts
+with an unseen or empty pouch by surprise. If agreed, ▶ Run in: CLOUD, effort high
 (the kiosk, the device window, the perks and the sim), then LOCAL for the kiosk's look.
 
 **The game feels too easy, Grass most of all; healing feels overpowered** (2026-10-22, the user, after a Servine run where
