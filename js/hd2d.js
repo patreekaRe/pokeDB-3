@@ -623,7 +623,14 @@ function crownModel(k) {
   gems.setColorAt(N, new THREE.Color('#ffffff'));
   crown.add(band, rim, cap, orb, spikes, gems);
   crown.scale.setScalar(k);
-  crown.traverse(c => { c.raycast = () => {}; });
+  // drawn after the Super Saiyan aura (added in the transparent pass, which comes last), so its flames never wash over it
+  // (the user: the crown "is like behind the aura", 2026-10-23); it still writes depth, so scenery in front still hides it
+  crown.traverse(c => {
+    c.raycast = () => {};
+    if (!c.material) return;
+    c.renderOrder = 10;
+    Object.assign(c.material, { transparent: true, forceSinglePass: true });
+  });
   return crown;
 }
 
@@ -658,7 +665,8 @@ function auraModel(m, level) {
   const board = (canvas, bias) => {
     const map = tex(canvas);
     map.repeat.set(1 / AURA_FRAMES, 1);
-    const mat = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false });
+    // one pass: three.js draws a two-sided see-through material twice (back faces, then front) unless told not to
+    const mat = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false, forceSinglePass: true });
     feetDepth(mat, bias);
     const geo = new THREE.PlaneGeometry(wide, tall);
     geo.translate(0, tall / 2 - 0.04 * m.top, 0);

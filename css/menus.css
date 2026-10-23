@@ -1417,7 +1417,7 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tc-partner img { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; }
 /* The Champion's Crown (js/data/difficulty.js's wearsCrown(), a Level 10 win) floating over the partner, bobbing like the
    walking buddy's. */
-.tc-crown { position: absolute; z-index: 1; left: 50%; top: -6px; width: 36px; translate: -50% 0; pointer-events: none;
+.tc-crown { position: absolute; z-index: 2; left: 50%; top: -6px; width: 36px; translate: -50% 0; pointer-events: none;
   filter: drop-shadow(0 0 4px rgba(255, 220, 120, 0.8)); animation: tc-crown-bob 2.8s ease-in-out infinite; }
 .tc-crown svg { display: block; width: 100%; }
 @keyframes tc-crown-bob { 50% { transform: translateY(-4px); } }

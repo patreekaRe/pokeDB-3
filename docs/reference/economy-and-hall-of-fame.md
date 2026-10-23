@@ -76,9 +76,15 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   texture's offset (no re-upload), plus a glow on the ground. Their depth is the sprite's upright one (`feetDepth(m,
   bias)`), a hair behind it for the back flames and in front for the front sheet. **Three draws at most** (2026-10-23,
   the user found 10 "laggy af" on their phone): the front licks, lightning and sparks are one sheet (`auraFront()`), so
-  6-8 are the flames and the ground glow, 9-10 one more; 12 frames at 14 fps, a texture offset set only when the frame
-  changes, and `calmFx()` read once a second, not a `matchMedia()` each frame. Timed headless with each frame drawn to
-  completion, the Clearing at `?aura=10` takes the same with the aura shown or hidden (it was about 6% more as five draws).
+  6-8 are the flames and the ground glow, 9-10 one more (each `forceSinglePass`: three.js otherwise draws a two-sided
+  see-through material twice); 12 frames at 14 fps, a texture offset set only when the frame changes, and `calmFx()`
+  read once a second, not a `matchMedia()` each frame. Timed headless with the buddy on screen (tap the title away
+  first: behind the title the Clearing hides the buddy, so a probe of `/` alone, `tools/budget-check.mjs`'s included,
+  measures it without one), `?aura=10` adds three draws and no GPU time beyond the noise. **Smaller and under the
+  crown** (2026-10-23, the user: "the crown is hard to see now it's like behind the aura and maybe tone down the size"):
+  every Level's `tall` / `wide` cut, 10's from 2 x the sprite's height to 1.4; the crown's meshes draw in the
+  transparent pass after the aura (`renderOrder` 10, still writing depth), so no flame adds onto it (only the bloom's
+  glow reaches it), and `.tc-crown` sits over the card's front sheet.
   Under `calmFx()` it holds `CALM_FRAME` (no lightning in it) and the glow doesn't pulse. The Trainer Card's partner wears the same frames stepped
   by CSS (`auraArt()` in `js/ui.js`, `.tc-aura`, `.aura-strip`; still under Calm effects and reduced motion), and an
   Aura key next to Crown steps through the earned auras, then off (`.tc-aura-key`, in the Level's colour); before any

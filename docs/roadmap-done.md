@@ -3476,3 +3476,9 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   and the GPU's share about 6% more at 10 (none at 8); cut 10 from five draws to three (front licks, lightning and
   sparks one sheet, `auraFront()`), offsets set only on a new frame, `calmFx()` read once a second. After it, the
   aura shown or hidden times the same.
+- Second follow-up the same day (the user: "I love the aura but the crown is hard to see now it's like behind the aura
+  and maybe tone down the size"): every Level's aura smaller (10 from 2 x the sprite's height to 1.4), the crown drawn
+  after it in the transparent pass so no flame adds onto it (headless, the crown's own pixels change by 0 with the aura
+  on, 5.4 before), and each aura sheet drawn once instead of twice (`forceSinglePass`; 10 is now +3 draws). Found on the
+  way: behind the title the Clearing hides the buddy, so the earlier Clearing timings (and budget-check's `clearing`)
+  never had the aura in them; retimed with the title tapped away, no GPU time beyond the noise.

@@ -3,14 +3,15 @@
    the Trainer Card's partner and the Level picker (auraArt() in js/ui.js) all show the same frames. Pixel art, a few
    flat colours a frame, so it reads like the sprites it sits behind. Nothing here touches the GPU. */
 
-/** Each Level's look, in its star's colour (starName()): how tall and wide round the sprite (by its height and width),
+/** Each Level's look, in its star's colour (starName()): how tall and wide round the sprite (by its height and width;
+    made smaller 2026-10-23, the user: "maybe tone down the size", 10 most, from 2 x its height),
     how far the tongues lick, the ground glow's size, and the extras from 9 up. `ink`: light, mid, dark. */
 export const AURA = {
-  6: { ink: ['#ffd8e0', '#ff3a5c', '#b0123a'], gain: 0.75, tall: 0.55, wide: 1.35, lick: 0.3, hollow: 0.15, glow: 0.6 },
-  7: { ink: ['#d8ffe2', '#34e878', '#0c8a42'], gain: 0.95, tall: 0.95, wide: 1.4, lick: 0.6, hollow: 0.5, glow: 0.65 },
-  8: { ink: ['#dceeff', '#3e90ff', '#1640b8'], gain: 1, tall: 1.35, wide: 1.5, lick: 0.65, hollow: 0.55, glow: 0.75 },
-  9: { ink: ['#f2e0ff', '#b462ff', '#5c1ab4'], gain: 1.05, tall: 1.5, wide: 1.6, lick: 0.75, hollow: 0.55, glow: 0.85, front: true, bolts: [1, 2, 7] },
-  10: { ink: ['#fffbe0', '#ffd040', '#ff9a10'], gain: 1.1, tall: 2.0, wide: 1.95, lick: 0.9, hollow: 0.6, glow: 1, front: true, bolts: [1, 5, 6, 10], sparks: true, rainbow: true },
+  6: { ink: ['#ffd8e0', '#ff3a5c', '#b0123a'], gain: 0.75, tall: 0.5, wide: 1.25, lick: 0.3, hollow: 0.15, glow: 0.6 },
+  7: { ink: ['#d8ffe2', '#34e878', '#0c8a42'], gain: 0.95, tall: 0.8, wide: 1.3, lick: 0.6, hollow: 0.5, glow: 0.65 },
+  8: { ink: ['#dceeff', '#3e90ff', '#1640b8'], gain: 1, tall: 1.05, wide: 1.35, lick: 0.65, hollow: 0.55, glow: 0.75 },
+  9: { ink: ['#f2e0ff', '#b462ff', '#5c1ab4'], gain: 1.05, tall: 1.2, wide: 1.4, lick: 0.75, hollow: 0.55, glow: 0.75, front: true, bolts: [1, 2, 7] },
+  10: { ink: ['#fffbe0', '#ffd040', '#ff9a10'], gain: 1.1, tall: 1.4, wide: 1.5, lick: 0.9, hollow: 0.6, glow: 0.85, front: true, bolts: [1, 5, 6, 10], sparks: true, rainbow: true },
 };
 export const AURA_FRAMES = 12;
 export const AURA_FPS = 14;
