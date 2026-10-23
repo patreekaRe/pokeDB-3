@@ -1406,6 +1406,14 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tc-pick:hover, .tc-pick:focus-visible { background: rgba(48, 48, 56, 0.18); outline: none; }
 .tc-pick.on, .tc-pick-auto.on { box-shadow: 0 0 0 3px var(--tc2), 0 0 0 5px #303038; }
 .tc-partner img { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; }
+/* The Champion's Crown (js/data/difficulty.js's wearsCrown(), a Level 10 win) floating over the partner, bobbing like the
+   walking buddy's. */
+.tc-crown { position: absolute; z-index: 1; left: 50%; top: -6px; width: 36px; translate: -50% 0; pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(255, 220, 120, 0.8)); animation: tc-crown-bob 2.8s ease-in-out infinite; }
+.tc-crown svg { display: block; width: 100%; }
+@keyframes tc-crown-bob { 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .tc-crown { animation: none; } }
+.tc-crown-key.on { border-color: #b07a10; background: #d8a020; }
 /* A Pokémon Master's title (js/data/difficulty.js's isMaster(), a Level 10 win): a dark chip with a rainbow underline, like the rainbow star. */
 .tc-lines dd.tc-master { justify-self: end; padding: 3px 7px 4px; border-radius: 4px; color: #f8d048;
   background: linear-gradient(90deg, #ff5a5a, #ffd84a, #6ee86e, #5ac8ff, #b07af0) 0 100% / 100% 2px no-repeat, #1f3a14; }

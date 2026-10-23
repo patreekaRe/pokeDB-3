@@ -1213,9 +1213,11 @@ things for the Secret Base. **The user: "send it"; 1-3 built the same day** (arc
 2. ~~**A first-win jackpot per Level**~~ done:, as Level 5's 500 per type: the League mails 600 / 700 / 800 / 900 for the first
    win on 6-9 and 2000 for 10 (once ever, or once per type at 10). Data and mail only. ▶ CLOUD, effort: low.
 3. ~~**A Level 10 title and look**~~ done 2026-10-22 (branch `claude/pokemon-master-title-cape-b33c37` and `main`; archive):
-   "Pokémon Master" on the Trainer Card and a crystal pedestal in the Hall of Fame. **No cape, no outfits** (the user's
-   call, the same day, after one was built). **Next: the user playtests** `?master` (the Trainer Card) and a Level 10
-   win's ceremony. ▶ Playtest on the live site.
+   "Pokémon Master" on the Trainer Card and a crystal pedestal in the Hall of Fame. **No cape** (the user's call, after
+   one was built; seen again 2026-10-23: "looks retarded"). **The Champion's Crown instead** (2026-10-23, on `main`;
+   archive): a 3D gold crown with rainbow gems floating and turning over the walking buddy, and a pixel one over the
+   Trainer Card's partner, with a Crown key. **Next: the user playtests** `?master` (walk the Clearing; the Trainer
+   Card). Maybe later: friends' buddies in the Plaza wearing theirs. ▶ Playtest on the live site.
 4. **Trophies for the Secret Base**: a cup for each of Levels 6-9 and the Champion's Trophy for 10, earned furniture
    (each a painting and a hand-built model). ▶ CLOUD, effort: high.
 5. **Master Badges**: a Level 10 win with a Fire, a Water and a Grass starter, and all three (each a `LOOK` line). ▶

@@ -38,7 +38,18 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   underline) and a 👑 line atop a friend's Trainers page (`top` >= 10), and **the crystal pedestal**, `isMasterWin()` in
   `js/halloffame.js` (`.hof-scene.master`: ice bands, a rainbow band and facets, a prism spotlight, the title "Pokémon
   Master" and "is a POKéMON MASTER!"; the Collection's `.hofx.master`). `level5Rewards()` says the first one. No cape and
-  no outfits (the user's call, 2026-10-22: a Champion's Cape for the walking buddy was built, then taken out).
+  no outfits (the user's call, 2026-10-22: a Champion's Cape for the walking buddy was built, then taken out; seen again
+  2026-10-23 at `e3f047fc`, "looks retarded", so a crown instead). `isMaster()` caches its Record Book read (the buddy asks
+  every frame).
+- **The Champion's Crown** (2026-10-23, the user's ask: "a really sick pokemon champion crown"): `wearsCrown(save)`, from
+  the first Level 10 win until the Trainer Card's Crown key takes it off (`save.crown` false). `buddy()` in
+  `js/trainercard.js` gives the mate `crown: crownOn`; `monBoard()` keeps it as `crowned` and `drawMon()` in `js/hd2d.js`
+  calls `wearCrown()`: a low-poly 3D crown (`crownModel()`: gold band, rim and orb, red cap, five leaning points tipped
+  with the rainbow star's gems, unlit so the bloom glows them, a white front jewel; six draws) built on first wear, turning
+  and bobbing over the head along the board's lean, scaled by the sprite's height (about 21px wide on a phone over
+  Charmander). So the Clearing, the Secret Base and the mall show it; towns and runs walk your run's starter, uncrowned,
+  and friends' buddies in the Plaza don't wear one yet (their name tag sits there). The Trainer Card's partner wears a
+  pixel one (`crownArt()`, `.tc-crown`, bobbing, still under reduced motion).
 - **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
   `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
   `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character
