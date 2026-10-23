@@ -1265,6 +1265,8 @@ Clearing's budget, checks each model with `tools/house-check.mjs` (text, no scre
   drop them or keep them to looks that don't move a wall (floor, wall paper, window frames per house). The lawn adds a
   walk before every visit; instead, a short arrival shot (the camera on the friend's house, the door opens, cut inside,
   no walking) plus the house's picture on their Trainers page and Plaza blurb.
+  Mock-up of both (the user asked, 2026-10-23): https://claude.ai/artifact/DEh9vUss4bD1StvwxzSrC2 (the lawn's three
+  screens, and the arrival shot beside them).
 Going live is its own step after the user's go: merge `main` into the branch, HOUSES_LIVE true, the patch note out of
 HELD, and only then onto `main`.
 
