@@ -18,7 +18,7 @@ const args = process.argv.slice(2), opt = (k) => args.find(a => a.startsWith(`--
 const BUDGETS = join(root, 'tools/budgets.json');
 
 const PLACES = {
-  clearing: '/', base: '?base', yard: '?yard',
+  clearing: '/', 'clearing-houses': '?houses', base: '?base', yard: '?yard',
   'mall-hall': '?mall', 'mall-2f': '?mall=2f', 'mall-corner': '?mall=corner', 'mall-arcade': '?mall=arcade',
   'mall-outfitter': '?mall=outfitter', 'mall-furniture': '?mall=furniture',
   'town-shrine': '?town=shrine&towns', 'town-wastes': '?town=wastes&towns', 'town-ruins': '?town=ruins&towns',

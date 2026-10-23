@@ -11,6 +11,7 @@ import { PIECES, loadBase, buyPiece } from './secret-base.js';
 import { STARTERS } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
 import { statueKind, LUXURY_SHELLS } from './data/catalogue.js';
+import { lotWord } from './data/houses.js';
 import { loadStatues } from './base-furniture-statues.js';
 import { wearShell } from './settings.js';
 
@@ -50,7 +51,7 @@ export function openGrandShop(done) {
   let tab = 'statues', picked = null, ready = false;
   const line = (t) => { say.textContent = t; };
   const welcome = () => line(tab === 'statues'
-    ? (hasBase() ? `A gold statue of any starter you own, for your Secret Base. You have ${n(coins())} PokéCoins.` : 'Statues stand in a Secret Base: make the Ancient Tree\'s house yours first.')
+    ? (hasBase() ? `A gold statue of any starter you own, for your Secret Base. You have ${n(coins())} PokéCoins.` : `Statues stand in a Secret Base: make ${lotWord(getSave())} yours first.`)
     : `A new colour for your Pokédex, worn at once. Switch back any time in Settings. You have ${n(coins())} PokéCoins.`);
 
   const tile = (pic, name, price, { on, sold, tap }) => {

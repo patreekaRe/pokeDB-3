@@ -862,3 +862,42 @@ both moved a row in front of the gate, right at the avenue's edges in line with 
 now). Only once `workshopOpen()`; a yellow "!" (`boothMark`, `boothMarks()`) while
 held berries are kept and nothing's packed. A tap opens `openBerryBooth()` (js/berrybooth.js); docs/reference/towns.md's
 Packing says what's inside.
+
+## Secret Base houses, session 1 (2026-10-23, behind `HOUSES_LIVE`)
+
+The roadmap's "Secret Base houses" (mock-up `docs/mockups/secret-base-houses.html`). Built behind `HOUSES_LIVE` (false,
+`js/data/houses.js`) as the towns were: `?houses` shows it all for a page load, and a buy, move or repaint made with it
+is saved like any other. With it off the Clearing is exactly as before (the Ancient Tree, no stand).
+- **Rules** (`js/data/houses.js`, no DOM, `tests/houses.test.mjs`): `HOUSES` (Starter Cottage, Log Cabin 1,500, Seaside
+  Bungalow 1,500, the Ancient Tree never sold), each with three `paints`; `REPAINT_PRICE` 250. The save's `houses`
+  `{ owned, home, paint: { id: n } }`; `housesOf(save)` reads it, and a save without it reads as a base bought before
+  houses: the tree lived in, the cottage owned free (nothing is written until a buy, move or repaint). `buyHouse()` pays
+  and moves in, the paint picked coming with it; `moveIn()` is free; `repaint()` costs 250; `firstHouse()` is the base
+  itself bought with houses on (a cottage). `lotWord(save)` names the lot in lines ('the Ancient Tree', 'your Log
+  Cabin', 'the Starter Cottage'): the garden arch, the PC's yard and base lines, the Grand Catalogue's and the Safari
+  housemate's hints read it.
+- **The lot** (`buildLot()` / `lotNow()` in `js/hub-3d.js`): the tree is still `ancientArt()`, its crown's colours now a
+  paint (`L`, the first exactly the old greens), with its "Home" sign; any other house is `makeHouse()` in
+  `js/hub-houses.js`, a real model merged by `mergeStill()`: grey siding, shingles, logs, planks and stone painted once
+  (cached) with the paint's colour multiplied over them, so a repaint is a colour, not a picture. Only the door's hit box
+  takes a tap (the rest's raycast is off, as the tree's `doorOnly()`); its leaf swings out on a hinge as your partner
+  goes in or comes out (`open(on, snap)`, ticked each frame), a warm room behind it. Before the base is bought the
+  cottage stands boarded, planks over its door. The house group sits at `tileZ(TREE_AT.ty) - 0.1`, its door on the
+  tree's doorstep column; every house stays inside the fence, clear of the garden arch (half-width ≤ 2.25).
+- **Timburr & Co.'s stand** (`KIOSK_AT` 17,4, just outside the fence's left, its step on the ring road; place `kiosk`,
+  only with houses on): `makeKiosk()` (counter, orange-and-cream awning, the crew's name board, a FOR SALE panel before
+  the base is bought, HOUSES after, a hard hat and a cone) and Timburr behind the counter as a still board that hops now
+  and then (`kiosk.tick()`). Its card's Catalogue opens `js/house-kiosk.js`.
+- **The catalogue** (`openKiosk()` in `js/house-kiosk.js`, `.hk-*` in `css/hub.css`): a sheet in the Pokédex's shell over
+  the lower half, the hub's bar and card hidden (`.hub.browsing`), the camera easing over and in to the lot
+  (`browsing`, `BROWSE_NEAR`). Rows by tier (HOME / Owned / price / Locked), a picked house's paints, blurb and one key:
+  Buy (a confirm, then built and moved in), Move in, Repaint · 250 (and moves in), or the base itself (Buy · 1,500)
+  before there is one, other houses saying "Lot first". Every pick and paint is built on the lot as a try-on
+  (`tryOn()` -> `rebuildLot()`, which disposes only the lot's group and takes its lights out of `glowMats`); closing puts
+  back the house lived in, or rebuilds the places if anything was bought.
+- **The PC**: HOUSE UPGRADES shows a YOUR HOUSE row (the house and its paint) on every tab, its Go there logging off and
+  walking you to the stand (`onKiosk` in `openPC()`).
+- **Budgets**: `tools/budget-check.mjs` measures `clearing-houses` (`?houses`, a new save's boarded cottage) on its own
+  line: 275 draws, 119 MB against the Clearing's 257 / 124 (the tree's big painting outweighs a house's textures). By
+  the lot: tree 265, cottage 278, cabin 284, bungalow 280 draws.
+- **The patch note** waits in `HELD` in `js/data/patchnotes.js` and joins `NEXT` by itself when `HOUSES_LIVE` goes on.

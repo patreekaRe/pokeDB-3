@@ -1210,20 +1210,22 @@ kiosk beside the lot (a Timburr crew's stand), because picking a house can show 
 the way wallpaper is tried on in the base (`trying` in `js/base-3d.js`); the PC's HOUSE UPGRADES keeps rooms and the yard
 and gets one row pointing to the kiosk. Before the base is bought the stand shows the cottage FOR SALE. One more model
 in the Clearing, so it goes through the budget check.
-Still open (the session uses Claude's proposal unless the user says otherwise): which of the 18 to keep, the prices, the
-tree kept as a choice. Session 1 prompt: "▶ Run in: CLOUD. Effort: high. Read CLAUDE.md, docs/roadmap.md's 'Secret Base
-houses' idea and docs/reference/hub-base-mall.md, and open docs/mockups/secret-base-houses.html. Build session 1: the
-save field for owned houses, the one lived in and its paint (old saves keep the Ancient Tree and get the Starter Cottage
-free); a Timburr crew's builder kiosk beside the lot in the Clearing (a real model, FOR SALE before the base is bought)
-whose catalogue tries a house on the real lot before you pay; repaints at 250; the lot showing the house lived in as a
-real 3D model like nietosHouse(), its door opening the base as the tree's does; one HOUSE UPGRADES row on the PC pointing
-to the kiosk. Houses this session: Starter Cottage, Ancient Tree, Log Cabin, Seaside Bungalow. Keep it all behind a
-HOUSES_LIVE switch (false, as TOWNS_LIVE was) with a ?houses flag that shows it for a page load, so players see nothing
-until the user's playtest says go. Run tools/budget-check.mjs on the Clearing, add a patch-notes line (held until
-HOUSES_LIVE), update the roadmap, push to main and give the playtest links: the live site with ?houses&coins=5000 and the
-githack one." Each house a real 3D model like `nietosHouse()` and the town manors, only the one lived in ever built (budget
-check on the Clearing). Sessions: 1 the system plus Cottage, Tree and two Homestead (high), 2 the coin houses (medium), 3
-earned and seasonal with unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium). All CLOUD.
+**Session 1 built (2026-10-23, cloud), behind `HOUSES_LIVE` (false), waiting on the user's playtest**: the save field,
+the Starter Cottage / Log Cabin / Seaside Bungalow as 3D models, the tree repaintable (Spring / Autumn / Twilight), Timburr
+& Co.'s stand at tile 17,4 with its try-on catalogue, repaints at 250, the PC's YOUR HOUSE row (detail:
+`docs/reference/hub-base-mall.md`'s last section; the archive has the line). Playtest: the live site with
+`?houses&coins=5000` (and a save that already owns the tree, to see it kept and the cottage free). Still open: which of the
+18 to keep, the prices, friends' visits (front lawn). Sessions left: 2 the coin houses (medium), 3 earned and seasonal with
+unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium), and the friends' front lawn. All CLOUD.
+Next prompt, once the user says go: "▶ Run in: CLOUD. Effort: low. Read CLAUDE.md and docs/roadmap.md's 'Secret Base
+houses'. The user's playtest said go: set HOUSES_LIVE to true in js/data/houses.js (its patch note in HELD joins NEXT by
+itself; move it into NEXT's list), update tests/houses.test.mjs's first test, the roadmap and the reference, and push to
+main." Then session 2: "▶ Run in: CLOUD. Effort: medium. Read CLAUDE.md, docs/roadmap.md's 'Secret Base houses', the last
+section of docs/reference/hub-base-mall.md and docs/mockups/secret-base-houses.html. Build session 2: the Mushroom Cottage
+and Red Barn (Homestead) and the four Estate houses (Machiya Townhouse, Lighthouse Cottage, Glasshouse Villa, Victorian
+Manor) as makeHouse() builders in js/hub-houses.js and HOUSES lines with three paints each, prices from the mock-up. Run
+tools/budget-check.mjs --only=clearing,clearing-houses, add a patch-notes line, update the roadmap and reference, push
+to main and give the playtest links."
 
 **The game feels too easy, Grass most of all; healing feels overpowered** (2026-10-22, the user, after a Servine run where
 Apple Acid+ (1 PP, 11 + Vulnerable 2) sat beside Seed Bomb (2 PP, 10 + Vulnerable 2)). The human bot, 150 a cell, sim
