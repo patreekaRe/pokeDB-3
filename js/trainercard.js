@@ -21,7 +21,7 @@ import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { ALL_CARDS } from './data/cards.js';
 import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
-import { bestWin, starClass, isMaster } from './data/difficulty.js';
+import { bestWin, starClass, isMaster, wearsCrown } from './data/difficulty.js';
 import { safariDexCount } from './safaridex.js';
 import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
@@ -420,11 +420,27 @@ export function buddyChoices(save = getSave()) {
 export function buddy(save = getSave()) {
   const all = buddyChoices(save);
   const chosen = save.buddy && all.find(m => m.key === save.buddy);
-  if (chosen) return chosen;
+  if (chosen) return { ...chosen, crown: crownOn };
   const s = save.stats, score = (id) => (s.winsBy?.[id] || 0) + 10 * (s.level5WinsBy?.[id] || 0);
   const plain = all.filter(m => !m.shiny), best = [...plain].sort((a, b) => score(b.id) - score(a.id))[0] ?? plain[0];
   const st = STARTERS_BY_ID[best?.id ?? 'charmander'], shiny = isShiny(st.id) && (save.shiny?.owned || []).includes(st.id);
-  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny };
+  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny, crown: crownOn };
+}
+
+/** Whether the walking buddy wears the Champion's Crown right now: js/hd2d.js's drawMon() asks each frame, so the Trainer
+    Card's Crown key shows at once. */
+const crownOn = () => wearsCrown(getSave());
+
+/** The Champion's Crown over the Trainer Card's partner, in pixels like the walking buddy's 3D one: gold, five points
+    tipped with the rainbow star's gems, a red cap and a white jewel. */
+function crownArt() {
+  const at = [0, 4, 8, 12, 16], gems = ['#ff5a5a', '#ffd84a', '#6ee86e', '#5ac8ff', '#b07af0'];
+  const px = (x, y, w, h, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+  const span = el('span', 'tc-crown');
+  span.innerHTML = `<svg viewBox="0 0 19 13" shape-rendering="crispEdges" aria-hidden="true">${px(0, 4, 19, 2, '#b0102e')}${
+    at.map((x, i) => px(x, 2, 3, 5, '#f4c63c') + px(x, 0, 3, 2, gems[i])).join('')}${px(0, 6, 19, 7, '#f4c63c')}${px(0, 9, 19, 3, '#c8901c')}${
+    px(0, 12, 19, 1, '#7a4e00')}${px(8, 8, 3, 3, '#fff')}${px(3, 10, 1, 1, '#5ac8ff')}${px(15, 10, 1, 1, '#ff5a5a')}</svg>`;
+  return span;
 }
 
 /** The walking buddy as a `save.buddy` key, picked or not. */
@@ -636,6 +652,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const img = el('img', 'pixel');
   img.src = mate.src;
   img.alt = '';
+  if (wearsCrown(save)) pic.append(crownArt());
   pic.append(img, el('span', 'tc-partner-edit', 'Change'));
   pic.addEventListener('click', () => {
     playSound('confirm');
@@ -655,6 +672,19 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
       openTrainerCard(into, { reopen: true });
     });
     frame.append(flip);
+  }
+  if (isMaster(save)) {
+    const on = wearsCrown(save), key = el('button', `tc-shiny tc-crown-key${on ? ' on' : ''}`, on ? '👑 Crown' : 'Crown');
+    key.type = 'button';
+    key.title = on ? 'The Champion\'s Crown is on: tap to take it off' : 'Tap to wear the Champion\'s Crown';
+    key.setAttribute('aria-pressed', String(on));
+    key.setAttribute('aria-label', 'Champion\'s Crown');
+    key.addEventListener('click', () => {
+      updateSave(d => { d.crown = !on; });
+      playSound('confirm');
+      openTrainerCard(into, { reopen: true });
+    });
+    frame.append(key);
   }
   info.append(list, frame);
 

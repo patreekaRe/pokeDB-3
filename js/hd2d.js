@@ -535,6 +535,7 @@ export async function monBoard(mate, back = true) {
   return {
     group, board, c, g: c.getContext('2d', { willReadFrequently: true }), t, sheets, frame: 0, clock: 0, src: front,
     id: mate.cry ?? front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name, top: (h - bottom - top) * px,
+    crowned: mate.crown,
   };
 }
 
@@ -550,6 +551,7 @@ function gaps(bmp) {
 
 /** The GIF's next frame on its billboard; a sleeping Pokémon breathes at a third of the speed. */
 export function drawMon(m, w, dt) {
+  if (m.crowned) wearCrown(m);
   const s = m.sheets[w.facing] || m.sheets.front;
   if (!s.frames.length) return;
   m.clock += w.sleeping ? dt / 3 : dt;
@@ -557,6 +559,69 @@ export function drawMon(m, w, dt) {
   if (m.clock >= f.ms) { m.clock = 0; m.frame = (m.frame + 1) % s.frames.length; }
   const now = s.frames[m.frame % s.frames.length];
   if (m.shown !== now) { m.g.clearRect(0, 0, m.c.width, m.c.height); m.g.drawImage(now.bmp, 0, 0); m.t.needsUpdate = true; m.shown = now; }
+}
+
+/** The Champion's Crown (js/data/difficulty.js's wearsCrown(), a Level 10 win; the user's pick over a cape, 2026-10-23),
+    floating over a buddy whose `crown` says so: turning slowly and bobbing above its head, along the board's lean. Built
+    the first time it's worn. */
+function wearCrown(m) {
+  const on = !!m.crowned();
+  if (on && !m.crown) m.group.add(m.crown = crownModel(Math.min(1.8, Math.max(1.1, m.top / 0.9))));
+  if (!m.crown) return;
+  m.crown.visible = on;
+  if (!on) return;
+  const t = performance.now() / 1000, lean = -m.board.rotation.x, up = m.top + 0.24 * m.crown.scale.y + Math.sin(t * 2.2) * 0.04;
+  m.crown.position.set(0, up * Math.cos(lean), -up * Math.sin(lean));
+  m.crown.rotation.y = t * 0.9;
+}
+
+/** A small gold crown in flat-shaded low poly, like the furniture: an open band on a rim, a red velvet cap with a gold orb,
+    five points leaning out, each tipped with a gem in the rainbow star's colours (unlit, so the bloom makes them glow),
+    and a white jewel on the front. Six draw calls. */
+function crownModel(k) {
+  const R = 0.15, H = 0.075, N = 5, LEAN = 0.22, TALL = 0.11;
+  const gold = new THREE.MeshStandardMaterial({ color: '#f4c63c', emissive: '#6a4200', metalness: 0.3, roughness: 0.35, flatShading: true, side: THREE.DoubleSide });
+  const crown = new THREE.Group();
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(R, R * 0.9, H, 10, 1, true), gold);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(R * 0.93, 0.018, 4, 10), gold);
+  rim.rotation.x = Math.PI / 2;
+  rim.position.y = -H / 2;
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(R * 0.85, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#b0102e', roughness: 0.9, flatShading: true }));
+  cap.scale.y = 0.95;
+  cap.position.y = -H / 2;
+  const orb = new THREE.Mesh(new THREE.OctahedronGeometry(0.03), gold);
+  orb.position.y = -H / 2 + R * 0.85 * 0.95 + 0.02;
+  const spike = new THREE.ConeGeometry(0.036, TALL, 4);
+  spike.translate(0, TALL / 2, 0);
+  const spikes = new THREE.InstancedMesh(spike, gold, N);
+  const gems = new THREE.InstancedMesh(new THREE.OctahedronGeometry(0.028), new THREE.MeshBasicMaterial({ color: '#fff' }), N + 1);
+  const o = new THREE.Object3D(), RAINBOW = ['#ff5a5a', '#ffd84a', '#6ee86e', '#5ac8ff', '#b07af0'];
+  o.rotation.order = 'YXZ';
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2, x = Math.sin(a) * R * 0.97, z = Math.cos(a) * R * 0.97;
+    o.position.set(x, H / 2 - 0.01, z);
+    o.rotation.set(LEAN, a, 0);
+    o.scale.setScalar(1);
+    o.updateMatrix();
+    spikes.setMatrixAt(i, o.matrix);
+    const reach = TALL + 0.018;
+    o.position.set(x + Math.sin(a) * Math.sin(LEAN) * reach, H / 2 - 0.01 + Math.cos(LEAN) * reach, z + Math.cos(a) * Math.sin(LEAN) * reach);
+    o.updateMatrix();
+    gems.setMatrixAt(i, o.matrix);
+    gems.setColorAt(i, new THREE.Color(RAINBOW[i]));
+  }
+  // the front jewel, between two points
+  const a = Math.PI / N;
+  o.position.set(Math.sin(a) * (R + 0.012), 0, Math.cos(a) * (R + 0.012));
+  o.rotation.set(0, a, 0);
+  o.scale.set(1.3, 1.3, 0.6);
+  o.updateMatrix();
+  gems.setMatrixAt(N, o.matrix);
+  gems.setColorAt(N, new THREE.Color('#ffffff'));
+  crown.add(band, rim, cap, orb, spikes, gems);
+  crown.scale.setScalar(k);
+  crown.traverse(c => { c.raycast = () => {}; });
+  return crown;
 }
 
 /** Whether a ray's hit on a billboard landed on the sprite itself, a few pixels' slack round it, not its empty corners. */

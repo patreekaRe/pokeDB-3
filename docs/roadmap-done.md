@@ -3443,3 +3443,12 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   the photo (`leaderphoto`, `js/base-furniture-gym.js`, modelled as a gilt `picture`, model-check iou 0.9) is earned by
   furniture's `level` source (a Record Book win on 10). Budget check: run-map within budget.
 
+## The Champion's Crown (2026-10-23, in place of the cape; on `main`)
+
+- The user saw the cape at `e3f047fc` ("looks retarded") and asked for "a really sick pokemon champion crown". A Level 10
+  win's buddy wears a low-poly 3D gold crown floating over its head, turning and bobbing, five points tipped with the
+  rainbow star's gems that the bloom makes glow (`wearCrown()` / `crownModel()` in `js/hd2d.js`, `wearsCrown()` in
+  `js/data/difficulty.js`); the Trainer Card's partner wears a pixel one with a Crown key. Detail:
+  `docs/reference/economy-and-hall-of-fame.md`'s "The Champion's Crown". Checked headless: six more draws a frame with it
+  on (Clearing 242 -> 245, Secret Base 83 -> 89, mall hall 332 -> 338), memory unchanged, about 21px wide and 15px over
+  Charmander's head on a phone, the key takes it off and puts it back, no page errors, 391 tests pass.

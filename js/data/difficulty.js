@@ -58,12 +58,21 @@ export const starClass = (level) => (isChampion(level) ? `star-lv${Math.min(leve
 export const starName = (level) => STAR_NAMES[Math.min(level, MAX_LEVEL) - CHAMPION_LEVEL];
 
 /** A Pokémon Master: a run won on the top Trainer Level (Mewtwo's and a summit aside), read from the Record Book so an
-    old save proves it. It earns the title on the Trainer Card and a crystal Hall of Fame pedestal (the user's pick,
-    2026-10-22). `?master` lends the title for a page load. */
+    old save proves it. It earns the title on the Trainer Card, a crystal Hall of Fame pedestal (the user's pick,
+    2026-10-22) and the Champion's Crown (2026-10-23). `?master` lends them for a page load. */
 const LENT_MASTER = typeof location !== 'undefined' && new URLSearchParams(location.search).has('master');
+let masterRead = { list: null, n: -1, yes: false };   // the walking buddy asks every frame: the Record Book is read once per new win
+export function isMaster(save) {
+  if (LENT_MASTER) return true;
+  const list = save.hallOfFame || [];
+  if (masterRead.list !== list || masterRead.n !== list.length) masterRead = { list, n: list.length, yes: list.some(w => w.starter !== 'mewtwo' && !w.summit && w.level >= MAX_LEVEL) };
+  return masterRead.yes;
+}
+/** The Champion's Crown floats over the walking buddy from the first Level 10 win until it's taken off (`save.crown`
+    false; the Trainer Card's Crown key). The user's pick over a cape, which they found silly (2026-10-23). */
+export const wearsCrown = (save) => isMaster(save) && save.crown !== false;
 /** Has the save won a run on Trainer Level `level` or higher (Mewtwo's and a summit aside), from the Record Book? */
 export const wonOn = (save, level) => (save.hallOfFame || []).some(w => w.starter !== 'mewtwo' && !w.summit && w.level >= level);
-export const isMaster = (save) => LENT_MASTER || wonOn(save, MAX_LEVEL);
 
 /** The Pokédex shells a high Level earns (the roadmap's Level 6-10 reward 7, 2026-10-23): Gilded, polished gold, for a
     Level 8 win and Clear, the see-through Game Boy, for a Pokémon Master. Settings shows each once earned. */
