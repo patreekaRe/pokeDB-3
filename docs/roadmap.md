@@ -1210,7 +1210,7 @@ kiosk beside the lot (a Timburr crew's stand), because picking a house can show 
 the way wallpaper is tried on in the base (`trying` in `js/base-3d.js`); the PC's HOUSE UPGRADES keeps rooms and the yard
 and gets one row pointing to the kiosk. Before the base is bought the stand shows the cottage FOR SALE. One more model
 in the Clearing, so it goes through the budget check.
-Still open (the session uses Claude's proposal unless the user says otherwise): which of the 18 to keep, the prices, the
+**Session 1 is built on branch `houses-playtest` (f8bf9b4), not on `main`** (2026-10-23: it went to `main` behind HOUSES_LIVE and was taken off again, the user's call: playtest on a branch link only, never the live site, until they say go; merge `main` into it first, for the Berry Booth fix 541f30b). Still open (the session uses Claude's proposal unless the user says otherwise): which of the 18 to keep, the prices, the
 tree kept as a choice. Session 1 prompt: "▶ Run in: CLOUD. Effort: high. Read CLAUDE.md, docs/roadmap.md's 'Secret Base
 houses' idea and docs/reference/hub-base-mall.md, and open docs/mockups/secret-base-houses.html. Build session 1: the
 save field for owned houses, the one lived in and its paint (old saves keep the Ancient Tree and get the Starter Cottage
