@@ -1219,15 +1219,40 @@ link (never the live site): `?houses&coins=5000`, and `?houses&tree` for an old 
 `?houses&coins=5000` (and a save that already owns the tree, to see it kept and the cottage free). Still open: which of the
 18 to keep, the prices, friends' visits (front lawn). Sessions left: 2 the coin houses (medium), 3 earned and seasonal with
 unlock checks and a Mailbox letter (medium), 4 optional insides per house (medium), and the friends' front lawn. All CLOUD.
-Next prompt, once the user says go: "▶ Run in: CLOUD. Effort: low. Read CLAUDE.md and docs/roadmap.md's 'Secret Base
-houses'. The user's playtest said go: set HOUSES_LIVE to true in js/data/houses.js (its patch note in HELD joins NEXT by
-itself; move it into NEXT's list), update tests/houses.test.mjs's first test, the roadmap and the reference, and push to
-main." Then session 2: "▶ Run in: CLOUD. Effort: medium. Read CLAUDE.md, docs/roadmap.md's 'Secret Base houses', the last
-section of docs/reference/hub-base-mall.md and docs/mockups/secret-base-houses.html. Build session 2: the Mushroom Cottage
-and Red Barn (Homestead) and the four Estate houses (Machiya Townhouse, Lighthouse Cottage, Glasshouse Villa, Victorian
-Manor) as makeHouse() builders in js/hub-houses.js and HOUSES lines with three paints each, prices from the mock-up. Run
-tools/budget-check.mjs --only=clearing,clearing-houses, add a patch-notes line, update the roadmap and reference, push
-to main and give the playtest links."
+**The rest, the user's ask (2026-10-23): every house of the mock-up, 7 more to make 25, and many more paints each.**
+Claude's proposal for the 7 (the sessions use it unless the user says otherwise): Treehouse (Homestead, 2,000: a cabin
+up in a tree, a rope ladder), Windmill Farmhouse (Homestead, 1,800), Desert Riad (Estate, 6,500: Sunwell Bazaar's
+style), Lantern Pagoda (Estate, 7,000: Lantern Village's), Champion's Keep (Earned: a Trainer Level 10 win), Stargazer
+Observatory (Earned: the whole Pokédex), Cherry Blossom Teahouse (Seasonal: April, 3,000). Tiers then: Starter 1,
+Homestead 6, Estate 6, Earned 7, Seasonal 3, Legendary 2. Paints: 8 a house (the first 3 as they are), repaint still
+250; with 8 the swatches won't fit their row, so the card gets a paint strip that scrolls or a palette that opens over
+it, the card staying about 267 px tall (the user's ask: see the house). Three sessions, all CLOUD, all on the branch:
+**the playtest rule (the user's, 2026-10-23): everything stays on `houses-playtest`, never `main`, until the user's
+playtest says go;** each session runs `tools/save-check.mjs` (a well-played save must start the Clearing) and the
+Clearing's budget, and gives a pinned githack link.
+- **A** (effort: high): "▶ Run in: CLOUD. Effort: high. Attach pokeDB-3 and pokeDB-sim. `git checkout houses-playtest`
+  (never push to main: the user playtests on the branch's githack link first). Read CLAUDE.md, docs/roadmap.md's
+  'Secret Base houses' and the last section of docs/reference/hub-base-mall.md, and open
+  docs/mockups/secret-base-houses.html. Build the six coin houses (Mushroom Cottage and Red Barn in Homestead; Machiya
+  Townhouse, Lighthouse Cottage, Glasshouse Villa, Victorian Manor in Estate; prices from the mock-up) as makeHouse()
+  builders in js/hub-houses.js, each a real model like the first three, inside the lot (half-width 2.25, clear of the
+  garden arch). Give every house 8 paints (keep the first 3; the tree's are crown colours) and make the catalogue's
+  paints fit 8 without the card growing past ~270 px (js/house-kiosk.js). Update tests/houses.test.mjs. Check each model
+  with text elevations (no screenshots), run NODE_PATH=$(npm root -g) node tools/save-check.mjs and tools/budget-check.mjs
+  --only=clearing,clearing-houses, update the roadmap and reference, push houses-playtest only, and give the githack
+  links (?houses&coins=20000, and &tree)."
+- **B** (effort: high): the same opening, then: "Build the eight earned and seasonal houses (Gym Hall: every Gym Leader;
+  Hot-Spring Ryokan: every Waystone mended; Ranger Lodge: every Safari page; Sky Spire: the Sky Pillar's top; Poké Ball
+  Dome: the Master Badge; Crystal Palace: beat Eternatus; Haunted Chateau in October and Snow Chalet in December, 3,000
+  and kept for good) with 8 paints each, their unlock checks in js/data/houses.js (pure, tested), LOCKED cards saying how
+  to get each, the Ancient Tree earned by new players with the Clearing Badge, and a Mailbox letter when one unlocks.
+  Add a playtest flag to see every earned house unlocked. Same checks, push houses-playtest only, githack links."
+- **C** (effort: medium, the pattern is set by then): the same opening, then: "Build the 7 new houses from the roadmap
+  (Treehouse, Windmill Farmhouse, Desert Riad, Lantern Pagoda, Champion's Keep, Stargazer Observatory, Cherry Blossom
+  Teahouse) with 8 paints each and their unlocks, the earned and seasonal ones as session B set them up. Same checks,
+  push houses-playtest only, githack links."
+Going live is its own step after the user's go: merge `main` into the branch, HOUSES_LIVE true, the patch note out of
+HELD, and only then onto `main`.
 
 **The game feels too easy, Grass most of all; healing feels overpowered** (2026-10-22, the user, after a Servine run where
 Apple Acid+ (1 PP, 11 + Vulnerable 2) sat beside Seed Bomb (2 PP, 10 + Vulnerable 2)). The human bot, 150 a cell, sim
