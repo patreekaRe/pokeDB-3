@@ -1183,7 +1183,7 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 **The Berry Booth** was built 2026-10-23 (branch `claude/berry-booth-roadmap-build-h6mbqh` and `main`; archive). **Next: the
 user playtests it** (needs Kurt's Workshop open and held berries kept): walk to the kiosk left of the gate, step through
 the Guide, pack berries and a kit item, then see Prepare's "Bringing:" line. The booth and the Pokéstop moved a row
-forward to the avenue's edges the same day (the user's ask); the user checks they don't hide the gate's runes. Then, ▶ LOCAL if the kiosk's look or the
+forward to the avenue's edges the same day (the user's ask), and the route sign was taken out; the user checks they don't hide the gate's runes. Then, ▶ LOCAL if the kiosk's look or the
 window needs work (effort: low). ▶ Playtest on the live site.
 
 ## Ideas, not agreed yet (ask the user before building)

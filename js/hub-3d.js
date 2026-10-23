@@ -66,12 +66,9 @@ const M = 4, FRONT = 2;       // grass round it (tiles): the open meadow behind,
 // grass to the forest's edge; MW is its margin, M the other sides'
 const WEST = 4, MW = M + WEST;
 // the Whispering Clearing's gate at the far end of the north avenue (the user's ask, 2026-10-14: the way out goes north);
-// the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the route sign either
-// side of the avenue just inside it
+// the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the Berry Booth either
+// side of the avenue before it
 const GATE_AT = { tx: 15, ty: -2 };
-// the route sign left of the gate, just outside its foot so it hides none of its runes (the user's ask, 2026-10-15),
-// nudged in towards the opening (STAND_IN)
-const SIGN_AT = { tx: 12, ty: -1 }, STAND_IN = 0.3;
 // New game's Pokéstop and the Berry Booth (js/berrybooth.js) a row in front of the gate, right at the avenue's edges, in
 // line with its lamps (the user's ask, 2026-10-23: closer to the road), their doorsteps on the road (ROADSIDE: how far
 // each stands out from its tile towards the road)
@@ -2418,16 +2415,8 @@ function makePlaces() {
       open: true,
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
-      // outside the gate on its right, the route sign across the trail from it (the user's ask, 2026-10-09)
+      // right of the avenue before the gate, the Berry Booth across the road from it
       build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - ROADSIDE, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
-    },
-    {
-      // the route sign says what the old gate's card did (the user's ask, 2026-10-09); like the Safari gate, no buttons
-      id: 'route-sign', name: 'Whispering Clearing', step: { x: SIGN_AT.tx + 1, y: SIGN_AT.ty }, tiles: [[SIGN_AT.tx, SIGN_AT.ty]], tag: [SIGN_AT.tx, 2.6, SIGN_AT.ty],
-      open: true,
-      line: 'The way out of the Whispering Clearing. Spin the Pokéstop to set out on an adventure.',
-      buttons: [],
-      build: (g) => beckon(g, board(routeSignArt(), tileX(SIGN_AT.tx) + STAND_IN, tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 })),
     },
     {
       id: 'base', name: 'Secret Base', step: { x: TREE_AT.tx, y: TREE_AT.ty + 1 }, tiles: [...rect(TREE_AT.tx - 3, TREE_AT.ty - 2, TREE_AT.tx + 3, TREE_AT.ty - 1), ...rect(TREE_AT.tx - 3, TREE_AT.ty, ARCH_AT.tx - 1, TREE_AT.ty)], tag: [TREE_AT.tx, 3.2, TREE_AT.ty], open: true,
@@ -2913,69 +2902,6 @@ function liveGateway(now) {
     c.setXYZ(i, tint[0] * fade, tint[1] * fade, tint[2] * fade);
   });
   p.needsUpdate = c.needsUpdate = true;
-}
-
-/** A Pokémon route sign (the user's pick, 2026-10-09, after Scarlet / Violet's): a white pin, a red band over its round
-    face, a red point below, on a grey post and foot. */
-function routeSignArt() {
-  const { c, g, fill, rr, lin } = fine(16, 36), cx = 8, cy = 8.5;
-  const pin = (r, tip) => {   // the round head and its tangents down to the point
-    const a = Math.acos(r / (tip - cy));
-    g.moveTo(cx, tip); g.lineTo(cx + r * Math.cos(Math.PI / 2 - a), cy + r * Math.sin(Math.PI / 2 - a));
-    g.arc(cx, cy, r, Math.PI / 2 - a, Math.PI / 2 + a, true); g.closePath();
-  };
-  rr(6.2, 22, 3.6, 3.2, 0.9, lin(6.2, 0, 9.8, 0, ['#d8d8d4', '#a8a8a4', '#70706c']));   // the collar, post and foot
-  rr(7, 24.6, 2, 7.6, 0.6, lin(7, 0, 9, 0, ['#c8c8c4', '#9a9a96', '#6a6a66']));
-  rr(3.6, 31.4, 8.8, 4.4, 1.2, lin(0, 31.4, 0, 35.8, ['#a8a8a4', '#7a7a76', '#4e4e4a']));
-  rr(4.2, 31.6, 7.6, 0.8, 0.4, 'rgba(255,255,255,0.45)');
-  fill(lin(0, 1, 0, 23, ['#e4e4e0', '#b8b8b4', '#8a8a86']), () => pin(7.4, 23.2));
-  fill(lin(0, 2, 0, 22, ['#ffffff', '#f4f4f0', '#dcdcd6']), () => pin(6.7, 22.2));
-  g.strokeStyle = lin(0, 1.5, 0, 12, ['#ff7a6a', '#e8483a', '#c8302a']); g.lineWidth = 1.5;   // the red band round the top
-  g.beginPath(); g.arc(cx, cy, 6.3, 0.3, Math.PI - 0.3, true); g.stroke();
-  g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 0.35;
-  g.beginPath(); g.arc(cx, cy, 6.7, 1.15 * Math.PI, 1.4 * Math.PI); g.stroke();
-  fill('#e2e2dc', () => g.arc(cx, cy, 5.1, 0, Math.PI * 2));   // the face
-  fill('#fdfdfb', () => g.arc(cx, cy, 4.7, 0, Math.PI * 2));
-  fill(lin(0, 15.6, 0, 20.6, ['#ff6a5a', '#d83a30']), () => { g.moveTo(5.3, 15.6); g.lineTo(10.7, 15.6); g.lineTo(cx, 20.6); g.closePath(); });
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.font = '900 1.75px "Trebuchet MS", "Arial Black", sans-serif';
-  g.fillStyle = '#e8483a'; g.fillText('WHISPERING', cx, 7.1);
-  g.font = '800 1.45px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#3a3a3a'; g.fillText('CLEARING', cx, 9.3);
-  g.font = '700 1.05px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#7a7a76'; g.fillText('↑ ROUTE OUT', cx, 11.1);
-  return c;
-}
-
-/** The Berry Booth (2026-10-23): a digital kiosk, the Safari gate's teal and cream, a berry-pink canopy over a lit screen
-    showing a berry and the pouch's three slots, a card slot and a tray under it. */
-function boothArt() {
-  const { c, g, rr, lin, shine } = fine(18, 32);
-  rr(2.4, 28.6, 13.2, 3, 1, lin(0, 28.6, 0, 31.6, ['#8a8a86', '#5e5e5a', '#3e3e3a']));
-  rr(3.2, 9.4, 11.6, 19.8, 1.6, lin(3.2, 0, 14.8, 0, ['#5ec8b8', '#2e9a8e', '#1e6e66']));
-  rr(3.8, 9.8, 1.2, 19, 0.6, 'rgba(255,255,255,0.3)');
-  rr(4.6, 11.4, 8.8, 8.6, 1, '#1a2a30');
-  rr(5.2, 12, 7.6, 7.4, 0.7, lin(0, 12, 0, 19.4, ['#d8f8c8', '#9fe0a0', '#6cbc78']));
-  const berry = (gg, k) => {
-    gg.fillStyle = k ? '#ffffff' : '#3a62c8'; gg.beginPath(); gg.arc(9, 14.8, 1.7, 0, Math.PI * 2); gg.fill();
-    gg.fillStyle = k ? '#ffffff' : '#3aa040'; gg.beginPath(); gg.ellipse(9.9, 12.9, 0.9, 0.45, -0.5, 0, Math.PI * 2); gg.fill();
-    for (const x of [6.6, 9, 11.4]) { gg.fillStyle = k ? '#d0d0d0' : 'rgba(31,58,20,0.55)'; gg.fillRect(x - 0.8, 17.4, 1.6, 1.3); }
-  };
-  berry(g, false);
-  const s = shine();
-  s.fillStyle = '#b8f0b0'; s.beginPath(); s.roundRect(5.2, 12, 7.6, 7.4, 0.7); s.fill();
-  berry(s, true);
-  rr(6, 21.4, 6, 1, 0.4, '#123a36');
-  rr(5.4, 24.2, 7.2, 2.8, 0.8, lin(0, 24.2, 0, 27, ['#e8e4d8', '#b8b4a6']));
-  rr(6.2, 25, 5.6, 1.2, 0.5, '#5e5a50');
-  rr(1.4, 4.6, 15.2, 5.2, 1.6, lin(0, 4.6, 0, 9.8, ['#ff8ab8', '#e84a8a', '#b02a62']));
-  g.fillStyle = 'rgba(255,255,255,0.85)';
-  for (let x = 2.6; x < 16; x += 2.6) { g.beginPath(); g.arc(x, 9.6, 1.1, 0, Math.PI); g.fill(); }
-  rr(4, 0.6, 10, 4.4, 1, lin(0, 0.6, 0, 5, ['#fff6e0', '#f0dcb0']));
-  words(g, 'BERRY', 9, 2.9, 2.6, '#c02a62');
-  words(s, 'BERRY', 9, 2.9, 2.6, '#ffd0e0');
-  words(g, 'BOOTH', 9, 7.3, 2.2, '#ffffff');
-  return c;
 }
 
 /* ---------- the Clearing round them ---------- */
@@ -3546,8 +3472,8 @@ function liveStop(stop, now) {
 
 let glintArt = null;
 
-/** A sign that is a place of its own (the Safari's and the Sky Pillar's boards, the Nietos' name board, the route sign by
-    the gate) hops and wiggles every few seconds, a glint twinkling at its top corner (the user's ask, 2026-10-15: they
+/** A sign that is a place of its own (the Safari's and the Sky Pillar's boards, the Nietos' name board)
+    hops and wiggles every few seconds, a glint twinkling at its top corner (the user's ask, 2026-10-15: they
     read as scenery, nothing said they could be tapped; liveBeckons()). `obj` is a board(), standing on its middle, or a
     group standing on its origin `w` wide and `h` tall. */
 function beckon(g, obj, w, h) {
