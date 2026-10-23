@@ -1190,6 +1190,11 @@ window needs work (effort: low). ▶ Playtest on the live site.
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Cloud save: look at the cloud again when the game comes back from the background** (Claude's offer, 2026-10-23, not
+answered yet): a tab left open on one device only learns the other played at its next save, then asks "Two saves found".
+Re-checking on return would take the newer cloud save quietly when this device hadn't changed (a reload mid-play, so ask
+the user first). ▶ Run in: CLOUD, effort medium.
+
 **Secret Base houses: the Ancient Tree's lot becomes a house from a catalogue** (the user's idea, 2026-10-23: "changing it
 from a tree to a really cool looking house... a catalogue of houses with tiers, some by coins, some by challenges or
 achievements... give players the option to buy their first aesthetic change too"). Mock-up of 18 houses:
