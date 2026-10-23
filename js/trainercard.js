@@ -27,7 +27,7 @@ import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { tipAt } from './tips.js';
 import { playSound } from './audio.js';
-import { $, el, openDialog } from './ui.js';
+import { $, el, openDialog, crownArt } from './ui.js';
 import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
@@ -431,17 +431,6 @@ export function buddy(save = getSave()) {
     Card's Crown key shows at once. */
 const crownOn = () => wearsCrown(getSave());
 
-/** The Champion's Crown over the Trainer Card's partner, in pixels like the walking buddy's 3D one: gold, five points
-    tipped with the rainbow star's gems, a red cap and a white jewel. */
-function crownArt() {
-  const at = [0, 4, 8, 12, 16], gems = ['#ff5a5a', '#ffd84a', '#6ee86e', '#5ac8ff', '#b07af0'];
-  const px = (x, y, w, h, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
-  const span = el('span', 'tc-crown');
-  span.innerHTML = `<svg viewBox="0 0 19 13" shape-rendering="crispEdges" aria-hidden="true">${px(0, 4, 19, 2, '#b0102e')}${
-    at.map((x, i) => px(x, 2, 3, 5, '#f4c63c') + px(x, 0, 3, 2, gems[i])).join('')}${px(0, 6, 19, 7, '#f4c63c')}${px(0, 9, 19, 3, '#c8901c')}${
-    px(0, 12, 19, 1, '#7a4e00')}${px(8, 8, 3, 3, '#fff')}${px(3, 10, 1, 1, '#5ac8ff')}${px(15, 10, 1, 1, '#ff5a5a')}</svg>`;
-  return span;
-}
 
 /** The walking buddy as a `save.buddy` key, picked or not. */
 export const buddyKey = (save = getSave()) => { const b = buddy(save); return b.key ?? `starter:${b.id}${b.shiny ? ':shiny' : ''}`; };
@@ -685,6 +674,12 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
       openTrainerCard(into, { reopen: true });
     });
     frame.append(key);
+  } else {
+    // a preview of the crown for everyone not yet a Master, greyed, saying how it's earned (the user's pick, 2026-10-23)
+    const lock = el('span', 'tc-shiny tc-crown-locked');
+    lock.append(crownArt('tc-crown-mini'), ' Win Lv 10');
+    lock.title = 'The Champion\'s Crown: win a run on Trainer Level 10 and it floats over your partner.';
+    frame.append(lock);
   }
   info.append(list, frame);
 

@@ -60,7 +60,9 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   and bobbing over the head along the board's lean, scaled by the sprite's height (about 21px wide on a phone over
   Charmander). So the Clearing, the Secret Base and the mall show it; towns and runs walk your run's starter, uncrowned,
   and friends' buddies in the Plaza don't wear one yet (their name tag sits there). The Trainer Card's partner wears a
-  pixel one (`crownArt()`, `.tc-crown`, bobbing, still under reduced motion).
+  pixel one (`crownArt()` in `js/ui.js`, `.tc-crown`, bobbing, still under reduced motion). **Previews** (2026-10-23):
+  until you're a Master, the Trainer Card shows a greyed crown, "Win Lv 10" (`.tc-crown-locked`), and the Level picker
+  from Level 5 up a line with the crown and how to earn it (`#level-crown`, `renderLevel()` in `js/select.js`).
 - **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
   `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
   `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character

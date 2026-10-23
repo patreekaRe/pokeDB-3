@@ -3452,3 +3452,10 @@ see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, t
   `docs/reference/economy-and-hall-of-fame.md`'s "The Champion's Crown". Checked headless: six more draws a frame with it
   on (Clearing 242 -> 245, Secret Base 83 -> 89, mall hall 332 -> 338), memory unchanged, about 21px wide and 15px over
   Charmander's head on a phone, the key takes it off and puts it back, no page errors, 391 tests pass.
+
+## A preview of the Champion's Crown (2026-10-23, on `main`)
+
+- The user picked two of four ideas. The Trainer Level picker, from Level 5 up until you're a Master, shows the pixel
+  crown and "Win on Level 10 to wear the Champion's Crown." (at 10, "Win this Level..."; `#level-crown`, `renderLevel()`
+  in `js/select.js`); the Trainer Card shows a greyed crown, "Win Lv 10", where a Master's Crown key goes. `crownArt()`
+  moved to `js/ui.js` for both. Checked headless with `?levels`, `?levels&master` and a fresh save; no errors, 391 tests pass.

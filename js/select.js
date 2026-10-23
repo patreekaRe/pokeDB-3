@@ -16,7 +16,7 @@
 import { STARTERS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES, CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
-import { LEVELS, MAX_LEVEL, MEWTWO_MODE, isMewtwoRun, bestWin, starClass, starName } from './data/difficulty.js';
+import { LEVELS, MAX_LEVEL, CHAMPION_LEVEL, MEWTWO_MODE, isMewtwoRun, bestWin, starClass, starName, isMaster } from './data/difficulty.js';
 import { sealOn, shardsPlaced } from './data/towns.js';
 import { strengthOf } from './data/camp.js';
 import { COIN_LEVEL_BONUS } from './data/shop.js';
@@ -31,7 +31,7 @@ import { playCry, playSound } from './audio.js';
 import { showMenuScene } from './scene.js';
 import { selectSky } from './select-sky.js';
 import { smoothIcon } from './smooth-icons.js';
-import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
+import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck, crownArt } from './ui.js';
 import { HELD_BY_ID, POUCH } from './data/held.js';
 import { typeText } from './type-badge.js';
 
@@ -384,6 +384,7 @@ function renderLevel() {
       ? ` There its Sealed Weakness holds it to ${strengthOf(shardsPlaced(getSave()))}% of its damage: every town Waystone mended gives some back.`
       : ' Every town Waystone is lit: it goes down at full strength.'}`;
     $('level-coins').hidden = true;
+    $('level-crown').hidden = true;
     $('level-rules').closest('details').hidden = true;
     return;
   }
@@ -396,6 +397,10 @@ function renderLevel() {
     : `${LEVELS[level].text}${level > 1 ? ` Plus the rules of Levels 1-${level - 1}.` : ''}`;
   $('level-coins').textContent = level ? `💰 Coins +${Math.round(level * COIN_LEVEL_BONUS * 100)}%` : '';
   $('level-coins').hidden = !level;
+  // from the champion's Levels up, the crown a Level 10 win earns, until it's yours (the user's pick, 2026-10-23)
+  const tease = level >= CHAMPION_LEVEL && !isMaster(getSave());
+  $('level-crown').hidden = !tease;
+  if (tease) $('level-crown').replaceChildren(crownArt('prep-crown-art'), level >= MAX_LEVEL ? 'Win this Level to wear the Champion\'s Crown.' : `Win on Level ${MAX_LEVEL} to wear the Champion's Crown.`);
   const rules = Array.from({ length: level }, (_, i) => el('li', '', `${i + 1}. ${LEVELS[i + 1].text}`));
   if (max < MAX_LEVEL) rules.push(el('li', 'level-locked', `🔒 Win on Level ${max} to unlock Level ${max + 1}.`));
   $('level-rules').replaceChildren(...rules);

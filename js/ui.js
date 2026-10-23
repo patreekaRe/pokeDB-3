@@ -539,3 +539,15 @@ export function setMoney(amount) {
   $('room-money').textContent = String(amount);
   $('run-money').textContent = String(amount);
 }
+
+/** The Champion's Crown in pixels (the Trainer Card's partner, the Level picker's preview) like the walking buddy's 3D one: gold, five points
+    tipped with the rainbow star's gems, a red cap and a white jewel. */
+export function crownArt(cls = 'tc-crown') {
+  const at = [0, 4, 8, 12, 16], gems = ['#ff5a5a', '#ffd84a', '#6ee86e', '#5ac8ff', '#b07af0'];
+  const px = (x, y, w, h, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+  const span = el('span', cls);
+  span.innerHTML = `<svg viewBox="0 0 19 13" shape-rendering="crispEdges" aria-hidden="true">${px(0, 4, 19, 2, '#b0102e')}${
+    at.map((x, i) => px(x, 2, 3, 5, '#f4c63c') + px(x, 0, 3, 2, gems[i])).join('')}${px(0, 6, 19, 7, '#f4c63c')}${px(0, 9, 19, 3, '#c8901c')}${
+    px(0, 12, 19, 1, '#7a4e00')}${px(8, 8, 3, 3, '#fff')}${px(3, 10, 1, 1, '#5ac8ff')}${px(15, 10, 1, 1, '#ff5a5a')}</svg>`;
+  return span;
+}

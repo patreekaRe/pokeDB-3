@@ -789,6 +789,12 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .prep-coins { padding: 3px 7px; border-radius: 4px; background: #1f3a14; color: #b6d68e; }
 .prep-coins .smooth-icon { width: 12px; height: 12px; }
 .prep-coins[hidden] { display: none; }
+/* The Champion's Crown a Level 10 win earns, shown from Level 5 up until it's yours (js/ui.js's crownArt()). */
+.prep-crown { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;
+  line-height: 1.5; color: #f8d048; background: #1f3a14; }
+.prep-crown[hidden] { display: none; }
+.prep-crown-art { flex: none; width: 24px; filter: drop-shadow(0 0 3px rgba(255, 220, 120, 0.7)); }
+.prep-crown-art svg, .tc-crown-mini svg { display: block; width: 100%; }
 .prep-all { margin-left: auto; }
 .prep-all summary { cursor: pointer; list-style: none; text-align: right; text-transform: uppercase; }
 .prep-all summary::-webkit-details-marker { display: none; }
@@ -1414,6 +1420,8 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 @keyframes tc-crown-bob { 50% { transform: translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) { .tc-crown { animation: none; } }
 .tc-crown-key.on { border-color: #b07a10; background: #d8a020; }
+.tc-crown-locked { display: flex; align-items: center; justify-content: center; gap: 4px; opacity: 0.75; cursor: default; }
+.tc-crown-mini { width: 16px; filter: grayscale(1); }
 /* A Pokémon Master's title (js/data/difficulty.js's isMaster(), a Level 10 win): a dark chip with a rainbow underline, like the rainbow star. */
 .tc-lines dd.tc-master { justify-self: end; padding: 3px 7px 4px; border-radius: 4px; color: #f8d048;
   background: linear-gradient(90deg, #ff5a5a, #ffd84a, #6ee86e, #5ac8ff, #b07af0) 0 100% / 100% 2px no-repeat, #1f3a14; }
