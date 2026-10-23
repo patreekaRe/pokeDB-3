@@ -1220,6 +1220,23 @@ things for the Secret Base. **The user: "send it"; 1-3 built the same day** (arc
    (each a painting and a hand-built model). ▶ CLOUD, effort: high.
 5. **Master Badges**: a Level 10 win with a Fire, a Water and a Grass starter, and all three (each a `LOOK` line). ▶
    CLOUD, effort: medium.
+More creative ones (2026-10-23, the user: "Lets give them some cool creative stuff"; Claude's pitch, none picked yet;
+still no outfits and nothing that makes a run easier):
+6. **Foil decks** (Claude's top pick): a win on Level N with a starter gives that starter's cards a foil edge in the
+   star's colour, and Level 10 a full rainbow holo that shifts as the phone tilts or the pointer moves. A Settings switch,
+   off under `calmFx()`. ▶ CLOUD, effort: high.
+7. **Gold and Crystal Pokédex shells**: two earned colours for the device's shell setting, Gold for a Level 8 win and a
+   see-through Crystal (the old clear Game Boy) for 10. ▶ CLOUD, effort: medium.
+8. **The Master's constellation**: each Level won lights a star in the Clearing's night sky, in your starter's shape;
+   Level 10 joins them up. Friends visiting see it. ▶ CLOUD, effort: high.
+9. **A golden statue in the Clearing**: a Level 10 win casts that starter in gold on a plinth with your name and the
+   date, one per type, up to three. ▶ CLOUD, effort: high.
+10. **Letters from the Gym Leaders**: each friend mails you in their own voice on your first win on 6-10, the last with
+    a signed photo for the Secret Base. ▶ CLOUD, effort: medium.
+11. **The homecoming parade**: after the first Level 10 win, the Clearing at dusk with fireworks in the star's colours
+    and the Gym Leaders lined up cheering (Lantern Village's fireworks reused), once. ▶ CLOUD, effort: high.
+12. **The silent champion**: after Level 10, a secret summit with one last fight at Level 10's rules; a win puts a gold
+    plaque in the Hall of Fame. New content, not power, and needs the bot. ▶ CLOUD, effort: high.
 
 **Picking a duo's look and shiny** (2026-10-21, the user's question: "is this the best way to cycle through our
 starters? any other ideas for shiny toggles?"). Built so far: ◀ ▶ under each portrait, and a ✨ on its corner (archive).
