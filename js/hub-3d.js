@@ -2831,6 +2831,37 @@ async function standProf(g, who) {
   g.add(m.group);
 }
 
+/** The Berry Booth (2026-10-23): a digital kiosk, the Safari gate's teal and cream, a berry-pink canopy over a lit screen
+    showing a berry and the pouch's three slots, a card slot and a tray under it. */
+function boothArt() {
+  const { c, g, rr, lin, shine } = fine(18, 32);
+  rr(2.4, 28.6, 13.2, 3, 1, lin(0, 28.6, 0, 31.6, ['#8a8a86', '#5e5e5a', '#3e3e3a']));
+  rr(3.2, 9.4, 11.6, 19.8, 1.6, lin(3.2, 0, 14.8, 0, ['#5ec8b8', '#2e9a8e', '#1e6e66']));
+  rr(3.8, 9.8, 1.2, 19, 0.6, 'rgba(255,255,255,0.3)');
+  rr(4.6, 11.4, 8.8, 8.6, 1, '#1a2a30');
+  rr(5.2, 12, 7.6, 7.4, 0.7, lin(0, 12, 0, 19.4, ['#d8f8c8', '#9fe0a0', '#6cbc78']));
+  const berry = (gg, k) => {
+    gg.fillStyle = k ? '#ffffff' : '#3a62c8'; gg.beginPath(); gg.arc(9, 14.8, 1.7, 0, Math.PI * 2); gg.fill();
+    gg.fillStyle = k ? '#ffffff' : '#3aa040'; gg.beginPath(); gg.ellipse(9.9, 12.9, 0.9, 0.45, -0.5, 0, Math.PI * 2); gg.fill();
+    for (const x of [6.6, 9, 11.4]) { gg.fillStyle = k ? '#d0d0d0' : 'rgba(31,58,20,0.55)'; gg.fillRect(x - 0.8, 17.4, 1.6, 1.3); }
+  };
+  berry(g, false);
+  const s = shine();
+  s.fillStyle = '#b8f0b0'; s.beginPath(); s.roundRect(5.2, 12, 7.6, 7.4, 0.7); s.fill();
+  berry(s, true);
+  rr(6, 21.4, 6, 1, 0.4, '#123a36');
+  rr(5.4, 24.2, 7.2, 2.8, 0.8, lin(0, 24.2, 0, 27, ['#e8e4d8', '#b8b4a6']));
+  rr(6.2, 25, 5.6, 1.2, 0.5, '#5e5a50');
+  rr(1.4, 4.6, 15.2, 5.2, 1.6, lin(0, 4.6, 0, 9.8, ['#ff8ab8', '#e84a8a', '#b02a62']));
+  g.fillStyle = 'rgba(255,255,255,0.85)';
+  for (let x = 2.6; x < 16; x += 2.6) { g.beginPath(); g.arc(x, 9.6, 1.1, 0, Math.PI); g.fill(); }
+  rr(4, 0.6, 10, 4.4, 1, lin(0, 0.6, 0, 5, ['#fff6e0', '#f0dcb0']));
+  words(g, 'BERRY', 9, 2.9, 2.6, '#c02a62');
+  words(s, 'BERRY', 9, 2.9, 2.6, '#ffd0e0');
+  words(g, 'BOOTH', 9, 7.3, 2.2, '#ffffff');
+  return c;
+}
+
 function rect(x0, y0, x1, y1) {
   const out = [];
   for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) out.push([x, y]);
