@@ -12,6 +12,7 @@
 
 import { GYM_LEADERS } from './gym.js';
 import { RING, mended, townState } from './towns.js';
+import { MAX_LEVEL } from './difficulty.js';
 
 /* Players see none of it until the user's playtest says go (as TOWNS_LIVE was): `?houses` shows it for a page load. */
 export const HOUSES_LIVE = false;
@@ -122,6 +123,34 @@ export const HOUSES = [
     ],
   },
   {
+    id: 'treehouse', name: 'Treehouse', tier: 'homestead', price: 2000, how: '2,000 PokéCoins', swatch: ['leaf', 'wall'],
+    blurb: 'A plank cabin up on a deck round a great trunk, a rope ladder down, its door in the roots and a crown of leaves over it.',
+    paints: [
+      { name: 'Oak Grove', wall: '#a8784a', roof: '#7a3a2a', trim: '#efe0bc', door: '#5a3a20', bark: '#6a4a32', leaf: '#4f9a3e', leaf2: '#7cc04e' },
+      { name: 'Maple Fall', wall: '#b07a4a', roof: '#5a4a3a', trim: '#f4e4c4', door: '#6a3a1a', bark: '#5a3e2a', leaf: '#d8602a', leaf2: '#f0a038' },
+      { name: 'Blossom', wall: '#9a6a48', roof: '#4a3a4a', trim: '#ffffff', door: '#5a3a3a', bark: '#5a4038', leaf: '#f0a0c0', leaf2: '#ffd0e0' },
+      { name: 'Pine Ridge', wall: '#8a5a3a', roof: '#3f6a4a', trim: '#e8dcc0', door: '#4a2a18', bark: '#4a3424', leaf: '#2f6a3e', leaf2: '#4a8a4a' },
+      { name: 'Golden Leaf', wall: '#c09060', roof: '#a8452f', trim: '#fff4dc', door: '#6a4a2a', bark: '#6a4a30', leaf: '#e0b030', leaf2: '#f8d860' },
+      { name: 'Mossy', wall: '#7a6a4a', roof: '#5a7a3a', trim: '#ece2c4', door: '#4a3a24', bark: '#5a4a34', leaf: '#5a8a3a', leaf2: '#8ab04a' },
+      { name: 'Twilight', wall: '#6a5a6a', roof: '#3a3a5a', trim: '#e0dcf0', door: '#2a2a4a', bark: '#4a3a44', leaf: '#5a6ab0', leaf2: '#8a9ad8' },
+      { name: 'Snowy Bough', wall: '#a89070', roof: '#4a6a9a', trim: '#ffffff', door: '#8a3a2a', bark: '#5a4638', leaf: '#dfe8ee', leaf2: '#ffffff' },
+    ],
+  },
+  {
+    id: 'windmill', name: 'Windmill Farmhouse', tier: 'homestead', price: 1800, how: '1,800 PokéCoins', swatch: ['roof', 'sail'],
+    blurb: 'A whitewashed farmhouse under a steep roof, a windmill tower joined to it with four lattice sails, and sunflowers by the wall.',
+    paints: [
+      { name: 'Meadow', wall: '#f4ecd8', roof: '#b0503a', trim: '#ffffff', door: '#3f6a4a', sail: '#f0e6cc' },
+      { name: 'Tulip', wall: '#fbf0e4', roof: '#d24a6a', trim: '#ffffff', door: '#3a5a8a', sail: '#ffffff' },
+      { name: 'Clover', wall: '#eef0dc', roof: '#3c8a52', trim: '#ffffff', door: '#8a5a34', sail: '#f4ecd8' },
+      { name: 'Harvest', wall: '#f2dcb0', roof: '#8a5232', trim: '#fff4dc', door: '#6a3a20', sail: '#e8c070' },
+      { name: 'Delft Blue', wall: '#f4f4f0', roof: '#2f5f9a', trim: '#ffffff', door: '#2f5f9a', sail: '#dfe8f4' },
+      { name: 'Lavender Field', wall: '#f2eef4', roof: '#7a5aa8', trim: '#ffffff', door: '#4a3a6a', sail: '#e8e0f0' },
+      { name: 'Sunflower', wall: '#fff4cc', roof: '#e0a020', trim: '#ffffff', door: '#6a4a2a', sail: '#fffaf0' },
+      { name: 'Stormy', wall: '#c8ccd0', roof: '#4a4e58', trim: '#ffffff', door: '#8a3a2a', sail: '#a8b0b8' },
+    ],
+  },
+  {
     id: 'machiya', name: 'Machiya Townhouse', tier: 'estate', price: 5000, how: '5,000 PokéCoins', swatch: ['noren', 'plaster'],
     blurb: 'A Kyoto townhouse: lit timber lattice, a tiled roof over each storey, a noren and paper lanterns.',
     paints: [
@@ -175,6 +204,34 @@ export const HOUSES = [
       { name: 'Painted Lady', wall: '#f0a070', roof: '#4a3a5a', trim: '#fff6ee', door: '#3a6a7a' },
       { name: 'Ivory', wall: '#f2ecd8', roof: '#3a4a6a', trim: '#ffffff', door: '#3a4a6a' },
       { name: 'Gothic', wall: '#44444e', roof: '#1e1e26', trim: '#c8b8a0', door: '#8a2a3a' },
+    ],
+  },
+  {
+    id: 'riad', name: 'Desert Riad', tier: 'estate', price: 6500, how: '6,500 PokéCoins', swatch: ['dome', 'wall'],
+    blurb: 'Sunwell Bazaar\'s style: two storeys of adobe, a tiled horseshoe arch, carved screens, a domed tower on the roof and a palm.',
+    paints: [
+      { name: 'Sunwell', wall: '#e8c49a', dome: '#2f8a8a', tile: '#2a6aa8', trim: '#f8eedc', door: '#8a4a24' },
+      { name: 'Desert Rose', wall: '#e0a08a', dome: '#3a6a4a', tile: '#2a8a7a', trim: '#f8e8dc', door: '#6a3a2a' },
+      { name: 'Saffron', wall: '#f0c870', dome: '#b0503a', tile: '#2a5aa8', trim: '#fff4dc', door: '#5a3a20' },
+      { name: 'Oasis', wall: '#f4e4c8', dome: '#3a9ab0', tile: '#2f9a8a', trim: '#ffffff', door: '#3a6a8a' },
+      { name: 'Indigo Night', wall: '#4a5a9a', dome: '#e8c040', tile: '#e8e0c8', trim: '#f0ecf4', door: '#2a2a48' },
+      { name: 'Blue City', wall: '#7aa8d8', dome: '#ffffff', tile: '#2a5aa8', trim: '#ffffff', door: '#2a4a8a' },
+      { name: 'Dune', wall: '#d8b080', dome: '#a0703a', tile: '#7a4a2a', trim: '#f4e4c8', door: '#5a3a20' },
+      { name: 'Moonlit', wall: '#c8c0d0', dome: '#4a3a7a', tile: '#7a5ab0', trim: '#f0ecf4', door: '#3a2a4a' },
+    ],
+  },
+  {
+    id: 'pagoda', name: 'Lantern Pagoda', tier: 'estate', price: 7000, how: '7,000 PokéCoins', swatch: ['roof', 'wall'],
+    blurb: 'Lantern Village\'s style: three storeys under sweeping tiled roofs, red columns, lit shoji and a lantern at every eave.',
+    paints: [
+      { name: 'Lantern Red', wall: '#b8322a', plaster: '#f4ead4', roof: '#3a3e48', lantern: '#ff7a3a', door: '#5a2a1a' },
+      { name: 'Jade', wall: '#2f7a5a', plaster: '#f0ecd8', roof: '#3a4a40', lantern: '#ffd060', door: '#2a4a3a' },
+      { name: 'Imperial Gold', wall: '#c8902a', plaster: '#fff4dc', roof: '#7a2a24', lantern: '#ffcf60', door: '#5a3a14' },
+      { name: 'Vermilion', wall: '#e0502a', plaster: '#ffffff', roof: '#2e3038', lantern: '#ff9a4a', door: '#4a2a1a' },
+      { name: 'Plum Blossom', wall: '#8a3a6a', plaster: '#f6eef2', roof: '#3a3440', lantern: '#ff8ac0', door: '#4a2a3a' },
+      { name: 'Night Market', wall: '#3a2a3a', plaster: '#e8dcc8', roof: '#1e2028', lantern: '#ff5a4a', door: '#2a1a1a' },
+      { name: 'Celadon', wall: '#6aa094', plaster: '#f2f4ec', roof: '#4a5a5a', lantern: '#ffe08a', door: '#3a4a48' },
+      { name: 'Ivory', wall: '#e8e0cc', plaster: '#ffffff', roof: '#7a2a2a', lantern: '#ffb05a', door: '#7a2a2a' },
     ],
   },
   {
@@ -248,6 +305,48 @@ export const HOUSES = [
     ],
   },
   {
+    id: 'keep', name: 'Champion\'s Keep', tier: 'earned', price: null, earn: 'champion', how: 'Win a run on Trainer Level 10', swatch: ['roof', 'banner'],
+    blurb: 'A stone keep with battlements, two round towers, a gatehouse arch, a champion\'s banner with a gold crown and a flag on top.',
+    paints: [
+      { name: 'Champion', wall: '#c8c2b4', roof: '#2f4f9a', banner: '#c0392b', trim: '#e8c040', door: '#5a3a24' },
+      { name: 'Royal Purple', wall: '#cfc8d4', roof: '#5a2a8a', banner: '#7a3ab0', trim: '#f0d060', door: '#3a2a3a' },
+      { name: 'Crimson Crown', wall: '#b8b0a4', roof: '#8a1c24', banner: '#e8c040', trim: '#e8c040', door: '#3a2420' },
+      { name: 'Dragon', wall: '#9aa098', roof: '#2f6a4a', banner: '#2f6a4a', trim: '#e8c040', door: '#2a3a2e' },
+      { name: 'Ice Fortress', wall: '#e2e8f0', roof: '#5a8ad8', banner: '#a8d8ff', trim: '#ffffff', door: '#3a5a8a' },
+      { name: 'Obsidian', wall: '#4a4a52', roof: '#2a2a30', banner: '#8a3aa8', trim: '#c8c8d0', door: '#1a1a20' },
+      { name: 'Sandstone', wall: '#e0c090', roof: '#a0482a', banner: '#2a5aa8', trim: '#f0d060', door: '#5a3a20' },
+      { name: 'White Marble', wall: '#f4f2ee', roof: '#c0392b', banner: '#2f4f9a', trim: '#e8c040', door: '#3a3f4a' },
+    ],
+  },
+  {
+    id: 'observatory', name: 'Stargazer Observatory', tier: 'earned', price: null, earn: 'pokedex', how: 'Complete the research of every Pokédex entry', swatch: ['dome', 'wall'],
+    blurb: 'A round stone drum under a metal dome, its shutter open on a great telescope, a gold star on top and a little scope in the yard.',
+    paints: [
+      { name: 'Starlight', wall: '#e8e2d4', dome: '#c8d0d8', trim: '#ffffff', door: '#2a3a6a', star: '#ffd84a' },
+      { name: 'Copper', wall: '#d8c8b0', dome: '#b8703a', trim: '#f4ecdc', door: '#5a3a20', star: '#ffd84a' },
+      { name: 'Verdigris', wall: '#e0dccc', dome: '#5aa08a', trim: '#ffffff', door: '#3a4a40', star: '#ffe08a' },
+      { name: 'Nebula', wall: '#5a4a80', dome: '#8a5ad0', trim: '#c8b8f0', door: '#2a2040', star: '#ff8ad8' },
+      { name: 'Lunar', wall: '#d0d0d8', dome: '#f4f4f8', trim: '#ffffff', door: '#4a4a5a', star: '#a8d8ff' },
+      { name: 'Comet Blue', wall: '#e8eef4', dome: '#2a5aa8', trim: '#ffffff', door: '#2a3a5a', star: '#8ad8ff' },
+      { name: 'Solar', wall: '#f4e4c8', dome: '#e8a030', trim: '#fff4dc', door: '#8a4a24', star: '#ff6a3a' },
+      { name: 'Midnight', wall: '#3a3e54', dome: '#4a5070', trim: '#8a90b0', door: '#1a1c2a', star: '#ffe08a' },
+    ],
+  },
+  {
+    id: 'teahouse', name: 'Cherry Blossom Teahouse', tier: 'seasonal', price: 3000, season: 4, how: 'Sold in April · 3,000 PokéCoins', swatch: ['blossom', 'roof'],
+    blurb: 'A little teahouse of timber and plaster on a raised veranda, lit shoji, a tiled roof and a cherry tree in bloom beside it.',
+    paints: [
+      { name: 'Sakura', wall: '#6a3a2a', roof: '#45404a', plaster: '#f4ebe4', blossom: '#f6b0c8', door: '#5a3a2a' },
+      { name: 'Yoshino White', wall: '#5a4030', roof: '#3a3e4a', plaster: '#f8f4ee', blossom: '#fde8ee', door: '#4a3a2a' },
+      { name: 'Weeping Pink', wall: '#7a4a3a', roof: '#3a3440', plaster: '#f4e8e4', blossom: '#e880a8', door: '#5a2a3a' },
+      { name: 'Plum', wall: '#4a2a2a', roof: '#2e2a34', plaster: '#f2e8e4', blossom: '#c04a7a', door: '#3a1a24' },
+      { name: 'Moss Garden', wall: '#5a4a30', roof: '#3f4a3a', plaster: '#ece6c8', blossom: '#f0b8c8', door: '#3a3a24' },
+      { name: 'Twilight', wall: '#3a3040', roof: '#2a2a3a', plaster: '#e8e4f0', blossom: '#c8a0e8', door: '#2a2030' },
+      { name: 'Peach', wall: '#8a5a3a', roof: '#5a4a40', plaster: '#fbf0e4', blossom: '#f8b890', door: '#6a3a24' },
+      { name: 'Snow Petal', wall: '#4a3a2e', roof: '#6a7280', plaster: '#ffffff', blossom: '#ffffff', door: '#3a2a24' },
+    ],
+  },
+  {
     id: 'chateau', name: 'Haunted Chateau', tier: 'seasonal', price: 3000, season: 10, how: 'Sold in October · 3,000 PokéCoins',
     blurb: 'A crooked chateau with two spired towers, ghost-lit windows, jack-o\'-lanterns on the step and a dead tree.',
     paints: [
@@ -306,12 +405,14 @@ export const EARN = {
   safari: (save) => !!save.safariDex?.complete || badge(save, 'safari-master'),
   summit: (save) => (save.tower?.bestEver || 0) >= 100 || (save.tower?.summits || 0) > 0 || badge(save, 'tower-100'),
   master: (save) => badge(save, 'master'),
+  champion: (save) => Object.values(save.stats?.maxLevelWinByType || {}).some(n => n >= MAX_LEVEL),
+  pokedex: (save) => !!save.dex?.complete || badge(save, 'pokedex'),
   eternatus: (save) => badge(save, 'depths') || (save.feats || []).includes('eternatus') || !!save.stats?.bossesDefeated?.[4],
 };
 /** What a letter says the trainer did, by a house's `earn`. */
 export const EARN_DID = {
   gyms: 'beat every Gym Leader', waystones: 'mended every town\'s Waystone', safari: 'caught every Pokémon in the Safari Pokédex',
-  summit: 'reached the top of the Sky Pillar', master: 'earned the Master Badge', eternatus: 'beat Eternatus in the Crystal Depths',
+  summit: 'reached the top of the Sky Pillar', champion: 'won a run on Trainer Level 10', pokedex: 'researched every Pokédex entry', master: 'earned the Master Badge', eternatus: 'beat Eternatus in the Crystal Depths',
 };
 /** How far along a save is to an earned house, where it counts: [done, of], or null. */
 export function earnProgress(save, earn) {

@@ -1222,7 +1222,7 @@ the Starter Cottage / Log Cabin / Seaside Bungalow as 3D models, the tree repain
 picture of each house; they liked seeing the house built on the lot as they pick. Playtest only on the branch's githack
 link (never the live site): `?houses&coins=5000`, and `?houses&tree` for an old save. Was: the live site with
 `?houses&coins=5000` (and a save that already owns the tree, to see it kept and the cottage free). Still open: which of the
-18 to keep, the prices, friends' visits (front lawn). Sessions left: C (the 7 new houses; A and B done, below),
+18 to keep, the prices, friends' visits (front lawn). Sessions left (A, B and C done, below):
 optional insides per house (medium), and the friends' front lawn. All CLOUD. The coin houses were session A (below).
 **The rest, the user's ask (2026-10-23): every house of the mock-up, 7 more to make 25, and many more paints each.**
 Claude's proposal for the 7 (the sessions use it unless the user says otherwise): Treehouse (Homestead, 2,000: a cabin
@@ -1253,10 +1253,12 @@ Clearing's budget, checks each model with `tools/house-check.mjs` (text, no scre
   players to start with the tree. Why would they want to downgrade"): every new base lives in the Ancient Tree, the
   Starter Cottage owned free beside it (pick either at the stand when buying the lot); the tree no longer earned by the
   Clearing Badge, so Legendary is the Crystal Palace alone. Tests, save check and the Clearing's budget pass.
-- **C** (effort: medium, the pattern is set by then): the same opening, then: "Build the 7 new houses from the roadmap
-  (Treehouse, Windmill Farmhouse, Desert Riad, Lantern Pagoda, Champion's Keep, Stargazer Observatory, Cherry Blossom
-  Teahouse) with 8 paints each and their unlocks, the earned and seasonal ones as session B set them up. Same checks,
-  push houses-playtest only, githack links."
+- ~~**C**~~ **done 2026-10-23** (cloud, branch `houses-playtest`; detail: `docs/reference/hub-base-mall.md`, "Session C"):
+  the Treehouse (Homestead 2,000) and Windmill Farmhouse (Homestead 1,800), the Desert Riad (Estate 6,500) and Lantern
+  Pagoda (Estate 7,000), the Champion's Keep (earned: a Trainer Level 10 win) and Stargazer Observatory (earned: the
+  Pokédex Badge's whole Pokédex), the Cherry Blossom Teahouse (April, 3,000), 8 paints each: 25 houses. Lived in, 268 to
+  274 draws and about 120 MB, inside the Clearing's budget; save check passed; no name cut off in the catalogue.
+  **Next: the user playtests** the githack link (`?houses=all&coins=20000`), then says go for going live.
 Going live is its own step after the user's go: merge `main` into the branch, HOUSES_LIVE true, the patch note out of
 HELD, and only then onto `main`.
 

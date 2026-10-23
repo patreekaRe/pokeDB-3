@@ -3,7 +3,8 @@
    Each house is a real model like the Nietos' mansion, built only while it stands on the lot (the one lived in, or the
    one tried on from the stand's catalogue): a Starter Cottage, a Log Cabin, a Seaside Bungalow, a Mushroom Cottage, a Red
    Barn, a Machiya Townhouse, a Lighthouse Cottage, a Glasshouse Villa, a Victorian Manor here, and the earned and
-   seasonal ones in js/hub-houses-league.js, -lodges.js, -legend.js and -season.js. The Ancient Tree stays
+   seasonal ones in js/hub-houses-league.js, -lodges.js, -legend.js and -season.js (session C's in -country.js, -towns.js
+   and -feats.js). The Ancient Tree stays
    js/hub-3d.js's painted billboard. A house's door is its only tap (as the tree's, 2026-10-15) and swings open as your
    partner walks in. Paint colours multiply over grey paintings (siding, shingles, logs), so a repaint is a colour, not
    a new picture. js/hub-3d.js builds them as its 'base' and 'kiosk' places (makePlaces()). */
@@ -11,11 +12,14 @@
 import { gymhall, balldome } from './hub-houses-league.js';
 import { ryokan, lodge } from './hub-houses-lodges.js';
 import { spire, crystal } from './hub-houses-legend.js';
-import { chateau, chalet } from './hub-houses-season.js';
+import { chateau, chalet, teahouse } from './hub-houses-season.js';
+import { treehouse, windmill } from './hub-houses-country.js';
+import { riad, pagoda } from './hub-houses-towns.js';
+import { keep, observatory } from './hub-houses-feats.js';
 
 /* The earned and seasonal houses (session B) are built in their own files from makeHouse()'s `kit` (its helpers, the
    paint `p`, the paintings in `kit.art`, each called with `fine`), each returning doorAt()'s door as the others here. */
-const BUILDERS = { gymhall, balldome, ryokan, lodge, spire, crystal, chateau, chalet };
+const BUILDERS = { gymhall, balldome, ryokan, lodge, spire, crystal, chateau, chalet, treehouse, windmill, riad, pagoda, keep, observatory, teahouse };
 
 const cached = {};
 function once(key, make) { return cached[key] ??= make(); }

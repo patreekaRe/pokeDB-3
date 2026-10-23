@@ -29,10 +29,10 @@ test('every paint names each colour its house is built from, and its swatch\'s t
   }
 });
 
-test('the coin houses: two more Homesteads at 2,000 and four Estates from 5,000 to 8,000', () => {
+test('the coin houses: six Homesteads from 1,500 to 2,000 and six Estates from 5,000 to 8,000', () => {
   const tier = (t) => HOUSES.filter(h => h.tier === t).map(h => [h.id, h.price]);
-  assert.deepEqual(tier('homestead'), [['cabin', 1500], ['bungalow', 1500], ['mushroom', 2000], ['barn', 2000]]);
-  assert.deepEqual(tier('estate'), [['machiya', 5000], ['lighthouse', 6000], ['glasshouse', 6000], ['victorian', 8000]]);
+  assert.deepEqual(tier('homestead'), [['cabin', 1500], ['bungalow', 1500], ['mushroom', 2000], ['barn', 2000], ['treehouse', 2000], ['windmill', 1800]]);
+  assert.deepEqual(tier('estate'), [['machiya', 5000], ['lighthouse', 6000], ['glasshouse', 6000], ['victorian', 8000], ['riad', 6500], ['pagoda', 7000]]);
   const d = { baseOwned: true, coins: 8000 };
   assert.equal(cantBuy(d, 'victorian'), null);
   assert.equal(buyHouse(d, 'victorian', 7), true);
@@ -108,7 +108,7 @@ test('a stored list with unknown ids or a lost cottage is mended on read', () =>
 
 test('the earned houses are never sold, each earned by what the save already keeps', () => {
   const earned = HOUSES.filter(h => h.earn).map(h => [h.id, h.earn]);
-  assert.deepEqual(earned, [['gymhall', 'gyms'], ['ryokan', 'waystones'], ['lodge', 'safari'], ['spire', 'summit'], ['balldome', 'master'], ['crystal', 'eternatus']]);
+  assert.deepEqual(earned, [['gymhall', 'gyms'], ['ryokan', 'waystones'], ['lodge', 'safari'], ['spire', 'summit'], ['balldome', 'master'], ['keep', 'champion'], ['observatory', 'pokedex'], ['crystal', 'eternatus']]);
   for (const [id, key] of earned) { assert.equal(HOUSES_BY_ID[id].price, null, id); assert.equal(typeof EARN[key], 'function', id); assert.equal(EARN[key]({}), false, id); }
   assert.equal(EARN.gyms({ gym: Object.fromEntries(GYM_LEADERS.map(l => [l.id, 1])) }), true);
   assert.equal(EARN.gyms({ gym: Object.fromEntries(GYM_LEADERS.slice(1).map(l => [l.id, 3])) }), false);
@@ -119,6 +119,10 @@ test('the earned houses are never sold, each earned by what the save already kee
   assert.equal(EARN.summit({ tower: { bestEver: 99 } }), false);
   assert.equal(EARN.master({ badges: ['master'] }), true);
   assert.equal(EARN.eternatus({ feats: ['eternatus'] }), true);
+  assert.equal(EARN.champion({ stats: { maxLevelWinByType: { fire: 9, grass: 10, water: -1 } } }), true);
+  assert.equal(EARN.champion({ stats: { maxLevelWinByType: { fire: 9, grass: 5, water: -1 } } }), false);
+  assert.equal(EARN.pokedex({ dex: { complete: true } }), true);
+  assert.equal(EARN.pokedex({ badges: ['pokedex'] }), true);
   assert.equal(cantBuy({ baseOwned: true, coins: 1e6 }, 'gymhall'), 'earned');
 });
 
@@ -148,7 +152,7 @@ test('an old save keeps its tree without a letter for it, and no base claims not
 
 test('the seasonal houses: 3,000 in their own month only, and kept for good once bought', () => {
   const tier = HOUSES.filter(h => h.tier === 'seasonal').map(h => [h.id, h.price, h.season]);
-  assert.deepEqual(tier, [['chateau', 3000, 10], ['chalet', 3000, 12]]);
+  assert.deepEqual(tier, [['teahouse', 3000, 4], ['chateau', 3000, 10], ['chalet', 3000, 12]]);
   const oct = new Date(Date.UTC(2026, 9, 31, 23)), nov = new Date(Date.UTC(2026, 10, 1)), dec = new Date(Date.UTC(2026, 11, 5));
   assert.equal(onSale(HOUSES_BY_ID.chateau, oct), true);
   assert.equal(onSale(HOUSES_BY_ID.chateau, nov), false);

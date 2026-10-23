@@ -974,3 +974,24 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   shows the boarded tree, the stand's catalogue opens on it, and its key buys the lot moving into the tree or the cottage
   (whichever is picked), the other owned free. Old saves were already the tree; one bought on the branch as a cottage
   gets the tree owned on read (`housesOf()`), still living in the cottage.
+
+### Session C: the seven new houses (2026-10-23, branch `houses-playtest`)
+
+- **The houses**, each a builder from `makeHouse()`'s `kit` in its own file (`BUILDERS` in `js/hub-houses.js`), 8 paints
+  each: `js/hub-houses-country.js` the **Treehouse** (Homestead 2,000: a trunk on roots with the door at its foot, a plank
+  cabin on a braced deck the trunk grows through, a rope ladder, a lantern, a crown of leaves in two greens, `leaf` /
+  `leaf2` / `bark` keys) and the **Windmill Farmhouse** (Homestead 1,800: a farmhouse with a door hood and a tapering
+  octagonal tower to its right, a gallery, a boat cap, four lattice sails crossed at 45°, `sail`; sunflowers, a cart
+  wheel); `-towns.js` the **Desert Riad** (Estate 6,500, Sunwell Bazaar's: adobe, a stepped parapet, a tiled horseshoe
+  arch, carved screens, a balcony, a domed tower, brass lanterns, a palm; `dome`, `tile`) and the **Lantern Pagoda**
+  (Estate 7,000, Lantern Village's: three storeys under hip roofs with upturned spurs, lit shoji, lanterns at every eave
+  corner in `lantern`, a gilt spire of rings, stone lanterns); `-feats.js` the **Champion's Keep** (earned, `champion`:
+  any type's `maxLevelWinByType` at `MAX_LEVEL`; a keep with battlements, two round towers, a gatehouse with a
+  portcullis, a crowned banner, torches, a carpet) and the **Stargazer Observatory** (earned, `pokedex`: `dex.complete`
+  or the Pokédex Badge; a stone drum under a ribbed metal dome, an open slit with the telescope out of it, a gold `star`,
+  an entrance hall, a scope on a tripod); `-season.js` the **Cherry Blossom Teahouse** (seasonal, April, 3,000: raised on
+  posts over a veranda, shoji, a tiled hip, stepping stones, a cherry tree in `blossom` dropping petals, a stone lantern).
+- **Counts** (`tools/house-check.mjs`, lived in on the lot): 13 to 17 draws a model, 1.5k to 4.7k triangles, every box
+  inside |x| <= 2.25; on the Clearing 268 to 274 draws, 119 to 120.3 MB (the tree 279). Tiers now: Starter 2, Homestead
+  6, Estate 6, Earned 7, Seasonal 3, Legendary 1 (25 houses; the catalogue 280 px, 25 cards).
+

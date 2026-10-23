@@ -1,5 +1,6 @@
 /* hub-houses-season.js  -  the seasonal houses on the Secret Base's lot (docs/roadmap.md's "Secret Base houses", session
-   B; sold only in their month, js/data/houses.js): the Haunted Chateau (October) and the Snow Chalet (December). Built
+   B; sold only in their month, js/data/houses.js): the Haunted Chateau (October), the Snow Chalet (December) and, from
+   session C, the Cherry Blossom Teahouse (April). Built
    from makeHouse()'s kit in js/hub-houses.js, as its own houses are. */
 
 /** The Haunted Chateau: a crooked two-storey chateau, its walls leaning and its roof askew, two towers of different
@@ -208,4 +209,68 @@ export function chalet(k) {
   }
   many(new THREE.SphereGeometry(0.2, 10, 6).scale(1.6, 0.35, 1), snow, [[-1.0, 0.03, 0.18], [1.0, 0.03, 0.2], [-1.45, 0.03, -1.0, 1.57], [1.45, 0.03, -0.6, 1.57], [0.7, 0.02, 0.62]], false);
   return doorAt(0, F, { colour: p.door, frameM: trim });
+}
+
+/** The Cherry Blossom Teahouse (April): a little teahouse of dark timber and plaster raised on posts over a veranda of
+    planks, lit shoji along its front, a hip roof of tiles with its ridge capped, stepping stones up to the door, a
+    cherry tree in full bloom beside it dropping petals on the moss, and a stone lantern. */
+export function teahouse(k) {
+  const { THREE, p, fine, std, add, box, cyl, tiled, lit, hip, many, tint, doorAt, stone } = k;
+  const F = 0.34, BW = 2.3, BD = 1.6, WH = 1.05, CX = 0.25, CZ = -1.05, E = F + WH;
+  const timber = std({ color: p.wall, roughness: 0.85 }), plaster = std({ color: p.plaster, roughness: 0.9 });
+  const tile = tiled(k.art.tile(fine), 2.4, { color: p.roof, roughness: 0.7 }), dark = std({ color: tint(p.roof, 0.7), roughness: 0.7 });
+  const deck = tiled(k.art.plank(fine), 2.4, { color: tint(p.wall, 1.25), roughness: 0.85 });
+  const paper = lit(std({ color: '#f6f0dc', emissive: new THREE.Color('#ffd88a'), roughness: 0.9 }), 0.9, 0.12);
+  // the veranda on its posts, and the room on it
+  box(BW + 0.7, 0.08, BD + 0.75, deck, CX, F - 0.04, CZ + 0.2);
+  const posts = [];
+  for (const x of [CX - BW / 2 - 0.3, CX, CX + BW / 2 + 0.3]) for (const z of [CZ + BD / 2 + 0.52, CZ - BD / 2]) posts.push([x, (F - 0.08) / 2, z]);
+  many(new THREE.BoxGeometry(0.1, F - 0.08, 0.1), timber, posts);
+  box(BW, WH, BD, plaster, CX, F + WH / 2, CZ);
+  const frame = [];
+  for (const x of [CX - BW / 2, -0.42, 0.42, CX + BW / 2]) frame.push([x, F + WH / 2, CZ + BD / 2 + 0.02]);
+  for (const x of [CX - BW / 2, CX + BW / 2]) frame.push([x, F + WH / 2, CZ - BD / 2]);
+  many(new THREE.BoxGeometry(0.08, WH, 0.07), timber, frame);
+  box(BW + 0.04, 0.07, 0.06, timber, CX, E - 0.04, CZ + BD / 2 + 0.03, { shadow: false });
+  // the shoji: lit paper behind thin bars, left of the door and right
+  const bars = [];
+  for (const [x, w] of [[-0.66, 0.4], [0.92, 0.7]]) {
+    box(w, 0.6, 0.02, paper, x, F + 0.55, CZ + BD / 2 + 0.012, { shadow: false });
+    for (let i = 1; i < 4; i++) bars.push([x - w / 2 + i * w / 4, F + 0.55, CZ + BD / 2 + 0.03]);
+    box(w, 0.025, 0.025, timber, x, F + 0.55, CZ + BD / 2 + 0.03, { shadow: false });
+  }
+  many(new THREE.BoxGeometry(0.02, 0.6, 0.02), timber, bars, false);
+  // the roof: a broad tiled hip out over the veranda, its ridge capped and its ends turned up
+  box(BW + 0.95, 0.05, BD + 1.15, dark, CX, E + 0.02, CZ + 0.15);
+  hip(BW + 1.05, BD + 1.25, 0.85, tile, CX, E + 0.05, CZ + 0.15);
+  const RL = (BW + 1.05) - (BD + 1.25) + 0.12;
+  box(RL, 0.09, 0.14, dark, CX, E + 0.92, CZ + 0.15);
+  for (const sx of [-1, 1]) box(0.12, 0.16, 0.16, dark, CX + sx * RL / 2, E + 0.97, CZ + 0.15);
+  // stepping stones up to the door
+  many(new THREE.CylinderGeometry(0.17, 0.19, 0.08, 9), stone, [[0, 0.1, 0.45], [0.06, 0.05, 0.75]]);
+  box(0.6, 0.18, 0.3, stone, 0, 0.17, 0.12);
+  // the cherry tree at the left: a crooked trunk and limbs, round clouds of blossom in two pinks, petals on the ground
+  const bark = std({ color: '#4a3230', roughness: 1, flatShading: true });
+  const TX = -1.56, TZ = 0.2;
+  cyl(0.08, 0.12, 1.2, bark, TX, 0.6, TZ, 7).rotation.z = 0.12;
+  for (const [rz, rx, l] of [[0.7, 0.2, 0.75], [-0.6, -0.3, 0.7], [0.1, 0.6, 0.6]]) {
+    const g = new THREE.CylinderGeometry(0.035, 0.06, l, 6);
+    g.translate(0, l / 2, 0);
+    add(g, bark, TX - 0.07, 1.1, TZ).rotation.set(rx, 0, rz);
+  }
+  const bloomA = std({ color: p.blossom, roughness: 0.95, flatShading: true }), bloomB = std({ color: tint(p.blossom, 1.12), roughness: 0.95, flatShading: true });
+  const puff = new THREE.IcosahedronGeometry(0.34, 1);
+  many(puff, bloomA, [[TX - 0.3, 1.55, TZ], [TX + 0.3, 1.7, TZ - 0.1], [TX - 0.05, 1.95, TZ - 0.15], [TX - 0.2, 1.45, TZ + 0.3]]);
+  many(puff.clone().scale(0.7, 0.7, 0.7), bloomB, [[TX + 0.35, 1.4, TZ + 0.2], [TX - 0.25, 2.1, TZ + 0.1], [TX + 0.1, 1.55, TZ + 0.4], [TX - 0.35, 1.85, TZ - 0.25]]);
+  const fallen = [];
+  for (let i = 0; i < 18; i++) { const a = i * 2.4, r = 0.25 + (i * 37 % 11) / 11 * 0.4; fallen.push([TX + Math.cos(a) * r, 0.012, TZ + Math.sin(a) * r * 0.8, a]); }
+  many(new THREE.CircleGeometry(0.035, 5).rotateX(-Math.PI / 2), bloomB, fallen, false);
+  // a stone lantern at the right
+  const LX = 1.85, LZ = 0.35;
+  cyl(0.12, 0.16, 0.08, stone, LX, 0.04, LZ, 6);
+  cyl(0.05, 0.06, 0.36, stone, LX, 0.26, LZ, 6);
+  box(0.24, 0.18, 0.24, stone, LX, 0.53, LZ);
+  box(0.13, 0.1, 0.02, lit(std({ color: '#ffe0a0', emissive: new THREE.Color('#ffb850'), roughness: 0.4 }), 1.3, 0.3), LX, 0.53, LZ + 0.121, { shadow: false });
+  add(new THREE.ConeGeometry(0.22, 0.14, 4), dark, LX, 0.69, LZ).rotation.y = Math.PI / 4;
+  return doorAt(CZ + BD / 2 + 0.03, F, { colour: p.door, frameM: timber });
 }
