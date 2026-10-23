@@ -52,7 +52,7 @@ import { gymWins, friendWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { asking, favourOf } from './data/favours.js';
 import { workshopOf, heartsOf, boothBeckons } from './data/workshop.js';
-import { unclaimed, friendMail } from './mail.js';
+import { unclaimed, friendMail, houseMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
 import { claimable, timeLeft } from './missions.js';
@@ -3763,6 +3763,7 @@ async function buyBase(paint = 0, fromKiosk = false) {
   }
   if (!fromKiosk && !(await confirmDialog(cottage ? `Make the Starter Cottage your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?` : `Make the Ancient Tree your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?`, `Buy (${BASE_PRICE.toLocaleString()})`))) return false;
   updateSave(d => { d.coins -= BASE_PRICE; d.baseOwned = true; if (cottage) firstHouse(d, paint); });
+  if (houseMail()) pcMarks();   // the houses earned before there was a lot to build them on
   refreshCoins();
   playSound('buy');
   if (fromKiosk) return true;
@@ -4782,7 +4783,7 @@ async function openHub(titleScreen, actions, hold) {
   resize();
   if (!held) screen.classList.add('hub-on');
   if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
-  if (friendMail()) pcMarks();   // a friend's letter, once a UTC day at most
+  if (friendMail() | houseMail()) pcMarks();   // a friend's letter, once a UTC day at most; the builders', for a house earned
   homeNews();
   friendBuddies();
   return true;

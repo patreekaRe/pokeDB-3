@@ -9,10 +9,10 @@
    js/data/houses.js's.
    ============================================================ */
 
-import { HOUSES, HOUSES_BY_ID, TIERS, REPAINT_PRICE, housesOf, cantBuy, buyHouse, moveIn, repaint } from './data/houses.js';
+import { HOUSES, HOUSES_BY_ID, TIERS, REPAINT_PRICE, housesOf, cantBuy, buyHouse, moveIn, repaint, earnedOf, earnProgress, onSale, seasonName } from './data/houses.js';
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
-import { el, confirmDialog, refreshCoins } from './ui.js';
+import { el, confirmDialog, refreshCoins, fitText } from './ui.js';
 import { smoothIcon } from './smooth-icons.js';
 
 const BASE_PRICE = 1500, PIC = 180;
@@ -79,11 +79,20 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
     const p = house.paints[i];
     return house.id === 'tree' ? [p.shade[1][0], p.lobe[1]] : (house.swatch || ['roof', 'wall']).map(k => p[k]);
   };
-  function tagOf(house, now) {
+  // a card's tag: HOME, OWNED, EARNED (before there's a lot to build it on), LOCKED (earned houses not yet earned), a
+  // seasonal house's month out of season, or its price
+  function tagOf(house, now, save) {
     if (now.home === house.id) return ['HOME', 'home'];
     if (now.owned.includes(house.id)) return ['OWNED', 'own'];
-    if (house.price == null) return ['LOCKED', 'lock'];
+    if (house.earn) return earnedOf(save).includes(house.id) ? ['EARNED', 'own'] : ['LOCKED', 'lock'];
+    if (!onSale(house)) return [seasonName(house).slice(0, 3).toUpperCase(), 'lock'];
     return [(house.id === 'cottage' ? BASE_PRICE : house.price).toLocaleString(), 'price'];
+  }
+  // Timburr on a house that can't be bought: what earns it (and how far along), or the month it's sold in
+  function lockedLine(house, save) {
+    if (!house.earn) return `Only sold in ${seasonName(house)}. Come back then! Once it's built, it's yours for good.`;
+    const n = earnProgress(save, house.earn), far = n && n[0] ? ` (${n[0]} of ${n[1]} so far)` : '';
+    return `Not for sale, at any price! ${house.how}${far}, and the crew builds it for you, free.`;
   }
 
   function render() {
@@ -91,11 +100,11 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
     const s = getSave(), now = housesOf(s), base = !!s.baseOwned, house = HOUSES_BY_ID[pick];
     coins.replaceChildren(smoothIcon('coin', 'hk-coin'), (s.coins ?? 0).toLocaleString());
 
-    // the cards, by tier; the tree only for a base that has it
+    // the cards, by tier
     const keep = row.scrollLeft;
     row.replaceChildren();
-    for (const t of TIERS) for (const x of HOUSES.filter(o => o.tier === t.id && (o.id !== 'tree' || now.owned.includes('tree')))) {
-      const on = x.id === pick, b = el('button', `hk-card${on ? ' on' : ''}`), [tag, kind] = tagOf(x, now);
+    for (const t of TIERS) for (const x of HOUSES.filter(o => o.tier === t.id)) {
+      const on = x.id === pick, [tag, kind] = tagOf(x, now, s), b = el('button', `hk-card${on ? ' on' : ''}${kind === 'lock' ? ' locked' : ''}`);
       b.type = 'button';
       b.setAttribute('aria-pressed', String(on));
       b.setAttribute('aria-label', `${x.name}, ${tag}`);
@@ -124,16 +133,19 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
       if (pick === 'cottage') { key.textContent = `Buy · ${BASE_PRICE.toLocaleString()}`; key.onclick = buyFirst; tip = 'This lot\'s for sale, the Starter Cottage with it! Pick its paint, and it\'s your Secret Base.'; }
       else { key.textContent = 'Lot first'; key.disabled = true; tip = 'Buy the lot with its Starter Cottage first. Then the crew can build any house on it!'; }
     } else if (pick === now.home && paint === worn) { key.textContent = 'Your home'; key.disabled = true; }
-    else if (owned && paint === worn) { key.textContent = 'Move in'; key.onclick = moveHere; tip = 'It\'s yours already. Moving back is free!'; }
+    else if (owned && paint === worn) { key.textContent = 'Move in'; key.onclick = moveHere; tip = house.earn ? `You earned this one, so it's built free. Moving in is free too, and so is moving back.` : 'It\'s yours already. Moving back is free!'; }
     else if (owned) { key.textContent = `Repaint · ${REPAINT_PRICE}`; key.onclick = repaintHere; tip = `${house.paints[paint].name}? A fresh coat is ${REPAINT_PRICE} PokéCoins${pick === now.home ? '' : ', and you move in'}.`; }
-    else if (house.price == null) { key.textContent = 'Locked'; key.disabled = true; tip = `This one can't be bought. ${house.how}.`; }
+    else if (house.price == null || !onSale(house)) { key.textContent = house.earn ? 'Locked' : `${seasonName(house).slice(0, 3)} only`; key.disabled = true; tip = lockedLine(house, s); }
     else { key.textContent = `Buy · ${house.price.toLocaleString()}`; key.onclick = buyHere; }
-    // its name and the paint picked over its eight paints, the key beside them: one row, so the card stays low and the
-    // lot shows above it (the paints scroll sideways where a narrow phone can't fit them)
-    const name = el('span', 'hk-pick-name'), title = el('span', 'hk-pick-title');
-    title.append(el('b', '', house.name), el('span', 'hk-paint-name', house.paints[paint].name));
-    name.append(title, paints);
-    pickRow.replaceChildren(name, key);
+    if (!base && house.earn && earnedOf(s).includes(pick)) tip = `You've earned this one! Buy the lot with its Starter Cottage first, and the crew builds it free.`;
+    // its name on a line of its own, the card's whole width (the user, 2026-10-23: long names were cut off), shrunk
+    // only if even that is too narrow; under it the paint picked over its eight paints, the key beside them (the paints
+    // scroll sideways where a narrow phone can't fit them)
+    const title = el('b', 'hk-pick-title', house.name), name = el('span', 'hk-pick-name'), keys = el('div', 'hk-pick-row');
+    name.append(el('span', 'hk-paint-name', house.paints[paint].name), paints);
+    keys.append(name, key);
+    pickRow.replaceChildren(title, keys);
+    fitText(title, 12);
 
     // its paints: a round swatch each, two-tone like the house, and the picked one's name (the first paint job comes free
     // with a new house)

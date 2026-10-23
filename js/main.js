@@ -80,6 +80,7 @@ import { biomeIntro, placeIntro } from './biome-intro.js';
 import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
 import { GYM_LEADERS } from './data/gym.js';
+import { HOUSES_BY_ID } from './data/houses.js';
 
 /* ---------- moving between screens ---------- */
 
@@ -199,6 +200,7 @@ function init() {
   if (query.has('coins')) updateSave(d => { d.coins = Math.max(0, parseInt(query.get('coins'), 10) || 0); });
   // ?houses&tree: a save whose Secret Base was bought before houses (the Ancient Tree kept, the Starter Cottage free)
   if (query.has('houses') && query.has('tree')) updateSave(d => { d.baseOwned = true; delete d.houses; });
+  if (query.has('houses') && HOUSES_BY_ID[query.get('livein')]) updateSave(d => { d.baseOwned = true; d.houses = { owned: ['cottage', query.get('livein')], home: query.get('livein'), paint: {} }; });
   if (query.has('runback') && !loadRunData()) console.log('Lost run put back:', restoreLostRun()?.why);   // stashLostRun()'s
   if (query.has('walk')) updateSave(d => { d.titleHub = true; });   // Settings' Title screen, by URL (?signs only for the page load)
   if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL

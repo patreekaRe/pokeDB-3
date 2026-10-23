@@ -9,9 +9,16 @@
    (a buy, a move, a repaint) stores what it read.
    ============================================================ */
 
+import { GYM_LEADERS } from './gym.js';
+import { RING, mended, townState } from './towns.js';
+
 /* Players see none of it until the user's playtest says go (as TOWNS_LIVE was): `?houses` shows it for a page load. */
 export const HOUSES_LIVE = false;
-export const housesOpen = () => HOUSES_LIVE || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('houses'));
+const flag = () => (typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('houses'));
+export const housesOpen = () => HOUSES_LIVE || flag() !== null;
+/** `?houses=all` lends every earned house and puts the seasonal ones on sale for the page load (nothing is saved for it,
+    though a move or buy made with it is). */
+export const housesLent = () => flag() === 'all';
 
 export const REPAINT_PRICE = 250;
 
@@ -19,6 +26,8 @@ export const TIERS = [
   { id: 'starter', name: 'Starter' },
   { id: 'homestead', name: 'Homestead' },
   { id: 'estate', name: 'Estate' },
+  { id: 'earned', name: 'Earned' },
+  { id: 'seasonal', name: 'Seasonal' },
   { id: 'legendary', name: 'Legendary' },
 ];
 
@@ -154,7 +163,119 @@ export const HOUSES = [
     ],
   },
   {
-    id: 'tree', name: 'Ancient Tree', tier: 'legendary', price: null, how: 'Kept by every Secret Base made before houses',
+    id: 'gymhall', name: 'Gym Hall', tier: 'earned', price: null, earn: 'gyms', how: 'Beat every Gym Leader',
+    blurb: 'A Gym of your own: a columned hall under a red roof, a Poké Ball crest over the door and banners either side.',
+    paints: [
+      { name: 'Champion Red', wall: '#ece6da', roof: '#c0392b', trim: '#ffffff', door: '#3a3f4a', banner: '#c0392b' },
+      { name: 'Ace Blue', wall: '#ece6da', roof: '#2f5fa8', trim: '#ffffff', door: '#3a3f4a', banner: '#2f5fa8' },
+      { name: 'Elite Gold', wall: '#f2ead0', roof: '#b8862a', trim: '#ffffff', door: '#4a3a24', banner: '#b8862a' },
+      { name: 'Indigo Plateau', wall: '#e6e2ee', roof: '#4a3a8a', trim: '#ffffff', door: '#2a2a48', banner: '#4a3a8a' },
+      { name: 'Thunder Yellow', wall: '#f0ead8', roof: '#e0a820', trim: '#ffffff', door: '#3a3f4a', banner: '#2a2a2a' },
+      { name: 'Volcano', wall: '#e8d8c8', roof: '#8a2a1a', trim: '#f8f0e8', door: '#3a2a24', banner: '#e0702a' },
+      { name: 'Marble', wall: '#f4f2ee', roof: '#5a5e68', trim: '#ffffff', door: '#2a2e38', banner: '#c0392b' },
+      { name: 'Emerald', wall: '#eaeee2', roof: '#2f7a4a', trim: '#ffffff', door: '#2a3a2e', banner: '#2f7a4a' },
+    ],
+  },
+  {
+    id: 'ryokan', name: 'Hot-Spring Ryokan', tier: 'earned', price: null, earn: 'waystones', how: 'Mend every town\'s Waystone', swatch: ['roof', 'noren'],
+    blurb: 'An inn of dark timber and plaster under a tiled roof, a ♨ noren in the door and a steaming spring beside it.',
+    paints: [
+      { name: 'Cinder', plaster: '#efe4cc', wall: '#7a4a2e', roof: '#3e3a36', noren: '#b23a3a' },
+      { name: 'Moss', plaster: '#efe4cc', wall: '#7a4a2e', roof: '#3a5040', noren: '#2c5a7a' },
+      { name: 'Ember', plaster: '#efe4cc', wall: '#5a2a1e', roof: '#5a2a24', noren: '#2a2a2a' },
+      { name: 'Sakura', plaster: '#f4ebe4', wall: '#6a3a2e', roof: '#45404a', noren: '#e07a9a' },
+      { name: 'Indigo', plaster: '#ece8dc', wall: '#5a4030', roof: '#3a3e4a', noren: '#2a3a6a' },
+      { name: 'Bamboo', plaster: '#ece6c8', wall: '#6a5a30', roof: '#3f4a3a', noren: '#4a7a3a' },
+      { name: 'Snowfall', plaster: '#ffffff', wall: '#4a3a2e', roof: '#6a7280', noren: '#3a4a6a' },
+      { name: 'Lantern', plaster: '#f4e8cc', wall: '#4a2a1a', roof: '#3a3430', noren: '#e0802a' },
+    ],
+  },
+  {
+    id: 'lodge', name: 'Ranger Lodge', tier: 'earned', price: null, earn: 'safari', how: 'Catch every Pokémon in the Safari Pokédex',
+    blurb: 'A tall A-frame of timber on a stone footing, its whole front a lit window, a ranger\'s flag on its pole.',
+    paints: [
+      { name: 'Safari', wall: '#7a5232', roof: '#4c6b3a', trim: '#f0e2c0', door: '#5a3a20' },
+      { name: 'Desert', wall: '#8a5a32', roof: '#b07a3a', trim: '#f4e6c8', door: '#5a3a20' },
+      { name: 'Tundra', wall: '#6a5a4a', roof: '#5a6a7a', trim: '#eef0f0', door: '#3a4a5a' },
+      { name: 'Jungle', wall: '#5a3a22', roof: '#2f6a3a', trim: '#e8dcb0', door: '#3a2a14' },
+      { name: 'Marsh', wall: '#6a6040', roof: '#5a7a5a', trim: '#ece4c4', door: '#4a4028' },
+      { name: 'Canyon', wall: '#8a5a3a', roof: '#a0482a', trim: '#f6e2c4', door: '#5a2a1a' },
+      { name: 'Midnight', wall: '#4a3a30', roof: '#2a3448', trim: '#e4dcc8', door: '#2a2420' },
+      { name: 'Birch', wall: '#c8b490', roof: '#6a8a4a', trim: '#ffffff', door: '#6a4a2a' },
+    ],
+  },
+  {
+    id: 'spire', name: 'Sky Spire', tier: 'earned', price: null, earn: 'summit', how: 'Reach the top of the Sky Pillar',
+    blurb: 'A stone tower like the Sky Pillar\'s, banded and battlemented, a pennant on top and little isles of rock about it.',
+    paints: [
+      { name: 'Rayquaza', wall: '#aab2a2', roof: '#3e8a5c', trim: '#d8d2bf', door: '#5a4a3a' },
+      { name: 'Dawn', wall: '#c8bca8', roof: '#c0605a', trim: '#e8dcc8', door: '#5a3a3a' },
+      { name: 'Storm', wall: '#8a8e98', roof: '#5a5aa8', trim: '#c8ccd8', door: '#3a3a5a' },
+      { name: 'Sandstone', wall: '#d8c098', roof: '#b0703a', trim: '#f0e0c0', door: '#6a4a2a' },
+      { name: 'Obsidian', wall: '#5a5a64', roof: '#8a3aa8', trim: '#9a9aa8', door: '#2a2a32' },
+      { name: 'Cloud', wall: '#e8ecf0', roof: '#4a8ad8', trim: '#ffffff', door: '#3a5a8a' },
+      { name: 'Mossy', wall: '#8a9a7a', roof: '#4a6a3a', trim: '#c8d0b8', door: '#4a3a2a' },
+      { name: 'Shiny', wall: '#4a4a52', roof: '#e8c040', trim: '#7a7a84', door: '#2a2a30' },
+    ],
+  },
+  {
+    id: 'balldome', name: 'Poké Ball Dome', tier: 'earned', price: null, earn: 'master', how: 'Earn the Master Badge', swatch: ['top', 'bottom'],
+    blurb: 'One round house shaped like a Poké Ball, its button the front door and an aerial on top.',
+    paints: [
+      { name: 'Poké Ball', top: '#e04040', bottom: '#f6f6f6', band: '#2a2a2a', mark: '#e04040', door: '#f6f6f6' },
+      { name: 'Great Ball', top: '#3a74d0', bottom: '#f6f6f6', band: '#2a2a2a', mark: '#e04040', door: '#f6f6f6' },
+      { name: 'Ultra Ball', top: '#2a2a2a', bottom: '#f6f6f6', band: '#2a2a2a', mark: '#f0c040', door: '#f6f6f6' },
+      { name: 'Master Ball', top: '#7a3ab0', bottom: '#f6f6f6', band: '#2a2a2a', mark: '#e870b8', door: '#f6f6f6' },
+      { name: 'Premier Ball', top: '#f6f6f6', bottom: '#f6f6f6', band: '#d84040', mark: '#f6f6f6', door: '#f6f6f6' },
+      { name: 'Safari Ball', top: '#5a8a3a', bottom: '#e8e0c0', band: '#3a3a2a', mark: '#3a5a24', door: '#e8e0c0' },
+      { name: 'Luxury Ball', top: '#2a2a2a', bottom: '#2a2a2a', band: '#e8c040', mark: '#d84040', door: '#f6f6f6' },
+      { name: 'Dusk Ball', top: '#2a3a2a', bottom: '#3a3a3a', band: '#1a1a1a', mark: '#e8802a', door: '#f6f6f6' },
+    ],
+  },
+  {
+    id: 'chateau', name: 'Haunted Chateau', tier: 'seasonal', price: 3000, season: 10, how: 'Sold in October · 3,000 PokéCoins',
+    blurb: 'A crooked chateau with two spired towers, ghost-lit windows, jack-o\'-lanterns on the step and a dead tree.',
+    paints: [
+      { name: 'Lavender Gloom', wall: '#5b5a6e', roof: '#2b2838', trim: '#8e86a8', door: '#3a2a24', glow: '#c49aff' },
+      { name: 'Pumpkin', wall: '#5a4a3a', roof: '#2a2420', trim: '#e88a3a', door: '#3a2a1a', glow: '#ffb04a' },
+      { name: 'Bone', wall: '#9a948a', roof: '#3a3238', trim: '#d8d0c0', door: '#3a2a24', glow: '#a0ffb0' },
+      { name: 'Gengar', wall: '#5a4a7a', roof: '#2a1a3a', trim: '#e05a7a', door: '#2a1a2a', glow: '#ff6aa0' },
+      { name: 'Moss', wall: '#4a5a4a', roof: '#24302a', trim: '#8aa07a', door: '#2a2a1a', glow: '#c8ff8a' },
+      { name: 'Blood Moon', wall: '#5a3a3a', roof: '#2a1418', trim: '#b04a4a', door: '#2a1414', glow: '#ff6a5a' },
+      { name: 'Ash', wall: '#6a6a6a', roof: '#262628', trim: '#b8b8b8', door: '#2a2a2a', glow: '#a8e0ff' },
+      { name: 'Midnight', wall: '#3a3e5a', roof: '#1a1c2a', trim: '#7a8ab0', door: '#1e2030', glow: '#ffe08a' },
+    ],
+  },
+  {
+    id: 'chalet', name: 'Snow Chalet', tier: 'seasonal', price: 3000, season: 12, how: 'Sold in December · 3,000 PokéCoins',
+    blurb: 'A pine chalet under a snowy roof, a carved balcony, icicles on the eaves and a snowman by the door.',
+    paints: [
+      { name: 'Alpine', wall: '#8a5a36', roof: '#6a3a2a', trim: '#f2e6d0', door: '#b23a3a' },
+      { name: 'Spruce', wall: '#8a5a36', roof: '#2f5a3a', trim: '#f2e6d0', door: '#2f5a3a' },
+      { name: 'Frost', wall: '#c8b8a0', roof: '#3a4a6a', trim: '#ffffff', door: '#3a4a6a' },
+      { name: 'Cocoa', wall: '#6a4028', roof: '#3a2a20', trim: '#f2e6d0', door: '#d8a040' },
+      { name: 'Cranberry', wall: '#9a6a40', roof: '#8a2a30', trim: '#f6ecd8', door: '#2f5a3a' },
+      { name: 'Glacier', wall: '#a8b8c8', roof: '#2a4a6a', trim: '#ffffff', door: '#c04040' },
+      { name: 'Gingerbread', wall: '#b8763a', roof: '#7a4a2a', trim: '#ffffff', door: '#c04040' },
+      { name: 'Aurora', wall: '#6a5a7a', roof: '#2a5a6a', trim: '#e8f0f0', door: '#3ab090' },
+    ],
+  },
+  {
+    id: 'crystal', name: 'Crystal Palace', tier: 'legendary', price: null, earn: 'eternatus', how: 'Beat Eternatus in the Crystal Depths', swatch: ['crystal', 'crystal2'],
+    blurb: 'A hall of white stone grown through with glowing crystal spires, the tallest over the door.',
+    paints: [
+      { name: 'Amethyst', wall: '#e6e0f2', crystal: '#9b6bd8', crystal2: '#5fd4e6', door: '#3a2a5a' },
+      { name: 'Rose Quartz', wall: '#f2e4ea', crystal: '#e07ab0', crystal2: '#ffd0e8', door: '#5a2a44' },
+      { name: 'Emerald', wall: '#e2eee6', crystal: '#3aa878', crystal2: '#b8f0d0', door: '#1e4a34' },
+      { name: 'Sapphire', wall: '#e2e8f4', crystal: '#3a6ad8', crystal2: '#a8d8ff', door: '#1e2e5a' },
+      { name: 'Citrine', wall: '#f4eedc', crystal: '#e8b030', crystal2: '#fff0b0', door: '#5a4018' },
+      { name: 'Ruby', wall: '#f2e2e2', crystal: '#d0303a', crystal2: '#ffb0a0', door: '#4a1418' },
+      { name: 'Onyx', wall: '#c8c8d0', crystal: '#3a3a4a', crystal2: '#a8a8c8', door: '#1a1a24' },
+      { name: 'Diamond', wall: '#f4f6fa', crystal: '#a8d0f0', crystal2: '#dff2ff', door: '#3a4a6a' },
+    ],
+  },
+  {
+    id: 'tree', name: 'Ancient Tree', tier: 'legendary', price: null, earn: 'clearing', how: 'Defeat the Whispering Clearing\'s boss',
     blurb: 'The old tree the Secret Base began in, its door in the roots.',
     paints: [
       { name: 'Spring', lobe: ['#1c5a26', '#2e7c34'], shade: [['#a8e078', '#6cc058'], ['#7cc860', '#48a044'], ['#5aac4a', '#2e7c34'], ['#3a8a3a', '#1c5a26']], leaf: ['#c8f090', '#8ad468'], bloom: ['#ffffff', '#f8c8e0'] },
@@ -172,15 +293,50 @@ export const HOUSES_BY_ID = Object.fromEntries(HOUSES.map(h => [h.id, h]));
 
 const hasBase = (save) => !!save?.baseOwned;
 
+const badge = (save, id) => (save?.badges || []).includes(id);
+/** What earns each earned house (a house's `earn`), read from what the save already keeps, so an old save has on day
+    one every house it can prove. Once seen it's stored in `houses.owned` (claimEarned()), so it stays earned if a test
+    ever changes (a new Gym Leader, a new Safari page). */
+export const EARN = {
+  gyms: (save) => GYM_LEADERS.every(l => (save.gym?.[l.id] || 0) >= 1),
+  waystones: (save) => RING.every(t => mended(townState(save, t.id))),
+  safari: (save) => !!save.safariDex?.complete || badge(save, 'safari-master'),
+  summit: (save) => (save.tower?.bestEver || 0) >= 100 || (save.tower?.summits || 0) > 0 || badge(save, 'tower-100'),
+  master: (save) => badge(save, 'master'),
+  eternatus: (save) => badge(save, 'depths') || (save.feats || []).includes('eternatus') || !!save.stats?.bossesDefeated?.[4],
+  clearing: (save) => badge(save, 'clearing') || !!save.stats?.bossesDefeated?.[1],
+};
+/** What a letter says the trainer did, by a house's `earn`. */
+export const EARN_DID = {
+  gyms: 'beat every Gym Leader', waystones: 'mended every town\'s Waystone', safari: 'caught every Pokémon in the Safari Pokédex',
+  summit: 'reached the top of the Sky Pillar', master: 'earned the Master Badge', eternatus: 'beat Eternatus in the Crystal Depths',
+  clearing: 'beat the Whispering Clearing\'s boss',
+};
+/** How far along a save is to an earned house, where it counts: [done, of], or null. */
+export function earnProgress(save, earn) {
+  if (earn === 'gyms') return [GYM_LEADERS.filter(l => (save?.gym?.[l.id] || 0) >= 1).length, GYM_LEADERS.length];
+  if (earn === 'waystones') return [RING.filter(t => mended(townState(save || {}, t.id))).length, RING.length];
+  if (earn === 'summit') return [Math.min(100, save?.tower?.bestEver || 0), 100];
+  return null;
+}
+/** The earned houses a save has earned (`lend`: with `?houses=all`, every one). */
+export const earnedOf = (save, lend = true) => HOUSES.filter(h => h.earn && ((lend && housesLent()) || EARN[h.earn](save || {}))).map(h => h.id);
+
+/** Is a seasonal house on sale on `date` (its `season` month, UTC, as the furniture's holidays)? Every other house is. */
+export const onSale = (house, date = new Date()) => !house.season || housesLent() || date.getUTCMonth() + 1 === house.season;
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+export const seasonName = (house) => MONTHS[house.season - 1];
+
 /** The houses a save has: what it owns, the one it lives in (null without a base) and each one's paint. */
 export function housesOf(save) {
   const h = save?.houses;
-  if (!h) return hasBase(save) ? { owned: ['cottage', 'tree'], home: 'tree', paint: {} } : { owned: [], home: null, paint: {} };
-  const owned = [...new Set((h.owned || []).filter(id => HOUSES_BY_ID[id]))];
+  if (!hasBase(save) && !h) return { owned: [], home: null, paint: {} };
+  const owned = h ? [...new Set((h.owned || []).filter(id => HOUSES_BY_ID[id]))] : ['cottage', 'tree'];
   if (hasBase(save) && !owned.includes('cottage')) owned.unshift('cottage');
-  const home = owned.includes(h.home) ? h.home : owned[0] ?? null;
+  if (hasBase(save)) for (const id of earnedOf(save)) if (!owned.includes(id)) owned.push(id);
+  const home = !h ? (hasBase(save) ? 'tree' : null) : owned.includes(h.home) ? h.home : owned[0] ?? null;
   const paint = {};
-  for (const id of owned) { const n = h.paint?.[id] | 0; if (n > 0 && n < HOUSES_BY_ID[id].paints.length) paint[id] = n; }
+  for (const id of owned) { const n = h?.paint?.[id] | 0; if (n > 0 && n < HOUSES_BY_ID[id].paints.length) paint[id] = n; }
   return { owned, home, paint };
 }
 
@@ -203,19 +359,33 @@ export function homeOf(save) {
 
 const store = (d, h) => { d.houses = { owned: [...h.owned], home: h.home, paint: { ...h.paint } }; return d.houses; };
 
-/** What buying `id` would say no to: 'base' (no Secret Base yet), 'owned', 'earned' (never sold), 'coins', or null. */
-export function cantBuy(save, id) {
+/** What buying `id` would say no to: 'base' (no Secret Base yet), 'owned', 'earned' (never sold), 'season' (a seasonal
+    house out of its month), 'coins', or null. */
+export function cantBuy(save, id, date) {
   const house = HOUSES_BY_ID[id];
   if (!house) return 'earned';
   if (!hasBase(save)) return 'base';
   if (housesOf(save).owned.includes(id)) return 'owned';
   if (house.price == null) return 'earned';
+  if (!onSale(house, date)) return 'season';
   return (save.coins ?? 0) < house.price ? 'coins' : null;
 }
 
+/** On a save draft: the earned houses not yet stored, stored for good (never the lent ones). Returns their ids, for the
+    Mailbox's letter; none without a base, which then gets them all at once when it's bought. */
+export function claimEarned(d) {
+  if (!hasBase(d)) return [];
+  const kept = d.houses ? (d.houses.owned || []) : ['cottage', 'tree'];
+  const got = earnedOf(d, false).filter(id => !kept.includes(id));
+  if (!got.length) return [];
+  const now = housesOf(d), owned = [...new Set(['cottage', ...kept, ...got])].filter(id => HOUSES_BY_ID[id]);
+  store(d, { owned, home: owned.includes(now.home) ? now.home : d.houses ? owned[0] : 'tree', paint: Object.fromEntries(Object.entries(now.paint).filter(([id]) => owned.includes(id))) });
+  return got;
+}
+
 /** On a save draft: pays for `id`, built in paint `n` (the first paint job comes with it), and moves in. */
-export function buyHouse(d, id, n = 0) {
-  if (cantBuy(d, id)) return false;
+export function buyHouse(d, id, n = 0, date) {
+  if (cantBuy(d, id, date)) return false;
   const h = store(d, housesOf(d));
   d.coins -= HOUSES_BY_ID[id].price;
   h.owned.push(id);

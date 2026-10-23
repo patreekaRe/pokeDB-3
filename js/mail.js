@@ -14,6 +14,7 @@ import { workshopOf, heartsOf, friendLetter } from './data/workshop.js';
 import { satchelOf, addMat, biomeMats, MATERIALS_BY_ID } from './data/satchel.js';
 import { safariDay } from './data/safari.js';
 import { townsOpen } from './data/towns.js';
+import { housesOpen, claimEarned, HOUSES_BY_ID, EARN_DID } from './data/houses.js';
 
 /** Who a letter is from: its name on the envelope and its stamp's colours. */
 export const SENDERS = {
@@ -22,6 +23,7 @@ export const SENDERS = {
   league: { name: 'POKéMON LEAGUE', ink: '#2f5fb8', paper: '#eef3ff' },
   depths: { name: 'CRYSTAL DEPTHS', ink: '#7a3fc0', paper: '#f4eeff' },
   trainers: { name: 'TRAINER NETWORK', ink: '#1f8a9a', paper: '#eaf8fa' },
+  builders: { name: 'TIMBURR & CO.', ink: '#e8782a', paper: '#fff6e8' },
 };
 
 /** A letter's sender: one of SENDERS, or a friend (a Gym Leader's id) in their own ink. */
@@ -57,6 +59,19 @@ export function trainersLetter(code) {
   if (!code || getSave().trainersLetter) return;
   updateSave(d => { d.trainersLetter = true; });
   post('trainers', 'Your trainer code', 'You\'re on the Trainer Network! Give a friend your code and they can add you in the Trainers app on your Pokédex. Meet more trainers in its Trainer Plaza, or tap a name on any leaderboard. When someone adds you, you\'ll get a TRAINER LINK.', 0, { code });
+}
+
+/** An earned house (js/data/houses.js), seen for the first time: stored for good, and a letter from the builders for
+    each. True if one came. */
+export function houseMail() {
+  if (!housesOpen() || !claimEarned(structuredClone(getSave())).length) return false;
+  let got = [];
+  updateSave(d => { got = claimEarned(d); });
+  for (const id of got) {
+    const h = HOUSES_BY_ID[id];
+    post('builders', `Your ${h.name}`, `Timburr & Co. here! Word is you ${EARN_DID[h.earn]}. That's worth more than coins, so the crew drew up a ${h.name} for you, on the house. Come by our stand beside your lot and we'll build it, free. Move in, or move back, any time!`, 0);
+  }
+  return got.length > 0;
 }
 
 /** Letters not yet claimed. */

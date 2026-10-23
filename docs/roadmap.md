@@ -1222,7 +1222,7 @@ the Starter Cottage / Log Cabin / Seaside Bungalow as 3D models, the tree repain
 picture of each house; they liked seeing the house built on the lot as they pick. Playtest only on the branch's githack
 link (never the live site): `?houses&coins=5000`, and `?houses&tree` for an old save. Was: the live site with
 `?houses&coins=5000` (and a save that already owns the tree, to see it kept and the cottage free). Still open: which of the
-18 to keep, the prices, friends' visits (front lawn). Sessions left: B (earned and seasonal, below), C (the 7 new houses),
+18 to keep, the prices, friends' visits (front lawn). Sessions left: C (the 7 new houses; A and B done, below),
 optional insides per house (medium), and the friends' front lawn. All CLOUD. The coin houses were session A (below).
 **The rest, the user's ask (2026-10-23): every house of the mock-up, 7 more to make 25, and many more paints each.**
 Claude's proposal for the 7 (the sessions use it unless the user says otherwise): Treehouse (Homestead, 2,000: a cabin
@@ -1241,12 +1241,14 @@ Clearing's budget, checks each model with `tools/house-check.mjs` (text, no scre
   catalogue's paint strip (the card still 267 px), `tools/house-check.mjs` for text elevations. Within budget, save check
   passed. **Next: the user playtests** the branch's githack link (`?houses&coins=20000`, and `&tree` for an old save):
   each house on the lot, its paints, and says what to change before B.
-- **B** (effort: high): the same opening, then: "Build the eight earned and seasonal houses (Gym Hall: every Gym Leader;
-  Hot-Spring Ryokan: every Waystone mended; Ranger Lodge: every Safari page; Sky Spire: the Sky Pillar's top; Poké Ball
-  Dome: the Master Badge; Crystal Palace: beat Eternatus; Haunted Chateau in October and Snow Chalet in December, 3,000
-  and kept for good) with 8 paints each, their unlock checks in js/data/houses.js (pure, tested), LOCKED cards saying how
-  to get each, the Ancient Tree earned by new players with the Clearing Badge, and a Mailbox letter when one unlocks.
-  Add a playtest flag to see every earned house unlocked. Same checks, push houses-playtest only, githack links."
+- ~~**B**~~ **done 2026-10-23** (cloud, branch `houses-playtest`; detail: `docs/reference/hub-base-mall.md`, "Session B"):
+  the Gym Hall, Hot-Spring Ryokan, Ranger Lodge, Sky Spire, Poké Ball Dome, Crystal Palace, Haunted Chateau (October)
+  and Snow Chalet (December, both 3,000, kept for good) as 3D models, 8 paints each; their checks in `EARN`
+  (`js/data/houses.js`, tested), stored for good once seen, a TIMBURR & CO. letter in the Mailbox for each; greyed LOCKED
+  cards with Timburr saying what earns each (and how far along); the Ancient Tree earned by the Clearing Badge;
+  `?houses=all` lends them all, `?houses&livein=<id>` lives in one. Also the user's ask the same day: long names no longer
+  cut off (the name on its own line the card's width, the paint's name under it; card 267 -> 280 px). Within budget, save
+  check passed. **Next: the user playtests** the githack link (`?houses=all&coins=20000`), then C.
 - **C** (effort: medium, the pattern is set by then): the same opening, then: "Build the 7 new houses from the roadmap
   (Treehouse, Windmill Farmhouse, Desert Riad, Lantern Pagoda, Champion's Keep, Stargazer Observatory, Cherry Blossom
   Teahouse) with 8 paints each and their unlocks, the earned and seasonal ones as session B set them up. Same checks,

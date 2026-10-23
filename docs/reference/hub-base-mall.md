@@ -937,3 +937,34 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   view in text. Lived in on the lot (a fresh save, `tools/budget-check.mjs`'s counts): tree 279 draws / 124.9 MB, cottage
   264, cabin 287, bungalow 285, mushroom 283, barn 286, machiya 285, lighthouse 283, glasshouse 285, victorian 282, every
   house about 119.4 MB; `clearing` 268, `clearing-houses` 283, within budget.
+
+### Session B: the earned and seasonal houses (2026-10-23, branch `houses-playtest`)
+
+- **The houses**, each a builder in its own file from `makeHouse()`'s `kit` (its helpers, the paint, `kit.art.<name>(fine)`;
+  `BUILDERS` in `js/hub-houses.js`), eight paints each: `js/hub-houses-league.js` the **Gym Hall** (a columned hall on a
+  stepped plinth, a Poké Ball crest in its pediment, banners, fire bowls, a Rhydon statue each side) and the **Poké Ball
+  Dome** (two hemispheres, the button round the door, `mark` patches for the Great / Ultra / Luxury paints, an aerial);
+  `-lodges.js` the **Hot-Spring Ryokan** (irimoya roof, shoji, a ♨ noren, lanterns, a steaming pool) and the **Ranger
+  Lodge** (an A-frame, its front one lit window, a deck, a flag); `-legend.js` the **Sky Spire** (an eight-sided tapering
+  tower, battlements, a pennant, floating isles; 4.65 high, the tallest) and the **Crystal Palace** (crystal spires through
+  a white hall, glowing after dark); `-season.js` the **Haunted Chateau** (leaning, two witch-hat towers, windows lit in
+  the paint's `glow`, a Gastly, jack-o'-lanterns, bats) and the **Snow Chalet** (snow on the roof, icicles, a balcony, a
+  snowman). Lived in on the lot: 265 to 275 draws, 119 to 120 MB, inside `clearing-houses`' budget.
+- **Unlocks** (`js/data/houses.js`, pure, `tests/houses.test.mjs`): a house's `earn` names its check in `EARN` (gyms: every
+  Gym Leader beaten once; waystones: every RING town mended; safari: the Safari Pokédex complete; summit: the Sky Pillar's
+  floor 100; master / eternatus / clearing: the badge, or what it reads). `housesOf()` counts an earned house owned the
+  moment it's earned (with a base); `claimEarned()` stores it in `houses.owned` for good and returns the new ones, which
+  `houseMail()` in `js/mail.js` turns into a letter from TIMBURR & CO. (a `builders` sender) on coming home to the
+  Clearing and right after the base is bought. An old save's tree is no new house (no letter). The **Ancient Tree** is
+  now earned by the Clearing Badge for a base bought with houses on. **Seasonal**: `season` is a month (the chateau 10,
+  the chalet 12), `onSale()` by the UTC month, `cantBuy()` says 'season' out of it; once bought it's kept. Tiers: Starter,
+  Homestead, Estate, Earned, Seasonal, Legendary (the Crystal Palace and the tree).
+- **The catalogue**: every house shows, the tree too. A house not yet earned (or out of season) is a greyed card tagged
+  LOCKED (or its month: OCT, DEC), its key "Locked" / "Oct only", and Timburr says what earns it with the count so far
+  where there is one (`earnProgress()`: gyms, Waystones, the Sky Pillar's floor). Earned before the lot is bought: EARNED.
+  **Long names** (the user, same day: "some houses have long names and get cut off"): the picked house's name has its
+  own line the card's whole width (`fitText()` down to 12px if even that is short), the paint's name over the swatches
+  below it, the key beside them; the card 280 px on a phone (was 267).
+- **Flags**: `?houses=all` lends every earned house and puts both seasonal ones on sale for the page load (nothing
+  stored for it; no letter). `?houses&livein=<id>` saves a base living in that house (for checks and a githack link).
+  `tools/kiosk-probe.mjs` prints the catalogue in text: each card's tag, key, Timburr's line, and any name cut off.
