@@ -702,7 +702,7 @@ function player(name) {
 /**
  * A track that loops between two points inside its file, standing in for an <audio> element (play, pause, paused,
  * currentTime) so the fades above treat both alike. An <audio> element can only loop the whole file, so this plays a
- * decoded buffer instead. A decoded song is ~50 MB, so only the playing one is kept decoded: a preload only fetches the
+ * decoded buffer instead. A decoded song is ~25 MB, so only the playing one is kept decoded: a preload only fetches the
  * MP3's bytes (a boss fight's preloads, decoded up front, reloaded iPhones, 2026-10-17), and pausing drops the buffer.
  * With no crossfade the buffer loops natively, sample-exact (the battle songs repeat exactly). With one, each pass is
  * its own source, handing over to the next with an equal-power crossfade centred on the loop points (the other songs'
@@ -727,7 +727,7 @@ class LoopedTrack {
       .catch(() => { this.onError(); return null; });
     return this.bytes;
   }
-  /* Decoded, a song is ~8 bytes a sample (~380 KB a second), so only the file up to the loop's end is: what comes after
+  /* Decoded, a song is ~4 bytes a sample (~190 KB a second, folded to mono), so only the file up to the loop's end is: what comes after
      (a fade-out, a second pass) never plays. The whole file if that part won't decode. */
   decode() {
     if (this.decoded) return this.decoded;
@@ -737,9 +737,9 @@ class LoopedTrack {
       const need = this.loopEnd + this.xfade / 2, cut = mp3Upto(data, need + 1);
       if (cut < data.byteLength) {
         const part = await ctx.decodeAudioData(data.slice(0, cut)).catch(() => null);
-        if (part && part.duration >= need) { if (this.bytes === bytes) this.bytes = null; return part; }
+        if (part && part.duration >= need) { if (this.bytes === bytes) this.bytes = null; return mono(part); }
       }
-      return ctx.decodeAudioData(data);
+      return mono(await ctx.decodeAudioData(data));
     }).catch(() => null);
     return this.decoded;
   }
@@ -819,6 +819,19 @@ class LoopedTrack {
     // and its MP3's bytes (~2 MB a song, 60 MB once every song had played): fetched again from the browser's cache
     if (!keep) this.decoded = this.buffer = this.bytes = null;
   }
+}
+
+/** A song folded down to one channel, half the memory of the stereo one it was decoded to (15-35 MB a song, 2026-10-24,
+    the user's pick over a lower sample rate, which would dull the top end): a phone's speaker plays it the same. */
+function mono(buffer) {
+  if (buffer.numberOfChannels < 2) return buffer;
+  const one = ctx.createBuffer(1, buffer.length, buffer.sampleRate), out = one.getChannelData(0);
+  const n = buffer.numberOfChannels;
+  for (let c = 0; c < n; c++) {
+    const data = buffer.getChannelData(c);
+    for (let i = 0; i < out.length; i++) out[i] += data[i] / n;
+  }
+  return one;
 }
 
 /** How many of an MP3's bytes hold at least its first `seconds`, in whole frames; all of them if it can't tell. A frame

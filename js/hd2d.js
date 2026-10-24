@@ -360,9 +360,17 @@ export function unload(group) {
 
 /** A walk-in room left for the map: what it holds on the GPU is let go (unload()), its context kept awake for the rooms
     the map warms. Awake and full, the last room walked out of (a Mart, a ? room, a house) sat under the map beside them,
-    and iPhones reloaded the tab (2026-10-17). Not when a deck picker stood over it: that room comes straight back. */
-export function putAway(view, scene) {
-  setTimeout(() => { if (!view.isConnected && !document.getElementById('map-screen').hidden) unload(scene); }, 1000);
+    and iPhones reloaded the tab (2026-10-17). Not when a deck picker stood over it: that room comes straight back.
+    `renderer`: a place the map warms nothing into (the Center, the Mart) sleeps too, or its context stayed awake beside
+    the warmed arena all the time the map was up (~26 MB, 2026-10-24). */
+export function putAway(view, scene, renderer) {
+  setTimeout(() => {
+    if (view.isConnected || document.getElementById('map-screen').hidden) return;
+    unload(scene);
+    if (!renderer) return;
+    sleepGL(renderer);
+    if (shown === renderer) shown = null;
+  }, 1000);
 }
 
 /* ---------- a Pokémon: GIF frames on a billboard ---------- */

@@ -90,7 +90,7 @@ seamlessly inside the file instead, between `LOOP_POINTS` (seconds; the gap is t
 60.64 s, found by correlating each file against itself, and the seam checked by rendering it offline against the file's
 own continuation). An `<audio>` element can only loop the whole file, so those play through `LoopedTrack` in
 `js/audio.js`, a stand-in with the element's `play` / `pause` / `paused` / `currentTime` over a decoded buffer's
-`loopStart` / `loopEnd`; only the playing one stays decoded (~50 MB each), and only up to its loop's end (2026-10-18, below). Replacing one of those MP3s means finding its
+`loopStart` / `loopEnd`; only the playing one stays decoded (~25 MB each, mono), and only up to its loop's end (2026-10-18, below). Replacing one of those MP3s means finding its
 loop points again (or deleting its `LOOP_POINTS` line). The map songs (`map1`-`map3`) loop too (2026-09-29): each file
 is one pass of its song then a fade-out over its start coming round again, which matches in melody and beat (chroma and
 onsets) but not sample for sample, so their `LOOP_POINTS` carry a third number, a 0.3 s equal-power crossfade across the
@@ -129,6 +129,7 @@ the waveform at the join correlates under 0.95. It found Mart's 48.709 s to the 
 - 2026-10-17: `pause()` drops `this.buffer` too, not only `this.decoded`: kept, every song played once stayed decoded for the page load (headless: 8 songs played, 10 still decoded; ~1GB if all 31 play). The MP3 bytes (~2MB each) stay, so a song comes back in a moment.
 - 2026-10-18: the MP3 bytes go too (`this.bytes`; ~60 MB once every song had played), fetched again from the browser's cache on the next play (`LoopedTrack.fetch()`). Cries: only the last 32 heard stay decoded (`loadCry()`, `CRIES_KEPT`; all 248 were ~50 MB).
 - 2026-10-18: a song decodes only up to its loop's end, plus a second (`decode()` cuts the MP3 at a frame with `mp3Upto()`;
+- 2026-10-24: a looped song is folded to mono once decoded (`mono()` in `js/audio.js`), halving what the playing one holds (15-35 MB stereo). The user's pick over a lower `AudioContext` sample rate, which would dull cymbals and the top end; a phone's speaker plays mono the same. The MP3s stay stereo.
   the whole file if the cut won't decode): what follows, a fade-out or a second pass, never plays. 17% less on average,
   ruins / kombat / event-outdoor ~40-45%. `wild`, `elite`, `boss` and `gym-room` loop from their phrase's second time round
   ([28, 106.69], [27.75, 111.25], [20.8, 81.44], [9, 42.92]; the old points in the comment over them): the files repeat

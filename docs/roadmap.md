@@ -14,12 +14,11 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 a new `tools/run-probe.mjs` (fight after fight on one page) found no growth over a run, the map level near 120 MB and each
 fight peaking near 185 MB. Fixed: every ? room, gym and town painted its side wall twice (towns 10-21 MB less each, the
 gym 9, the dojo 8; budgets recorded lower). On a phone: a long run, towns and gyms included; Settings' Save group lists
-any reload (`js/crumbs.js`) with where it happened. **Next, if it still reloads** (▶ Run in: CLOUD), the next offenders
-measured: a Center or Mart left for the map stays awake (`putAway()` keeps its context for the rooms the map warms, but
-only `js/event-3d.js` warms in its own; ~26 MB of buffers beside the warmed arena), and the song playing (15-35 MB decoded;
-a lower `AudioContext` sample rate would halve it, a sound-quality call for the user). Prompt: "▶ Run in: CLOUD. Read
-walk-in-rooms.md's 'One side-wall painting'. Run tools/run-probe.mjs, then put a Center or Mart left for the map to sleep
-(sleepGL after putAway), re-run it and the budget check, and push. My phone's reload log says: [paste Settings' list]."
+any reload (`js/crumbs.js`) with where it happened. **Round eight done 2026-10-24** (branch `claude/pc-app-launch-000m1y`,
+on `main` too): a Center or Mart left for the map now sleeps (`putAway(view, scene, renderer)`), and every looped song
+is folded to mono once decoded (the user's pick over a lower sample rate). Headless, the map after a Center 85 -> 52 MB,
+after a Mart 100 -> 58, one context awake instead of two; a song's decoded memory halves. On a phone: a long run with
+Centers and Marts, and whether any song sounds wrong on headphones.
 
 **▶ PLAYTEST ON THE LIVE SITE. Perf audit of the Clearing, the Safari areas and the Duo Run: done 2026-10-21**
 (`docs/roadmap-done.md`; branch `claude/perf-audit-clearing-features-xshrrn`, pushed to `main` too). On a phone: a Duo
@@ -28,8 +27,8 @@ Run's map should feel smoother; its rare-spawn and material badges still glow an
 recalc stays ~100-170 ms a second in headless Chrome with only composited animations running (the coin's `filter:
 brightness` spin is the last repainting one, ~50 ms/s; dropping its flash is a look call for the user); during a run the
 Clearing's vista canvas (`hub-vista.js`, 7.3 MB) and the character select's sky layers (`select-sky.js`, ~6.6 MB, its frame
-loop ticking unseen under the Clearing) stay held; the start screen's A key (`tdevGo`, a box-shadow) and the title's
-`pressBlink` animate while unseen. `NODE_PATH=$(npm root -g) node tools/fps-probe.mjs --only=duo-map,clearing` measures them.
+loop ticking unseen under the Clearing) stay held. The title's `pressBlink` is gone (2026-10-24: its button has been
+invisible since 2026-10-08); `tdevGo` didn't run unseen when checked that day. `NODE_PATH=$(npm root -g) node tools/fps-probe.mjs --only=duo-map,clearing` measures them.
 
 **▶ PLAYTEST ON THE LIVE SITE. Safari shinies everywhere: done 2026-10-19, on `main`, waiting on the user** (the three
 sessions are in `docs/roadmap-done.md`). Look at `?sparkle=3` (every Safari shiny lent at ★3: the Safari Pokédex's ✨
@@ -1200,6 +1199,11 @@ downloads**: re-encode the audio smaller and look at WebP for the GIFs, checked 
 Capacitor wrapper**, the same code in a real Android / iOS app: an Android APK can go to friends directly, but iOS needs a
 Mac and Apple's $99 a year. **The app stores are a no**, because Pokémon's names, sprites and cries are Nintendo's and the
 stores take such apps down. They could only take it with original art and names.
+**The user's go, 2026-10-24** ("I want both"), as two sessions: **1, smoothness** (done the same day: the Center and Mart
+sleep, mono songs, the hidden title blink; "Mid-run reloads" above), then **2, loading** (▶ Run in: CLOUD, effort high):
+the service worker of (1), and the music re-encoded smaller with every `LOOP_POINTS` loop checked after (re-encoding can
+shift timing). The GIF-to-WebP step is out: `js/gif-frames.js` decodes GIFs itself, for little gain. Claude's note to the
+user: neither makes play smoother, only loading.
 
 **Cloud save: look at the cloud again when the game comes back from the background** (Claude's offer, 2026-10-23, not
 answered yet): a tab left open on one device only learns the other played at its next save, then asks "Two saves found".
