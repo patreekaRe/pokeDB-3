@@ -1190,6 +1190,17 @@ window needs work (effort: low). ▶ Playtest on the live site.
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Friends playing it as an app on their phones** (the user's question, 2026-10-24: "turn it into a game on Unity or
+something other than a browser"). Claude's answer, not decided yet: **no Unity**, since that means rewriting ~200k lines
+of JS and every three.js place from scratch. The game is already an installable web app (`manifest.webmanifest`,
+`fullScreenApp()`), so friends can Add to Home Screen today. Steps, cheapest first: (1) **a service worker** (there is none
+yet), so it opens instantly and works offline once cached. Cache assets as they're used, not the whole 186 MB (111 MB of
+Pokémon GIFs, 72 MB of audio), and version the cache so a push still reaches players. ▶ CLOUD, effort high. (2) **Lighter
+downloads**: re-encode the audio smaller and look at WebP for the GIFs, checked by `tools/budget-check.mjs`. (3) **A
+Capacitor wrapper**, the same code in a real Android / iOS app: an Android APK can go to friends directly, but iOS needs a
+Mac and Apple's $99 a year. **The app stores are a no**, because Pokémon's names, sprites and cries are Nintendo's and the
+stores take such apps down. They could only take it with original art and names.
+
 **Cloud save: look at the cloud again when the game comes back from the background** (Claude's offer, 2026-10-23, not
 answered yet): a tab left open on one device only learns the other played at its next save, then asks "Two saves found".
 Re-checking on return would take the newer cloud save quietly when this device hadn't changed (a reload mid-play, so ask
