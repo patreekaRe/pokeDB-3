@@ -23,7 +23,7 @@ import { cloudConfigured } from './cloud.js';
 import { startGate, stopGate } from './safari-lobby.js';
 import { ballsApp } from './shop.js';
 import { duoApp, duoLabel, duoUnlocked, duoLooks } from './duoprep.js';
-import { playSound } from './audio.js';
+import { playSound, playMusic } from './audio.js';
 import { bootDevice } from './device-boot.js';
 import { smoothIcon } from './smooth-icons.js';
 import { $, el, openDialog, closeDialog, itemSprite, makeCard, zoomable, rareMark } from './ui.js';
@@ -50,6 +50,7 @@ export function initSafariPrep(handlers) {
   for (const node of document.querySelectorAll('#safari-prep-dialog [data-icon]')) node.append(smoothIcon(node.dataset.icon));
   $('sp-start').addEventListener('click', () => {
     if (app) { if (app.def.a) app.def.app.press(); return; }
+    starting = true;
     closeDialog('safari-prep-dialog');
     actions.onStart();
   });
@@ -57,7 +58,7 @@ export function initSafariPrep(handlers) {
   for (const id of Object.keys(APPS)) $(id).addEventListener('click', () => (app?.key === id ? back() : openApp(id)));
   // the Duo app's picks change its A (Pick 2 / Start Duo)
   $('sp-glass').addEventListener('duo-change', () => { if (app?.key === 'sp-duo') dressKeys(); });
-  duoApp.setStart((ids) => { closeDialog('safari-prep-dialog'); actions.onDuo(ids); });
+  duoApp.setStart((ids) => { starting = true; closeDialog('safari-prep-dialog'); actions.onDuo(ids); });
   // the Ranger Task Board (js/ranger.js) opens over the lobby, a count on its key while tasks wait to be claimed
   $('sp-tasks').addEventListener('click', () => { if (app) closeApp(true); import('./ranger.js').then(m => m.openRangerBoard(taskCount)); });
   const dialog = $('safari-prep-dialog');
@@ -77,6 +78,8 @@ export function initSafariPrep(handlers) {
   }, { passive: false });
   $('sp-how').querySelector('summary').addEventListener('click', () => playSound('confirm'));
   $('safari-prep-dialog').addEventListener('close', stopGate);
+  // the lobby's song plays on into a run's map; shut without one, the Clearing's comes back
+  $('safari-prep-dialog').addEventListener('close', () => { if (!starting) playMusic('title'); starting = false; });
   const relayout = new ResizeObserver(() => { if ($('safari-prep-dialog').open) paintGate(); });
   relayout.observe($('sp-top'));
 }
@@ -92,7 +95,7 @@ const APPS = {
 const SLIDE = { duration: 260, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 let app = null;      // the open app: { key, def, panel }
-let sliding = false;
+let sliding = false, starting = false;
 
 function openApp(key) {
   if (sliding) return;
@@ -190,6 +193,7 @@ function taskCount() {
 export function openSafariPrep() {
   closeApp(true);
   render();
+  playMusic('safari');
   $('sp-how').open = false;
   openDialog('safari-prep-dialog');
   $('sp-base').scrollTop = 0;

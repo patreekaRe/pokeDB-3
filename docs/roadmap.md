@@ -1534,6 +1534,9 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **The Safari's song** (2026-10-24, the user's MP3, on `main`; `docs/reference/music.md`): plays in the Safari lobby and on
+  every area's map, Daily and Duo Runs, looped over 17.25-48.34 s. Listen for the loop's join (~48 s in) and the level
+  against the Clearing's song. ▶ Run in: PLAYTEST ON THE LIVE SITE.
 - **The Nietos' mansion** (2026-10-20, branch `claude/nieto-house-extravagant-mansion-sf3f5m`, on `main` too; archive):
   the cottage is now a white château (turrets, portico, golden Kangaskhan at the gate) and inside a marble-and-gilt hall
   with chandeliers and a family portrait. Walk up to it in the Clearing (south-east), and go in with `?nietos&gymwins=1`
