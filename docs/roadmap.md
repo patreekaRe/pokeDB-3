@@ -1200,6 +1200,19 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Battle juice, after the turn banner** (2026-10-25: the user asked what other "cool aesthetic UI stuff like this" the
+game could use; Claude's list, none picked yet). Claude's top three first: (1) **lethal warning**: when the enemy's
+intent would get through your block and KO you, the intent bubble throbs red with a 💀 and the screen's edges pulse red;
+when your block covers the hit, a small ✓ shield on the bubble instead. (2) **Relic pop**: relics don't show in battle,
+so when one fires (Leftovers, Sticky Barb...) its icon pops over your Pokémon with its name for a beat, like StS's relic
+flash. (3) **Victory! / Defeat banner**: the turn banner's stripe on the final blow, with a short sting before the
+reward screen. Others: (4) drawn cards fly out of the draw pile, played ones into the discard, and a reshuffle streams
+discard into draw with a riffle sound (today it's a "♻️ Reshuffled" pop); (5) the PP pill's pips fill one by one with a
+sparkle at turn start; (6) damage numbers that scale with the hit, and a short hit-stop and shake on big or super
+effective hits (hit-stop is only on a boss's last blow today); (7) "Groudon's Turn" in place of "Enemy Turn" for a boss
+or Gym Leader; (8) a red heartbeat vignette at low HP, matching the low-HP sound loop. Every one checks `battleFx()` /
+`calmFx()`. ▶ Run in: CLOUD (build) then PLAYTEST, effort medium each.
+
 **Friends playing it as an app on their phones** (the user's question, 2026-10-24: "turn it into a game on Unity or
 something other than a browser"). Claude's answer, not decided yet: **no Unity**, since that means rewriting ~200k lines
 of JS and every three.js place from scratch. The game is already an installable web app (`manifest.webmanifest`,
