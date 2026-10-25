@@ -1200,25 +1200,10 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**Records for the Base jukebox** (2026-10-25, the user's idea and calls): built the same day on `main`, **playtest
-only** (`RECORDS_LIVE` false in `js/data/records.js`). Records (songs) are sold only by a mended town's trader (its
-shop from home, a Records tab), each town its own song plus two more; a tap on a jukebox,
-record player or gramophone at home picks the base's song, and friends visiting hear it. The same day the user's 41
-Gen 1-4 town themes went in (55 records now, 500 coins each, split across the five towns by what suits them; the big
-files folded to mono, every one looped and levelled), and the trader's Records tab became a crate you flip through
-(drag, wheel or ◀ ▶; tap the front record to hear it). Detail in `docs/reference/hub-base-mall.md`'s Records section.
-**Next: the user playtests**
-▶ Playtest on the live site: `?records=all&base` (a jukebox in the base, tap it: listen to each record's loop join), and
-`?records&mended&coins=5000` on a githack link (Waystone travel to a town, its trader's shop, the Records tab). **Then**:
-the user says if a song's loop or loudness is off, or a record belongs in another town, and when to go live (flip
-`RECORDS_LIVE`, add a patch note). More mp3s: each a TRACKS line, loop points, a TRACK_GAIN and a RECORDS line.
-**Smeargle's jukebox visit** (same day, the user's ask; a slide-in talk, not Smeargle in the room, the user's call): once, at home, Smeargle explains the jukebox, gives a one-time
-pick of the five players, sets it down with the gift record (the Clearing's song) playing, and points to the towns'
-trading posts. Players from before the patch get it the first time home after it goes live; newer players the first
-time home after mending their first Waystone. ▶ Playtest: `?records&base&smeargle` (it really gives the pick and the
-record). Still open to ask about: music fading with distance from the jukebox; the player piece animating while a
-record plays; a nudge to go home once a new player mends the Clearing's Waystone. Read `hub-base-mall.md`, `music.md` and `cloud-save.md` first, and keep to
-the one-looped-song-decoded rule (`js/audio.js`).
+**Records and the jukebox, what's left** (live 2026-10-25, see the archive). Ideas not yet asked for: music fading with
+distance from the jukebox; the player piece animating while a record plays; a nudge to go home once a new player mends
+the Clearing's Waystone (Smeargle waits there for their next visit). More records: each a TRACKS line, loop points, a
+TRACK_GAIN and a RECORDS line (`docs/reference/hub-base-mall.md`'s Records section).
 
 **A basement in the Secret Base** (2026-10-25: the user asked whether you can build downstairs; you can't, floors only
 go up, `lv` 0 the ground and each one up a staircase). Not asked for yet, only noted: it would take a negative `lv`, a

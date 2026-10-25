@@ -3614,3 +3614,12 @@ evolving!" on its text box bubbled on up to the scene after the skip had started
 `skipper()` in `js/evolution.js` now starts listening `SKIP_ARM_MS` (300 ms) later. Checked headless in the 3D gym
 (`?gym=lawrence&hp=0.01`, Three.js served locally): the same tap now leaves the morph to play out, and a tap of its own
 still skips it.
+
+## Records and the jukebox (2026-10-25, the user's idea; live the same day, on `main`)
+
+Records (songs) sold only by a mended town's trading post (its shop from home, a Records tab, a tap to listen), 55 of
+them with the user's 41 Gen 1-4 town themes; a jukebox, record player or gramophone at home picks the base's song, and
+friends visiting hear it. Smeargle slides in once (players from before the patch their first time home; newer players
+after their first Waystone is mended) with a one-time pick of the five players and the gift record, the Clearing's
+song. The jukebox window is a neon cabinet with a turntable deck and the records as sleeves in a crate. Detail:
+`docs/reference/hub-base-mall.md`'s Records section. Built and playtested behind `?records`, then `RECORDS_LIVE` on.

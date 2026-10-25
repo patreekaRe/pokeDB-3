@@ -562,5 +562,5 @@ A town's ground (`wildFloor()` in `js/event-3d.js`) is painted at most `GROUND_M
 canvas and its mipmapped texture went ~57 -> ~35 MB (headless, Lantern Village 215 -> 183 MB with 2x multisampling). That's
 still about a texel per scene pixel where a phone at Sharp looks (12 tiles across 603 px); on a big screen it's softer.
 
-**Records at the trader** (2026-10-25, playtest only, `?records`): a mended town's trader shop, from home, has a
+**Records at the trader** (2026-10-25, live the same day): a mended town's trader shop, from home, has a
 Records tab selling that town's songs for the Secret Base's jukebox. Detail in `hub-base-mall.md`'s Records section.

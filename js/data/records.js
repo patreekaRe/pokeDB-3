@@ -4,9 +4,9 @@
    Each town sells its own songs plus the user's Gen 1-4 town themes that suit it (docs/reference/hub-base-mall.md).
    A record is one line: its `track` is a js/audio.js TRACKS key with loop points, its `town` a TOWNS id (who sells it).
    `ink` colours the record's label; a `gift` record is never sold (Smeargle's, js/jukebox.js's smeargleGift()).
-   Playtest only till RECORDS_LIVE: `?records` opens it, `?records=all` lends every record for the page load. */
+   Live since 2026-10-25 (RECORDS_LIVE); `?records=all` lends every record for the page load. */
 
-export const RECORDS_LIVE = false;
+export const RECORDS_LIVE = true;   // the user's call, 2026-10-25
 
 const flag = () => (typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('records'));
 export const recordsOpen = () => RECORDS_LIVE || flag() !== null;

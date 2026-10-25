@@ -51,6 +51,7 @@ const HELD = [
 export const NEXT = [
   ['base', 'Secret Base stairs look like stairs now: a flight with banisters up to a doorway high in the wall, and a stairwell in the floor going down.'],
   ['fixes', 'Evolutions play in full again: the tap that closed "What? It\'s evolving!" was skipping the whole show.'],
+  ['base', 'Jukeboxes play records now: Smeargle brings you one with your first record, the Clearing\'s song, and friends visiting hear it. Mended towns\' trading posts sell 55 more.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 
