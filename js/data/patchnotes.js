@@ -59,7 +59,7 @@ export const NEXT = [
   ['music', 'The Safari Zone has its own song, in its lobby and on every area\'s map.'],
   ['runs', 'A held berry not yet eaten can come off again from the Bag\'s Items on the map, back into the Berry Pouch, to save it for a fight ahead.'],
   ['runs', "In the Poké Mart you can tap a card, item or relic to read it even when you can't afford it or your Bag is full."],
-  ['battle', 'Each turn opens with a banner across the arena, Slay the Spire style: Battle Start! with its own sting, then Your Turn and its number, then Enemy Turn.'],
+  ['battle', 'Each turn opens with a banner across the arena, Slay the Spire style: Battle Start! with its own sting, then Your Turn and its number, then Enemy Turn, each with a Game Boy blip.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

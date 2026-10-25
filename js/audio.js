@@ -195,10 +195,8 @@ const SOUNDS = {
   'crystal-2':  { synth: ac => windChime(ac, 3136), gain: 0.5 },
   shiny:        { synth: shinyChime, gain: 0.55 },
   'battle-start': { synth: battleSting },
-  'your-turn':  { synth: ac => turnChime(ac, [784, 1175]), gain: 0.5 },    // ...then each of your turns: a soft rising pair, quiet so it never nags
-  'enemy-turn': { synth: ac => turnChime(ac, [523, 392]), gain: 0.4 },     // ...and the enemy's: the same, falling and lower
-  'your-turn-b':  { synth: ac => turnBlips(ac, [1047, 1319, 1568], 0.045), gain: 0.4 },   // ?turnsfx=b, the second try: Game Boy menu blips up...
-  'enemy-turn-b': { synth: ac => turnBlips(ac, [330, 247], 0.07, true), gain: 0.45 },     // ...and two low ones down over a swish   // the "Battle Start!" banner (turnBanner() in battle.js): a whoosh, a thump and a bright chiptune stab   // a wild shiny's sparkle as it appears (battle.js)
+  'your-turn':  { synth: ac => turnBlips(ac, [1047, 1319, 1568], 0.045), gain: 0.4 },   // ...then each of your turns: Game Boy menu blips up (the user's pick over soft chimes)...
+  'enemy-turn': { synth: ac => turnBlips(ac, [330, 247], 0.07, true), gain: 0.45 },     // ...and the enemy's: two low ones down over a swish   // the "Battle Start!" banner (turnBanner() in battle.js): a whoosh, a thump and a bright chiptune stab   // a wild shiny's sparkle as it appears (battle.js)
   // the Safari areas' boss preludes (SAFARI_PRELUDES in scene.js)
   'leaf-storm': { synth: leafStorm },        // the Meadow's: the wind rises and the Lone Tree's crown thrashes...
   flock:        { synth: flockBurst },       // ...and its birds burst out
@@ -1529,22 +1527,6 @@ function battleSting(ac) {
   }
   for (let i = 0; i < length; i++) out[i] = sum[i] * Math.min(1, (length - i) / (rate * 0.05));
   return normalize(buffer, 0.2);
-}
-
-/** A turn's chime: two soft bell-like sines a beat apart, a little octave shimmer on each, gone in half a second. */
-function turnChime(ac, notes) {
-  const rate = ac.sampleRate, seconds = 0.6, length = Math.round(rate * seconds);
-  const buffer = ac.createBuffer(1, length, rate);
-  const out = buffer.getChannelData(0);
-  notes.forEach((f, n) => {
-    const at = Math.round(n * 0.085 * rate);
-    for (let i = at, k = 0; i < length; i++, k++) {
-      const t = k / rate, env = Math.min(1, t / 0.006) * Math.exp(-t / 0.16);
-      out[i] += (Math.sin(2 * Math.PI * f * t) + 0.25 * Math.sin(4 * Math.PI * f * t) * Math.exp(-t / 0.05)) * env;
-    }
-  });
-  for (let i = 0; i < length; i++) out[i] *= Math.min(1, (length - i) / (rate * 0.03));
-  return normalize(buffer, 0.12);
 }
 
 /** A turn's Game Boy blips: short square-wave notes, pulse width 25% like the games' menu sounds; a swish under them. */

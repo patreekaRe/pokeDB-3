@@ -3591,3 +3591,5 @@ can check it), wrapping round once the rarity runs short (rares, 4 a type). Stil
   playtesting): Slay the Spire's banners across the arena, "Battle Start!" with its own synth sting (`battleSting()`),
   "Your Turn:" with a slanted gold Chakra Petch numeral, and "Enemy Turn" (`turnBanner()`; detail in
   `docs/reference/battle-screen-layout.md`).
+- **Turn sounds** (2026-10-25, same branch, merged to `main`): Game Boy blips on Your Turn / Enemy Turn
+  (`turnBlips()`), the user's pick after hearing soft bell chimes (liked too) beside them.
