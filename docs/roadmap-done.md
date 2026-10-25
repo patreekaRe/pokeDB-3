@@ -3595,3 +3595,8 @@ can check it), wrapping round once the rarity runs short (rares, 4 a type). Stil
   (`turnBlips()`), the user's pick after hearing soft bell chimes (liked too) beside them.
 - **Mart relic slots refill** (2026-10-25, `main`): a Mart's relic you picked up on the way there (stock is rolled at
   biome start) gets another relic in its place on walking in, instead of a SOLD OUT you never bought (`martRoom()`).
+- **Battle juice 1-3** (2026-10-25, same branch, merged to `main` on the user's yes, patch 1.30 "Houses & Banners"
+  cut with it): the lethal warning (💀 bubble, your HP bar blinking red; red arena edges tried first and dropped), a
+  relic's or Ability's first use in a fight on its own banner stripe with what it did (`RELIC_GAIN`, `ABILITY_GAIN`),
+  then its icon in Torrent's window sliding in from the left from turn 2 on, and Victory! / Defeat banners.
+  Detail in `docs/reference/battle-screen-layout.md`.

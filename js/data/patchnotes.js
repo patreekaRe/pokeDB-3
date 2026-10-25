@@ -49,18 +49,6 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['hub', 'A Berry Booth by the Clearing\'s gate is where you pack your Berry Pouch and run kit now, with a guide to how the pouch works; what you pack stays packed.'],
-  ['fixes', 'The Clearing\'s PC opens as soon as you reach it, instead of waiting, sometimes for good, on the Secret Base\'s furniture to load, Level 10 foil cards no longer slow a fight while their sheen follows your phone\'s tilt, and cloud save stops asking "Two saves found" over your own phone\'s save, or swapping out a run in progress without asking. Runs use less memory: a Center or Mart rests once you leave it, a biome\'s rooms are let go as you walk on, and songs play in mono. A Mart no longer shows a relic SOLD OUT because you found it on the way there; another takes its place.'],
-  ['hub', 'The Clearing\'s Halloween ghosts no longer walk up to greet you each visit; they still chat at random and when tapped.'],
-  ['base', 'Your Secret Base can be a house: Timburr & Co.\'s stand by your lot builds 25 houses, tried on before you buy, in eight paints; big feats earn rarer ones. Friends\' visits start on their front lawn.'],
-  ['base', 'Every room of your Secret Base, the backyard too, picks from all your Safari catches, up to 6 a room, and your first two catches move in by themselves.'],
-  ['runs', 'A town\'s trader offers different items for each item you show them, so two commons no longer get the same three.'],
-  ['runs', 'The run map has an Abandon run key beside the floor, a Game & Watch runner dashing across it.'],
-  ['music', 'The Safari Zone has its own song, in its lobby and on every area\'s map.'],
-  ['runs', 'A held berry not yet eaten can come off again from the Bag\'s Items on the map, back into the Berry Pouch, to save it for a fight ahead.'],
-  ['runs', "In the Poké Mart you can tap a card, item or relic to read it even when you can't afford it or your Bag is full."],
-  ['battle', 'Each turn opens with a banner across the arena, Slay the Spire style: Battle Start! with its own sting, then Your Turn and its number, then Enemy Turn, each with a Game Boy blip.'],
-  ['battle', 'A skull and a red-blinking HP bar warn when the enemy\'s next hit would knock you out, relics flash as they fire, and fights end on a Victory! or Defeat banner.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 
@@ -73,6 +61,25 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.30',
+    name: 'Houses & Banners',
+    date: '2026-10-25',
+    notes: [
+  ['hub', 'A Berry Booth by the Clearing\'s gate is where you pack your Berry Pouch and run kit now, with a guide to how the pouch works; what you pack stays packed.'],
+  ['fixes', 'The Clearing\'s PC opens as soon as you reach it, instead of waiting, sometimes for good, on the Secret Base\'s furniture to load, Level 10 foil cards no longer slow a fight while their sheen follows your phone\'s tilt, and cloud save stops asking "Two saves found" over your own phone\'s save, or swapping out a run in progress without asking. Runs use less memory: a Center or Mart rests once you leave it, a biome\'s rooms are let go as you walk on, and songs play in mono. A Mart no longer shows a relic SOLD OUT because you found it on the way there; another takes its place.'],
+  ['hub', 'The Clearing\'s Halloween ghosts no longer walk up to greet you each visit; they still chat at random and when tapped.'],
+  ['base', 'Your Secret Base can be a house: Timburr & Co.\'s stand by your lot builds 25 houses, tried on before you buy, in eight paints; big feats earn rarer ones. Friends\' visits start on their front lawn.'],
+  ['base', 'Every room of your Secret Base, the backyard too, picks from all your Safari catches, up to 6 a room, and your first two catches move in by themselves.'],
+  ['runs', 'A town\'s trader offers different items for each item you show them, so two commons no longer get the same three.'],
+  ['runs', 'The run map has an Abandon run key beside the floor, a Game & Watch runner dashing across it.'],
+  ['music', 'The Safari Zone has its own song, in its lobby and on every area\'s map.'],
+  ['runs', 'A held berry not yet eaten can come off again from the Bag\'s Items on the map, back into the Berry Pouch, to save it for a fight ahead.'],
+  ['runs', "In the Poké Mart you can tap a card, item or relic to read it even when you can't afford it or your Bag is full."],
+  ['battle', 'Each turn opens with a banner across the arena, Slay the Spire style: Battle Start! with its own sting, then Your Turn and its number, then Enemy Turn, each with a Game Boy blip.'],
+  ['battle', 'A skull and a red-blinking HP bar warn of a knockout hit, relics and Abilities get a banner saying what they did, and fights end on Victory! or Defeat.'],
+    ],
+  },
   {
     version: '1.29',
     name: 'Champion Levels',
@@ -625,7 +632,7 @@ export const IN_THE_GAME = [
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
   ['🏆', '189 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over twelve areas, each with a rare shiny, and a leaderboard; then a Duo Run with two starters of nine types.'],
-  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
+  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, or one of 25 houses Timburr & Co. build, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls, Day Passes and the Shiny Exchange.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 28 games to take home and play, from slot machines to five pinball tables, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
