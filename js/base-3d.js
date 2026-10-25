@@ -22,6 +22,8 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
+import { baseSong, isPlayer, openJukebox } from './jukebox.js';
+import { RECORDS_BY_ID } from './data/records.js';
 import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { isPlot, tendPlot, forgetPlots, liveGarden, openGarden } from './berry-garden.js';
@@ -1718,6 +1720,13 @@ function onTap(e) {
     if (PIECES[it.id].own === FREE_PC) return logOn();
     if (isPlot(PIECES[it.id])) { playSound('select'); walker.hopUntil = performance.now() + 500; return openGarden(base, plotsHere(), save, it); }
     if (homeGame(it.id)) { playSound('confirm'); walker.hopUntil = performance.now() + 500; return playAtHome(it.id); }
+    // with records (js/data/records.js) a player picks the base's song rather than its little tune; on a visit it says theirs
+    if (isPlayer(it.id)) {
+      walker.hopUntil = performance.now() + 500;
+      if (host) return guestSays(RECORDS_BY_ID[base.song] ? `${host.name}'s ${PIECES[it.id].name.toLowerCase()} is playing "${RECORDS_BY_ID[base.song].name}".` : `${host.name}'s ${PIECES[it.id].name.toLowerCase()}. No record on.`);
+      playSound('select');
+      return openJukebox(base, save);
+    }
     // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
     if (play) {
       const r = tapPlay(play), now = performance.now();
@@ -2329,7 +2338,7 @@ function endGuest() {
 
 /** Back in a second time: the room as it was left, the partner in at the door, any new catches moved in. */
 async function reopen(first) {
-  playMusic('secret-base');
+  playMusic(baseSong(first, !host));
   calm = calmFx();
   base = first;   // the mall's Furniture store may have bought into it since; in at the front door
   root.classList.toggle('guest', !!host);
@@ -2358,7 +2367,7 @@ export async function openBase3d({ onLeave = null, start = 'main', guest = null 
   // a friend's trophy cases show what they held the last time they were home (their `liveSeen`), not your save
   lendTrainerShows(host ? Object.fromEntries(Object.entries(first.liveSeen).filter(([id, v]) => PIECES[id] && typeof v === 'string').map(([id, v]) => [PIECES[id].fam, v])) : null);
   leaveTo = onLeave;
-  playMusic('secret-base');
+  playMusic(baseSong(first, !host));
   // the statues' sprites are fetched only now: a room built without them would carve its statue models bare
   const every = !host && new URLSearchParams(location.search).has('allfurniture'), owned = Object.keys(first.owned || {});
   await Promise.all([loadStatues(every ? undefined : statuesIn(owned)), loadFigures(every ? undefined : owned)]);

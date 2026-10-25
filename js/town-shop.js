@@ -2,16 +2,19 @@
    Waystones, session 2). Each town sells one shelf of the Secret Base's catalogue (SHOP_SHELVES in js/data/towns.js),
    never sold in the Poké Mall: SHOP_STOCK designs a UTC day, dealt from the day's seed and the town, a design you own
    never dealt again (like the mall's store). Bought into the base's storage with buyPiece(). Its window is the device's
-   (.dev-window): the day's pieces on a pale screen, a tap picks one, Buy takes it. */
+   (.dev-window): the day's pieces on a pale screen, a tap picks one, Buy takes it. With records (js/data/records.js) a
+   Records tab sells the town's songs, never dealt by the day: a tap plays it, Buy keeps it for the base's jukebox. */
 
 import { getSave, updateSave } from './storage.js';
-import { playSound } from './audio.js';
+import { playSound, playMusic, musicNow } from './audio.js';
 import { el, refreshCoins, confirmDialog } from './ui.js';
 import { PIECES, DESIGNS, loadBase, buyPiece } from './secret-base.js';
 import { FURNITURE_BY_KIND } from './data/furniture.js';
 import { SHOP_SHELVES, SHOP_STOCK, TOWNS } from './data/towns.js';
 import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
+import { recordsOf, recordsOpen, ownedRecords } from './data/records.js';
+import { disc } from './jukebox.js';
 
 /** The designs a town's shelf holds (earned pieces never sold). */
 export const shelfOf = (town) => DESIGNS.filter(id => (SHOP_SHELVES[town] || []).includes(PIECES[id].group) && !FURNITURE_BY_KIND[id]);
@@ -43,6 +46,26 @@ export function openTownShop(town, keeper = TOWNS[town]?.trader?.name ?? '') {
   const say = el('p', 'tshop-say');
   const grid = el('div', 'tshop-grid');
   const screen = el('div', 'dev-screen');
+  const records = recordsOpen() && recordsOf(town).length > 0, song = musicNow();
+  let tab = 'goods';
+  const tabs = el('div', 'tshop-tabs');
+  if (records) {
+    for (const [id, label] of [['goods', 'Furniture'], ['records', 'Records']]) {
+      const t = el('button', 'tshop-tab', label);
+      t.type = 'button';
+      t.dataset.tab = id;
+      t.addEventListener('click', () => {
+        if (tab === id) return;
+        playSound('select');
+        tab = id; picked = null;
+        playMusic(song);
+        line(id === 'records' ? 'Songs from round here, pressed on records. Tap one to have a listen.' : GOODS_LINE);
+        draw();
+      });
+      tabs.append(t);
+    }
+    screen.append(tabs);
+  }
   screen.append(say, grid);
   const close = el('button', 'btn secondary', 'Close'), buy = el('button', 'btn danger', 'Buy');
   const acts = el('div', 'dialog-actions');
@@ -51,7 +74,7 @@ export function openTownShop(town, keeper = TOWNS[town]?.trader?.name ?? '') {
   document.body.append(d);
   let picked = null;
   const line = (t) => { say.textContent = keeper ? `${keeper}: ${t}` : t; };
-  const draw = () => {
+  const drawGoods = () => {
     const stock = townStock(town), b = loadBase();
     grid.replaceChildren(...(stock.length ? stock.map(id => {
       const p = PIECES[id], gone = soldOut(id, b), tile = el('button', `tshop-tile${picked === id ? ' on' : ''}${gone ? ' sold' : ''}`);
@@ -68,7 +91,40 @@ export function openTownShop(town, keeper = TOWNS[town]?.trader?.name ?? '') {
     }) : [el('p', 'tshop-empty', 'Sold out! New stock tomorrow.')]));
     buy.disabled = !picked || !stock.includes(picked) || soldOut(picked, b);
   };
+  const drawRecords = () => {
+    const owned = new Set(ownedRecords(getSave()));
+    grid.replaceChildren(...recordsOf(town).map(r => {
+      const have = owned.has(r.id), tile = el('button', `tshop-tile rec-tile${picked === r.id ? ' on' : ''}${have ? ' sold' : ''}`);
+      tile.type = 'button';
+      tile.append(disc(r, picked === r.id), el('span', 'tshop-name', r.name), el('span', 'tshop-price', have ? 'OWNED' : `${r.price.toLocaleString()}`));
+      tile.addEventListener('click', () => {
+        playSound('select');
+        picked = r.id;
+        playMusic(r.track);
+        line(have ? `"${r.name}". That one's yours already.` : `"${r.name}". ${r.price.toLocaleString()} PokéCoins. Plays on any jukebox, record player or gramophone.`);
+        draw();
+      });
+      return tile;
+    }));
+    buy.disabled = !picked || owned.has(picked);
+  };
+  const draw = () => {
+    for (const t of tabs.children) t.classList.toggle('on', t.dataset.tab === tab);
+    (tab === 'records' ? drawRecords : drawGoods)();
+  };
+  const buyRecord = async () => {
+    const r = recordsOf(town).find(x => x.id === picked);
+    if (!r || ownedRecords(getSave()).includes(r.id)) return;
+    if ((getSave().coins ?? 0) < r.price) { playSound('cancel'); return line(`That's ${r.price.toLocaleString()} PokéCoins. You're a little short.`); }
+    if (!(await confirmDialog(`Buy the record "${r.name}" for ${r.price.toLocaleString()} PokéCoins?`, 'Buy'))) return;
+    updateSave(s => { s.coins -= r.price; s.records = [...new Set([...(Array.isArray(s.records) ? s.records : []), r.id])]; });
+    playSound('buy');
+    refreshCoins();
+    line(`Thank you! Put "${r.name}" on at home: tap a jukebox, record player or gramophone in your Secret Base.`);
+    draw();
+  };
   buy.addEventListener('click', async () => {
+    if (tab === 'records') return buyRecord();
     const p = PIECES[picked];
     if (!p) return;
     if ((getSave().coins ?? 0) < p.price) { playSound('cancel'); return line(`That's ${p.price.toLocaleString()} PokéCoins. You're a little short.`); }
@@ -81,11 +137,12 @@ export function openTownShop(town, keeper = TOWNS[town]?.trader?.name ?? '') {
     picked = null;
     draw();
   });
-  line('Things from round here, made by hand. You won\'t find them at the Poké Mall.');
+  line(GOODS_LINE);
   draw();
   return new Promise(res => {
-    d.addEventListener('close', () => { d.remove(); res(); }, { once: true });
+    d.addEventListener('close', () => { d.remove(); playMusic(song); res(); }, { once: true });
     close.addEventListener('click', () => d.close());
     d.showModal();
   });
 }
+const GOODS_LINE = 'Things from round here, made by hand. You won\'t find them at the Poké Mall.';

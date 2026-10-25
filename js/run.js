@@ -32,6 +32,7 @@ import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, baseId, upgradeId, canUpgr
 import { realBeats } from './data/real-types.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
+import { recordsOpen } from './data/records.js';
 import { runTypes, outStarter, runPool, runItems, fitsRun, newDuo, restoreDuo, syncDecks, duoGains, duoStarters } from './data/duo.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, stashLostRun, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
@@ -2206,7 +2207,7 @@ function homeRoom(b, onward = null) {
   const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
   const options = [];
   if (b.home === 'shop' && t.visit) {   // from home the trader sells the town's furniture instead (js/town-shop.js)
-    options.push(spotOption('Shop', `${town.trader.name}: Have a look! Furniture from round here, sold nowhere else.`, async () => {
+    options.push(spotOption('Shop', `${town.trader.name}: Have a look! Furniture${recordsOpen() ? ' and records' : ''} from round here, sold nowhere else.`, async () => {
       if (run !== thisRun) return;
       const { openTownShop } = await import('./town-shop.js');
       await openTownShop(town.id, town.trader.name);

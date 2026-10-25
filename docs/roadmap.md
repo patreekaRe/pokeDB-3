@@ -1200,23 +1200,15 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**A Base jukebox that plays town music, and friends hear it** (2026-10-25, the user: "eventually"; not started). You
-set a song on a jukebox in your Secret Base, and a friend who visits hears it. The songs are the towns' music. What's
-already there: the jukebox pieces (`jukebox`, `dnrjukebox`, plus the record player and music boxes) play a synth phrase
-through `does: 'player'` in `js/base-play.js`; visits already load your base from your Trainers page (`openBase3d({ guest
-})`, `docs/reference/cloud-save.md`); the town songs are `town-lantern`, `town-cinder`, `town-driftwood` and
-`town-sunwell` in `js/audio.js`, with loop points (Highbough plays `seal`, the Clearing `title`). Claude's lean: the
-jukebox gets a song picker (a little record-flip window); the pick saves on the base, rides to the Trainers page with
-it, and plays in place of the base's song while you're in the room, for you and for visitors. Ideas to ask about: a town's
-record unlocked the first time you reach (or mend) that town; more records later (gym, Safari, the Mall's songs); the
-song fading with distance from the jukebox.
-**The user's calls (2026-10-25):** records (songs) are **only bought, from a town's trader store, once you've mended
-that town's Waystone**. Each mended town's store sells its own song **plus more songs**, so mending every Waystone and
-going back is worth it. Claude reads "trader store" as the town shop (`js/town-shop.js`, reached from home through a
-mended Waystone, a day's stock in `SHOP_STOCK`), not the trade window (`js/town-trade.js`); check with the user. To
-settle when building: whether records sit outside the furniture's daily deal (always on sale until bought, a "Records"
-tab), what each costs, and which extra songs each town gets (e.g. that biome's map, elite, boss and gym music; each needs
-its loop points). The jukebox piece itself stays where it's sold now. Read `hub-base-mall.md`, `music.md` and `cloud-save.md` first, and keep to
+**Records for the Base jukebox** (2026-10-25, the user's idea and calls): built the same day on `main`, **playtest
+only** (`RECORDS_LIVE` false in `js/data/records.js`). Records (songs) are sold only by a mended town's trader (its
+shop from home, a Records tab), each town its own song plus two more (14 in all, 450-600 coins); a tap on a jukebox,
+record player or gramophone at home picks the base's song, and friends visiting hear it. Detail in
+`docs/reference/hub-base-mall.md`'s Records section. **Next: the user playtests**
+▶ Playtest on the live site: `?records=all&base` (a jukebox in the base, tap it), and `?records&mended&coins=5000`
+(Waystone travel to a town, its trader's shop, the Records tab). **Then**: the user adds more mp3s (each a TRACKS line,
+loop points, a TRACK_GAIN and a RECORDS line), and says when to go live (flip `RECORDS_LIVE`, add a patch note).
+Still open to ask about: music fading with distance from the jukebox; the player piece animating while a record plays. Read `hub-base-mall.md`, `music.md` and `cloud-save.md` first, and keep to
 the one-looped-song-decoded rule (`js/audio.js`).
 
 **A basement in the Secret Base** (2026-10-25: the user asked whether you can build downstairs; you can't, floors only

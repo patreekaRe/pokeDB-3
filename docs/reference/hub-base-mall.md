@@ -1016,3 +1016,24 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   key, read through `trainerMon()`, a masked one left out).
 - **Playtest**: `?base&asfriend&houses` is your own base as a friend arrives (lawn first); `&livein=<id>` another house.
 
+
+## Records and the jukebox (2026-10-25, the user's idea; playtest only)
+
+Songs for the Secret Base, bought from a gateway town's trader once its Waystone is mended, and heard by friends who
+visit. **Off for players** till `RECORDS_LIVE` in `js/data/records.js` is true; `?records` opens it for a page load,
+`?records=all` also lends every record (never saved as bought). The user's calls: a record is **only** sold by a mended
+town's trader (the shop you reach from home through its Waystone, `t.visit` in `homeRoom()`, js/run.js), each town
+selling its own song plus more, so mending every Waystone and going back pays. The jukebox pieces stay sold as before.
+- `RECORDS` (js/data/records.js): one line a record: `id`, `town` (a TOWNS id with a trader), `track` (a js/audio.js
+  TRACKS key, which needs loop points), `name`, `price`, `ink` (its label's colour). A new mp3 = a TRACKS line, its loop
+  points (tools/loop.html) and a TRACK_GAIN, then a RECORDS line. `tests/records.test.mjs` checks each.
+- **Buying**: `openTownShop()` (js/town-shop.js) gets Furniture / Records tabs. Records are never dealt by the day: all a
+  town's are on its shelf till bought. A tap plays the song (the town's music back on a tab switch or close). Bought ids
+  are `save.records`.
+- **Playing**: `PLAYERS` (the `fam`s jukebox, dnrjukebox, recordplayer, gramophone, antqgramo). With records open a tap
+  on one in your base opens `openJukebox()` (js/jukebox.js, `.jukebox`, spinning-disc rows) instead of its synth tune;
+  the pick is the base's `song` (none = its own song). `baseSong(b, mine)` is what `openBase3d()` / `reopen()` play:
+  the record while a player stands anywhere in the base and (your own base) the record is still held, else
+  `secret-base`. The song rides to the Trainers page inside the base (`pageBase()`), and `readGuestBase()` drops an
+  unknown one (RECORDS_BY_ID has no prototype). On a visit a tap on their jukebox says what's playing.
+- Not done yet: storing the last player mid-visit doesn't stop the record till you next come in.

@@ -18,6 +18,7 @@ import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES, BASE_LINES } from './data/towns.js';
 import { workshopOf, heartsOf, baseFriends, HEARTS, FRIENDS } from './data/workshop.js';
 import { todaysGuest } from './towns.js';
+import { RECORDS_BY_ID } from './data/records.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, shapeOf, ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
@@ -347,6 +348,7 @@ export function readGuestBase(json) {
     movedOut(b);
     b.at = b.at ? Object.fromEntries(Object.entries(b.at).filter(([, r]) => typeof r === 'string')) : {};
     b.liveSeen = b.liveSeen && typeof b.liveSeen === 'object' ? b.liveSeen : {};
+    if (!RECORDS_BY_ID[b.song]) delete b.song;
     return b;
   } catch { return null; }
 }
