@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['battle', 'Each turn opens with a banner across the arena, Slay the Spire style: Battle Start!, then Your Turn with its number, then Enemy Turn.'],
+  ['battle', 'Each turn opens with a banner across the arena, Slay the Spire style: Battle Start! with its own sting, then Your Turn and its number, then Enemy Turn.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

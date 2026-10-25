@@ -499,7 +499,7 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
    right, hold, and slide out left as the stripe closes */
 .turn-banner {
   position: absolute; left: 0; right: 0; top: 50%; z-index: 7;
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
   padding: 10px 0 9px;
   background: linear-gradient(90deg, rgba(16, 16, 24, 0), rgba(16, 16, 24, 0.82) 18%, rgba(16, 16, 24, 0.82) 82%, rgba(16, 16, 24, 0));
   border-block: 2px solid rgba(255, 216, 74, 0.55);
@@ -514,11 +514,24 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 }
 .turn-banner[data-side="enemy"] strong { color: #ff8a80; }
 .turn-banner[data-side="start"] strong { color: #ffd84a; }
-.turn-banner span { font-size: 0.8rem; color: #ffd84a; text-shadow: 1px 1px 0 #303038; }
-.turn-banner span:empty { display: none; }
+/* the turn's number: a chunky slanted gold numeral that slams in just after the words */
+.turn-banner b {
+  font-family: "Chakra Petch", var(--pixel-font); font-weight: 700; font-style: italic; font-size: 2.6rem; line-height: 0.8;
+  background: linear-gradient(180deg, #fff6c0 0%, #ffd84a 45%, #f08a1c 100%); -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-stroke: 1.5px #303038;
+  filter: drop-shadow(2px 2px 0 #303038) drop-shadow(0 0 8px rgba(255, 196, 60, 0.55));
+  padding-right: 4px;
+}
+.turn-banner b:empty { display: none; }
 .turn-banner.show { animation: turnStripe 1.15s ease-out both; }
 .turn-banner.show > * { animation: turnWords 1.15s cubic-bezier(0.2, 0.8, 0.3, 1) both; }
-.turn-banner.show span { animation-delay: 0.04s; }
+.turn-banner.show b { animation-name: turnSlam; }
+@keyframes turnSlam {
+  0%, 10% { opacity: 0; transform: scale(2.6) rotate(-8deg); }
+  24% { opacity: 1; transform: scale(0.92); }
+  30%, 76% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateX(-45%); }
+}
 @keyframes turnStripe {
   0% { opacity: 0; transform: translateY(-50%) scaleY(0); }
   14%, 80% { opacity: 1; transform: translateY(-50%) scaleY(1); }
@@ -532,7 +545,7 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .fast-battle .turn-banner.show, .fast-battle .turn-banner.show > * { animation-duration: 0.58s; }
 .calm-fx .turn-banner.show > * { animation-name: turnFade; }
 @keyframes turnFade { 0%, 100% { opacity: 0; } 20%, 78% { opacity: 1; } }
-@media (min-width: 900px) { .turn-banner strong { font-size: 1.8rem; } .turn-banner span { font-size: 0.95rem; } }
+@media (min-width: 900px) { .turn-banner strong { font-size: 1.8rem; } .turn-banner b { font-size: 3.4rem; } }
 @media (min-width: 900px) { .ability-banner { padding: 9px 20px 9px 16px; } .ability-banner span { font-size: 0.85rem; } .ability-banner strong { font-size: 1.2rem; } }
 .nameplate .gb-hp { width: 100%; margin: 0; }
 /* under the HP bar: the status chips from the left, growing right, and the HP numbers on the right */

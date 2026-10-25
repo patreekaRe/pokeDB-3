@@ -2905,7 +2905,7 @@ let turnTimer = 0;
 let turnNext = 0;   // turn 1's "Your Turn", queued behind "Battle Start!"
 const TURN_BANNER_MS = 1150;
 
-/** StS's turn banner: a dark stripe across the arena, "Battle Start!" before turn 1, "Your Turn" with the turn's number, or "Enemy Turn". It never
+/** StS's turn banner: a dark stripe across the arena, "Battle Start!" (with its own sting) before turn 1, "Your Turn: N", or "Enemy Turn". It never
     blocks a tap (the hand is live under it), and Settings' battle effects turn it off. */
 function turnBanner(side, turn) {
   const banner = $('turn-banner');
@@ -2914,11 +2914,12 @@ function turnBanner(side, turn) {
   banner.classList.remove('show');
   if (!battleFx()) { banner.hidden = true; return; }
   banner.dataset.side = side;
-  $('turn-banner-title').textContent = { start: 'Battle Start!', you: 'Your Turn', enemy: 'Enemy Turn' }[side];
-  $('turn-banner-count').textContent = side === 'you' ? `Turn ${turn}` : '';
+  $('turn-banner-title').textContent = { start: 'Battle Start!', you: 'Your Turn:', enemy: 'Enemy Turn' }[side];
+  $('turn-banner-count').textContent = side === 'you' ? String(turn) : '';
   banner.hidden = false;
   void banner.offsetWidth;   // restarts the slide
   banner.classList.add('show');
+  if (side === 'start') playSound('battle-start');
   turnTimer = setTimeout(() => { banner.hidden = true; banner.classList.remove('show'); }, TURN_BANNER_MS / speed());
 }
 

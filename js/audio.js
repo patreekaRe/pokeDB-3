@@ -191,7 +191,8 @@ const SOUNDS = {
   'crystal-0':  { synth: ac => windChime(ac, 2349), gain: 0.5 },   // ...and its intro: crystals chiming as the light catches them
   'crystal-1':  { synth: ac => windChime(ac, 2794), gain: 0.5 },
   'crystal-2':  { synth: ac => windChime(ac, 3136), gain: 0.5 },
-  shiny:        { synth: shinyChime, gain: 0.55 },   // a wild shiny's sparkle as it appears (battle.js)
+  shiny:        { synth: shinyChime, gain: 0.55 },
+  'battle-start': { synth: battleSting },   // the "Battle Start!" banner (turnBanner() in battle.js): a whoosh, a thump and a bright chiptune stab   // a wild shiny's sparkle as it appears (battle.js)
   // the Safari areas' boss preludes (SAFARI_PRELUDES in scene.js)
   'leaf-storm': { synth: leafStorm },        // the Meadow's: the wind rises and the Lone Tree's crown thrashes...
   flock:        { synth: flockBurst },       // ...and its birds burst out
@@ -1473,6 +1474,39 @@ function arrivalChime(ac) {
   for (const [f, at] of sparkle) ring(f, at, 0.12, 0.35, false);
   for (let i = 0; i < length; i++) out[i] = sum[i] * Math.min(1, (length - i) / (rate * 0.05));
   return normalize(buffer, 0.18);
+}
+
+/** "Battle Start!": a rising whoosh as the stripe opens, then a low thump under two quick square-wave pickups and a held
+    major chord, like the games' encounter sting. */
+function battleSting(ac) {
+  const rate = ac.sampleRate, seconds = 1.3, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0), sum = new Float64Array(length);
+  const noise = chipNoise(length, 1);
+  let low = 0;
+  for (let i = 0; i < Math.round(rate * 0.3); i++) {
+    const t = i / rate, rise = t / 0.3;
+    low += (1 - Math.exp(-2 * Math.PI * (300 + 5000 * rise * rise) / rate)) * (noise[i] - low);
+    sum[i] += low * 0.5 * rise * rise * Math.min(1, (0.3 - t) / 0.02);
+  }
+  const ring = (f, at, gain, decay, hold = 0) => {
+    const w = 2 * Math.PI * f / rate;
+    for (let i = Math.round(at * rate), k = 0; i < length; i++, k++) {
+      const t = k / rate, env = gain * Math.min(1, t / 0.004) * (t < hold ? 1 : Math.exp(-(t - hold) / decay));
+      sum[i] += (Math.sin(w * k) >= 0 ? 1 : -1) * env;
+    }
+  };
+  ring(392, 0.28, 0.11, 0.03, 0.05);
+  ring(523, 0.36, 0.11, 0.03, 0.05);
+  for (const f of [523, 659, 784, 1047]) ring(f, 0.44, 0.09, 0.35, 0.18);
+  let phase = 0;
+  for (let i = Math.round(0.44 * rate), k = 0; i < length; i++, k++) {
+    const t = k / rate;
+    phase += (45 + 110 * Math.exp(-t / 0.05)) / rate;
+    sum[i] += Math.sin(2 * Math.PI * phase) * 0.6 * Math.exp(-t / 0.16);
+  }
+  for (let i = 0; i < length; i++) out[i] = sum[i] * Math.min(1, (length - i) / (rate * 0.05));
+  return normalize(buffer, 0.2);
 }
 
 /** The Sealed Gate's drone: two low tones a few hertz apart, beating slowly, under a thin hiss, swelling and dying away. */
