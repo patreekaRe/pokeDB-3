@@ -1200,6 +1200,10 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**A basement in the Secret Base** (2026-10-25: the user asked whether you can build downstairs; you can't, floors only
+go up, `lv` 0 the ground and each one up a staircase). Not asked for yet, only noted: it would take a negative `lv`, a
+stairwell down in a ground-floor room (the `stairwell` branch's look) and its own floor tab on the blueprint.
+
 **Battle juice, after the turn banner** (2026-10-25: the user asked what other "cool aesthetic UI stuff like this" the
 game could use; 1-3 of Claude's list are built and on `main`, see the archive). Still ideas: (4) drawn cards fly out of the draw pile, played ones into the discard, and a reshuffle streams
 discard into draw with a riffle sound (today it's a "♻️ Reshuffled" pop); (5) the PP pill's pips fill one by one with a
@@ -1553,10 +1557,16 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **Secret Base: stairs down as a stairwell** (2026-10-25, the user's ask, branch `stairwell`, commit `c3b6ab4`; held off
+  `main` until they've tried it, their call): upstairs, the way down was a doorway with one step, which didn't read as
+  stairs. On the branch it is a hole in the floor before the back wall, four steps going down under it, a banister each
+  side, your partner sinking as it walks down (`stairwell()`, `cutWell()`, `stairSink()` in `js/base-3d.js`). Playtest:
+  `https://rawcdn.githack.com/patreekaRe/pokeDB-3/c3b6ab4e1b9a4deaac574bb6f19f7140c941b27e/index.html?base&coins=99999`, build a room upstairs
+  (the big main room, then a room on its back wall's pip a floor up). On their yes: `git merge stairwell` into `main`
+  (it carries its patch note, reference note and archive line). ▶ Run in: PLAYTEST ON THE LIVE SITE.
 - **The Safari's song** (2026-10-24, the user's MP3, on `main`; `docs/reference/music.md`): plays in the Safari lobby and on
   every area's map, Daily and Duo Runs, looped over 17.25-48.34 s. Listen for the loop's join (~48 s in) and the level
   against the Clearing's song. ▶ Run in: PLAYTEST ON THE LIVE SITE.
->>>>>>> origin/main
 - **The Nietos' mansion** (2026-10-20, branch `claude/nieto-house-extravagant-mansion-sf3f5m`, on `main` too; archive):
   the cottage is now a white château (turrets, portico, golden Kangaskhan at the gate) and inside a marble-and-gilt hall
   with chandeliers and a family portrait. Walk up to it in the Clearing (south-east), and go in with `?nietos&gymwins=1`
