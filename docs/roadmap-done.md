@@ -3607,3 +3607,10 @@ can check it), wrapping round once the rarity runs short (rares, 4 a type). Stil
   stairwell cut into the floor before the back wall: four treads going down under the wall, darker the deeper, a
   banister each side, your partner sinking step by step as it walks down. The way up got the same (the user's ask): five
   steps with banisters climbing to a doorway high in the back wall, your partner rising with them. Detail in `docs/reference/hub-base-mall.md`.
+
+### Evolutions play in full again (2026-10-25, cloud)
+The user saw no evolution animation. Since the scene's tap-to-skip (2026-10-18), the tap that closed "What? X is
+evolving!" on its text box bubbled on up to the scene after the skip had started listening, and skipped the whole morph.
+`skipper()` in `js/evolution.js` now starts listening `SKIP_ARM_MS` (300 ms) later. Checked headless in the 3D gym
+(`?gym=lawrence&hp=0.01`, Three.js served locally): the same tap now leaves the morph to play out, and a tap of its own
+still skips it.
