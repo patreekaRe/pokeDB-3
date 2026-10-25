@@ -2940,18 +2940,25 @@ function turnBanner(side, turn) {
   turnTimer = setTimeout(() => { banner.hidden = true; banner.classList.remove('show'); }, TURN_BANNER_MS / speed());
 }
 
-/** StS's relic flash: relics don't show in battle, so one doing something pops its icon and name over your Pokémon.
+/** StS's relic flash: relics don't show in battle, so one doing something pops its icon over your Pokémon, with its
+    name the first time it fires in a fight (after that the icon alone, the user's call: every-turn relics got busy).
     Several at once queue a beat apart, so a turn's start (Leftovers, Sticky Barb...) reads one by one. */
 let relicSlot = 0;
+let relicsNamed = new Set();
+let relicsFight = null;
 function relicFlash(id) {
   const relic = RELICS_BY_ID[id];
   if (!relic || !battleFx()) return;
+  if (relicsFight !== battle) { relicsFight = battle; relicsNamed = new Set(); }
+  const named = !relicsNamed.has(id);
+  relicsNamed.add(id);
   const now = performance.now(), at = Math.max(now, relicSlot);
-  relicSlot = at + 260 / speed();
-  const chip = el('span', 'relic-flash', `${relic.icon} ${relic.name}`);
+  relicSlot = at + (named ? 650 : 400) / speed();
+  const chip = el('span', named ? 'relic-flash' : 'relic-flash mini', named ? `${relic.icon} ${relic.name}` : relic.icon);
+  chip.title = relic.name;
   chip.style.animationDelay = `${at - now}ms`;
   $('player-zone').append(chip);
-  setTimeout(() => chip.remove(), at - now + 1300 / speed());
+  setTimeout(() => chip.remove(), at - now + 2000 / speed());
 }
 
 /** Something that would land on top of the turn banner waits for it to go. */
@@ -3406,7 +3413,7 @@ function renderBars() {
 function renderIntent() {
   const b = battle;
   const box = $('enemy-intent');
-  if (b.over) { box.textContent = ''; box.className = 'intent'; delete box.dataset.move; $('arena').classList.remove('danger'); return; }
+  if (b.over) { box.textContent = ''; box.className = 'intent'; delete box.dataset.move; $('player-plate').classList.remove('danger'); return; }
 
   const move = currentMove();
   let icon = '⚔️', value = '', kind = 'attack', detail = '';
@@ -3443,7 +3450,7 @@ function renderIntent() {
   const through = kind === 'attack' || kind === 'drain' ? incoming(move) : null;
   const lethal = through !== null && through >= b.hp && !b.guard;
   box.classList.toggle('lethal', lethal);
-  $('arena').classList.toggle('danger', lethal && battleFx());
+  $('player-plate').classList.toggle('danger', lethal && battleFx());
   if (lethal) { box.append(el('span', 'intent-mark', '💀')); detail += ': enough to knock you out!'; }
   else if (through === 0 && !b.guard && attackDamage(move) > 0) { box.append(el('span', 'intent-mark safe', '✔')); detail += ', all blocked'; }
   if (kind === 'paralyzed') { box.title = `Next turn: ${detail}`; return; }
