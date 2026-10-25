@@ -2932,7 +2932,8 @@ function turnBanner(side, turn) {
   banner.hidden = false;
   void banner.offsetWidth;   // restarts the slide
   banner.classList.add('show');
-  playSound({ start: 'battle-start', you: 'your-turn', enemy: 'enemy-turn' }[side]);
+  const b2 = side !== 'start' && new URLSearchParams(location.search).get('turnsfx') === 'b' ? '-b' : '';   // a second set of chimes to compare
+  playSound({ start: 'battle-start', you: 'your-turn', enemy: 'enemy-turn' }[side] + b2);
   turnTimer = setTimeout(() => { banner.hidden = true; banner.classList.remove('show'); }, TURN_BANNER_MS / speed());
 }
 

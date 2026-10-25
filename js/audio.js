@@ -196,7 +196,9 @@ const SOUNDS = {
   shiny:        { synth: shinyChime, gain: 0.55 },
   'battle-start': { synth: battleSting },
   'your-turn':  { synth: ac => turnChime(ac, [784, 1175]), gain: 0.5 },    // ...then each of your turns: a soft rising pair, quiet so it never nags
-  'enemy-turn': { synth: ac => turnChime(ac, [523, 392]), gain: 0.4 },     // ...and the enemy's: the same, falling and lower   // the "Battle Start!" banner (turnBanner() in battle.js): a whoosh, a thump and a bright chiptune stab   // a wild shiny's sparkle as it appears (battle.js)
+  'enemy-turn': { synth: ac => turnChime(ac, [523, 392]), gain: 0.4 },     // ...and the enemy's: the same, falling and lower
+  'your-turn-b':  { synth: ac => turnBlips(ac, [1047, 1319, 1568], 0.045), gain: 0.4 },   // ?turnsfx=b, the second try: Game Boy menu blips up...
+  'enemy-turn-b': { synth: ac => turnBlips(ac, [330, 247], 0.07, true), gain: 0.45 },     // ...and two low ones down over a swish   // the "Battle Start!" banner (turnBanner() in battle.js): a whoosh, a thump and a bright chiptune stab   // a wild shiny's sparkle as it appears (battle.js)
   // the Safari areas' boss preludes (SAFARI_PRELUDES in scene.js)
   'leaf-storm': { synth: leafStorm },        // the Meadow's: the wind rises and the Lone Tree's crown thrashes...
   flock:        { synth: flockBurst },       // ...and its birds burst out
@@ -1543,6 +1545,31 @@ function turnChime(ac, notes) {
   });
   for (let i = 0; i < length; i++) out[i] *= Math.min(1, (length - i) / (rate * 0.03));
   return normalize(buffer, 0.12);
+}
+
+/** A turn's Game Boy blips: short square-wave notes, pulse width 25% like the games' menu sounds; a swish under them. */
+function turnBlips(ac, notes, step, swish = false) {
+  const rate = ac.sampleRate, seconds = notes.length * step + 0.25, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  notes.forEach((f, n) => {
+    const at = Math.round(n * step * rate), last = n === notes.length - 1;
+    for (let i = at, k = 0; i < length; i++, k++) {
+      const t = k / rate, env = Math.min(1, t / 0.003) * (last ? Math.exp(-t / 0.09) : Math.max(0, 1 - t / step));
+      out[i] += ((f * t) % 1 < 0.25 ? 1 : -1) * env;
+    }
+  });
+  if (swish) {
+    const noise = chipNoise(length, 2);
+    let low = 0;
+    for (let i = 0; i < length; i++) {
+      const t = i / rate;
+      low += 0.08 * (noise[i] - low);
+      out[i] += low * 1.6 * Math.sin(Math.PI * Math.min(1, t / 0.22));
+    }
+  }
+  for (let i = 0; i < length; i++) out[i] *= Math.min(1, (length - i) / (rate * 0.03));
+  return normalize(buffer, 0.1);
 }
 
 /** The Sealed Gate's drone: two low tones a few hertz apart, beating slowly, under a thin hiss, swelling and dying away. */

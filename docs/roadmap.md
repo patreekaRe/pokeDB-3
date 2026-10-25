@@ -1547,8 +1547,9 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 ## Waiting on the user
 - **Turn chimes** (2026-10-25, branch `claude/slay-spire-turn-animation-9g5d7p`, NOT on `main`: the user's playtest
   first): a soft rising pair on Your Turn and a falling lower pair on Enemy Turn (`turnChime()` in `js/audio.js`), quiet
-  so they don't nag. The user asked whether they'd get annoying; on a yes merge to `main`, on a no drop them (or keep
-  only Your Turn's). ▶ Run in: PLAYTEST ON THE LIVE SITE (branch link).
+  so they don't nag. The user liked them (keep them as the default); a second try, Game Boy menu blips
+  (`turnBlips()`), plays with `?turnsfx=b`. If the user picks B, make it the default; if not, keep the chimes. Either
+  way drop the flag and the losing set, then merge to `main`. ▶ Run in: PLAYTEST ON THE LIVE SITE (branch link).
 <<<<<<< HEAD
 - **The Safari's song** (2026-10-24, the user's MP3, on `main`; `docs/reference/music.md`): plays in the Safari lobby and on
   every area's map, Daily and Duo Runs, looped over 17.25-48.34 s. Listen for the loop's join (~48 s in) and the level
