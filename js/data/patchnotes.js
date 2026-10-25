@@ -54,6 +54,7 @@ export const NEXT = [
   ['hub', 'The Clearing\'s Halloween ghosts no longer walk up to greet you each visit; they still chat at random and when tapped.'],
   ['base', 'Your Secret Base can be a house: Timburr & Co.\'s stand by your lot builds 25 houses, tried on before you buy, in eight paints; big feats earn rarer ones. Friends\' visits start on their front lawn.'],
   ['base', 'Every room of your Secret Base, the backyard too, picks from all your Safari catches, up to 6 a room, and your first two catches move in by themselves.'],
+  ['runs', 'A town\'s trader offers different items for each item you show them, so two commons no longer get the same three.'],
   ['runs', 'The run map has an Abandon run key beside the floor, a Game & Watch runner dashing across it.'],
   ['music', 'The Safari Zone has its own song, in its lobby and on every area\'s map.'],
   ['runs', 'A held berry not yet eaten can come off again from the Bag\'s Items on the map, back into the Berry Pouch, to save it for a fight ahead.'],

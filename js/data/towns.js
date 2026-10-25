@@ -10,6 +10,7 @@
    ============================================================ */
 
 import { DEPTHS_CAMP } from './camp.js';
+import { ITEMS_BY_ID } from './items.js';
 
 /** Whether the gateway towns are on (the user's call, 2026-10-14: the new Clearing went live first, the towns still being
     built): off, runs walk straight from the journey film to the map, requests count nothing and the Clearing's Waystone
@@ -953,6 +954,21 @@ export const TOWNS = {
     ],
   },
 };
+
+/** The trader's window (js/town-trade.js): how many items it offers for the one you give. */
+export const TRADE_OFFERS = 3;
+
+/** What the trader gives for `give` (an item id): TRADE_OFFERS of its rarity's rolled order you don't hold, each
+    different Bag item of that rarity its own run of them (the user's ask, 2026-10-25: two commons offered the same three),
+    wrapping round once the rarity runs short. */
+export function offersFor(offers, give, held) {
+  const rarity = ITEMS_BY_ID[give]?.rarity;
+  const free = (offers[rarity] || []).filter(id => ITEMS_BY_ID[id] && !held.includes(id));
+  if (free.length <= TRADE_OFFERS) return free;
+  const kin = [...new Set(held.filter(id => ITEMS_BY_ID[id]?.rarity === rarity))];
+  const at = Math.max(0, kin.indexOf(give)) * TRADE_OFFERS;
+  return Array.from({ length: TRADE_OFFERS }, (_, i) => free[(at + i) % free.length]);
+}
 
 /** The town at the gate of `biomeId`, or null (the Clearing is home; the Depths have none). */
 export const townOf = (biomeId) => TOWNS[biomeId] || null;

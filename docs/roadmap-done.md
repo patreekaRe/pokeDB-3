@@ -3580,3 +3580,9 @@ eaten, so the one-a-biome rule doesn't start; Hold puts any back on. Playtest ki
 The user's ask: broke or with a full Bag, a tap on a ware only said why in the text box, so reading an item meant tossing
 one. Now `ware()` in `js/run.js` passes a `blocked` reason instead of `disabled`, and `showChoice()` / `openFocus()` in
 `js/rewards.js` blow it up as usual, the reason under it and Buy greyed (tapping the big tile does nothing). The PC is unchanged.
+
+## Town trades vary by item (2026-10-25, the user's ask; on `main`)
+
+Two commons in the Bag were offered the same three items. Now each different Bag item of a rarity gets its own three
+from the trader's rolled order (`offersFor()`, moved to `js/data/towns.js` with `TRADE_OFFERS` so `tests/town-trade.test.mjs`
+can check it), wrapping round once the rarity runs short (rares, 4 a type). Still a sidegrade, so no bot run.
