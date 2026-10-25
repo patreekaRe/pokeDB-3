@@ -341,7 +341,8 @@ more, the intent gets `.lethal` (a red throb and a 💀) and `#player-plate.dang
 only; still under `calmFx()`; red arena edges were tried first and looked like a frame on a phone, the user's call); a hit your block fully covers gets a blue ✔. Relics doing something call `fired(id)` (hasRelic() plus
 `relicFlash()`): the first time a relic fires in a fight it gets a stripe in the turn banner's style (`#relic-banner`, `relicBanner()`:
 queued after any turn banner via `turnBusy`, one relic a stripe, one after another (the user's call), a new turn banner
-replaces it); after that its icon, in Torrent's window (the user's call, after trying it bare), slides in from the arena's left edge
+replaces it), with what it did in green beside its name (`RELIC_GAIN`, "+2 HP"; `fired(id, gain)` for one that varies:
+Enigma Berry, Spelon Berry; a new relic trigger needs a `RELIC_GAIN` line); no icons on turn 1, which has its banners; after that its icon, in Torrent's window (the user's call, after trying it bare), slides in from the arena's left edge
 like Torrent's pop-up (`bannerIn`, above
 where Torrent's shows), one at a time, the next sliding in as the last slides out (the user's calls:
 chips with names every time were too fast and busy) (keyframes

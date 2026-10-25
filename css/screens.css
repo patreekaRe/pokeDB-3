@@ -496,7 +496,10 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .turn-banner[data-side="lose"] { border-color: rgba(140, 140, 160, 0.6); }
 .turn-banner[data-side="lose"] strong { color: #b8b8c8; }
 .turn-banner[data-side="relic"] { border-color: rgba(200, 160, 48, 0.7); }
-.turn-banner[data-side="relic"] strong { color: #ffe9a6; font-size: 1.05rem; padding: 0 12px; white-space: normal; line-height: 1.5; }
+.turn-banner[data-side="relic"] { flex-wrap: wrap; column-gap: 12px; row-gap: 2px; padding-inline: 12px; }
+.turn-banner[data-side="relic"] strong { color: #ffe9a6; font-size: 1.05rem; line-height: 1.5; }
+.turn-banner[data-side="relic"] span { color: #8af0a8; font-size: 1rem; text-shadow: 1px 1px 0 #303038, -1px -1px 0 #303038; }   /* what it did: "+2 HP" */
+.turn-banner[data-side="relic"] span:empty { display: none; }
 /* the turn's number: a chunky slanted gold numeral that slams in just after the words */
 .turn-banner b {
   font-family: "Chakra Petch", var(--pixel-font); font-weight: 700; font-style: italic; font-size: 2.6rem; line-height: 0.8;

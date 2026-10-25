@@ -155,7 +155,21 @@ export const isBattleRunning = () => battle !== null && !battle.over;
 
 const hasRelic = (id) => battle.relics.includes(id);
 /** hasRelic() for a relic doing something now: true flashes its icon over your Pokémon (relicFlash()), like StS's. */
-const fired = (id) => hasRelic(id) && (relicFlash(id), true);
+const fired = (id, gain) => hasRelic(id) && (relicFlash(id, gain), true);
+/** What a relic just did, for its first banner of a fight (the user's ask); fired(id, gain) passes one that varies. */
+const RELIC_GAIN = {
+  'adrenaline-orb': '+3 cards', 'air-balloon': '+2 Evasion', 'big-pearl': '+2 Tide', 'black-sludge': '-1 HP', 'blue-flute': '+1 Tide',
+  'bright-powder': 'Guard', 'coba-berry': '+3 block', 'colbur-berry': '+3 block', 'dawn-stone': '+1 Fire card', 'dread-plate': 'Steal 1',
+  'eject-button': '+4 block', 'eject-pack': '+1 card', 'electirizer': '+2 cards next turn', 'eviolite': '+3 block', 'exp-share': '+1 PP, +1 card',
+  'fist-plate': '+4 block', 'focus-band': '+3 block', 'grassy-seed': '+1 strength', 'heart-scale': '+3 block', 'heat-rock': '+2 HP',
+  'iron-plate': '+8 block', 'kee-berry': '+3 block next turn', 'lagging-tail': '+3 cards next turn', 'lava-cookie': '+3 HP', 'leftovers': '+2 HP',
+  'lemonade': '+1 PP', 'light-clay': '+2 block', 'luminous-moss': '+2 block', 'magnet': '+1 card', 'power-herb': '+1 card',
+  'pretty-wing': '+2 block', 'protein': '+1 strength', 'razor-claw': 'Taunt', 'reveal-glass': '+3 block', 'ring-target': 'Counter 8',
+  'rocky-helmet': '3 damage back', 'safety-goggles': '+3 block', 'salac-berry': '+1 card', 'shell-bell': '+1 HP', 'shiny-stone': '+4 HP',
+  'shuca-berry': '+3 block', 'smoke-poke-tail': '4 damage', 'soot-sack': '+1 PP', 'soothe-bell': '+1 PP', 'spell-tag': '5 damage',
+  'splash-plate': '+2 cards', 'sticky-barb': '3 damage', 'stone-plate': '+12 block', 'strange-souvenir': '+1 card, free', 'tidal-bell': '3 damage',
+  'toxic-orb': '-1 HP', 'wave-incense': '5 damage back', 'weakness-policy': '+3 block', 'zap-plate': '+8 block',
+};
 /** The starter's Ability (Blaze / Overgrow / Torrent / Pressure), from its type: ABILITIES in data/relics.js. */
 const hasAbility = (id) => battle.ability?.id === id;
 /** The types this fight's deck plays: a duo's two, else the starter's. */
@@ -661,7 +675,7 @@ function beginPlayerTurn() {
   if (fired('blue-flute')) gainTide(1);
   if (fresh && p.riptide) riptide();
   if (fired('sticky-barb')) { const dealt = hurtEnemy(3); pop('enemy-zone', dealt > 0 ? `-${dealt} 🌵` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 120); }   // StS's Mercury Hourglass
-  if (b.enemy.burn >= 2 && fired('spelon-berry')) {
+  if (b.enemy.burn >= 2 && fired('spelon-berry', `${Math.floor(b.enemy.burn / 2)} damage`)) {
     const dealt = hurtEnemy(Math.floor(b.enemy.burn / 2));
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${dealt} 🔥`, 'dmg', 150);
@@ -780,7 +794,7 @@ function healPlayer(amount) {
     b.healedThisTurn = true;
     if (b.powers.healStrength && !b.pledged) { b.pledged = true; gainStrength(b.powers.healStrength); }
     if (fired('luminous-moss')) gainBlock(2);
-    if (fired('enigma-berry')) { const dealt = hurtEnemy(healed); pop('enemy-zone', dealt > 0 ? `-${dealt} 🫐` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150); }
+    if (fired('enigma-berry', `${healed} damage`)) { const dealt = hurtEnemy(healed); pop('enemy-zone', dealt > 0 ? `-${dealt} 🫐` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150); }
   }
   if (amount > healed && b.powers.overheal) gainBlock(amount - healed);
   if (amount > healed && b.aug.overheal) gainBlock((amount - healed) * b.aug.overheal);
@@ -2956,11 +2970,12 @@ let relicsFight = null;
 let relicBusy = 0;
 let relicShown = null;   // the relic on the stripe now: the last one's hide timer can tie with the next one's show
 const relicTimers = new Set();
-function relicFlash(id) {
+function relicFlash(id, gain = RELIC_GAIN[id]) {
   const relic = RELICS_BY_ID[id];
   if (!relic || !battleFx()) return;
   if (relicsFight !== battle) { relicsFight = battle; relicsNamed = new Set(); }
-  if (!relicsNamed.has(id)) { relicsNamed.add(id); return relicBanner(relic); }
+  if (!relicsNamed.has(id)) { relicsNamed.add(id); return relicBanner(relic, gain); }
+  if (battle.turn <= 1) return;   // turn 1 has its banners; the icons start after (the user's call)
   const now = performance.now(), at = Math.max(now, relicSlot);
   relicSlot = at + 1050 / speed();   // the next slides in as this one slides out
   const icon = el('span', 'relic-flash', relic.icon);
@@ -2970,7 +2985,7 @@ function relicFlash(id) {
   setTimeout(() => icon.remove(), at - now + 1400 / speed());
 }
 
-function relicBanner(relic) {
+function relicBanner(relic, gain) {
   const b = battle;
   const now = performance.now(), at = Math.max(now, turnBusy, relicBusy), ms = TURN_BANNER_MS / speed();
   relicBusy = at + ms;
@@ -2979,6 +2994,7 @@ function relicBanner(relic) {
     const banner = $('relic-banner');
     relicShown = relic;
     $('relic-banner-title').textContent = `${relic.icon} ${relic.name}`;
+    $('relic-banner-gain').textContent = gain ?? '';
     banner.hidden = false;
     banner.classList.remove('show');
     void banner.offsetWidth;
