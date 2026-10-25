@@ -1028,8 +1028,15 @@ selling its own song plus more, so mending every Waystone and going back pays. T
   TRACKS key, which needs loop points), `name`, `price`, `ink` (its label's colour). A new mp3 = a TRACKS line, its loop
   points (tools/loop.html) and a TRACK_GAIN, then a RECORDS line. `tests/records.test.mjs` checks each.
 - **Buying**: `openTownShop()` (js/town-shop.js) gets Furniture / Records tabs. Records are never dealt by the day: all a
-  town's are on its shelf till bought. A tap plays the song (the town's music back on a tab switch or close). Bought ids
-  are `save.records`.
+  town's are on its shelf till bought. Bought ids are `save.records`. **The Records tab is a crate to flip through**
+  (2026-10-25, the user's ask: "animated like you're sifting through different records"): `recordCrate()` in
+  js/jukebox.js, sleeves in the record's ink with its game on a tag, the front one facing you, five leaning behind with
+  their tops showing, two flipped past lying forward over a wooden lip. A drag (sideways or down, 34 px a record), the
+  wheel, the arrow keys or ◀ ▶ flip, each with the `sleeve` synth (a brush of card, `sleeveFlip()` in js/audio.js); a
+  flip is only the CSS transition between script-set transforms, and sleeves past the eight drawn are hidden. The front
+  record is the one Buy takes; a tap on it plays it (its disc slides out of the sleeve and spins; the town's music back on
+  a tab switch or close). Flipping never changes the music, so scrubbing never decodes song after song. The jukebox at
+  home keeps its list (the user's call: the crate is for buying).
 - **Playing**: `PLAYERS` (the `fam`s jukebox, dnrjukebox, recordplayer, gramophone, antqgramo). With records open a tap
   on one in your base opens `openJukebox()` (js/jukebox.js, `.jukebox`, spinning-disc rows) instead of its synth tune;
   the pick is the base's `song` (none = its own song). `baseSong(b, mine)` is what `openBase3d()` / `reopen()` play:
