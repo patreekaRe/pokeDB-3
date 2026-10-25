@@ -1344,6 +1344,10 @@ then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict bef
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **Turn banner** (2026-10-25, branch `claude/slay-spire-turn-animation-9g5d7p`, NOT on `main` yet: the user's call,
+  playtest first; code commit `c434203`): Slay the Spire's turn banner, "Your Turn / Turn N" and "Enemy Turn" across the
+  arena (`turnBanner()`, `docs/reference/battle-screen-layout.md`). Playtest on the branch's githack link (any fight,
+  e.g. `?bossfight=forest`); on a yes, merge the branch to `main`. ▶ Run in: PLAYTEST ON THE LIVE SITE (branch link).
 - **The Nietos' mansion** (2026-10-20, branch `claude/nieto-house-extravagant-mansion-sf3f5m`, on `main` too; archive):
   the cottage is now a white château (turrets, portico, golden Kangaskhan at the gate) and inside a marble-and-gilt hall
   with chandeliers and a family portrait. Walk up to it in the Clearing (south-east), and go in with `?nietos&gymwins=1`
