@@ -1208,7 +1208,12 @@ record player or gramophone at home picks the base's song, and friends visiting 
 ▶ Playtest on the live site: `?records=all&base` (a jukebox in the base, tap it), and `?records&mended&coins=5000`
 (Waystone travel to a town, its trader's shop, the Records tab). **Then**: the user adds more mp3s (each a TRACKS line,
 loop points, a TRACK_GAIN and a RECORDS line), and says when to go live (flip `RECORDS_LIVE`, add a patch note).
-Still open to ask about: music fading with distance from the jukebox; the player piece animating while a record plays. Read `hub-base-mall.md`, `music.md` and `cloud-save.md` first, and keep to
+**Smeargle's jukebox visit** (same day, the user's ask): once, at home, Smeargle explains the jukebox, gives a one-time
+pick of the five players, sets it down with the gift record (the Clearing's song) playing, and points to the towns'
+trading posts. Players from before the patch get it the first time home after it goes live; newer players the first
+time home after mending their first Waystone. ▶ Playtest: `?records&base&smeargle` (it really gives the pick and the
+record). Still open to ask about: music fading with distance from the jukebox; the player piece animating while a
+record plays; a nudge to go home once a new player mends the Clearing's Waystone. Read `hub-base-mall.md`, `music.md` and `cloud-save.md` first, and keep to
 the one-looped-song-decoded rule (`js/audio.js`).
 
 **A basement in the Secret Base** (2026-10-25: the user asked whether you can build downstairs; you can't, floors only

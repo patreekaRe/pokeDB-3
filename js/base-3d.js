@@ -22,8 +22,8 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
-import { baseSong, isPlayer, openJukebox } from './jukebox.js';
-import { RECORDS_BY_ID } from './data/records.js';
+import { baseSong, isPlayer, openJukebox, smeargleDue, smeargleGift, pickPlayer } from './jukebox.js';
+import { RECORDS_BY_ID, GIFT_RECORD } from './data/records.js';
 import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { isPlot, tendPlot, forgetPlots, liveGarden, openGarden } from './berry-garden.js';
@@ -1263,10 +1263,15 @@ async function startVisit() {
   if (visit || yardTalk || host) return;
   if (outdoors()) return yardIntro();
   if (base.here) return;
-  if (metSmeargle(base)) return leaderVisit();
+  if (metSmeargle(base)) return smeargleDue() ? paintVisit('jukebox') : leaderVisit();
+  return paintVisit();
+}
+
+/** Smeargle at its easel: the housewarming, or (`kind` 'jukebox') back with the jukebox (jukeboxLines()). */
+async function paintVisit(kind = null) {
   const spot = visitSpot();
   if (!spot) return;
-  visit = { phase: 'load', tiles: [key(spot.x, spot.y), key(spot.x + 1, spot.y)] };
+  visit = { kind, phase: 'load', tiles: [key(spot.x, spot.y), key(spot.x + 1, spot.y)] };
   const v = visit;
   for (const t of v.tiles) blocked.add(t);
   root.classList.add('visiting');
@@ -1392,7 +1397,7 @@ function dab() {
 
 function startTalk(now) {
   const { w } = visit;
-  Object.assign(visit, { phase: 'talk', lines: visitLines(), i: -1 });
+  Object.assign(visit, { phase: 'talk', lines: visit.kind === 'jukebox' ? jukeboxLines() : visitLines(), i: -1 });
   root.querySelector('.b3-talk b').textContent = SMEARGLE.name;
   w.flip = walker.x > w.x;
   w.hopUntil = now + 500;
@@ -1406,6 +1411,7 @@ function sayNext() {
   if (visit.i === SAVED_AT && !visit.leader) meetSmeargle(base);
   const box = root.querySelector('.b3-talk');
   if (visit.i >= visit.lines.length) return leaveVisit();
+  if (visit.lines[visit.i] === PICK) return jukeboxPick();
   const line = visit.lines[visit.i], tag = visit.leader && line.match(/^([A-Z]+): /);
   if (visit.leader) box.querySelector('b').textContent = tag ? tag[1] : visit.leader.name;
   box.querySelector('span').textContent = tag ? line.slice(tag[0].length) : line;
@@ -1450,6 +1456,54 @@ function endVisit() {
   root.querySelector('.b3-talk').hidden = true;
   root.classList.remove('visiting');
   refresh();
+}
+
+/* ---------- Smeargle brings the jukebox ---------- */
+
+/* Records (js/data/records.js; the user's ask, 2026-10-25): once, back at its easel, Smeargle says what a jukebox is
+   for, has you pick one of the five players (pickPlayer()), sets it down where the easel stood with the Clearing's
+   record on, and says where more records are sold. Who and when: smeargleDue() in js/jukebox.js. */
+const PICK = Symbol('pick');
+const jukeboxLines = () => [
+  'Hey, neighbour! Smeargle again. Don\'t mind the easel: I\'ve been painting jukeboxes!',
+  'A jukebox puts music in your home. Tap it, pick a record, and that song plays all through the house.',
+  'The record you leave on is your base\'s own song, too. Friends who come to visit hear it the moment they walk in!',
+  'And I\'d like you to have one. On the house! Just the one, so choose well.',
+  PICK,
+  'Here\'s your first record to go with it: the Clearing\'s song, right from your doorstep. Hear that? It\'s on!',
+  'Want more? Every town\'s trading post sells records of the songs from round there.',
+  'You\'ll have to mend a town\'s Waystone and travel there to shop, mind. Happy listening!',
+];
+
+async function jukeboxPick() {
+  const v = visit, box = root.querySelector('.b3-talk');
+  v.phase = 'pick';
+  box.hidden = true;
+  let kind = null;
+  while (!kind) kind = await pickPlayer();
+  if (visit !== v) return;
+  smeargleGift(base, kind);
+  const it = v.easel && { id: kind, x: v.w.tile.x + 1, y: v.w.tile.y, dir: 0 };
+  if (v.easel) {
+    const [fx, , fz] = v.canvasAt;
+    for (let i = 0; i < 6; i++) setTimeout(() => puff('star', { x: fx + rand(-0.3, 0.3), y: 0, z: fz }, { top: rand(0.2, 1) }), i * 60);
+    dispose(v.easel); scene.remove(v.easel); v.easel = null;
+  }
+  // the easel's tile was kept for the visit; the jukebox takes it over, so the visit leaving doesn't free it
+  const easelTile = key(v.w.tile.x + 1, v.w.tile.y);
+  v.tiles = v.tiles.filter(t => t !== easelTile);
+  blocked.delete(easelTile);
+  const placed = it && fits(it, -1, base);
+  if (placed) base.items.push(it);
+  else v.lines[v.i + 1] = `I've put it in your storage: set it out from Decorate. ${v.lines[v.i + 1]}`;
+  base.song = GIFT_RECORD;
+  save();
+  buildPieces();
+  playSound('item-get');
+  playMusic(baseSong(base));
+  v.phase = 'talk';
+  refresh();
+  sayNext();
 }
 
 /* ---------- Smeargle in the yard ---------- */

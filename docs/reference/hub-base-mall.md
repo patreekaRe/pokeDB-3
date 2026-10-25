@@ -1037,3 +1037,12 @@ selling its own song plus more, so mending every Waystone and going back pays. T
   `secret-base`. The song rides to the Trainers page inside the base (`pageBase()`), and `readGuestBase()` drops an
   unknown one (RECORDS_BY_ID has no prototype). On a visit a tap on their jukebox says what's playing.
 - Not done yet: storing the last player mid-visit doesn't stop the record till you next come in.
+- **Smeargle brings the jukebox** (2026-10-25, the user's ask): once, back at its easel in the main room (`paintVisit
+  ('jukebox')`, `jukeboxLines()` / `jukeboxPick()` in js/base-3d.js), Smeargle says what a jukebox does and that the
+  record left on is the base's song friends hear, has you pick one of the five `PLAYER_KINDS` (`pickPlayer()`, which
+  comes back if shut unpicked), sets it down where the easel stood (storage if it doesn't fit) with the gift record
+  `clearing` (the Clearing's `clearing-hub`, `gift: true`, never sold) on, then says more records are at the towns'
+  trading posts once their Waystone is mended. Who (`smeargleDue()` in js/jukebox.js): once (`save.recordsIntro`),
+  after the housewarming; a player from before records (`save.recordsOld`, stamped by `stampRecords()` on the first load
+  with records open: true if the base was already housewarmed) the first time home; a newer player the first time home
+  with a Waystone mended (the Clearing's first). `?smeargle` (with `?records`) brings it again; its gifts are kept.

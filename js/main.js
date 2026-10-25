@@ -29,6 +29,7 @@
      cloud.js        the optional cloud save (Firebase sign-in, from the Pokédex's Settings)
    ============================================================ */
 
+import { stampRecords, recordsOpen } from './data/records.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { gateHp } from './gate.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
@@ -200,6 +201,7 @@ function init() {
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
   // ?coins=5000: sets the PokéCoins for a playtest (a branch preview starts on its own empty save)
   if (query.has('coins')) updateSave(d => { d.coins = Math.max(0, parseInt(query.get('coins'), 10) || 0); });
+  if (recordsOpen() && getSave().recordsOld === undefined) updateSave(stampRecords);
   // ?houses&tree: a save whose Secret Base was bought before houses (the Ancient Tree kept, the Starter Cottage free)
   if (query.has('houses') && query.has('tree')) updateSave(d => { d.baseOwned = true; delete d.houses; });
   if (query.has('houses') && HOUSES_BY_ID[query.get('livein')]) updateSave(d => { d.baseOwned = true; d.houses = { owned: ['tree', 'cottage', query.get('livein')], home: query.get('livein'), paint: {} }; });
