@@ -62,7 +62,10 @@ from this note if needed. Sludge Pit and Team Rocket have no Leave: walk out by 
 **Two rooms kept** (2026-10-18, round six of the iPhone reloads): `KEEP_ROOMS` 2, down from 3, and the newest town is
 never one `forgetRooms()` lets go (`forgetTowns()` does, on the way out), so a town keeps itself and its last home. The map
 warms only that many of the next step's rooms (`warmEvent3d()` in `js/run.js`, the gym last so it's kept); a third ? room
-reachable is built when it's walked into.
+reachable is built when it's walked into. **Walking on to the next biome lets go of every room** (2026-10-25, the user's
+phone reloaded at Biome 1's crossroads): `forgetBiome()` in `js/event-3d.js`, called by `walkOn()` in `js/run.js` under
+the journey film's dark, before the next town is built. Till then the biome's last two rooms (its gym's hand-over and a ?
+room, ~17 MB of paintings) stayed kept beside the new town, since a town never counts against `KEEP_ROOMS`.
 
 **One side-wall painting** (2026-10-19, the user's ask: the tab still reloading mid-run). `shell()` paints a room's side
 wall once and both walls share its material, unless the painter takes `left` (only `careSide` does); a side wall's glow

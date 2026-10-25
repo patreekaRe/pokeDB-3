@@ -18,7 +18,15 @@ any reload (`js/crumbs.js`) with where it happened. **Round eight done 2026-10-2
 on `main` too): a Center or Mart left for the map now sleeps (`putAway(view, scene, renderer)`), and every looped song
 is folded to mono once decoded (the user's pick over a lower sample rate). Headless, the map after a Center 85 -> 52 MB,
 after a Mart 100 -> 58, one context awake instead of two; a song's decoded memory halves. On a phone: a long run with
-Centers and Marts, and whether any song sounds wrong on headphones.
+Centers and Marts, and whether any song sounds wrong on headphones. **Round nine 2026-10-25** (on `main`): the user's
+phone reloaded at Biome 1's crossroads after a double tap on the Shrine road's board. Headless, the taps grow nothing (12
+double taps on the board: flat), and a whole Clearing run on one page shows no runaway growth (map ~50 -> ~120 MB over
+the biome, all bounded caches: one Mart, one Center, the arena's ground per stage, the last two rooms). Fixed: the
+biome's last two rooms (its gym's hand-over and a ? room) stayed kept beside the next town as it was built; walking on
+now lets them go (`forgetBiome()`, `docs/reference/walk-in-rooms.md`): headless, a whole Clearing run into Lantern Village
+peaks ~232 MB in the town instead of ~260 (a scratchpad probe, not kept). A town's folk load in over its first ~2.5
+minutes and then hold (Lantern Village alone ~150 -> 155.5 MB, flat after). On a phone: the crossroads and the first town
+after Biome 1, and what Settings' Save card says if it reloads again.
 
 **▶ PLAYTEST ON THE LIVE SITE. Perf audit of the Clearing, the Safari areas and the Duo Run: done 2026-10-21**
 (`docs/roadmap-done.md`; branch `claude/perf-audit-clearing-features-xshrrn`, pushed to `main` too). On a phone: a Duo

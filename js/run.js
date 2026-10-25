@@ -2872,6 +2872,7 @@ async function walkOn() {
     close = await travel({ from, to, starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), first, seed: run.tally.startedAt || run.starter.id });
     if (!peeking) updateSave(d => { d.travelSeen = { ...seenOf(d.travelSeen), [key]: true }; });
   }
+  event3dMod?.forgetBiome();   // under the film's dark, before the next town is built beside them
   run.biome += 1;
   run.atFork = false;
   const covered = () => { close?.(); fork?.close(); };
