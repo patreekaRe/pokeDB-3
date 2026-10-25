@@ -513,6 +513,7 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
   text-shadow: 2px 2px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038;
 }
 .turn-banner[data-side="enemy"] strong { color: #ff8a80; }
+.turn-banner[data-side="start"] strong { color: #ffd84a; }
 .turn-banner span { font-size: 0.8rem; color: #ffd84a; text-shadow: 1px 1px 0 #303038; }
 .turn-banner span:empty { display: none; }
 .turn-banner.show { animation: turnStripe 1.15s ease-out both; }

@@ -563,8 +563,9 @@ function beginPlayerTurn() {
   if (trialBroken(b)) return failTrial(b);
   b.turn += 1;
   b.struck = false;   // the next hit hasn't landed yet: the held shield shows again (shieldPreview())
-  turnBanner('you', b.turn);
-  if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure') || hasAbility('snow-warning'))) afterTurnBanner(b, abilityBanner);
+  if (b.turn === 1) { turnBanner('start'); turnNext = setTimeout(() => { if (battle === b && !b.over) turnBanner('you', 1); }, TURN_BANNER_MS / speed()); }
+  else turnBanner('you', b.turn);
+  if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure') || hasAbility('snow-warning'))) afterTurnBanner(b, abilityBanner, 2);
   const p = b.powers;
   // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
   const a = b.aug;
@@ -2901,17 +2902,19 @@ function sizeSprite(img, lean, times, min, max, stage = 1, target = img) {
  */
 let bannerTimer = 0;
 let turnTimer = 0;
+let turnNext = 0;   // turn 1's "Your Turn", queued behind "Battle Start!"
 const TURN_BANNER_MS = 1150;
 
-/** StS's turn banner: a dark stripe across the arena, "Your Turn" with the turn's number, or "Enemy Turn". It never
+/** StS's turn banner: a dark stripe across the arena, "Battle Start!" before turn 1, "Your Turn" with the turn's number, or "Enemy Turn". It never
     blocks a tap (the hand is live under it), and Settings' battle effects turn it off. */
 function turnBanner(side, turn) {
   const banner = $('turn-banner');
   clearTimeout(turnTimer);
+  clearTimeout(turnNext);
   banner.classList.remove('show');
   if (!battleFx()) { banner.hidden = true; return; }
   banner.dataset.side = side;
-  $('turn-banner-title').textContent = side === 'you' ? 'Your Turn' : 'Enemy Turn';
+  $('turn-banner-title').textContent = { start: 'Battle Start!', you: 'Your Turn', enemy: 'Enemy Turn' }[side];
   $('turn-banner-count').textContent = side === 'you' ? `Turn ${turn}` : '';
   banner.hidden = false;
   void banner.offsetWidth;   // restarts the slide
@@ -2920,9 +2923,9 @@ function turnBanner(side, turn) {
 }
 
 /** Something that would land on top of the turn banner waits for it to go. */
-function afterTurnBanner(b, fn) {
+function afterTurnBanner(b, fn, banners = 1) {
   if (!battleFx()) return fn();
-  setTimeout(() => { if (battle === b && !b.over) fn(); }, TURN_BANNER_MS / speed());
+  setTimeout(() => { if (battle === b && !b.over) fn(); }, banners * TURN_BANNER_MS / speed());
 }
 function abilityBanner() {
   const b = battle, banner = $('ability-banner');
@@ -3000,6 +3003,7 @@ function dressPlayer() {
   showAbilityState();
   $('ability-banner').hidden = true;
   clearTimeout(turnTimer);
+  clearTimeout(turnNext);
   $('turn-banner').hidden = true;
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
   $('player-sprite').alt = stageName(b.starter, b.stage);
