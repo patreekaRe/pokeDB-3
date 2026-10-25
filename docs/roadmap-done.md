@@ -3600,9 +3600,3 @@ can check it), wrapping round once the rarity runs short (rares, 4 a type). Stil
   relic's or Ability's first use in a fight on its own banner stripe with what it did (`RELIC_GAIN`, `ABILITY_GAIN`),
   then its icon in Torrent's window sliding in from the left from turn 2 on, and Victory! / Defeat banners.
   Detail in `docs/reference/battle-screen-layout.md`.
-
-## Secret Base: stairs down look like stairs (2026-10-25, the user's ask; on `main`)
-
-- Upstairs, the way down was a doorway with one step and faint painted treads, which didn't read as stairs. Now it is a
-  stairwell cut into the floor before the back wall: four treads going down under the wall, darker the deeper, a
-  banister each side, your partner sinking step by step as it walks down. Detail in `docs/reference/hub-base-mall.md`.
