@@ -59,9 +59,9 @@ The first section began as the note on playtesting the live site and grew into t
   den, L-shaped, cross-shaped, great hall (`ROOM_KINDS` in `js/data/house.js`; `tests/house.test.mjs`). A new room joins only
   where it was built; a gold pip opens a doorway between two rooms already wall to wall (`joinPips()` / `buyDoor()`,
   `DOOR_PRICE` 100). Upstairs: on a floor's tab the floor below shows faint, green pips on its back walls build a room a
-  floor up (`lv`, `fitRoom(…, up)`), a link ending `'up'`, walked as a staircase (steps up into the back wall; in the room above, since
-  2026-10-25, a stairwell cut into the floor before the back wall, four treads going down under it, darker the deeper,
-  a banister each side, your partner sinking as it walks down: `stairwell()`, `cutWell()`, `stairSink()` in
+  floor up (`lv`, `fitRoom(…, up)`), a link ending `'up'`, walked as a staircase (since 2026-10-25 a flight of five steps up to a doorway high in the back
+  wall, a banister up each side, `flightUp()`; in the room above a stairwell cut into the floor before the back wall, four treads going down under it, darker the deeper,
+  a banister each side, your partner climbing or sinking with the steps: `stairwell()`, `cutWell()`, `stairY()` in
   `js/base-3d.js`; the user's ask, a doorway with one step in it didn't read as stairs), its title "Bedroom · 2F". A tapped room can be taken
   down (`takeDown()` / `removeRoom()`: never the main room or one others are only reached through; its furniture is back in
   storage, which is what you own less what stands in rooms; no refund). The plan is

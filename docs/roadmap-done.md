@@ -3601,8 +3601,9 @@ can check it), wrapping round once the rarity runs short (rares, 4 a type). Stil
   then its icon in Torrent's window sliding in from the left from turn 2 on, and Victory! / Defeat banners.
   Detail in `docs/reference/battle-screen-layout.md`.
 
-## Secret Base: stairs down look like stairs (2026-10-25, the user's ask; on `main`)
+## Secret Base: stairs look like stairs (2026-10-25, the user's ask; on `main`)
 
 - Upstairs, the way down was a doorway with one step and faint painted treads, which didn't read as stairs. Now it is a
   stairwell cut into the floor before the back wall: four treads going down under the wall, darker the deeper, a
-  banister each side, your partner sinking step by step as it walks down. Detail in `docs/reference/hub-base-mall.md`.
+  banister each side, your partner sinking step by step as it walks down. The way up got the same (the user's ask): five
+  steps with banisters climbing to a doorway high in the back wall, your partner rising with them. Detail in `docs/reference/hub-base-mall.md`.

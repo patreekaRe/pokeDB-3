@@ -198,13 +198,17 @@ function cutWell(r, t) {
   return [[x, y, l - x, h], [rt, y, x + w - rt, h], [l, f, rt - l, y + h - f], [l, y, rt - l, t.y - y]].filter(([, , bw, bh]) => bw > 0.001 && bh > 0.001);
 }
 
-/** How far down the stairwell something standing at (x, z) is: nothing on the floor, sinking step by step as it walks
-    toward the back wall and under it. */
-function stairSink(x, z) {
+// the flight up: how far it reaches into the room from the back wall, its steps and how high it climbs to the doorway
+const FLIGHT = { deep: 0.94, steps: 5, climb: 0.85 };
+
+/** How far up or down a staircase something standing at (x, z) is: nothing on the floor, climbing or sinking step by
+    step as it walks toward the back wall and through it. */
+function stairY(x, z) {
   for (const d of doors) {
-    if (d.stairs !== 'down') continue;
+    if (!d.stairs || d.side !== 'n') continue;
+    const [deep, by] = d.stairs === 'down' ? [WELL.deep, -WELL.drop] : [FLIGHT.deep, FLIGHT.climb];
     const lx = x - tileX(d.tile.x), lz = z - (d.tile.y - ROWS / 2);
-    if (Math.abs(lx) < 0.5 && lz < WELL.deep) return -Math.min(1, (WELL.deep - lz) / WELL.deep) * WELL.drop;
+    if (Math.abs(lx) < 0.5 && lz < deep) return Math.min(1, (deep - lz) / deep) * by;
   }
   return 0;
 }
@@ -239,8 +243,8 @@ function addDoor(d, stepMat) {
     return;
   }
   const g = new THREE.Group(), wood = solid('#7a5434');
-  if (d.stairs === 'down') {
-    stairwell(g, wood);
+  if (d.stairs) {
+    (d.stairs === 'down' ? stairwell : flightUp)(g, wood);
     g.position.set(tileX(tx), 0, ty - ROWS / 2);
     g.traverse(o => { o.userData.door = d; });
     roomGroup.add(g);
@@ -256,21 +260,47 @@ function addDoor(d, stepMat) {
   mat.position.set(0, 0.012, 0.45);
   mat.rotation.z = Math.PI;
   g.add(dark, post(-0.61), post(0.61), lintel);
-  if (d.stairs) {
-    const tread = solid('#a87a4c');
-    for (let i = 0; i < 4; i++) {
-      const hgt = 0.16 * (i + 1), step = new THREE.Mesh(new THREE.BoxGeometry(1.0, hgt, 0.22), i % 2 ? wood : tread);
-      step.position.set(0, hgt / 2, 0.5 - i * 0.22);
-      step.castShadow = step.receiveShadow = true;
-      g.add(step);
-    }
-  } else g.add(mat);
+  g.add(mat);
   if (d.side === 'n') g.position.set(tileX(tx), 0, ty - ROWS / 2);
   if (d.side === 'w') { g.position.set(tx - COLS / 2, 0, tileZ(ty)); g.rotation.y = Math.PI / 2; }
   if (d.side === 'e') { g.position.set(tx + 1 - COLS / 2, 0, tileZ(ty)); g.rotation.y = -Math.PI / 2; }
   g.traverse(o => { o.userData.door = d; });
   roomGroup.add(g);
-  if (!d.stairs) doorMats.push(mat);
+  doorMats.push(mat);
+}
+
+/** A flight going up into group `g` (its origin the middle of the back wall's foot): steps climbing to a doorway high in
+    the wall, under a wooden frame, a banister up each side (2026-10-25, the user's ask: steps in a doorway on the
+    floor didn't read as stairs up). */
+function flightUp(g, wood) {
+  const n = FLIGHT.steps, run = FLIGHT.deep / n, rise = FLIGHT.climb / n, w = 1.0, hi = 2.8;
+  const tread = solid('#c09060'), riser = solid('#7a5434');
+  for (let i = 0; i < n; i++) {
+    const top = (i + 1) * rise, step = new THREE.Mesh(new THREE.BoxGeometry(w, top, run), [riser, riser, tread, riser, riser, riser]);
+    step.position.set(0, top / 2, FLIGHT.deep - run * (i + 0.5));
+    step.castShadow = step.receiveShadow = true;
+    g.add(step);
+  }
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, hi - FLIGHT.climb), throughMat());
+  dark.position.set(0, (hi + FLIGHT.climb) / 2, 0.03);
+  g.add(dark);
+  const cap = solid('#9a6c40'), part = (geo, mat, x, y, z, tilt = 0) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z); m.rotation.x = tilt; m.castShadow = true; g.add(m);
+  };
+  for (const s of [-1, 1]) part(new THREE.BoxGeometry(0.14, hi, 0.14), wood, s * 0.61, hi / 2, 0.07);
+  part(new THREE.BoxGeometry(1.44, 0.18, 0.16), wood, 0, hi, 0.07);
+  // the rail runs from 0.6 over the floor at the foot to 0.6 over the top step, rising with the treads
+  const railAt = (z) => 0.6 + (FLIGHT.deep - z) / FLIGHT.deep * FLIGHT.climb, len = Math.hypot(FLIGHT.deep, FLIGHT.climb);
+  for (const s of [-1, 1]) {
+    const x = s * (w / 2 - 0.04);
+    part(new THREE.BoxGeometry(0.08, 0.72, 0.08), wood, x, 0.36, FLIGHT.deep - 0.04);
+    for (let i = 0; i < n; i++) {
+      const z = FLIGHT.deep - run * (i + 0.5), foot = (i + 1) * rise, h = railAt(z) - foot;
+      part(new THREE.BoxGeometry(0.035, h, 0.035), wood, x, foot + h / 2, z);
+    }
+    part(new THREE.BoxGeometry(0.08, 0.05, len), cap, x, railAt(FLIGHT.deep / 2) + 0.02, FLIGHT.deep / 2, Math.atan2(FLIGHT.climb, FLIGHT.deep));
+  }
 }
 
 /** A flight going down into group `g` (its origin the middle of the back wall's foot over the well): treads stepping
@@ -1145,7 +1175,7 @@ function liveGuest(g, dt, now) {
   }
   const happy = w.hopUntil > now;
   const bob = calm ? 0 : w.path.length ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06 : happy ? Math.abs(Math.sin((w.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  m.group.position.set(w.x, w.y + (w.seat ? 0 : stairSink(w.x, w.z)), w.z);
+  m.group.position.set(w.x, w.y + (w.seat ? 0 : stairY(w.x, w.z)), w.z);
   m.board.position.y = bob;
   m.board.scale.x = w.flip ? -1 : 1;
   drawMon(m, w, dt);
@@ -2071,7 +2101,7 @@ function frame(now) {
   if (!calm) for (const m of doorMats) m.material.emissiveIntensity = mode === 'walk' ? 0.12 + Math.sin(now / 420) * 0.1 : 0;
   const happy = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : happy ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  mon.group.position.set(walker.x, (walker.y ?? 0) + stairSink(walker.x, walker.z), walker.z);
+  mon.group.position.set(walker.x, (walker.y ?? 0) + stairY(walker.x, walker.z), walker.z);
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);

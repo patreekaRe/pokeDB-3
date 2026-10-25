@@ -49,7 +49,7 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['base', 'Stairs down to the floor below are a real stairwell now, steps sinking into the floor with a banister on each side.'],
+  ['base', 'Secret Base stairs look like stairs now: a flight with banisters up to a doorway high in the wall, and a stairwell in the floor going down.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 
