@@ -1557,11 +1557,12 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
-- **Secret Base: stairs down as a stairwell** (2026-10-25, the user's ask, branch `stairwell`, commit `c3b6ab4`; held off
-  `main` until they've tried it, their call): upstairs, the way down was a doorway with one step, which didn't read as
-  stairs. On the branch it is a hole in the floor before the back wall, four steps going down under it, a banister each
-  side, your partner sinking as it walks down (`stairwell()`, `cutWell()`, `stairSink()` in `js/base-3d.js`). Playtest:
-  `https://rawcdn.githack.com/patreekaRe/pokeDB-3/c3b6ab4e1b9a4deaac574bb6f19f7140c941b27e/index.html?base&coins=99999`, build a room upstairs
+- **Secret Base: stairs that look like stairs** (2026-10-25, the user's ask, branch `stairwell`, last commit `dfa6e6d`; held
+  off `main` until they've tried it, their call): the way down from an upper floor is a stairwell in the floor before the
+  back wall, four steps going down under it, a banister each side; the way up is five steps with banisters climbing to
+  a doorway high in the back wall. Your partner climbs or sinks with the steps (`stairwell()`, `flightUp()`, `cutWell()`,
+  `stairY()` in `js/base-3d.js`). Playtest:
+  `https://rawcdn.githack.com/patreekaRe/pokeDB-3/dfa6e6d360c11d143872254963b1a80509e3dc63/index.html?base&coins=99999`, build a room upstairs
   (the big main room, then a room on its back wall's pip a floor up). On their yes: `git merge stairwell` into `main`
   (it carries its patch note, reference note and archive line). ▶ Run in: PLAYTEST ON THE LIVE SITE.
 - **The Safari's song** (2026-10-24, the user's MP3, on `main`; `docs/reference/music.md`): plays in the Safari lobby and on
