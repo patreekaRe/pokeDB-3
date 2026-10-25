@@ -594,7 +594,7 @@ function beginPlayerTurn() {
     turnBusy = performance.now() + 2 * TURN_BANNER_MS / speed();
   }
   else turnBanner('you', b.turn);
-  if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure') || hasAbility('snow-warning'))) afterTurnBanner(b, abilityBanner, 2);
+  if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure') || hasAbility('snow-warning'))) abilityBanner();   // its stripe queues behind the turn's
   const p = b.powers;
   // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
   const a = b.aug;
@@ -2641,7 +2641,7 @@ async function enemyTurn() {
         const back = (b.aug.thorns || 0) + (b.aug.seedThorns && en.seed > 0 ? b.aug.seedThorns : 0) + Math.floor(damage * (b.aug.reflect || 0));
         if (back) { const dealt = hurtEnemy(back); pop('enemy-zone', dealt > 0 ? `-${dealt} 🪞` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 450); }
       }
-      if (hasAbility('static')) applyStatic(b.ability.amount, 450);   // Static: each attack on you charges it
+      if (hasAbility('static')) { applyStatic(b.ability.amount, 450); abilityBanner(); }   // Static: each attack on you charges it
       b.attackedNow = true;
       if (b.counter) {   // Counter (Justified: block next turn, as this turn's would be gone first)
         const dealt = hurtEnemy(b.counter);
@@ -2808,7 +2808,7 @@ async function finish(won) {
   turnBanner(won ? 'win' : 'lose');
   if (won) {
     const grew = hasAbility('overgrow') && healPlayer(b.ability.amount);
-    if (grew) setTimeout(() => battle === b && abilityBanner(), battleFx() ? TURN_BANNER_MS / speed() : 0);
+    if (grew) abilityBanner();   // its stripe queues behind Victory's
     $('enemy-portrait-box').classList.add('defeated');
     playSound('faint');
     playMusic(winTrack(b.kind, b.leader), { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
@@ -2985,12 +2985,12 @@ function relicFlash(id, gain = RELIC_GAIN[id]) {
   setTimeout(() => icon.remove(), at - now + 1400 / speed());
 }
 
-function relicBanner(relic, gain) {
+function relicBanner(relic, gain, late = false) {
   const b = battle;
   const now = performance.now(), at = Math.max(now, turnBusy, relicBusy), ms = TURN_BANNER_MS / speed();
   relicBusy = at + ms;
   const show = () => {
-    if (battle !== b || b.over) return;
+    if (battle !== b || (b.over && !late)) return;
     const banner = $('relic-banner');
     relicShown = relic;
     $('relic-banner-title').textContent = `${relic.icon} ${relic.name}`;
@@ -3006,13 +3006,22 @@ function relicBanner(relic, gain) {
   relicTimers.add(t);
 }
 
-/** Something that would land on top of the turn banner waits for it to go. */
-function afterTurnBanner(b, fn, banners = 1) {
-  if (!battleFx()) return fn();
-  setTimeout(() => { if (battle === b && !b.over) fn(); }, banners * TURN_BANNER_MS / speed());
-}
+/** What an Ability just did, for its first stripe of a fight. */
+const ABILITY_GAIN = {
+  blaze: n => `+${n} damage`, overgrow: n => `+${n} HP`, torrent: n => `+${n} Tide`, pressure: n => `+${n} Focus`, static: n => `+${n} Static on the foe`,
+  'snow-warning': n => `Hail, ${n} turns`, guts: n => `+${n} damage`, 'keen-eye': n => `+${n} card`, intimidate: n => `${n} Weak`, sturdy: () => 'held on at 1 HP',
+};
+
+/** Gen 5's Ability pop-up. The first time an Ability fires in a fight it gets a stripe in the turn banner's style, as a
+    relic's does, with what it did; the window sliding in from the left only from turn 2 on (the user's calls). */
 function abilityBanner() {
   const b = battle, banner = $('ability-banner');
+  if (battleFx()) {
+    if (relicsFight !== b) { relicsFight = b; relicsNamed = new Set(); }
+    const key = `ability:${b.ability.id}`;
+    if (!relicsNamed.has(key)) { relicsNamed.add(key); return relicBanner(b.ability, ABILITY_GAIN[b.ability.id]?.(b.ability.amount), b.over); }
+    if (b.turn < 2) return;
+  }
   $('ability-banner-who').textContent = `${stageName(b.starter, b.stage)}'s`;
   $('ability-banner-name').textContent = `${b.ability.icon} ${b.ability.name}`;
   banner.title = b.ability.text;
@@ -3041,7 +3050,9 @@ function showAbilityState() {
   const blaze = b.ability.id === 'blaze', guts = b.ability.id === 'guts';   // Guts is lit while a status card is in your hand
   const state = blaze ? (b.hp > 0 && (b.hp < b.maxHp / 2 || b.aug.blazeAlways) ? 'on' : 'off') : guts ? (statusHeld() ? 'on' : 'off') : '';
   if (el.dataset.state === state && el.title) return;
+  const lit = guts && state === 'on' && el.dataset.state === 'off' && b.turn > 0 && !b.over;   // Guts lights up as a status card comes in
   el.dataset.state = state;
+  if (lit) abilityBanner();
   el.title = `Ability: ${b.ability.name}. ${b.ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ` Active now: +${b.ability.amount} damage!` : ''}`;
 }
 

@@ -350,3 +350,8 @@ chips with names every time were too fast and busy) (keyframes
 modifiers (damage, draw counts) use plain `hasRelic()` since they're read in previews too. `finish()` shows
 `turnBanner('win')` (gold "Victory!", the fanfare is its sound) or `'lose'` ("Defeat…", grey, a falling `defeat` blip);
 Overgrow's banner waits for it.
+**Abilities in the same style** (2026-10-25, the user's call, every starter): `abilityBanner()` gives an Ability's first
+use in a fight a stripe like a relic's, with what it did (`ABILITY_GAIN`: "🌊 Torrent +2 Tide"), and the Gen 5 window
+sliding in from the left only from turn 2 on (with battle effects off, the window as before). Static (each enemy attack)
+and Guts (lighting up as a status card comes in) now call it too; Overgrow's after a win queues behind Victory!
+(`relicBanner(..., late)`). `afterTurnBanner()` is gone: the stripe queue (`turnBusy`) does its job.
