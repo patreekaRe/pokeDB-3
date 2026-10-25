@@ -44,7 +44,10 @@ canvas should read `sharpness().cap`.
 The Center, Mart and event rooms keep their renderer awake under the map (to warm the next rooms), and kept the room
 walked out of uploaded with it. `unmount()` now calls `putAway(view, scene)` (`js/hd2d.js`): a second after, if the map
 is up, the scene is `unload()`ed (re-uploaded on the next visit); headless, ~65-80MB down to ~47MB, which is the
-renderer's own post targets. Swapping rooms (a town and its houses) unloads the one left; leaving a town disposes it
+renderer's own post targets. Since 2026-10-24 the Center and the Mart pass their renderer too (`putAway(view, scene,
+renderer)`), which then sleeps: the map warms nothing into them, so their post targets sat awake beside the warmed arena
+(headless, the map 85 -> 52 MB after a Center, 100 -> 58 after a Mart). The ? rooms' doesn't: the map warms rooms into it.
+Swapping rooms (a town and its houses) unloads the one left; leaving a town disposes it
 (`forgetTowns()`); a partner board replaced is disposed; `dispose()`/`unload()` free every material map but `envMap`;
 the Mart keeps at most `CARD_TEX_MAX` (24) card faces.
 

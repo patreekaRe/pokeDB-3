@@ -18,13 +18,14 @@ const args = process.argv.slice(2), opt = (k) => args.find(a => a.startsWith(`--
 const BUDGETS = join(root, 'tools/budgets.json');
 
 const PLACES = {
-  clearing: '/', base: '?base', yard: '?yard',
+  clearing: '/', 'clearing-houses': '?houses', base: '?base', yard: '?yard',
   'mall-hall': '?mall', 'mall-2f': '?mall=2f', 'mall-corner': '?mall=corner', 'mall-arcade': '?mall=arcade',
   'mall-outfitter': '?mall=outfitter', 'mall-furniture': '?mall=furniture',
   'town-shrine': '?town=shrine&towns', 'town-wastes': '?town=wastes&towns', 'town-ruins': '?town=ruins&towns',
   'town-thornwood': '?town=thornwood&towns', 'town-savanna': '?town=savanna&towns',
   center: '?center', mart: '?mart', 'event-spring': '?event=spring', gym: '?gym=britt', dojo: '?dojo',
   tower: '?tower=25', 'run-map': '?biome=ruins&starter=charmander',
+  'safari-powerplant': '?area=powerplant&intro=0', 'safari-nightalley': '?area=nightalley&intro=0&stage=3&kind=boss',
 };
 const SETTLE = 11000, TRIPS = 3;
 

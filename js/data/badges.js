@@ -14,7 +14,7 @@
 import { STARTERS } from './starters.js';
 import { GYM_LEADERS, GYM_GOLD, GYM_BY_ID } from './gym.js';
 import { FRIENDS, HEARTS } from './workshop.js';
-import { MAX_LEVEL } from './difficulty.js';
+import { isChampion } from './difficulty.js';
 import { BIOMES, ALT_BIOMES, BIOMES_BY_ID, FORKS, ENEMY_DEFS } from './enemies.js';
 import { PASSIVE_SHOP_ITEMS } from './shop.js';
 import { BALLS, masterThrows } from './balls.js';
@@ -40,10 +40,10 @@ const wonWithType = (s, type) => (s.maxLevelWinByType?.[type] ?? -1) >= 0
 
 /** The types won with on Trainer Level 5, from everything the save keeps about Level 5 wins. */
 function level5Types(s, save) {
-  const types = new Set(KANTO_TYPES.filter(t => (s.maxLevelWinByType?.[t] ?? -1) >= MAX_LEVEL));
+  const types = new Set(KANTO_TYPES.filter(t => isChampion(s.maxLevelWinByType?.[t] ?? -1)));
   for (const [id, n] of Object.entries(s.level5WinsBy || {})) if (n > 0 && typeOf[id]) types.add(typeOf[id]);
   for (const t of Object.keys(s.level5Jackpot || {})) if (s.level5Jackpot[t]) types.add(t);
-  for (const w of save.hallOfFame || []) if (w.level === MAX_LEVEL && w.starter !== 'mewtwo') types.add(w.type ?? typeOf[w.starter]);
+  for (const w of save.hallOfFame || []) if (isChampion(w.level) && w.starter !== 'mewtwo') types.add(w.type ?? typeOf[w.starter]);
   return types;
 }
 
@@ -67,7 +67,7 @@ const roadsOf = (w) => FORKS.map(i => w.route?.[i] ?? BIOMES[i].id);
 /** The starters with a Level 5 win (the Veteran Badge's). */
 function level5Starters(s, save) {
   const ids = new Set(Object.entries(s.level5WinsBy || {}).filter(([, n]) => n > 0).map(([id]) => id));
-  for (const w of levelWins(save)) if (w.level === MAX_LEVEL) ids.add(w.starter);
+  for (const w of levelWins(save)) if (isChampion(w.level)) ids.add(w.starter);
   return ids;
 }
 

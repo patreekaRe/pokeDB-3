@@ -37,7 +37,7 @@ import { sealOn, shardsPlaced } from './data/towns.js';
 import { runLines, landLine } from './data/camp.js';
 import { campNews } from './towns.js';
 import { gymTalk } from './gym.js';
-import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { getSave, updateSave, clearRunData, loadRunData, restoreLostRun, isShiny } from './storage.js';
 import { meowthDue } from './meowth.js';
 import { sampleMail } from './mail.js';
 import { checkBadges } from './progress.js';
@@ -60,7 +60,7 @@ import { curtain } from './hd2d.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection, openPokedex, openDeviceApp, openHowto, bootHowto, splash } from './collection.js';
 import { hideDevice } from './device.js';
-import { smoothIcon, roundKey } from './smooth-icons.js';
+import { smoothIcon, roundKey, gameWatchRunner } from './smooth-icons.js';
 import { initPlayTime, buddy } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
@@ -80,6 +80,7 @@ import { biomeIntro, placeIntro } from './biome-intro.js';
 import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
 import { GYM_LEADERS } from './data/gym.js';
+import { HOUSES_BY_ID, housesOpen } from './data/houses.js';
 
 /* ---------- moving between screens ---------- */
 
@@ -185,6 +186,8 @@ function initPokedexButton() {
   $('map-dex-btn').addEventListener('click', () => (runSafariArea() !== undefined ? openDeviceApp('safari', runSafariArea()) : openDeviceApp('dex', runBiome())));
   // leaving from inside the device puts it away once the confirm (if any) has said yes
   $('abandon-btn').addEventListener('click', async () => { if (await requestAbandon()) hideDevice(); });
+  $('map-flee').append(gameWatchRunner());
+  $('map-flee').addEventListener('click', () => requestAbandon());
 }
 
 /* ---------- start everything ---------- */
@@ -197,6 +200,10 @@ function init() {
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
   // ?coins=5000: sets the PokéCoins for a playtest (a branch preview starts on its own empty save)
   if (query.has('coins')) updateSave(d => { d.coins = Math.max(0, parseInt(query.get('coins'), 10) || 0); });
+  // ?houses&tree: a save whose Secret Base was bought before houses (the Ancient Tree kept, the Starter Cottage free)
+  if (query.has('houses') && query.has('tree')) updateSave(d => { d.baseOwned = true; delete d.houses; });
+  if (query.has('houses') && HOUSES_BY_ID[query.get('livein')]) updateSave(d => { d.baseOwned = true; d.houses = { owned: ['tree', 'cottage', query.get('livein')], home: query.get('livein'), paint: {} }; });
+  if (query.has('runback') && !loadRunData()) console.log('Lost run put back:', restoreLostRun()?.why);   // stashLostRun()'s
   if (query.has('walk')) updateSave(d => { d.titleHub = true; });   // Settings' Title screen, by URL (?signs only for the page load)
   if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
@@ -357,6 +364,11 @@ function init() {
     hideDevice();
     await curtain(true);
     leaveTitle();
+    // with houses on, a visit to the house starts outside it, on their front lawn (the yard keeps its own way in)
+    if (housesOpen() && guest.start !== 'yard' && await (await import('./front-lawn.js')).openLawn({ name: guest.name, json: guest.json, buddyKey: guest.buddy }) === 'left') {
+      await showHome(); curtain(false);
+      return 'left';
+    }
     const went = await (await import('./base-3d.js')).openBase3d({ onLeave: showHome, guest, start: guest.start });
     if (went === false) { await showHome(); curtain(false); }
     return went;
@@ -387,7 +399,14 @@ function init() {
   if (params.has('base') || params.has('3d')) {
     if (params.has('flat')) return import('./secret-base.js').then(m => m.openBase());
     // &asfriend: your own saved base as a friend visiting it sees it (the Trainers app's Visit), nothing saved
-    if (params.has('asfriend') && getSave().secretBase) return import('./base-3d.js').then(m => m.openBase3d({ guest: { name: 'A FRIEND', json: JSON.stringify(getSave().secretBase) } }));
+    if (params.has('asfriend') && (getSave().secretBase || housesOpen())) return (async () => {
+      // with ?houses, through your own front lawn first, as a friend arrives (your house, your buddy at the mailbox); a
+      // save with no base stored yet lends a fresh one, so a branch link's empty save can try it
+      const [{ pageBase }, { trainerName }, { buddyKey }, { loadBase }] = await Promise.all([import('./trainers.js'), import('./leaderboard.js'), import('./trainercard.js'), import('./secret-base.js')]);
+      const json = JSON.stringify(pageBase({ ...getSave(), secretBase: getSave().secretBase || loadBase() }));
+      if (housesOpen() && await (await import('./front-lawn.js')).openLawn({ name: trainerName(), json, buddyKey: buddyKey() }) === 'left') return location.assign(location.pathname);
+      return (await import('./base-3d.js')).openBase3d({ guest: { name: 'A FRIEND', json } });
+    })();
     return import('./base-3d.js').then(m => m.openBase3d());
   }
   // ?yard: out in the Secret Base's backyard, lent for the page load if it isn't bought (js/secret-base.js's loadBase())

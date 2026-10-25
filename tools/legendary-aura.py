@@ -11,6 +11,7 @@ powers up. spriteUrl() in js/data/starters.js picks the file for the stage, in i
 Everything moves on the GIF's own loop (every frame keeps its timing), so it repeats seamlessly, on a padded canvas.
 Run from the repo root (needs Pillow):
     python3 tools/legendary-aura.py moltres fire
+    python3 tools/legendary-aura.py weavile ice awakened   (a duo look's last form: the Awakened files only)
 It writes all four of the pair's files, front and back, and prints their SPRITE_FIT lines (the source's gaps plus the
 padding) for the end of js/data/sprite-fit.js.
 """
@@ -29,6 +30,19 @@ TYPES = {
                     bits=['#d8ff80', '#78d848', '#389838'], shape='leaf'),
     'psychic': dict(aura=['#fff0ff', '#ffa8f8', '#e060f0', '#9030c8'], flare=['#fff0ff', '#ffa0f0', '#d058e8', '#8028b8'],
                     bits=['#ffffff', '#ffb0f8', '#e070f0'], shape='star'),
+    # the duo types whose two-stage lines and single Pokémon power up instead of evolving (2026-10-20)
+    'ice':      dict(aura=['#ffffff', '#d0f6ff', '#78d8f0', '#3890c8'], flare=['#ffffff', '#c8f0ff', '#70d0f0', '#3080c0'],
+                     bits=['#ffffff', '#c8f0ff', '#80d0f0'], shape='star'),
+    'fighting': dict(aura=['#fff0d8', '#ffb878', '#f06838', '#b02818'], flare=['#fff0d8', '#ffa860', '#e85830', '#a02010'],
+                     bits=['#ffe0a0', '#ff8040', '#d03020'], shape='ember'),
+    'dark':     dict(aura=['#efe0ff', '#b090e0', '#7048b0', '#382068'], flare=['#efe0ff', '#a888d8', '#6840a8', '#301860'],
+                     bits=['#d8c0ff', '#9068d0', '#5030a0'], shape='ember'),
+    'electric': dict(aura=['#fffff0', '#fff480', '#ffd830', '#e0a010'], flare=['#fffff0', '#fff070', '#f8c820', '#c89010'],
+                     bits=['#ffffff', '#fff080', '#f8c830'], shape='star'),
+    'ground':   dict(aura=['#fff4d8', '#f0d090', '#d8a050', '#986028'], flare=['#fff4d8', '#e8c880', '#c89048', '#885020'],
+                     bits=['#f8e0b0', '#d0a060', '#986830'], shape='ember'),
+    'flying':   dict(aura=['#ffffff', '#e0e4ff', '#a8b0f8', '#6870d0'], flare=['#ffffff', '#d8dcff', '#a0a8f0', '#6068c8'],
+                     bits=['#ffffff', '#d8dcff', '#a8b0f8'], shape='star'),
 }
 SPARK = (255, 255, 255, 255)
 BOLT = [(255, 255, 255, 255), (184, 224, 255, 255), (120, 170, 255, 255)]   # lightning: core, glow, edge
@@ -175,6 +189,7 @@ def ascend(src, dst, kind, seed, level=2):
 if __name__ == '__main__':
     sys.path.insert(0, '.')
     mon, kind = sys.argv[1], sys.argv[2]
+    only = sys.argv[3] if len(sys.argv) > 3 else None
     fit = {}
     for line in open('js/data/sprite-fit.js'):
         line = line.strip()
@@ -184,6 +199,8 @@ if __name__ == '__main__':
     for side in ('front', 'back'):
         for src, out, level in ((mon, f'{mon}-awakened', 1), (mon, f'{mon}-ascendant', 2),
                                 (f'{mon}-shiny', f'{mon}-shiny-awakened', 1), (f'{mon}-shiny', f'{mon}-shiny-ascendant', 2)):
+            if only and not out.endswith(only):
+                continue
             pad = ascend(f'assets/pokemon/{src}-{side}.gif', f'assets/pokemon/{out}-{side}.gif', kind, sum(map(ord, out + side)), level)
             base = fit.get(f'{src}-{side}') or fit.get(f'{mon}-{side}') or [0, 0, 0, 0]
             print(f"  '{out}-{side}': [{', '.join(str(v + pad) for v in base)}],")

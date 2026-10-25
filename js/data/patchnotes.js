@@ -21,6 +21,7 @@
    hand-made `sections`, each [icon, heading, lines].
    ============================================================ */
 
+
 /** Where a note goes: its heading, in this order. A new group needs a smooth or pixel icon for its emoji. */
 export const GROUPS = {
   hub: ['🌳', 'The Clearing'],
@@ -41,9 +42,23 @@ export const RELEASE_AT = 12;
 /** Past this the tests fail: cut a patch. */
 export const NEXT_MAX = 20;
 
+/** Lines for something built but held behind its switch, each [on, [group, line]]: they join NEXT by themselves the
+    day the switch goes on, so players never read of what they can't see. */
+const HELD = [
+];
+
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['hub', 'A Berry Booth by the Clearing\'s gate is where you pack your Berry Pouch and run kit now, with a guide to how the pouch works; what you pack stays packed.'],
+  ['fixes', 'The Clearing\'s PC opens as soon as you reach it, instead of waiting, sometimes for good, on the Secret Base\'s furniture to load, Level 10 foil cards no longer slow a fight while their sheen follows your phone\'s tilt, and cloud save stops asking "Two saves found" over your own phone\'s save, or swapping out a run in progress without asking. Runs use less memory: a Center or Mart rests once you leave it, and songs play in mono.'],
+  ['hub', 'The Clearing\'s Halloween ghosts no longer walk up to greet you each visit; they still chat at random and when tapped.'],
+  ['base', 'Your Secret Base can be a house: Timburr & Co.\'s stand by your lot builds 25 houses, tried on before you buy, in eight paints; big feats earn rarer ones. Friends\' visits start on their front lawn.'],
+  ['base', 'Every room of your Secret Base, the backyard too, picks from all your Safari catches, up to 6 a room, and your first two catches move in by themselves.'],
+  ['runs', 'The run map has an Abandon run key beside the floor, a Game & Watch runner dashing across it.'],
+  ['music', 'The Safari Zone has its own song, in its lobby and on every area\'s map.'],
+  ['runs', 'A held berry not yet eaten can come off again from the Bag\'s Items on the map, back into the Berry Pouch, to save it for a fight ahead.'],
   ['runs', "In the Poké Mart you can tap a card, item or relic to read it even when you can't afford it or your Bag is full."],
+  ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -55,6 +70,25 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.29',
+    name: 'Champion Levels',
+    date: '2026-10-22',
+    notes: [
+  ['modes', 'Duo Run: it has three areas of its own, your pair stands at the gate as you pick it, a ✨ on a Pokémon\'s portrait switches its shiny, and you hold your Pokémon to switch, for 1 PP and your turn.'],
+  ['modes', 'Ten duo starters a type now, Absol to Zorua: the map marks their rooms. Two-stage lines and single Pokémon like Lapras power up like legendaries.'],
+  ['look', 'Types now show as round coloured badges everywhere, from cards and battle to the Pokédex and map; a duo\'s swap button sits on your HP box\'s corner.'],
+  ['battle', 'Endless combos trimmed: Growth Spurt+ keeps Exhaust, Overgrowth+ costs 0 instead of doubling, Ice Core and Electric Seed give half, Dark Memory skips Magician, Lum Berry no longer draws.'],
+  ['battle', 'Flame Wall and Mat Block now give 9 block (12 upgraded), a lift for Fire and Fighting.'],
+  ['dex', 'The Moves app\'s type tabs show just their round type badges now, instead of cut-off names.'],
+  ['runs', 'Trainer Levels 6-10 for champions: weaker healing, less HP, tougher foes and bosses. Your star changes colour as you climb, and each Level\'s first win pays a jackpot.'],
+  ['runs', 'Each win on Trainer Levels 6-10 wraps your partner in a bigger Super Saiyan aura; Level 10 makes you a Pokémon Master, with a title, a crystal pedestal and a floating crown.'],
+  ['runs', 'More for high Levels: foil cards for starters won on 6 and up, Gilded and Clear Pokédex shells at 8 and 10, and a letter from every Gym Leader.'],
+  ['battle', 'Apple Acid+ now deals 10 damage and applies 1 Vulnerable, so it no longer outdoes Seed Bomb.'],
+  ['fixes', 'The run map is smoother on phones: its glowing badges and blinking rooms no longer repaint every frame.'],
+  ['hub', 'A Buddy Projector stands by the quest board: tap it to pick your walking buddy, shiny ones too, and see them as a hologram. The PC no longer picks them.'],
+    ],
+  },
   {
     version: '1.28',
     name: 'Duo Run',
@@ -583,7 +617,7 @@ export const IN_THE_GAME = [
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
   ['🏘️', '5 towns', 'A gateway town on every road out of the Clearing, each with a trader, its Gym Leaders\' homes and a broken Waystone to mend, plus Kurt\'s Workshop at home to craft for it.'],
   ['🏅', '13 Gym Leaders', 'Two or three in every biome, standing in front of its boss, each with their own gym, speeches and badge.'],
-  ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
+  ['⭐', '11 Trainer Levels', 'Level 0 to 10, each adding a new rule. Win to unlock the next, strike the Sealed Gate harder, and past 5 earn an aura and a crown.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
   ['🏆', '189 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
