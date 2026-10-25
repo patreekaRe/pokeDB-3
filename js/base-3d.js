@@ -153,8 +153,12 @@ function buildRoom() {
   const paper = (from, len) => new THREE.MeshStandardMaterial({ map: tex(crop(art, from * T, 0, len * T, WALL)), roughness: 1 });
   const add = (mesh, x, y, z) => { mesh.position.set(x, y, z); mesh.receiveShadow = true; roomGroup.add(mesh); return mesh; };
 
-  for (const [x, y, w, h] of shape.rects) {
-    const top = new THREE.MeshStandardMaterial({ map: tex(crop(art, x * T, WALL + y * T, w * T, h * T)), roughness: 1 });
+  doors = doorsOf(base.house, here().id).map(d => ({ ...d, tile: pipTile(shape, [d.side, d.at]) }));
+  // a staircase down is a stairwell cut into the floor before the back wall, so the floor's blocks are cut round it
+  let blocks = shape.rects;
+  for (const d of doors) if (d.stairs === 'down') blocks = blocks.flatMap(r => cutWell(r, d.tile));
+  for (const [x, y, w, h] of blocks) {
+    const top = new THREE.MeshStandardMaterial({ map: tex(crop(art, Math.round(x * T), WALL + Math.round(y * T), Math.round(w * T), Math.round(h * T))), roughness: 1 });
     add(new THREE.Mesh(new THREE.BoxGeometry(w, 0.6, h), [edge, edge, top, edge, under, edge]), x + w / 2 - COLS / 2, -0.3, y + h / 2 - ROWS / 2);
   }
   const on = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && onFloor(x, y);
@@ -180,33 +184,50 @@ function buildRoom() {
     add(new THREE.Mesh(new THREE.BoxGeometry(0.4, tall, len), faces), x + (s > 0 ? 1 : 0) - COLS / 2 + s * 0.2, tall / 2, y - ROWS / 2 + len / 2).castShadow = true;
     y = e + 1;
   }
-  doors = doorsOf(base.house, here().id).map(d => ({ ...d, tile: pipTile(shape, [d.side, d.at]) }));
   for (const d of doors) addDoor(d, [outer, outer, cap, outer, outer, outer]);
 }
 
-const throughTex = {};
-/** The dark of a doorway: the next room unlit beyond it, a little warm light on its floor; `down`, the top of a flight
-    of stairs going down into it instead, its treads fading into the dark. */
-function throughMat(down = false) {
-  if (!throughTex[down]) {
+// the stairwell down: its span across its tile, how far it reaches into the room from the back wall, and its drop
+const WELL = { in: 0.06, out: 0.94, deep: 0.88, steps: 4, drop: 0.56 };
+
+/** Floor rect `r` ([x, y, w, h]) less the stairwell on tile `t`: the rect itself if the well isn't in it, else the
+    blocks round it. */
+function cutWell(r, t) {
+  const [x, y, w, h] = r, l = t.x + WELL.in, rt = t.x + WELL.out, f = t.y + WELL.deep;
+  if (t.x < x || t.x >= x + w || t.y < y || t.y >= y + h) return [r];
+  return [[x, y, l - x, h], [rt, y, x + w - rt, h], [l, f, rt - l, y + h - f], [l, y, rt - l, t.y - y]].filter(([, , bw, bh]) => bw > 0.001 && bh > 0.001);
+}
+
+/** How far down the stairwell something standing at (x, z) is: nothing on the floor, sinking step by step as it walks
+    toward the back wall and under it. */
+function stairSink(x, z) {
+  for (const d of doors) {
+    if (d.stairs !== 'down') continue;
+    const lx = x - tileX(d.tile.x), lz = z - (d.tile.y - ROWS / 2);
+    if (Math.abs(lx) < 0.5 && lz < WELL.deep) return -Math.min(1, (WELL.deep - lz) / WELL.deep) * WELL.drop;
+  }
+  return 0;
+}
+
+let throughTex;
+/** The dark of a doorway: the next room unlit beyond it, a little warm light on its floor. */
+function throughMat() {
+  if (!throughTex) {
     const c = document.createElement('canvas');
     c.width = 64; c.height = 128;
     const g = c.getContext('2d'), v = g.createLinearGradient(0, 0, 0, 128);
-    v.addColorStop(0, '#08060e'); v.addColorStop(0.7, '#1a1420'); v.addColorStop(1, down ? '#1a1420' : '#4a3428');
+    v.addColorStop(0, '#08060e'); v.addColorStop(0.7, '#1a1420'); v.addColorStop(1, '#4a3428');
     g.fillStyle = v; g.beginPath(); g.roundRect(0, 0, 64, 128, [28, 28, 0, 0]); g.fill();
-    if (down) for (let i = 0; i < 5; i++) {
-      g.fillStyle = `rgba(168, 122, 76, ${0.75 - i * 0.15})`;
-      g.fillRect(6 + i * 3, 124 - i * 11, 52 - i * 6, 4);
-    }
-    throughTex[down] = new THREE.CanvasTexture(c);
-    throughTex[down].colorSpace = THREE.SRGBColorSpace;
+    throughTex = new THREE.CanvasTexture(c);
+    throughTex.colorSpace = THREE.SRGBColorSpace;
   }
-  return new THREE.MeshBasicMaterial({ map: throughTex[down], transparent: true });
+  return new THREE.MeshBasicMaterial({ map: throughTex, transparent: true });
 }
 
 /** A doorway: on the front edge a doormat like the way out; in a wall a dark way through under a wooden frame, a small
-    mat before it pointing in, or for a staircase (only ever in a back wall) wooden steps climbing into it, or the top
-    of a flight going down. A tap on any of it walks your partner through (goThrough()). */
+    mat before it pointing in, or for a staircase (only ever in a back wall) wooden steps climbing into it, or going
+    down, a stairwell in the floor before the wall (stairwell()). A tap on any of it walks your partner through
+    (goThrough()). */
 function addDoor(d, stepMat) {
   const { x: tx, y: ty } = d.tile;
   if (d.side === 's') {
@@ -218,7 +239,14 @@ function addDoor(d, stepMat) {
     return;
   }
   const g = new THREE.Group(), wood = solid('#7a5434');
-  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat(d.stairs === 'down'));
+  if (d.stairs === 'down') {
+    stairwell(g, wood);
+    g.position.set(tileX(tx), 0, ty - ROWS / 2);
+    g.traverse(o => { o.userData.door = d; });
+    roomGroup.add(g);
+    return;
+  }
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat());
   dark.position.set(0, 1.05, 0.03);
   const post = (x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.24, 0.14), wood); m.position.set(x, 1.12, 0.07); m.castShadow = true; return m; };
   const lintel = new THREE.Mesh(new THREE.BoxGeometry(1.44, 0.18, 0.16), wood);
@@ -229,10 +257,9 @@ function addDoor(d, stepMat) {
   mat.rotation.z = Math.PI;
   g.add(dark, post(-0.61), post(0.61), lintel);
   if (d.stairs) {
-    // up: steps climbing into the wall, each higher; down: a landing tread at the top, the rest painted going down
     const tread = solid('#a87a4c');
-    for (let i = 0; i < (d.stairs === 'up' ? 4 : 1); i++) {
-      const hgt = d.stairs === 'up' ? 0.16 * (i + 1) : 0.04, step = new THREE.Mesh(new THREE.BoxGeometry(1.0, hgt, 0.22), i % 2 ? wood : tread);
+    for (let i = 0; i < 4; i++) {
+      const hgt = 0.16 * (i + 1), step = new THREE.Mesh(new THREE.BoxGeometry(1.0, hgt, 0.22), i % 2 ? wood : tread);
       step.position.set(0, hgt / 2, 0.5 - i * 0.22);
       step.castShadow = step.receiveShadow = true;
       g.add(step);
@@ -244,6 +271,32 @@ function addDoor(d, stepMat) {
   g.traverse(o => { o.userData.door = d; });
   roomGroup.add(g);
   if (!d.stairs) doorMats.push(mat);
+}
+
+/** A flight going down into group `g` (its origin the middle of the back wall's foot over the well): treads stepping
+    down toward the wall and on under it, darker the deeper, the dark below closing it off behind, and a wooden banister
+    down each side, the front left open to walk in from (2026-10-25, the user's ask: a doorway with one step in it
+    didn't read as stairs). */
+function stairwell(g, wood) {
+  const n = WELL.steps, run = WELL.deep / n, rise = WELL.drop / n, w = WELL.out - WELL.in;
+  for (let i = 0; i < n; i++) {
+    const top = -(i + 1) * rise, k = 1 - i * 0.2, tread = solid(shade('#c09060', k)), riser = solid(shade('#7a5434', k * 0.85));
+    const step = new THREE.Mesh(new THREE.BoxGeometry(w, top + 0.6, run), [riser, riser, tread, riser, riser, riser]);
+    step.position.set(0, (top - 0.6) / 2, WELL.deep - run * (i + 0.5));
+    step.receiveShadow = true;
+    g.add(step);
+  }
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(w, 0.6), new THREE.MeshBasicMaterial({ color: '#08060e' }));
+  dark.position.set(0, -0.3, 0.001);
+  g.add(dark);
+  const cap = solid('#9a6c40'), part = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); };
+  for (const s of [-1, 1]) {
+    const x = s * (w / 2 + 0.02);
+    part(new THREE.BoxGeometry(0.07, 0.62, 0.07), wood, x, 0.31, WELL.deep - 0.04);
+    part(new THREE.BoxGeometry(0.07, 0.62, 0.07), wood, x, 0.31, 0.06);
+    for (let j = 1; j < 4; j++) part(new THREE.BoxGeometry(0.035, 0.5, 0.035), wood, x, 0.25, 0.06 + (WELL.deep - 0.1) * j / 4);
+    part(new THREE.BoxGeometry(0.09, 0.05, WELL.deep + 0.02), cap, x, 0.63, WELL.deep / 2 + 0.01);
+  }
 }
 
 /** Your partner walks to a doorway and through it: out over the main room's doormat, the way out of the base, or into
@@ -1092,7 +1145,7 @@ function liveGuest(g, dt, now) {
   }
   const happy = w.hopUntil > now;
   const bob = calm ? 0 : w.path.length ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06 : happy ? Math.abs(Math.sin((w.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  m.group.position.set(w.x, w.y, w.z);
+  m.group.position.set(w.x, w.y + (w.seat ? 0 : stairSink(w.x, w.z)), w.z);
   m.board.position.y = bob;
   m.board.scale.x = w.flip ? -1 : 1;
   drawMon(m, w, dt);
@@ -2018,7 +2071,7 @@ function frame(now) {
   if (!calm) for (const m of doorMats) m.material.emissiveIntensity = mode === 'walk' ? 0.12 + Math.sin(now / 420) * 0.1 : 0;
   const happy = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : happy ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  mon.group.position.set(walker.x, walker.y ?? 0, walker.z);
+  mon.group.position.set(walker.x, (walker.y ?? 0) + stairSink(walker.x, walker.z), walker.z);
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
