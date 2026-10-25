@@ -4,6 +4,7 @@
 import { getSave, updateSave } from './storage.js';
 import { playSound, playMusic } from './audio.js';
 import { el } from './ui.js';
+import { calmFx } from './prefs.js';
 import { PIECES, allItems } from './secret-base.js';
 import { RECORDS, RECORDS_BY_ID, PLAYERS, PLAYER_KINDS, GIFT_RECORD, ownedRecords, recordsOpen } from './data/records.js';
 import { TOWNS, RING, mended, townState } from './data/towns.js';
@@ -121,49 +122,164 @@ export function recordCrate(recs, { at = 0, look = () => ({}), onFlip = () => {}
   return { el: root, refresh, current: () => recs[cur] };
 }
 
-/** Pick the base's record. `b` is the base, `save()` keeps it. Resolves once the window shuts. */
+const coverKind = (r) => (!r ? 'home' : r.gift ? 'gift' : r.town);
+const shortName = (r) => (r ? r.name.replace(/\s*\([^)]*\)$/, '') : 'Secret Base');
+const tagOf = (r) => (!r ? 'HOME' : r.gift ? 'GIFT' : r.name.match(/\(([^)]+)\)$/)?.[1] ?? '');
+const fromOf = (r) => (!r ? 'Your base\'s own song' : r.gift ? 'A gift from Smeargle' : `From ${TOWNS[r.town]?.name ?? ''}`);
+
+/** A record in the crate: its sleeve (a town's pattern in the record's colour, the title and the game on a sticker), the
+    vinyl tucked behind it. */
+function sleeve(r) {
+  const s = el('button', 'jb-sleeve');
+  s.type = 'button';
+  const cover = el('span', `jb-cover t-${coverKind(r)}`);
+  cover.style.setProperty('--ink', r ? r.ink : '#3a5a8a');
+  cover.append(el('b', '', shortName(r)));
+  if (tagOf(r)) cover.append(el('em', '', tagOf(r)));
+  s.append(disc(r), cover);
+  return s;
+}
+
+/** Pick the base's record: a jukebox's cabinet under a neon arch, its deck playing the base's song, and every record you
+    hold in a crate you flick through, a divider a town. Tap the record in front to put it on. `b` is the base, `save()`
+    keeps it. Resolves once the window shuts. */
 export function openJukebox(b, save) {
-  const owned = new Set(ownedRecords(getSave()));
-  const d = el('dialog', 'dialog dev-window jukebox');
-  const head = el('h2', '', 'JUKEBOX');
-  const say = el('p', 'tshop-say');
-  const list = el('div', 'rec-list');
-  const screen = el('div', 'dev-screen');
-  screen.append(say, list);
-  const close = el('button', 'btn secondary', 'Done');
+  const owned = new Set(ownedRecords(getSave())), calm = calmFx();
+  const all = [null, ...RECORDS.filter(r => owned.has(r.id))];
+  const playing = () => (RECORDS_BY_ID[b.song] && owned.has(b.song) ? RECORDS_BY_ID[b.song] : null);
+  const d = el('dialog', `dialog jukebox${calm ? ' calm' : ''}`);
+
+  const marquee = el('div', 'jb-marquee'), bulbs = el('div', 'jb-bulbs');
+  for (let i = 0; i < 15; i++) {
+    const a = Math.PI * (1.08 + 0.84 * i / 14), bulb = el('i');
+    bulb.style.left = `${50 + Math.cos(a) * 46}%`;
+    bulb.style.top = `${92 + Math.sin(a) * 78}%`;
+    bulb.style.setProperty('--i', i);
+    bulbs.append(bulb);
+  }
+  marquee.append(bulbs, el('h2', 'jb-name', 'JUKEBOX'));
+
+  const deck = el('div', 'jb-deck on'), platter = el('div', 'jb-platter');
+  let deckDisc = disc(playing(), true);
+  platter.append(deckDisc);
+  const arm = el('div', 'jb-arm');
+  arm.append(el('i', 'jb-head'));
+  const lcd = el('div', 'jb-lcd'), ticker = el('div', 'jb-scroll'), now = el('span', 'jb-now'), eq = el('div', 'jb-eq');
+  for (let i = 0; i < 6; i++) { const bar = el('i'); bar.style.setProperty('--i', i); eq.append(bar); }
+  ticker.append(now);
+  lcd.append(el('small', '', 'NOW PLAYING'), ticker, eq);
+  deck.append(platter, arm, lcd);
+
+  const tabs = el('div', 'jb-tabs'), crate = el('div', 'jb-crate');
+  const capName = el('b'), capFrom = el('span'), caption = el('div', 'jb-caption');
+  caption.append(capName, capFrom);
+  const put = el('button', 'btn danger jb-put', 'Put it on'), close = el('button', 'btn secondary', 'Done');
   const acts = el('div', 'dialog-actions');
-  acts.append(close);
-  d.append(head, screen, acts);
+  acts.append(close, put);
+  d.append(marquee, deck, tabs, crate, caption);
+  if (all.length === 1) d.append(el('p', 'jb-none', 'No records yet. Mend a town\'s Waystone, then visit its trading post: they sell the songs from round there.'));
+  d.append(acts);
   document.body.append(d);
-  const line = (r) => {
-    say.textContent = r ? `Now playing: ${r.name}. Friends who visit hear it too.` : 'Playing the Secret Base\'s own song.';
+
+  const showNow = () => {
+    const r = playing(), name = r ? r.name : 'Secret Base';
+    now.textContent = name;
+    now.classList.remove('long');
+    if (now.scrollWidth > ticker.clientWidth) { now.textContent = `${name}   \u266a   ${name}   \u266a   `; now.classList.add('long'); }
   };
-  const draw = () => {
-    const on = RECORDS_BY_ID[b.song] && owned.has(b.song) ? b.song : null;
-    const row = (r) => {
-      const t = el('button', `rec-row${(r?.id ?? null) === on ? ' on' : ''}`);
-      t.type = 'button';
-      t.append(disc(r, (r?.id ?? null) === on), el('span', 'rec-name', r ? r.name : 'Secret Base'), el('span', 'rec-from', r ? (r.gift ? 'A gift from Smeargle' : TOWNS[r.town]?.name ?? '') : 'Its own song'));
-      t.addEventListener('click', () => {
-        if ((r?.id ?? null) === on) return;
-        playSound('confirm');
-        if (r) b.song = r.id; else delete b.song;
-        save();
-        playMusic(baseSong(b));
-        line(r);
-        draw();
-      });
-      return t;
-    };
-    list.replaceChildren(row(null), ...RECORDS.filter(r => owned.has(r.id)).map(row));
-    if (!owned.size) list.append(el('p', 'rec-none', 'No records yet. Mend a town\'s Waystone, then visit its trader: they sell the songs from round there.'));
+
+  let list = all, mid = -1, filter = 'all', busy = false;
+  const recordAt = (i) => list[i];
+  const layout = () => {
+    // every read before any write: a sleeve's offsetLeft ignores its transform, so the crate lays out once a frame
+    const c = crate.scrollLeft + crate.clientWidth / 2, sleeves = [...crate.children];
+    const offs = sleeves.map(s => (s.offsetLeft + s.offsetWidth / 2 - c) / 92);
+    let best = 0;
+    offs.forEach((off, i) => { if (Math.abs(off) < Math.abs(offs[best])) best = i; });
+    sleeves.forEach((s, i) => {
+      const a = Math.max(-3, Math.min(3, offs[i]));
+      s.style.transform = `translateX(${-a * 10}px) rotateY(${Math.max(-60, Math.min(60, -a * 48))}deg) scale(${1 - Math.min(Math.abs(a), 1.5) * 0.16})`;
+      s.style.zIndex = `${100 - Math.round(Math.abs(a) * 10)}`;
+    });
+    if (best !== mid) {
+      mid = best;
+      [...crate.children].forEach((s, i) => s.classList.toggle('mid', i === mid));
+      const r = recordAt(mid), on = (r?.id ?? null) === (playing()?.id ?? null);
+      capName.textContent = r ? r.name : 'Secret Base';
+      capFrom.textContent = fromOf(r);
+      put.textContent = on ? 'Playing \u266a' : 'Put it on';
+      put.disabled = on;
+      if (!calm && performance.now() > quietUntil) playSound('fx-click');
+    }
   };
-  line(RECORDS_BY_ID[b.song] && owned.has(b.song) ? RECORDS_BY_ID[b.song] : null);
-  draw();
+  let frame = 0, quietUntil = 0;
+  crate.addEventListener('scroll', () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; layout(); }); }, { passive: true });
+  crate.addEventListener('wheel', (e) => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { crate.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
+  const centre = (i, smooth = true) => {
+    const s = crate.children[i];
+    if (!s) return;
+    crate.scrollTo({ left: s.offsetLeft + s.offsetWidth / 2 - crate.clientWidth / 2, behavior: smooth && !calm ? 'smooth' : 'auto' });
+  };
+
+  const putOn = (r) => {
+    if (busy || (r?.id ?? null) === (playing()?.id ?? null)) return;
+    busy = true;
+    playSound('confirm');
+    const s = crate.children[mid];
+    s?.classList.add('out');
+    deck.classList.remove('on');
+    if (r) b.song = r.id; else delete b.song;
+    save();
+    setTimeout(() => {
+      const fresh = disc(r, true);
+      deckDisc.replaceWith(fresh);
+      deckDisc = fresh;
+      deck.classList.add('on');
+      playSound('fx-click');
+      playMusic(baseSong(b));
+      showNow();
+      s?.classList.remove('out');
+      mid = -1;
+      layout();
+      busy = false;
+    }, calm ? 0 : 480);
+  };
+
+  const fill = () => {
+    list = filter === 'all' ? all : all.filter(r => coverKind(r) === filter);
+    crate.replaceChildren(...list.map((r, i) => {
+      const s = sleeve(r);
+      s.addEventListener('click', () => (i === mid ? putOn(r) : (playSound('select'), centre(i))));
+      return s;
+    }));
+    mid = -1;
+    quietUntil = performance.now() + 400;
+    const at = Math.max(0, list.findIndex(r => (r?.id ?? null) === (playing()?.id ?? null)));
+    requestAnimationFrame(() => { centre(at, false); layout(); });
+  };
+  const kinds = [...new Set(all.slice(1).map(coverKind))];
+  const divider = (id, label) => {
+    const t = el('button', `jb-tab${filter === id ? ' on' : ''}`, label);
+    t.type = 'button';
+    t.addEventListener('click', () => {
+      if (filter === id) return;
+      playSound('select');
+      filter = id;
+      [...tabs.children].forEach(c => c.classList.toggle('on', c === t));
+      fill();
+    });
+    return t;
+  };
+  if (kinds.length > 1) tabs.append(divider('all', 'All'), ...kinds.map(k => divider(k, k === 'gift' ? 'Gifts' : TOWNS[k]?.name ?? k)));
+  else tabs.hidden = true;
+
+  put.addEventListener('click', () => putOn(recordAt(mid)));
   return new Promise(res => {
-    d.addEventListener('close', () => { d.remove(); res(); }, { once: true });
+    d.addEventListener('close', () => { cancelAnimationFrame(frame); d.remove(); res(); }, { once: true });
     close.addEventListener('click', () => d.close());
     d.showModal();
+    showNow();
+    fill();
   });
 }
 

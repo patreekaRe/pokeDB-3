@@ -1038,7 +1038,7 @@ selling its own song plus more, so mending every Waystone and going back pays. T
   a tab switch or close). Flipping never changes the music, so scrubbing never decodes song after song. The jukebox at
   home keeps its list (the user's call: the crate is for buying).
 - **Playing**: `PLAYERS` (the `fam`s jukebox, dnrjukebox, recordplayer, gramophone, antqgramo). With records open a tap
-  on one in your base opens `openJukebox()` (js/jukebox.js, `.jukebox`, spinning-disc rows) instead of its synth tune;
+  on one in your base opens `openJukebox()` (js/jukebox.js, `.jukebox`) instead of its synth tune;
   the pick is the base's `song` (none = its own song). `baseSong(b, mine)` is what `openBase3d()` / `reopen()` play:
   the record while a player stands anywhere in the base and (your own base) the record is still held, else
   `secret-base`. The song rides to the Trainers page inside the base (`pageBase()`), and `readGuestBase()` drops an
@@ -1056,6 +1056,14 @@ selling its own song plus more, so mending every Waystone and going back pays. T
   where the song comes round to its start just before the fade (chroma alone, then the waveform). Gains set the loop
   to about -30 LUFS played, level with the towns' songs and `secret-base` measured the same way (K-weighted, mono fold).
   The town shop's grid scrolls past 4 rows (`.town-shop .tshop-grid`).
+- **The jukebox window** (2026-10-25, the user's ask: "more immersive", "like we're actually selecting through our
+  catalogue", its own look apart from the trader's): a cabinet under a neon arch with chasing bulbs, a deck (the playing
+  record spinning on a platter, a tonearm that lifts while a record is swapped, a green NOW PLAYING screen whose title
+  scrolls when long, EQ bars), and the records as sleeves in a wooden crate, flicked through coverflow-style (scroll-snap,
+  `layout()` tilting each by its distance from the middle, reads before writes), with crate dividers a town (and Gifts).
+  A sleeve is the record's `ink` with its town's pattern (`.t-<town>`, `t-gift`, `t-home`), the name and the game on a
+  sticker; the one in front has its vinyl peeking out. Tap it (or Put it on) and the vinyl slides up out of the crate to
+  the deck. Calm effects (`calmFx()`) stop every animation.
 - **Smeargle brings the jukebox** (2026-10-25, the user's ask; a slide-in since the same day, the user's call, after the
   walking visit found no tiles in a full room): once, Smeargle slides in on the yard's talk window (`jukeboxIntro()` in
   js/base-3d.js, `gymTalk()`, `JUKEBOX_HELLO`), no Smeargle in the room. It says what a jukebox does and that the record
