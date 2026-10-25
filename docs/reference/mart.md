@@ -21,9 +21,12 @@ some start couldn't reach any); the Level 0 bot moved within noise (~94.6%).
 Measure with a route-share count over a few thousand `generateMap()` calls. Its stock (`node.stock`:
 cards, items and relics, each `{ id, price, sold }`) is rolled in `startBiome()`
 and saved with the map, so a refresh can't reroll the shelves.
+On walking in (2026-10-25, the user's ask) `martRoom()` gives a relic slot you've since picked up elsewhere
+(a reward, the grotto, an event, another Mart) to a relic you don't hold, on the room's seed, so SOLD OUT on a relic only
+ever means bought in that Mart. The sim's shop mirrors it.
 `martRoom()` in `js/run.js` reuses the reward screen (`showChoice`) and
 re-renders itself after each purchase; `ware()` wraps a card/item/relic tile with
-its price tag (red and disabled when you can't afford it), a `group` and a
+its price tag (red when you can't afford it; since 2026-10-25, the user's ask, a ware too dear or with the Bag full is `blocked`, not `disabled`: it still opens to read, the reason under it and Buy greyed), a `group` and a
 two-tap "Buy ₽N" confirm. `layout: 'mart-window'` is a plain grid of the wares, hidden under the 3D Mart below and only seen if Three.js won't load (the pixel Mart scene, its painted room, Kecleon, hanging signs and props, was deleted 2026-10-10, the user's call: it slowed the walk in).
 Removal (the PC on Britt's counter) reuses `forgetMove(martRoom, pay)`, so backing out of the picker costs nothing; it can be
 bought once per Mart (`stock.removed`, then the PC says "Sold out"). Every forget picker
@@ -48,6 +51,6 @@ door and follows your Pokémon (it began leaning right, the user's call); a phon
 PNGs load with `crossOrigin` (githack can serve them from its CDN's domain, which taints the canvas so WebGL uploads it
 blank: on the user's phone every card and sprite was missing). Britt (a trainer sprite, `trainerBoard()`; Kecleon until 2026-10-13) stands behind a
 blue counter on the left with the PC on it (its "Forget ₽N" sign, `.mart3d-sign`). Since 2026-10-14 the PC stands on the counter's left end and Britt on its right (the PC hid the MOVES unit's first card), the gondola of goods in front of the counter is gone and the ball bin stands against the left wall (0,4). A tap on a ware walks your Pokémon up
-and presses its choice (a greyed one says why in the text box); a bought ware flies into your Pokémon as the shop redraws;
+and presses its choice (the greyed PC says why in the text box); a bought ware flies into your Pokémon as the shop redraws;
 the doormat presses Leave. `preloadMart()` (from `warmMart3d()` in `js/run.js`) builds it while the map is up, with your Pokémon and every Mart's wares painted ahead; the room shows at once, no fade, and its shelves fill as their pictures are ready, all painted in parallel (`paintAll()`; 2026-10-10, the user saw a blank blue screen while they loaded one by one). `?mart` (`&starter=id`, `&money=N`) walks a
 throwaway run straight into one (`peekMart()`).

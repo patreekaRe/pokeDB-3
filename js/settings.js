@@ -10,6 +10,7 @@
 import { $, el, confirmDialog } from './ui.js';
 import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
 import { goldShell } from './data/journal-ranks.js';
+import { LEVEL_SHELLS, shellEarned } from './data/difficulty.js';
 import { LUXURY_SHELLS, LUXURY_SHELL_IDS } from './data/catalogue.js';
 import { cloudRemembered } from './cloud.js';
 import { setClock } from './daytime.js';
@@ -19,13 +20,14 @@ import { pref as valueOf, vibrate } from './prefs.js';
 import { pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { playSound } from './audio.js';
+import { takeOffFoil, askTilt } from './foil.js';
 
 // a choice's third entry is a swatch colour: the chip is drawn as that colour and its name shows after the option's name
 const OPTIONS = {
   shell: {
     values: [['red', 'Red', '#c41f2a'], ['blue', 'Blue', '#245cc4'], ['yellow', 'Yellow', '#ecb818'], ['green', 'Green', '#229a3e'],
       ['pink', 'Pink', '#dc4c8c'], ['black', 'Black', '#383840'], ['gold', 'Gold', '#d8a830'],
-      ...LUXURY_SHELLS.map(l => [l.id, l.name, l.swatch])],
+      ...LEVEL_SHELLS.map(l => [l.id, l.name, l.swatch]), ...LUXURY_SHELLS.map(l => [l.id, l.name, l.swatch])],
     apply: v => { if (v === 'red') delete document.documentElement.dataset.shell; else document.documentElement.dataset.shell = v; },
   },
   textSpeed: { values: [['slow', 'Slow'], ['mid', 'Mid'], ['fast', 'Fast'], ['instant', 'Instant']] },
@@ -41,6 +43,8 @@ const OPTIONS = {
   sharpness: { values: [['soft', 'Soft'], ['sharp', 'Sharp'], ['max', 'Max']], apply: (v, changed) => { if (changed) dispatchEvent(new Event('resize')); } },
   // the title as the walkable Clearing (js/hub-3d.js) or its menu signs; js/title.js swaps them at once
   titleHub: { values: [[true, 'Walk'], [false, 'Signs']], apply: (v, changed) => { if (changed) dispatchEvent(new Event('title-hub')); } },
+  // a run puts it back on at its next map (js/foil.js)
+  foil: { values: [[true, 'On'], [false, 'Off']], apply: (v, changed) => { if (!v) takeOffFoil(); else if (changed) askTilt(); } },
   calmFx: { values: [[false, 'Full'], [true, 'Reduced']], apply: v => document.documentElement.classList.toggle('calm-fx', v) },
   battleSpeed: { values: [[1, '1x'], [2, '2x']], apply: v => document.documentElement.classList.toggle('fast-battle', v > 1) },
   battleFx: { values: [[true, 'On'], [false, 'Off']], apply: v => document.documentElement.classList.toggle('no-battle-fx', !v) },
@@ -52,12 +56,15 @@ function render() {
   for (const row of document.querySelectorAll('#dev-settings .set-opt[data-opt]')) {
     const now = valueOf(row.dataset.opt);
     for (const b of row.querySelectorAll('.set-chip')) b.setAttribute('aria-checked', String(b.value === String(now)));
-    // the gold shell is Grand Champion's, the Trainer's Journal's top rank (js/data/journal-ranks.js); the Grand
+    // the gold shell is Grand Champion's, the Trainer's Journal's top rank (js/data/journal-ranks.js); Gilded and Clear
+    // a Level 8 and a Level 10 win's (LEVEL_SHELLS); the Grand
     // Catalogue's are bought at the PC (js/grand-shop.js)
     if (row.dataset.opt === 'shell') {
       const save = getSave(), chips = [...row.querySelectorAll('.set-chip')];
       for (const b of chips) {
-        const locked = b.value === 'gold' ? !goldShell(save) : LUXURY_SHELL_IDS.has(b.value) && !(save.shells || []).includes(b.value);
+        const level = LEVEL_SHELLS.find(l => l.id === b.value);
+        const locked = b.value === 'gold' ? !goldShell(save) : level ? !shellEarned(save, level)
+          : LUXURY_SHELL_IDS.has(b.value) && !(save.shells || []).includes(b.value);
         b.hidden = locked && now !== b.value;
       }
       chips[0]?.parentElement.style.setProperty('--n', Math.min(7, chips.filter(c => !c.hidden).length));   // a second row past seven

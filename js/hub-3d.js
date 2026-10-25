@@ -11,7 +11,7 @@
 import { getSave, updateSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { season } from './season.js';
-import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, deadTreeArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
+import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
 import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { plazaBoard } from './hub-plaza.js';
@@ -35,9 +35,12 @@ import { vistaArt, VISTA } from './hub-vista.js';
 import { makeCracks, CRACK_LINES } from './hub-cracks.js';
 import { makeSealedGate } from './hub-sealed.js';
 import { makeGardenArch } from './hub-arch.js';
+import { makeHouse, makeKiosk } from './hub-houses.js';
+import { housesOpen, homeOf, HOUSES_BY_ID, firstHouse, lotWord } from './data/houses.js';
 import { YARD_PRICE } from './data/house.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
+import { makeHolo } from './hub-holo.js';
 import { makeCauldron } from './hub-cauldron.js';
 import { safariGate, WING_X } from './hub-safari.js';
 import { makeDojo } from './hub-dojo.js';
@@ -48,8 +51,8 @@ import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, friendWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { asking, favourOf } from './data/favours.js';
-import { workshopOf, heartsOf } from './data/workshop.js';
-import { unclaimed, friendMail } from './mail.js';
+import { workshopOf, heartsOf, boothBeckons } from './data/workshop.js';
+import { unclaimed, friendMail, houseMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
 import { claimable, timeLeft } from './missions.js';
@@ -65,16 +68,18 @@ const M = 4, FRONT = 2;       // grass round it (tiles): the open meadow behind,
 // grass to the forest's edge; MW is its margin, M the other sides'
 const WEST = 4, MW = M + WEST;
 // the Whispering Clearing's gate at the far end of the north avenue (the user's ask, 2026-10-14: the way out goes north);
-// the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the route sign either
-// side of the avenue just inside it
+// the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the Berry Booth either
+// side of the avenue before it
 const GATE_AT = { tx: 15, ty: -2 };
-// either side of the gate, just outside its feet so neither hides their runes (the user's ask, 2026-10-15: they stood
-// a row or two forward of it, the sign further out than the stop); each nudged in towards the opening (STAND_IN)
-const STOP_AT = { tx: 18, ty: -1 }, SIGN_AT = { tx: 12, ty: -1 }, STAND_IN = 0.3;
+// New game's Pokéstop and the Berry Booth (js/berrybooth.js) a row in front of the gate, right at the avenue's edges, in
+// line with its lamps (the user's ask, 2026-10-23: closer to the road), their doorsteps on the road (ROADSIDE: how far
+// each stands out from its tile towards the road)
+const STOP_AT = { tx: 17, ty: 0 }, BOOTH_AT = { tx: 13, ty: 0 }, ROADSIDE = 0.4;
 const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
 const PC_AT = { tx: 19, ty: 10 };
+const HOLO_AT = { tx: 11, ty: 10 };   // the Buddy Projector (js/hub-holo.js), left of the quest board where Halloween's dead tree stood
 // the quest board (towns on only) and the Trainer Plaza's board (js/hub-plaza.js) at the plaza's top corners, either side
 // of the north avenue, each turned to face the plaza (the user's marks on an aerial shot, 2026-10-17); `at` is where it
 // stands (tiles, fractions allowed), `tiles` what it blocks, `step` where you stand to read it
@@ -116,7 +121,7 @@ const LIGHT = {
   night: { sky: '#6878c0', ground: '#141830', amb: 0.8, sun: '#a0b4f8', sunI: 0.8, at: [4, 14, 6], bg: '#101830', glow: 1.6, lamp: 3, bugs: 'fireflies', bugsI: 1, air: 'clearing-night' },
 };
 // the Secret Base's backyard (js/base-3d.js) grows the same trees under the same sky
-export { P as CLEARING_LOOK, LIGHT as CLEARING_LIGHT, treeArt, bushArt };
+export { P as CLEARING_LOOK, LIGHT as CLEARING_LIGHT, treeArt, bushArt, ancientArt };
 const AIRS = ['clearing-day', 'clearing-night'];
 const BUGS = 90;
 
@@ -136,6 +141,8 @@ const SEALED_AT = { tx: 2, ty: 10 };
 // the garden gate into the Secret Base's backyard (2026-10-15, the user's ask: its way in from outside, not a back door),
 // in the front of the Ancient Tree's fenced garden, just right of its trunk (moved from 27,3 the same day, the user's drawing)
 const ARCH_AT = { tx: 25, ty: 4 }, ARCH_X = 0;
+// the Timburr crew's builders' stand (houses on, js/data/houses.js), just outside the lot's fence on its left, by the ring road
+const KIOSK_AT = { tx: 17, ty: 4 };
 // Kurt's Workshop (its top-left tile) in the plaza's north-east, its door straight onto the east avenue (moved down a
 // step from 23,6 on 2026-10-15, the user's ask: up the grass it stood apart from the street)
 const WORKSHOP_AT = { tx: 23, ty: 8 };
@@ -187,8 +194,11 @@ let buddies = null, buddiesAt = 0;   // the trainers on your list, as their budd
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let safariMark = null;   // the "!" over the Safari gate while a Ranger task waits (js/data/ranger.js)
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
+let holo = null;    // the Buddy Projector: the walking buddy as a hologram (js/hub-holo.js)
 let beckons = [];   // the signs that are places of their own, hopping now and then (beckon())
 let questMark = null, nietosMark = null;   // the "!" over the quest board (a notice to read) and over the Nietos' house (a step to hand them; boardNow())
+let house = null, kiosk = null, trying = null;   // the house on the lot (js/hub-houses.js), the builders' stand, and the house tried on from its catalogue
+let boothMark = null;  // a "!" over the Berry Booth while held berries are kept and nothing's packed (boothBeckons())
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
 let greets = false; // listening for the logo's fade to end
@@ -601,7 +611,7 @@ function gateVeilArt() {
     vines hanging off it, a ridged trunk flaring into arching roots, and the Secret Base's plank door in the hollow between
     them, a round window and a lantern lit at dusk; mushrooms, ferns and grass at its foot. Open, the door's swung in on a
     warm room; `boarded` (not bought yet) nails two planks across it. */
-function ancientArt(open = false, boarded = false) {
+function ancientArt(open = false, boarded = false, L = HOUSES_BY_ID.tree.paints[0]) {
   // at 4 pixels a unit, still several times what the screen shows of it: at 8 its four pictures (shut and open, with their
   // glow) were 5 MP, sent to the GPU as the Clearing first drew
   const W = 128, H = 160, { c, g, fill, rr, lin, shine } = fine(W, H, 4), rnd = seeded(11), glow = shine();
@@ -674,8 +684,8 @@ function ancientArt(open = false, boarded = false) {
   rr(38.4, 116.8, 6.4, 1.3, 0.4, '#2e2e38');
 
   const lobes = [[64, 40, 36], [28, 58, 24], [100, 58, 24], [44, 26, 22], [86, 26, 22], [64, 15, 17], [16, 74, 12], [112, 74, 12]];
-  for (const [x, y, r] of lobes) fill(P.trees[3], () => g.arc(x, y, r + 1.2, 0, Math.PI * 2));
-  for (const [x, y, r] of lobes) fill(P.trees[2], () => g.arc(x, y, r, 0, Math.PI * 2));
+  for (const [x, y, r] of lobes) fill(L.lobe[0], () => g.arc(x, y, r + 1.2, 0, Math.PI * 2));
+  for (const [x, y, r] of lobes) fill(L.lobe[1], () => g.arc(x, y, r, 0, Math.PI * 2));
   const clumps = [];
   for (let i = 0; i < 420; i++) {   // leaf clumps, lit from the top left, the lit ones on top
     const [bx, by, br] = lobes[Math.floor(rnd() * lobes.length)], a = rnd() * Math.PI * 2, rad = 2.6 + rnd() * 3.6, d = Math.sqrt(rnd()) * (br - rad * 0.6);
@@ -684,17 +694,17 @@ function ancientArt(open = false, boarded = false) {
     clumps.push([l, x, y, rad]);
   }
   clumps.sort((p, q) => p[0] - q[0]);
-  const shade = (l) => l > 0.75 ? ['#a8e078', '#6cc058'] : l > 0.35 ? ['#7cc860', '#48a044'] : l > -0.1 ? ['#5aac4a', '#2e7c34'] : ['#3a8a3a', '#1c5a26'];
+  const shade = (l) => L.shade[l > 0.75 ? 0 : l > 0.35 ? 1 : l > -0.1 ? 2 : 3];
   for (const [l, x, y, rad] of clumps) {
     const [lit, dark] = shade(l);
     fill(dark, () => g.arc(x + rad * 0.18, y + rad * 0.22, rad, 0, Math.PI * 2));
     fill(lit, () => g.arc(x, y, rad * 0.88, 0, Math.PI * 2));
     if (l > 0.2) fill('rgba(255,255,220,0.22)', () => g.arc(x - rad * 0.3, y - rad * 0.35, rad * 0.35, 0, Math.PI * 2));
   }
-  for (const [l, x, y] of clumps.slice(-90)) if (rnd() < 0.5) leaf(g, x + (rnd() - 0.5) * 4, y + (rnd() - 0.5) * 4, -2.4 + rnd() * 1.2, 1.6 + rnd(), l > 0.75 ? '#c8f090' : '#8ad468');
+  for (const [l, x, y] of clumps.slice(-90)) if (rnd() < 0.5) leaf(g, x + (rnd() - 0.5) * 4, y + (rnd() - 0.5) * 4, -2.4 + rnd() * 1.2, 1.6 + rnd(), l > 0.75 ? L.leaf[0] : L.leaf[1]);
   for (let i = 0; i < 26; i++) {   // blossoms in the light
     const [, x, y] = clumps[clumps.length - 1 - Math.floor(rnd() * 160)];
-    blossom(g, x + (rnd() - 0.5) * 3, y + (rnd() - 0.5) * 3, 0.55, rnd() < 0.5 ? '#ffffff' : '#f8c8e0', '#f8d848');
+    blossom(g, x + (rnd() - 0.5) * 3, y + (rnd() - 0.5) * 3, 0.55, rnd() < 0.5 ? L.bloom[0] : L.bloom[1], '#f8d848');
   }
   for (const [x, y, n] of [[18, 84, 12], [30, 80, 16], [42, 74, 10], [86, 74, 12], [98, 80, 18], [110, 84, 10]]) {   // vines hanging off it
     const pts = [];
@@ -2410,43 +2420,20 @@ function makePlaces() {
       open: true,
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
-      // outside the gate on its right, the route sign across the trail from it (the user's ask, 2026-10-09)
-      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - STAND_IN, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
-    },
-    {
-      // the route sign says what the old gate's card did (the user's ask, 2026-10-09); like the Safari gate, no buttons
-      id: 'route-sign', name: 'Whispering Clearing', step: { x: SIGN_AT.tx + 1, y: SIGN_AT.ty }, tiles: [[SIGN_AT.tx, SIGN_AT.ty]], tag: [SIGN_AT.tx, 2.6, SIGN_AT.ty],
-      open: true,
-      line: 'The way out of the Whispering Clearing. Spin the Pokéstop to set out on an adventure.',
-      buttons: [],
-      build: (g) => beckon(g, board(routeSignArt(), tileX(SIGN_AT.tx) + STAND_IN, tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 })),
+      // right of the avenue before the gate, the Berry Booth across the road from it
+      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - ROADSIDE, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
     },
     {
       id: 'base', name: 'Secret Base', step: { x: TREE_AT.tx, y: TREE_AT.ty + 1 }, tiles: [...rect(TREE_AT.tx - 3, TREE_AT.ty - 2, TREE_AT.tx + 3, TREE_AT.ty - 1), ...rect(TREE_AT.tx - 3, TREE_AT.ty, ARCH_AT.tx - 1, TREE_AT.ty)], tag: [TREE_AT.tx, 3.2, TREE_AT.ty], open: true,
-      line: baseOwned() ? 'A door in the Ancient Tree\'s roots: your Secret Base.'
-        : `A boarded-up door in the Ancient Tree's roots. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
-      buttons: [[baseOwned() ? 'Go in' : 'Unlock', baseOwned() ? enterBase : buyBase]],
-      build: (g) => {
-        const shut = ancientArt(false, !baseOwned()), b = board(shut, tileX(TREE_AT.tx), tileZ(TREE_AT.ty) + 0.2), open = ancientArt(true);
-        glowing(b.material, shut, null, '#ffd890');
-        b.raycast = doorOnly;
-        tree = { m: b.material, shut: b.material.map, open: texOf(open) };
-        g.add(b);
-        // the sign hangs off its nail on the bark over the door, pivoting there (liveSign())
-        const art = homeSignArt(baseOwned()), plate = board(art, 0, 0), pivot = new THREE.Group();
-        plate.position.set((art.width / art.fine / 2 - SIGN_NAIL[0]) / TP, (SIGN_NAIL[1] - art.height / art.fine / 2) / TP, 0);
-        pivot.position.set(tileX(TREE_AT.tx), 3.62, tileZ(TREE_AT.ty) + 0.32);
-        plate.raycast = () => {};
-        pivot.add(plate);
-        g.add(pivot);
-        sign = { pivot, m: plate.material, fixed: baseOwned() ? null : texOf(homeSignArt(true)), fixAt: 0, from: 0, swapped: false };
-      },
+      line: lotLine(),
+      buttons: [[baseOwned() ? 'Go in' : 'Unlock', baseOwned() ? enterBase : () => buyBase()]],
+      build: (g) => buildLot(g, lotNow()),
     },
     {
       // the backyard's garden arch: brambles and a padlock till it's bought, here or on the PC's blueprint (js/hub-arch.js)
       id: 'backyard', name: yardOwned() ? 'Backyard' : 'Garden Arch', step: { x: ARCH_AT.tx, y: ARCH_AT.ty + 1 }, tiles: [[ARCH_AT.tx, ARCH_AT.ty]], tag: [ARCH_AT.tx + ARCH_X, 2.9, ARCH_AT.ty], open: true,
-      line: yardOwned() ? 'Through the garden arch beside the Ancient Tree: your backyard.'
-        : `An old garden arch beside the Ancient Tree, choked with brambles, its gate padlocked. ${baseOwned() ? `${YARD_PRICE.toLocaleString()} PokéCoins clears it into a backyard of your own.` : 'Make the Ancient Tree your Secret Base first.'}`,
+      line: yardOwned() ? `Through the garden arch beside ${lotWord(save)}: your backyard.`
+        : `An old garden arch beside ${lotWord(save)}, choked with brambles, its gate padlocked. ${baseOwned() ? `${YARD_PRICE.toLocaleString()} PokéCoins clears it into a backyard of your own.` : `Make ${lotWord(save)} your Secret Base first.`}`,
       buttons: yardOwned() ? [['Go in', enterYard]] : baseOwned() ? [['Unlock', buyYardArch]] : [],
       build: (g) => {
         const L = leavesOf(SEASON), owned = yardOwned();
@@ -2455,10 +2442,18 @@ function makePlaces() {
         g.add(gardenArch.group);
       },
     },
+    ...(housesOpen() ? [{
+      // the Timburr crew's stand beside the lot (houses on): its catalogue tries a house on the lot before you pay
+      id: 'kiosk', name: 'Timburr & Co.', step: { x: KIOSK_AT.tx, y: KIOSK_AT.ty + 1 }, tiles: [[KIOSK_AT.tx, KIOSK_AT.ty]], tag: [KIOSK_AT.tx, 2.6, KIOSK_AT.ty], open: true,
+      line: baseOwned() ? 'Timburr & Co., builders. Their catalogue builds a new house on your lot, tried on before you buy, and repaints the one you have.'
+        : `Timburr & Co., builders. FOR SALE: the lot beside them, the Ancient Tree on it. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
+      buttons: [['Catalogue', openKiosk]],
+      build: (g) => buildKiosk(g),
+    }] : []),
     {
-      // right of the plaza, where your partner starts (2026-10-09): who walks with you, who lives in the base, your name
+      // right of the plaza, where your partner starts (2026-10-09): who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
-      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : claimable() ? 'A mission reward is waiting! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, your missions, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
+      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : claimable() ? 'A mission reward is waiting! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, your missions, the patch notes, who lives in your Secret Base, and your name.`; },
       buttons: [['Log on', openPc]],
       build: (g) => {
         const pc = pcModel(THREE, glowMats);
@@ -2473,6 +2468,19 @@ function makePlaces() {
         pcMarks();
         pc.position.set(tileX(PC_AT.tx), 0, tileZ(PC_AT.ty));
         g.add(pc);
+      },
+    },
+    {
+      // the Buddy Projector (the user's ask, 2026-10-22): a device of its own for picking who walks with you
+      id: 'holo', name: 'Buddy Projector', step: { x: HOLO_AT.tx, y: HOLO_AT.ty + 1 }, tiles: [[HOLO_AT.tx, HOLO_AT.ty]], tag: [HOLO_AT.tx, 2.4, HOLO_AT.ty], open: true,
+      get line() { return `A hologram of ${buddy(getSave()).name}, your walking buddy. Pick another to walk with you.`; },
+      buttons: [['Change buddy', openProjector]],
+      build: (g) => {
+        holo = makeHolo(THREE, PITCH);
+        mergeStill(holo.stand);
+        holo.group.position.set(tileX(HOLO_AT.tx), 0, tileZ(HOLO_AT.ty));
+        holo.show(buddy(getSave()));
+        g.add(holo.group);
       },
     },
   ];
@@ -2653,6 +2661,23 @@ function makePlaces() {
     buttons: kurtIn ? [['Go in', () => {}]] : [],
     build: (g) => kurtWorkshop(g, tileX(WORKSHOP_AT.tx + 1), tileZ(WORKSHOP_AT.ty + 1), kurtIn),
   });
+  // the Berry Booth by the gate (2026-10-23, the user's idea): a kiosk where the run's Berry Pouch and kit are packed,
+  // once Kurt's open to make them
+  if (kurtIn) list.push({
+    id: 'booth', name: 'Berry Booth', step: { x: BOOTH_AT.tx + 1, y: BOOTH_AT.ty }, tiles: [[BOOTH_AT.tx, BOOTH_AT.ty]], tag: [BOOTH_AT.tx, 2.6, BOOTH_AT.ty], open: true,
+    get line() { return `${boothBeckons(getSave().loadout, workshopOf(getSave())) ? 'Berries from Kurt\'s, not packed yet! ' : ''}A Berry Booth. Pack your held berries and one run kit item for your next run.`; },
+    buttons: [['Open', openBooth]],
+    build: (g) => {
+      const x = tileX(BOOTH_AT.tx) + ROADSIDE, z = tileZ(BOOTH_AT.ty) - 0.2, art = boothArt(), b = board(art, x, z, { s: 0.9 });
+      glowing(b.material, art, null, '#c8ffd0', 1.2).userData.glowMin = 0.4;
+      g.add(b);
+      boothMark = board(newsArt(), x, z + 0.1, { shadow: false });
+      boothMark.rotation.x = -PITCH;
+      boothMark.userData.y = 2.55;
+      g.add(boothMark);
+      boothMarks();
+    },
+  });
   // shut till you've beaten Kenmatta once in a run (the user's ask, 2026-10-15)
   const dojoIn = kenWinsOf(save) >= 1;
   list.push({
@@ -2721,7 +2746,7 @@ const HINTS = [
   'Beat every Pokémon in the Whispering Clearing, the Overgrown Shrine and the Ember Wastes and the Safari Zone opens: one run a day, the same for everyone, and only your first try counts.',
   'Win a run and the Sky Pillar opens: 100 floors, with a new leaderboard every week.',
   '1,500 PokéCoins opens the boarded door in the Ancient Tree\'s roots. That\'s your Secret Base, to furnish however you like.',
-  'The PC holds your mail, your missions and the patch notes. It also picks who walks beside you here.',
+  'The PC holds your mail, your missions and the patch notes. The Buddy Projector picks who walks beside you here.',
   'The Poké Mall sells furniture for your Secret Base, and the Game Corner\'s arcade is inside.',
   'See those cracks in the ground to the west? Every run you win strikes the seal below. Something wants out.',
   'Your Pokédex keeps every card and Pokémon you\'ve met. Open it whenever you\'re curious.',
@@ -2804,6 +2829,37 @@ async function standProf(g, who) {
   g.add(m.group);
 }
 
+/** The Berry Booth (2026-10-23): a digital kiosk, the Safari gate's teal and cream, a berry-pink canopy over a lit screen
+    showing a berry and the pouch's three slots, a card slot and a tray under it. */
+function boothArt() {
+  const { c, g, rr, lin, shine } = fine(18, 32);
+  rr(2.4, 28.6, 13.2, 3, 1, lin(0, 28.6, 0, 31.6, ['#8a8a86', '#5e5e5a', '#3e3e3a']));
+  rr(3.2, 9.4, 11.6, 19.8, 1.6, lin(3.2, 0, 14.8, 0, ['#5ec8b8', '#2e9a8e', '#1e6e66']));
+  rr(3.8, 9.8, 1.2, 19, 0.6, 'rgba(255,255,255,0.3)');
+  rr(4.6, 11.4, 8.8, 8.6, 1, '#1a2a30');
+  rr(5.2, 12, 7.6, 7.4, 0.7, lin(0, 12, 0, 19.4, ['#d8f8c8', '#9fe0a0', '#6cbc78']));
+  const berry = (gg, k) => {
+    gg.fillStyle = k ? '#ffffff' : '#3a62c8'; gg.beginPath(); gg.arc(9, 14.8, 1.7, 0, Math.PI * 2); gg.fill();
+    gg.fillStyle = k ? '#ffffff' : '#3aa040'; gg.beginPath(); gg.ellipse(9.9, 12.9, 0.9, 0.45, -0.5, 0, Math.PI * 2); gg.fill();
+    for (const x of [6.6, 9, 11.4]) { gg.fillStyle = k ? '#d0d0d0' : 'rgba(31,58,20,0.55)'; gg.fillRect(x - 0.8, 17.4, 1.6, 1.3); }
+  };
+  berry(g, false);
+  const s = shine();
+  s.fillStyle = '#b8f0b0'; s.beginPath(); s.roundRect(5.2, 12, 7.6, 7.4, 0.7); s.fill();
+  berry(s, true);
+  rr(6, 21.4, 6, 1, 0.4, '#123a36');
+  rr(5.4, 24.2, 7.2, 2.8, 0.8, lin(0, 24.2, 0, 27, ['#e8e4d8', '#b8b4a6']));
+  rr(6.2, 25, 5.6, 1.2, 0.5, '#5e5a50');
+  rr(1.4, 4.6, 15.2, 5.2, 1.6, lin(0, 4.6, 0, 9.8, ['#ff8ab8', '#e84a8a', '#b02a62']));
+  g.fillStyle = 'rgba(255,255,255,0.85)';
+  for (let x = 2.6; x < 16; x += 2.6) { g.beginPath(); g.arc(x, 9.6, 1.1, 0, Math.PI); g.fill(); }
+  rr(4, 0.6, 10, 4.4, 1, lin(0, 0.6, 0, 5, ['#fff6e0', '#f0dcb0']));
+  words(g, 'BERRY', 9, 2.9, 2.6, '#c02a62');
+  words(s, 'BERRY', 9, 2.9, 2.6, '#ffd0e0');
+  words(g, 'BOOTH', 9, 7.3, 2.2, '#ffffff');
+  return c;
+}
+
 function rect(x0, y0, x1, y1) {
   const out = [];
   for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) out.push([x, y]);
@@ -2814,7 +2870,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; house = null; kiosk = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; boothMark = null; holo = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -2875,38 +2931,6 @@ function liveGateway(now) {
     c.setXYZ(i, tint[0] * fade, tint[1] * fade, tint[2] * fade);
   });
   p.needsUpdate = c.needsUpdate = true;
-}
-
-/** A Pokémon route sign (the user's pick, 2026-10-09, after Scarlet / Violet's): a white pin, a red band over its round
-    face, a red point below, on a grey post and foot. */
-function routeSignArt() {
-  const { c, g, fill, rr, lin } = fine(16, 36), cx = 8, cy = 8.5;
-  const pin = (r, tip) => {   // the round head and its tangents down to the point
-    const a = Math.acos(r / (tip - cy));
-    g.moveTo(cx, tip); g.lineTo(cx + r * Math.cos(Math.PI / 2 - a), cy + r * Math.sin(Math.PI / 2 - a));
-    g.arc(cx, cy, r, Math.PI / 2 - a, Math.PI / 2 + a, true); g.closePath();
-  };
-  rr(6.2, 22, 3.6, 3.2, 0.9, lin(6.2, 0, 9.8, 0, ['#d8d8d4', '#a8a8a4', '#70706c']));   // the collar, post and foot
-  rr(7, 24.6, 2, 7.6, 0.6, lin(7, 0, 9, 0, ['#c8c8c4', '#9a9a96', '#6a6a66']));
-  rr(3.6, 31.4, 8.8, 4.4, 1.2, lin(0, 31.4, 0, 35.8, ['#a8a8a4', '#7a7a76', '#4e4e4a']));
-  rr(4.2, 31.6, 7.6, 0.8, 0.4, 'rgba(255,255,255,0.45)');
-  fill(lin(0, 1, 0, 23, ['#e4e4e0', '#b8b8b4', '#8a8a86']), () => pin(7.4, 23.2));
-  fill(lin(0, 2, 0, 22, ['#ffffff', '#f4f4f0', '#dcdcd6']), () => pin(6.7, 22.2));
-  g.strokeStyle = lin(0, 1.5, 0, 12, ['#ff7a6a', '#e8483a', '#c8302a']); g.lineWidth = 1.5;   // the red band round the top
-  g.beginPath(); g.arc(cx, cy, 6.3, 0.3, Math.PI - 0.3, true); g.stroke();
-  g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 0.35;
-  g.beginPath(); g.arc(cx, cy, 6.7, 1.15 * Math.PI, 1.4 * Math.PI); g.stroke();
-  fill('#e2e2dc', () => g.arc(cx, cy, 5.1, 0, Math.PI * 2));   // the face
-  fill('#fdfdfb', () => g.arc(cx, cy, 4.7, 0, Math.PI * 2));
-  fill(lin(0, 15.6, 0, 20.6, ['#ff6a5a', '#d83a30']), () => { g.moveTo(5.3, 15.6); g.lineTo(10.7, 15.6); g.lineTo(cx, 20.6); g.closePath(); });
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.font = '900 1.75px "Trebuchet MS", "Arial Black", sans-serif';
-  g.fillStyle = '#e8483a'; g.fillText('WHISPERING', cx, 7.1);
-  g.font = '800 1.45px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#3a3a3a'; g.fillText('CLEARING', cx, 9.3);
-  g.font = '700 1.05px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#7a7a76'; g.fillText('↑ ROUTE OUT', cx, 11.1);
-  return c;
 }
 
 /* ---------- the Clearing round them ---------- */
@@ -3109,7 +3133,7 @@ function liveDuck(now) {
 }
 
 /** The season's decorations, built once with the forest. Halloween: jack-o'-lanterns at the Ancient Tree's door, a
-    pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles under a dead tree, a
+    pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles, a
     bubbling cauldron with toadstools and two pairs of lantern posts (lit with the clock, setTime()), ghost
     Pokémon wandering among them (js/hub-spooky.js) and bats round the Ancient Tree. Each stands on its own tile, kept off
     every path and place (yardTiles), so nothing walks through them. In winter a snowman by the plaza. */
@@ -3127,7 +3151,8 @@ function dressSeason() {
       // the Ancient Tree the scarecrow stood at the Secret Base's door)
       [...P_(5), 21, 17, 4.4, 0, -0.1], [...P_(6), 20, 18, 2.2, 0, 0.1], [...P_(7, false), 19, 18, 1.9, 0, -0.2],
       [scarecrowArt(), 'white', 19, 17, 1.5, 0, 0],
-      [deadTreeArt(0), 'white', 11, 9, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
+      // the graveyard before the dojo: a row of stones, a candle at each end (its dead tree taken out 2026-10-22, the user's
+      // ask, for the Buddy Projector)
       [graveArt(0), null, 5, 9, 1.4, 0, 0], [graveArt(1), null, 6, 9, 1.5, 0, 0], [graveArt(2), null, 8, 9, 1.5, 0, 0], [graveArt(3), null, 9, 9, 1.4, 0, 0],
       [candlesArt(0), 'white', 5, 10, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 10, 1.1, 0, -0.1],
       [...P_(1), 16, 13, 1.4, 0.15, 0.1],   // a little one on the plaza
@@ -3259,6 +3284,8 @@ const placeAt = (t) => places.find(p => p.step.x === t.x && p.step.y === t.y) ??
     shows there. */
 function goTo(p, enter, i = null) {
   playSound('confirm');   // as you tap, not again as you get there (the user's ask, 2026-10-12)
+  if (p.id === 'pc') import('./pc.js').then(m => m.warmPC(), () => {});
+  if (p.id === 'kiosk') import('./house-kiosk.js').catch(() => {});
   if (walker.path.length === 0 && placeAt(walker.tile) === p) return enter ? open(p, i) : showCard(p);
   walker.path = route(walker.tile, p.step);
   aim = enter ? { p, i } : null;
@@ -3475,8 +3502,8 @@ function liveStop(stop, now) {
 
 let glintArt = null;
 
-/** A sign that is a place of its own (the Safari's and the Sky Pillar's boards, the Nietos' name board, the route sign by
-    the gate) hops and wiggles every few seconds, a glint twinkling at its top corner (the user's ask, 2026-10-15: they
+/** A sign that is a place of its own (the Safari's and the Sky Pillar's boards, the Nietos' name board)
+    hops and wiggles every few seconds, a glint twinkling at its top corner (the user's ask, 2026-10-15: they
     read as scenery, nothing said they could be tapped; liveBeckons()). `obj` is a board(), standing on its middle, or a
     group standing on its origin `w` wide and `h` tall. */
 function beckon(g, obj, w, h) {
@@ -3544,6 +3571,174 @@ const BASE_PRICE = 1500;
 const baseOwned = () => !!getSave().baseOwned;
 const yardOwned = () => { const y = getSave().secretBase?.house?.yard; return !!y && !y.lent; };
 
+/* ---------- the house on the lot, and the builders' stand (js/data/houses.js; behind HOUSES_LIVE / ?houses) ---------- */
+
+/** What stands on the lot: with houses off, always the Ancient Tree; on, the house tried on from the stand's catalogue,
+    else the one lived in, else (no base yet) the Ancient Tree for sale. */
+function lotNow() {
+  if (!housesOpen()) return { id: 'tree', paint: 0 };
+  return trying || homeOf(getSave()) || { id: 'tree', paint: 0 };
+}
+
+function lotLine() {
+  const lot = lotNow(), name = HOUSES_BY_ID[lot.id].name;
+  if (lot.id === 'tree') return baseOwned() ? 'A door in the Ancient Tree\'s roots: your Secret Base.'
+    : `A boarded-up door in the Ancient Tree's roots. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`;
+  return baseOwned() ? `Your Secret Base: a ${name}, in ${HOUSES_BY_ID[lot.id].paints[lot.paint]?.name ?? 'its own paint'}.`
+    : `A ${name}, boarded up. ${BASE_PRICE.toLocaleString()} PokéCoins at Timburr & Co.'s stand makes it your Secret Base.`;
+}
+
+/** The lot's house, `lot` { id, paint }: the tree's painting (its door, its "Home" sign), or a house's model. */
+function buildLot(g, lot) {
+  const owned = baseOwned();
+  lotShown = lot;
+  if (lot.id !== 'tree') {
+    const def = HOUSES_BY_ID[lot.id];
+    house = makeHouse(THREE, { id: lot.id, p: def.paints[lot.paint] || def.paints[0], x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty) - 0.1, boarded: !owned, winter: SEASON === 'winter', fine, texOf, merge: mergeStill });
+    glowMats.push(...house.glows);
+    g.add(house.group);
+    return;
+  }
+  const L = HOUSES_BY_ID.tree.paints[lot.paint] || HOUSES_BY_ID.tree.paints[0];
+  const shut = ancientArt(false, !owned, L), b = board(shut, tileX(TREE_AT.tx), tileZ(TREE_AT.ty) + 0.2), open = ancientArt(true, false, L);
+  glowing(b.material, shut, null, '#ffd890');
+  b.raycast = doorOnly;
+  tree = { m: b.material, shut: b.material.map, open: texOf(open) };
+  g.add(b);
+  // the sign hangs off its nail on the bark over the door, pivoting there (liveSign())
+  const art = homeSignArt(owned), plate = board(art, 0, 0), pivot = new THREE.Group();
+  plate.position.set((art.width / art.fine / 2 - SIGN_NAIL[0]) / TP, (SIGN_NAIL[1] - art.height / art.fine / 2) / TP, 0);
+  pivot.position.set(tileX(TREE_AT.tx), 3.62, tileZ(TREE_AT.ty) + 0.32);
+  plate.raycast = () => {};
+  pivot.add(plate);
+  g.add(pivot);
+  sign = { pivot, m: plate.material, fixed: owned ? null : texOf(homeSignArt(true)), fixAt: 0, from: 0, swapped: false };
+}
+
+/** Just the lot built again (a try-on from the catalogue): its old model let go, its lights out of glowMats. */
+function rebuildLot() {
+  const g = placeGroup?.children.find(o => o.name === 'base'), p = places.find(q => q.id === 'base');
+  if (!g || !p) return;
+  const gone = new Set();
+  g.traverse(o => { for (const m of [o.material].flat()) if (m) gone.add(m); });
+  glowMats = glowMats.filter(m => !gone.has(m));
+  tree?.open.dispose();
+  sign?.fixed?.dispose();
+  tree = null; sign = null; house = null;
+  dispose(g);
+  p.line = lotLine();
+  p.build(g);
+  g.traverse(o => { o.userData.place = p; });
+  const L = LIGHT[time] || LIGHT.day;
+  g.traverse(o => { const m = o.material; if (m && glowMats.includes(m)) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow; });
+}
+
+const KIOSK_CREW = 'assets/pokemon/timburr-front.gif', KIOSK_CRATE = 0.22;
+
+/** The builders' stand, and Timburr behind its counter, hopping now and then to be noticed. */
+function buildKiosk(g) {
+  const x = tileX(KIOSK_AT.tx), z = tileZ(KIOSK_AT.ty) + 0.05;
+  g.add(makeKiosk(THREE, { x, z, sale: !baseOwned(), fine, texOf, merge: mergeStill }).group);
+  const k = kiosk = { mon: null, next: 0, hop: 0, tick(now) {
+    if (!k.mon || calm) return;
+    if (!k.next) k.next = now + 4000;
+    if (now > k.next) { k.hop = now; k.next = now + 6000 + Math.random() * 5000; }
+    const t = (now - k.hop) / 450;
+    k.mon.board.position.y = t < 1 ? Math.sin(t * Math.PI) * 0.18 : 0;
+  } };
+  monBoard({ src: KIOSK_CREW, name: 'Timburr', cry: 'timburr' }, false).then(m => {
+    if (!g.parent || kiosk !== k) { dispose(m.group); return; }
+    m.board.rotation.x = -PITCH;
+    m.group.scale.setScalar(0.85);
+    m.group.position.set(x + 0.08, KIOSK_CRATE, z - 0.38);   // on a crate behind the counter, so it shows from the waist up
+    const p = places.find(q => q.id === 'kiosk');
+    m.group.traverse(o => { o.userData.place = p; });
+    drawMon(m, { facing: 'front' }, 0);
+    g.add(m.group);
+    k.mon = m;
+  }, () => {});
+}
+
+/** A still of house `id` in paint `n` on canvas `c`, for its card in the catalogue: the model turned three-quarters on
+    the shared turntable (js/turntable.js, no context of its own beside the Clearing), or the tree's painting. */
+async function houseStill(id, n, c) {
+  const g = c.getContext('2d'), def = HOUSES_BY_ID[id], p = def.paints[n] || def.paints[0];
+  if (id === 'tree') {
+    const art = ancientArt(false, !baseOwned(), p), k = Math.min(c.width / art.width, c.height / art.height) * 0.92;
+    g.drawImage(art, (c.width - art.width * k) / 2, c.height - art.height * k - c.height * 0.04, art.width * k, art.height * k);
+    return;
+  }
+  const { turntableStage, snapTurn } = await import('./turntable.js');
+  const st = await turntableStage(), pivot = new THREE.Group();
+  const made = makeHouse(THREE, { id, p, x: 0, z: 0, winter: SEASON === 'winter', fine, texOf, merge: mergeStatic });
+  const box = new THREE.Box3().setFromObject(made.group), mid = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
+  made.group.position.set(-mid.x, -box.min.y, -mid.z);
+  pivot.add(made.group);
+  const shot = { pivot, h: size.y, r: Math.hypot(Math.hypot(size.x, size.z) / 2, size.y / 2) };
+  if (!snapTurn(st, shot, c)) { await turntableStage(); snapTurn(st, shot, c); }
+  dispose(pivot);
+}
+
+let browsing = null;   // while the stand's catalogue is open, where the view looks: the lot, over the sheet
+let near = 1;          // the view's distance, eased in to BROWSE_NEAR while it does, so the house tried on reads on a phone
+const BROWSE_NEAR = 0.8;
+let lotShown = null;   // the { id, paint } built on the lot
+const sameLot = (a, b) => a?.id === b?.id && a?.paint === b?.paint;
+
+/** The stand's catalogue (js/house-kiosk.js), a sheet over the lower half: a pick builds that house on the lot as a
+    try-on (rebuildLot()), and shutting it puts back the one lived in. */
+/** Where the view looks while the catalogue is up, and how near: forward enough that the house stands in the middle of
+    the screen left above the catalogue's card (`frac` of the screen's height), as near as lets it fit there (an iPad on
+    its side has less room than a phone). */
+function browseAt(frac) {
+  const at = new THREE.Vector3(), was = near, want = Math.min(0.7, frac), free = 1 - frac;
+  const ndc = (y, dz = -1) => at.set(tileX(TREE_AT.tx), y, tileZ(TREE_AT.ty) + dz).project(camera).y;
+  let z = browsing.z;
+  for (const k of [BROWSE_NEAR, 0.9, 1]) {
+    near = k;
+    let lo = tileZ(TREE_AT.ty), hi = tileZ(TREE_AT.ty) + 10;
+    for (let i = 0; i < 20; i++) {
+      const mid = (lo + hi) / 2;
+      aimCamera(browsing.x, mid);
+      if (ndc(1.3) < want) lo = mid; else hi = mid;
+    }
+    z = (lo + hi) / 2;
+    aimCamera(browsing.x, z);
+    if ((ndc(3.4, -2.3) - ndc(0, 0.7)) / 2 <= free * 0.9) break;   // its chimney top to its step, within the room left
+  }
+  const k = near;
+  near = was;
+  aimCamera(camX, camZ);
+  return { z, near: k };
+}
+
+async function openKiosk() {
+  if (entering || document.querySelector('.hk-sheet')) return;
+  hideCard();
+  walker.path = []; aim = null;
+  let mod;
+  try { mod = await import('./house-kiosk.js'); } catch { playSound('cancel'); return; }
+  playCry('timburr');
+  browsing = { x: tileX(TREE_AT.tx) - 0.2, z: tileZ(TREE_AT.ty) + 2.6, near: BROWSE_NEAR };
+  root.classList.add('browsing');
+  mod.openKiosk({
+    parent: root,
+    tryOn: (lot) => { trying = lot; if (!sameLot(lotNow(), lotShown)) rebuildLot(); },
+    rebuild: () => rebuildLot(),
+    snap: houseStill,
+    buyBase: (paint, house) => buyBase(paint, house),
+    onClose: (changed) => {
+      browsing = null;
+      root.classList.remove('browsing');
+      trying = null;
+      if (changed) buildPlaces();
+      else if (!sameLot(lotNow(), lotShown)) rebuildLot();
+      refreshCoins();
+    },
+  });
+  Object.assign(browsing, browseAt(root.querySelector('.hk-sheet')?.offsetHeight / view.clientHeight || 0.45));
+}
+
 const FIX = 1100;
 
 /** The locked sign swings left and right on its one nail; bought, it settles level, mending itself on the way. */
@@ -3556,20 +3751,23 @@ function liveSign(now) {
 }
 
 /** The boarded door's price: too few coins says how many more; else a yes pays, pulls the planks off and walks in. */
-async function buyBase() {
-  if (entering) return;
+async function buyBase(paint = 0, house = null) {
+  const fromKiosk = !!house;
+  if (entering) return false;
   hideCard();
   walker.path = []; aim = null;
   const coins = getSave().coins ?? 0;
   if (coins < BASE_PRICE) {
     playSound('cancel');
     await confirmDialog(`The Secret Base costs ${BASE_PRICE.toLocaleString()} PokéCoins, and you have ${coins.toLocaleString()}.`, 'OK');
-    return;
+    return false;
   }
-  if (!(await confirmDialog(`Make the Ancient Tree your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?`, `Buy (${BASE_PRICE.toLocaleString()})`))) return;
-  updateSave(d => { d.coins -= BASE_PRICE; d.baseOwned = true; });
+  if (!fromKiosk && !(await confirmDialog(`Make the Ancient Tree your Secret Base for ${BASE_PRICE.toLocaleString()} PokéCoins?`, `Buy (${BASE_PRICE.toLocaleString()})`))) return false;
+  updateSave(d => { d.coins -= BASE_PRICE; d.baseOwned = true; if (housesOpen()) firstHouse(d, paint, house || undefined); });
+  if (houseMail()) pcMarks();   // the houses earned before there was a lot to build them on
   refreshCoins();
   playSound('buy');
+  if (fromKiosk) return true;
   if (sign && !calm) {   // the sign swings up level and mends itself before the door opens
     entering = { at: performance.now(), z: walker.z, still: true };
     sign.from = sign.pivot.rotation.z; sign.fixAt = performance.now();
@@ -3579,6 +3777,7 @@ async function buyBase() {
   buildPlaces();
   here = places.find(q => q.id === 'base');
   await enterBase();
+  return true;
 }
 
 /** Into the Ancient Tree: the door swings open, your partner steps into the dark, and the Secret Base comes up under a
@@ -3588,11 +3787,13 @@ async function enterBase() {
   hideCard();
   walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
   if (tree) tree.m.map = tree.open;
+  house?.open(true);
   playSound('door');
   entering = { at: performance.now(), z: walker.z };
   await curtain(true, calm ? 0 : 420);
   entering = null;
   if (tree) tree.m.map = tree.shut;
+  house?.open(false, true);
   inside = 'base';
   await acts.onBase();
 }
@@ -3604,7 +3805,7 @@ async function lockedArch() {
   hideCard();
   walker.path = []; aim = null;
   playSound('cancel');
-  await confirmDialog('The garden arch is padlocked. Make the Ancient Tree your Secret Base first, then its backyard can be cleared.', 'OK');
+  await confirmDialog(`The garden arch is padlocked. Make ${lotWord(getSave())} your Secret Base first, then its backyard can be cleared.`, 'OK');
 }
 
 async function buyYardArch() {
@@ -3617,7 +3818,7 @@ async function buyYardArch() {
     await confirmDialog(`The backyard costs ${YARD_PRICE.toLocaleString()} PokéCoins, and you have ${coins.toLocaleString()}.`, 'OK');
     return;
   }
-  if (!(await confirmDialog(`Clear the garden arch and make a backyard behind the Ancient Tree for ${YARD_PRICE.toLocaleString()} PokéCoins?`, `Buy (${YARD_PRICE.toLocaleString()})`))) return;
+  if (!(await confirmDialog(`Clear the garden arch and make a backyard behind ${lotWord(getSave())} for ${YARD_PRICE.toLocaleString()} PokéCoins?`, `Buy (${YARD_PRICE.toLocaleString()})`))) return;
   const { buyYard, loadBase } = await import('./secret-base.js');
   if (!buyYard(loadBase())) { playSound('cancel'); return; }
   refreshCoins();
@@ -3668,18 +3869,44 @@ function pcMarks() {
   pcNews.visible = !pcMail.visible && pcBeckons(getSave());
 }
 
-/** Log on to the PC (js/pc.js), full screen over the Clearing; logged off, a new walking buddy steps out in place. */
+function boothMarks() {
+  if (boothMark) boothMark.visible = boothBeckons(getSave().loadout, workshopOf(getSave()));
+}
+
+/** The Berry Booth's device (js/berrybooth.js) over the Clearing. */
+async function openBooth() {
+  if (entering || document.getElementById('booth-dialog')?.open) return;
+  hideCard();
+  walker.path = []; aim = null;
+  let openBerryBooth;
+  try { ({ openBerryBooth } = await import('./berrybooth.js')); } catch { playSound('cancel'); return; }
+  openBerryBooth(boothMarks);
+}
+
+/** Log on to the PC (js/pc.js), full screen over the Clearing. */
 async function openPc() {
   if (entering || document.querySelector('.pc-screen')) return;
   hideCard();
   walker.path = []; aim = null;
-  const { openPC } = await import('./pc.js');
-  openPC({ onClose: () => { pcMarks(); swapBuddy(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app) });
+  let openPC;
+  try { ({ openPC } = await import('./pc.js')); } catch { playSound('cancel'); return; }
+  openPC({ onClose: () => { pcMarks(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app),
+    onKiosk: () => { const k = places.find(q => q.id === 'kiosk'); if (k) goTo(k, true); } });
+}
+
+/** The Buddy Projector's picker (js/holo-pick.js); a new pick steps out in place. */
+async function openProjector() {
+  if (entering || document.querySelector('.holo-pick')) return;
+  hideCard();
+  walker.path = []; aim = null;
+  const { openBuddyPicker } = await import('./holo-pick.js');
+  openBuddyPicker((picked) => { if (picked) swapBuddy(); });
 }
 
 /** The walking buddy again from the save: its billboard swapped where it stands, with a hop and its cry. */
 async function swapBuddy() {
   const mate = buddy(getSave());
+  holo?.show(mate);
   if (!mon || mon.src === mate.src) return;
   const old = mon;
   const next = await monBoard(mate);
@@ -3696,6 +3923,7 @@ async function swapBuddy() {
 /** The new player's buddy (the title's first power-on), swapped in quietly while the Clearing still waits behind it. */
 export async function refreshBuddy() {
   const mate = buddy(getSave());
+  holo?.show(mate);
   if (!mon || mon.src === mate.src) return;
   const old = mon, shown = old.group.visible;
   const next = await monBoard(mate);
@@ -3724,9 +3952,10 @@ function leftPlace() {
     walker.hopUntil = 0;
     return;
   }
-  if (!tree || p.id !== 'base') return;
-  tree.m.map = tree.open;
-  if (calm) { tree.m.map = tree.shut; return; }
+  if ((!tree && !house) || p.id !== 'base') return;
+  if (tree) tree.m.map = tree.open;
+  house?.open(true, true);
+  if (calm) { if (tree) tree.m.map = tree.shut; house?.open(false, true); return; }
   // out of the hollow the way it went in (the user's ask, 2026-10-09): it steps out of the open door onto the doorstep
   leaving = { at: performance.now() + LEAVE_WAIT, z: walker.z };
   walker.z -= 0.7;
@@ -3744,7 +3973,7 @@ function liveLeaving(now) {
   if (t < 1) return;
   leaving = null;
   walker.hopUntil = now + 500;
-  setTimeout(() => { if (tree) tree.m.map = tree.shut; gardenArch?.swing(false); playSound('door'); }, 250);
+  setTimeout(() => { if (tree) tree.m.map = tree.shut; house?.open(false); gardenArch?.swing(false); playSound('door'); }, 250);
 }
 
 /* ---------- the card under a place ---------- */
@@ -4057,7 +4286,7 @@ function onUp(e) {
 }
 
 function onKey(e) {
-  if (!running || held || arriving || leaving || outbound || returning || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
+  if (!running || held || arriving || leaving || outbound || returning || document.querySelector('dialog:modal, #shop-dialog[open], .holo-pick') || document.activeElement?.matches?.('input')
     || document.getElementById('collection-screen')?.hidden === false) return;
   const step = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
   if (step) {
@@ -4253,7 +4482,7 @@ function sounds(now) {
 const quiet = () => AIRS.forEach(name => setLoop(name, false));
 
 function aimCamera(x, z) {
-  const d = camera.userData.dist;
+  const d = camera.userData.dist * near;
   camera.position.set(x, LOOK_Y + Math.sin(PITCH) * d, z + Math.cos(PITCH) * d);
   camera.lookAt(x, LOOK_Y, z);
   camera.updateMatrixWorld();
@@ -4317,10 +4546,11 @@ function placeCamera(dt) {
   // walking in, the view waits on the plaza for it rather than dipping to meet it
   const wx = arriving ? tileX(ARRIVE.x) : walker.x, wz = arriving ? tileZ(ARRIVE.y) : walker.z - ahead;
   const loX = tileX(-0.5 - WEST) - 2.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
-  const wantX = loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
-  const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
+  const wantX = browsing ? browsing.x : loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
+  const wantZ = browsing ? browsing.z : backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
+  near += ((browsing?.near ?? 1) - near) * k;
   aimCamera(camX, camZ);
   followSun();
 }
@@ -4393,16 +4623,19 @@ function frame(now) {
   liveGateway(now);
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);
+  holo?.tick(now, dt, calm);
   cauldron?.tick(now, dt, calm);
   safariFx?.tick(now, calm);
   plazaFx?.tick(now, calm);
-  for (const m of [pcMail, pcNews, questMark, nietosMark, safariMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
+  for (const m of [pcMail, pcNews, boothMark, questMark, nietosMark, safariMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) {
     s.cue.opacity = calm ? 0.82 : 0.74 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));
     s.cue.userData.tick(calm ? 0 : now);
   }
   liveSign(now);
+  house?.tick(dt, calm);
+  kiosk?.tick(now);
   liveBeckons(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
@@ -4551,7 +4784,7 @@ async function openHub(titleScreen, actions, hold) {
   resize();
   if (!held) screen.classList.add('hub-on');
   if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
-  if (friendMail()) pcMarks();   // a friend's letter, once a UTC day at most
+  if (friendMail() | houseMail()) pcMarks();   // a friend's letter, once a UTC day at most; the builders', for a house earned
   homeNews();
   friendBuddies();
   return true;

@@ -20,6 +20,7 @@ import { showBadgeNews } from './trainercard.js';
 import { el, itemSprite, termKind } from './ui.js';
 import { playCry, playSound } from './audio.js';
 import { typeOut, finishTyping, progressBar, still, sceneImg } from './pokedex.js';
+import { typeText } from './type-badge.js';
 
 const isMedicine = (i) => i.map || i.effects.revive;
 
@@ -102,7 +103,7 @@ export function thingArt(thing, cls) {
 export const typed = (cls, text) => el('div', `pdx-lcd pdx-text pdx-type${cls ? ` ${cls}` : ''}`, text);
 
 /** A type's chip, top right of the screen. */
-export const typeChip = (type) => el('span', `index-only type-${type}`, `${TYPES[type].icon} ${TYPES[type].label}`);
+export const typeChip = (type) => { const c = el('span', `index-only type-${type}`); c.append(typeText(type, TYPES[type].icon, TYPES[type].label)); return c; };
 
 /* ---------- the engine ---------- */
 

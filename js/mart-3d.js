@@ -964,7 +964,7 @@ function unmount() {
   aim = null;
   for (const f of flying) f.obj.parent?.remove(f.obj);
   flying = [];
-  if (view) putAway(view, scene);
+  if (view) putAway(view, scene, renderer);
 }
 
 /* ---------- in ---------- */

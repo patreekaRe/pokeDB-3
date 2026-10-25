@@ -22,6 +22,7 @@ import { progressBar } from './pokedex.js';
 import { getSave } from './storage.js';
 import { ALL_PAGES } from './data/pokedex.js';
 import { meowthTalk } from './meowth.js';
+import { typeText } from './type-badge.js';
 
 let THREE, renderer, post, view;
 
@@ -629,7 +630,9 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       const wilds = el('div', 'xr-wilds');
       for (const [type, n] of wildTypes(biome)) {
         const row = el('div', `xr-wild type-${type}`);
-        row.append(el('span', 'xr-wicon', TYPES[type]?.icon ?? ''), el('span', 'xr-wname', TYPES[type]?.label ?? type), el('span', 'xr-wn', `${n}`));
+        const icon = el('span', 'xr-wicon');
+        icon.append(typeText(type, TYPES[type]?.icon ?? '', ''));
+        row.append(icon, el('span', 'xr-wname', TYPES[type]?.label ?? type), el('span', 'xr-wn', `${n}`));
         wilds.append(row);
       }
       const body = el('div', 'xr-body');
