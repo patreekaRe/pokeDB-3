@@ -3623,3 +3623,9 @@ friends visiting hear it. Smeargle slides in once (players from before the patch
 after their first Waystone is mended) with a one-time pick of the five players and the gift record, the Clearing's
 song (each player turning in 3D on the Furniture store's turntable as you tap it, the user's ask the same day). The jukebox window is a neon cabinet with a turntable deck and the records as sleeves in a crate. Detail:
 `docs/reference/hub-base-mall.md`'s Records section. Built and playtested behind `?records`, then `RECORDS_LIVE` on.
+Phone check the same day (a cloud session, the user's ask; nothing changed): `budget-check` within budget on base, yard,
+the five towns and the trips, which grow as much as the build before records did (the CPU sprite cache rising and
+falling). A scratchpad probe found no leak: one decoded song after 10 records put on, a trip out of a base playing a
+record letting it go, and 0 MB / 0 listeners / 0 textures left after the jukebox opened 6 times, the trader's crate 5
+(20 listens) and Smeargle's pick 3. Over a 2D screen the jukebox and crate cost ~0.2 ms of JS a frame, ~1-1.5 ms
+style and paint, ~4 ms a record flipped. The pick's turntable costs what any Furniture store buy window does.
