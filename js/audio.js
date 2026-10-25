@@ -70,6 +70,48 @@ const TRACKS = {
   'gym-leader-battle': 'assets/audio/gym-leader-battle.mp3',   // ...the fight with their boss (encounter.leader)
   'gym-victory': 'assets/audio/gym-victory.mp3',
   safari: 'assets/audio/safari.mp3',   // the user's (2026-10-24): the Safari lobby and every Safari area's map, Daily and Duo Runs   // ...and the win, through the badge and the rewards, in place of trainer-victory   // the user's (2026-10-09): Team Rocket's ? room (its events.js `music`), till the fight or the map
+  // the Secret Base jukebox's records (js/data/records.js), the user's town themes from Gens 1-4 (2026-10-25)
+  'rec-ecruteak-gsc': 'assets/audio/rec-ecruteak-gsc.mp3',
+  'rec-violet-gsc': 'assets/audio/rec-violet-gsc.mp3',
+  'rec-lavender-frlg': 'assets/audio/rec-lavender-frlg.mp3',
+  'rec-sootopolis-rse': 'assets/audio/rec-sootopolis-rse.mp3',
+  'rec-hearthome-dp': 'assets/audio/rec-hearthome-dp.mp3',
+  'rec-newbark-gsc': 'assets/audio/rec-newbark-gsc.mp3',
+  'rec-cherrygrove-gsc': 'assets/audio/rec-cherrygrove-gsc.mp3',
+  'rec-fuchsia-gsc': 'assets/audio/rec-fuchsia-gsc.mp3',
+  'rec-pewter-rb': 'assets/audio/rec-pewter-rb.mp3',
+  'rec-cinnabar-rb': 'assets/audio/rec-cinnabar-rb.mp3',
+  'rec-cinnabar-frlg': 'assets/audio/rec-cinnabar-frlg.mp3',
+  'rec-fallarbor-rse': 'assets/audio/rec-fallarbor-rse.mp3',
+  'rec-rustboro-rse': 'assets/audio/rec-rustboro-rse.mp3',
+  'rec-oreburgh-dp': 'assets/audio/rec-oreburgh-dp.mp3',
+  'rec-veilstone-dp': 'assets/audio/rec-veilstone-dp.mp3',
+  'rec-snowpoint-dp': 'assets/audio/rec-snowpoint-dp.mp3',
+  'rec-cerulean-rb': 'assets/audio/rec-cerulean-rb.mp3',
+  'rec-vermilion-rb': 'assets/audio/rec-vermilion-rb.mp3',
+  'rec-cerulean-frlg': 'assets/audio/rec-cerulean-frlg.mp3',
+  'rec-vermilion-frlg': 'assets/audio/rec-vermilion-frlg.mp3',
+  'rec-vermilion-gsc': 'assets/audio/rec-vermilion-gsc.mp3',
+  'rec-sevii-frlg': 'assets/audio/rec-sevii-frlg.mp3',
+  'rec-dewford-rse': 'assets/audio/rec-dewford-rse.mp3',
+  'rec-slateport-rse': 'assets/audio/rec-slateport-rse.mp3',
+  'rec-lilycove-rse': 'assets/audio/rec-lilycove-rse.mp3',
+  'rec-sunnyshore-dp': 'assets/audio/rec-sunnyshore-dp.mp3',
+  'rec-viridian-frlg': 'assets/audio/rec-viridian-frlg.mp3',
+  'rec-fortree-rse': 'assets/audio/rec-fortree-rse.mp3',
+  'rec-verdanturf-rse': 'assets/audio/rec-verdanturf-rse.mp3',
+  'rec-azalea-gsc': 'assets/audio/rec-azalea-gsc.mp3',
+  'rec-oldale-rse': 'assets/audio/rec-oldale-rse.mp3',
+  'rec-petalburg-rse': 'assets/audio/rec-petalburg-rse.mp3',
+  'rec-pallet-rb': 'assets/audio/rec-pallet-rb.mp3',
+  'rec-pallet-gsc': 'assets/audio/rec-pallet-gsc.mp3',
+  'rec-pallet-frlg': 'assets/audio/rec-pallet-frlg.mp3',
+  'rec-sandgem-dp': 'assets/audio/rec-sandgem-dp.mp3',
+  'rec-celadon-rb': 'assets/audio/rec-celadon-rb.mp3',
+  'rec-celadon-frlg': 'assets/audio/rec-celadon-frlg.mp3',
+  'rec-goldenrod-gsc': 'assets/audio/rec-goldenrod-gsc.mp3',
+  'rec-saffron-gsc': 'assets/audio/rec-saffron-gsc.mp3',
+  'rec-jubilife-dp': 'assets/audio/rec-jubilife-dp.mp3',
 };
 // The battle files are hard-cut clips of songs that go on repeating, so looping the whole file jumped from mid-phrase back
 // to the intro (the user found it broke the immersion). These loop inside the file instead, seamlessly: [loopStart,
@@ -116,6 +158,48 @@ const LOOP_POINTS = {
   'gym-leader-battle': [17.83, 49.17744, 0.5],   // the file is a 60.4 s clip with no repeat in it (its best match 0.72), so the closest bars, cross-faded long; it fades from ~55 s
   safari: [17.25, 48.34338, 0.3],   // a 31.09 s repeat (0.950 melody match, 0.800 at the join, so cross-faded); the file is 69.2 s, its second pass fading from ~60 s
   thornwood: [20.2, 85.54415, 0.3],   // a 65.34 s repeat (0.888 melody match, 0.747 sample correlation at the join, so cross-faded; the finder's 16 s one at the top would skip most of the song); the file is 94.8 s, fading from ~86 s
+  // the Secret Base jukebox's records (js/data/records.js; 2026-10-25): loops from tools/loop.html run headless
+  'rec-ecruteak-gsc': [23.35, 89.51675],   // a 66.17 s repeat (0.984 melody match, 0.976 at the join); the file is 144.0 s
+  'rec-violet-gsc': [11.3, 76.58763],   // a 65.29 s repeat (0.980 melody match, 0.966 at the join); the file is 118.3 s
+  'rec-lavender-frlg': [19.75, 95.05683, 0.3],   // a 75.31 s repeat (0.974 melody match, 0.937 at the join); the file is 111.6 s
+  'rec-sootopolis-rse': [6.75, 61.24131],   // a 54.49 s repeat (0.963 melody match, 0.978 at the join); the file is 91.9 s
+  'rec-hearthome-dp': [8, 62.41217],   // a 54.41 s repeat (0.834 melody match, 0.971 at the join); the file is 68.3 s
+  'rec-newbark-gsc': [15.05, 52.2719],   // a 37.22 s repeat (0.979 melody match, 0.994 at the join); the file is 85.7 s
+  'rec-cherrygrove-gsc': [16.9, 39.59144, 0.3],   // a 22.69 s repeat (0.981 melody match, 0.941 at the join); the file is 58.1 s
+  'rec-fuchsia-gsc': [14.15, 45.03556],   // a 30.89 s repeat (0.946 melody match, 0.956 at the join); the file is 73.4 s
+  'rec-pewter-rb': [6.7, 64.57331, 0.3],   // a 57.87 s repeat (0.961 melody match, 0.936 at the join); the file is 122.7 s
+  'rec-cinnabar-rb': [8.9, 30.60231, 0.3],   // a 21.70 s repeat (0.932 melody match, 0.788 at the join); the file is 52.6 s
+  'rec-cinnabar-frlg': [4.65, 38.7891, 0.3],   // a 34.14 s repeat (0.969 melody match, 0.904 at the join); the file is 74.0 s
+  'rec-fallarbor-rse': [4.55, 58.28823],   // a 53.74 s repeat (0.953 melody match, 0.988 at the join); the file is 83.3 s
+  'rec-rustboro-rse': [15.65, 75.8975],   // a 60.25 s repeat (0.985 melody match, 0.986 at the join); the file is 99.2 s
+  'rec-oreburgh-dp': [0.85, 43.21281],   // a 42.36 s repeat (one pass, joined before its fade, 0.986 at the join); the file is 49.2 s
+  'rec-veilstone-dp': [5.88, 82.53633, 0.3],   // a 76.66 s repeat (one pass, joined before its fade, 0.937 at the join); the file is 87.6 s
+  'rec-snowpoint-dp': [2.06, 111.79041, 0.3],   // a 109.73 s repeat (one pass, joined before its fade, 0.928 at the join); the file is 116.2 s
+  'rec-cerulean-rb': [3.55, 33.29037, 0.3],   // a 29.74 s repeat (0.959 melody match, 0.903 at the join); the file is 70.2 s
+  'rec-vermilion-rb': [17.3, 40.8109, 0.3],   // a 23.51 s repeat (0.950 melody match, 0.583 at the join); the file is 56.8 s
+  'rec-cerulean-frlg': [24.25, 56.38092],   // a 32.13 s repeat (0.963 melody match, 0.954 at the join); the file is 76.2 s
+  'rec-vermilion-frlg': [1.8, 39.18569, 0.3],   // a 37.39 s repeat (0.948 melody match, 0.890 at the join); the file is 76.4 s
+  'rec-vermilion-gsc': [58.45, 132.89381],   // a 74.44 s repeat (0.984 melody match, 0.989 at the join); the file is 164.6 s
+  'rec-sevii-frlg': [28.2, 76.39731],   // a 48.20 s repeat (0.949 melody match, 0.971 at the join); the file is 99.1 s
+  'rec-dewford-rse': [22.8, 89.45813],   // a 66.66 s repeat (0.966 melody match, 0.980 at the join); the file is 108.2 s
+  'rec-slateport-rse': [3.5, 85.11981, 0.3],   // a 81.62 s repeat (0.966 melody match, 0.906 at the join); the file is 112.9 s
+  'rec-lilycove-rse': [1.15, 57.29815],   // a 56.15 s repeat (0.959 melody match, 0.991 at the join); the file is 83.9 s
+  'rec-sunnyshore-dp': [8.81, 84.04937],   // a 75.24 s repeat (one pass, joined before its fade, 0.969 at the join); the file is 89.6 s
+  'rec-viridian-frlg': [31.65, 92.8494],   // a 61.20 s repeat (0.950 melody match, 0.970 at the join); the file is 122.7 s
+  'rec-fortree-rse': [10.05, 40.17419],   // a 30.12 s repeat (0.985 melody match, 0.983 at the join); the file is 52.7 s
+  'rec-verdanturf-rse': [4.85, 50.75592],   // a 45.91 s repeat (0.963 melody match, 0.996 at the join); the file is 72.7 s
+  'rec-azalea-gsc': [9.6, 73.29533, 0.3],   // a 63.70 s repeat (0.974 melody match, 0.876 at the join); the file is 110.3 s
+  'rec-oldale-rse': [9.95, 48.50894],   // a 38.56 s repeat (0.975 melody match, 0.995 at the join); the file is 62.1 s
+  'rec-petalburg-rse': [14.2, 44.80952, 0.3],   // a 30.61 s repeat (0.956 melody match, 0.950 at the join); the file is 61.5 s
+  'rec-pallet-rb': [8.55, 40.70165, 0.3],   // a 32.15 s repeat (0.949 melody match, 0.889 at the join); the file is 71.6 s
+  'rec-pallet-gsc': [23.85, 61.27096],   // a 37.42 s repeat (0.989 melody match, 0.988 at the join); the file is 85.1 s
+  'rec-pallet-frlg': [6.9, 50.73152],   // a 43.83 s repeat (0.955 melody match, 0.956 at the join); the file is 121.1 s
+  'rec-sandgem-dp': [3.94, 55.67456],   // a 51.73 s repeat (one pass, joined before its fade, 0.956 at the join); the file is 61.2 s
+  'rec-celadon-rb': [7.1, 36.03662, 0.3],   // a 28.94 s repeat (0.941 melody match, 0.902 at the join); the file is 70.1 s
+  'rec-celadon-frlg': [34.4, 71.63504, 0.3],   // a 37.24 s repeat (0.956 melody match, 0.896 at the join); the file is 86.0 s
+  'rec-goldenrod-gsc': [16.4, 86.46477],   // a 70.06 s repeat (0.985 melody match, 0.978 at the join); the file is 98.6 s
+  'rec-saffron-gsc': [12.25, 90.37621, 0.3],   // a 78.13 s repeat (0.980 melody match, 0.946 at the join); the file is 143.9 s
+  'rec-jubilife-dp': [0.78, 45.36206],   // a 44.58 s repeat (one pass, joined before its fade, 0.963 at the join); the file is 52.2 s
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
 const TRACK_FALLBACK = { 'clearing-hub': 'title', 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss', 'gym-room': 'event-room', 'gym-leader-battle': 'boss', 'gym-victory': 'trainer-victory' };
@@ -879,6 +963,8 @@ function rampTo(gain, value) {
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
 const TRACK_GAIN = { boss: 1.15, eternatus: 0.22, eternamax: 0.18, 'energy-well': 0.17, credits: 0.16, savanna: 0.12, ruins: 0.26, thornwood: 0.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24, 'event-room': 0.36, 'event-outdoor': 0.16, treasure: 0.29, 'shrine-room': 0.2, 'gym-room': 0.52, 'gym-leader-battle': 0.13, 'gym-victory': 0.47, 'town-lantern': 0.45, 'town-cinder': 0.19, 'town-driftwood': 0.26, 'town-sunwell': 0.4, safari: 0.18 };   // eternatus and eternamax come mastered ~14.5 / ~16 dB louder than boss (-12.8 / -11.2 vs -27.3 LUFS), set level with it; energy-well (-13.8) set level with seal, and credits (-12.8) with hall-of-fame (-28.6); trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8), thornwood ~16.6 dB louder (-15.0), event-room ~9 dB louder than center (-19.2 vs -28.4 LUFS), set level with team-rocket, event-outdoor ~16 dB louder (-12.1 LUFS), treasure ~11 dB louder (-17.2 LUFS), shrine-room ~14 dB louder (-13.9 LUFS); the gym's three set level with event-room, boss and trainer-victory (gym-room -21.5, gym-leader-battle -8.6, gym-victory -21.4 LUFS); the towns' four set level with event-room at about -28 LUFS played (lantern -21.0, cinder -13.5, driftwood -16.2, sunwell -20.0); safari ~15 dB louder than map2 (RMS -16.5)
+// the records, set level with the towns' songs and the Secret Base's own (about -30 LUFS played, folded to mono as they play)
+Object.assign(TRACK_GAIN, { 'rec-ecruteak-gsc': 0.39, 'rec-violet-gsc': 0.26, 'rec-lavender-frlg': 0.25, 'rec-sootopolis-rse': 0.25, 'rec-hearthome-dp': 0.23, 'rec-newbark-gsc': 0.31, 'rec-cherrygrove-gsc': 0.2, 'rec-fuchsia-gsc': 0.29, 'rec-pewter-rb': 0.17, 'rec-cinnabar-rb': 0.25, 'rec-cinnabar-frlg': 0.16, 'rec-fallarbor-rse': 0.18, 'rec-rustboro-rse': 0.2, 'rec-oreburgh-dp': 0.26, 'rec-veilstone-dp': 0.21, 'rec-snowpoint-dp': 0.4, 'rec-cerulean-rb': 0.23, 'rec-vermilion-rb': 0.16, 'rec-cerulean-frlg': 0.2, 'rec-vermilion-frlg': 0.19, 'rec-vermilion-gsc': 0.28, 'rec-sevii-frlg': 0.19, 'rec-dewford-rse': 0.21, 'rec-slateport-rse': 0.22, 'rec-lilycove-rse': 0.2, 'rec-sunnyshore-dp': 0.21, 'rec-viridian-frlg': 0.2, 'rec-fortree-rse': 0.2, 'rec-verdanturf-rse': 0.2, 'rec-azalea-gsc': 0.26, 'rec-oldale-rse': 0.18, 'rec-petalburg-rse': 0.19, 'rec-pallet-rb': 0.25, 'rec-pallet-gsc': 0.24, 'rec-pallet-frlg': 0.27, 'rec-sandgem-dp': 0.19, 'rec-celadon-rb': 0.22, 'rec-celadon-frlg': 0.19, 'rec-goldenrod-gsc': 0.28, 'rec-saffron-gsc': 0.22, 'rec-jubilife-dp': 0.24 });
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);

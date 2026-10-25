@@ -1037,3 +1037,15 @@ selling its own song plus more, so mending every Waystone and going back pays. T
   `secret-base`. The song rides to the Trainers page inside the base (`pageBase()`), and `readGuestBase()` drops an
   unknown one (RECORDS_BY_ID has no prototype). On a visit a tap on their jukebox says what's playing.
 - Not done yet: storing the last player mid-visit doesn't stop the record till you next come in.
+- **The user's town themes** (2026-10-25): 41 more records, `rec-<town>-<game>` tracks, from a JUKEBOX folder of Gen 1-4
+  town songs; 55 records in all (Lantern Village 11, Cinder Springs 11, Driftwood Landing 13, Highbough 12, Sunwell
+  Bazaar 8), 500 coins each, each town selling the songs that suit it (old Johto towns at the shrine, mining and volcano
+  towns at the springs, harbours at the landing, small green towns at Highbough, big cities at the bazaar). A name
+  carries its game, `(R/B)` / `(G/S/C)` / `(FR/LG)` / `(R/S/E)` / `(D/P)`, as a town can come from several. The 192 kbps
+  files were folded to mono at 96 kbps (the game plays them mono anyway, `mono()` in js/audio.js; 65 MB down to 46 MB);
+  the 64 kbps ones are kept as given. Loops from tools/loop.html run headless (12 s shortest loop); where a longer
+  repeat matched about as well as the top pick, the longer one (Violet, Vermilion G/S/C, Goldenrod, Saffron). The
+  Diamond/Pearl files are one pass with a short fade, which the finder can't match (it weighs level), so each joins
+  where the song comes round to its start just before the fade (chroma alone, then the waveform). Gains set the loop
+  to about -30 LUFS played, level with the towns' songs and `secret-base` measured the same way (K-weighted, mono fold).
+  The town shop's grid scrolls past 4 rows (`.town-shop .tshop-grid`).
