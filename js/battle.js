@@ -2949,7 +2949,7 @@ function turnBanner(side, turn) {
 
 /** StS's relic flash: relics don't show in battle, so the first time one does something in a fight its icon and name
     get a banner in the turn banner's style (the user's call), queued after any turn banner, one relic a banner; after
-    that its icon alone rises over your Pokémon, several a beat apart. */
+    that its icon alone slides in from the left edge like Torrent's pop-up, one after another. */
 let relicSlot = 0;
 let relicsNamed = new Set();
 let relicsFight = null;
@@ -2962,12 +2962,12 @@ function relicFlash(id) {
   if (relicsFight !== battle) { relicsFight = battle; relicsNamed = new Set(); }
   if (!relicsNamed.has(id)) { relicsNamed.add(id); return relicBanner(relic); }
   const now = performance.now(), at = Math.max(now, relicSlot);
-  relicSlot = at + 400 / speed();
+  relicSlot = at + 1050 / speed();   // the next slides in as this one slides out
   const icon = el('span', 'relic-flash', relic.icon);
   icon.title = relic.name;
   icon.style.animationDelay = `${at - now}ms`;
-  $('player-zone').append(icon);
-  setTimeout(() => icon.remove(), at - now + 2000 / speed());
+  $('arena').append(icon);
+  setTimeout(() => icon.remove(), at - now + 1400 / speed());
 }
 
 function relicBanner(relic) {
