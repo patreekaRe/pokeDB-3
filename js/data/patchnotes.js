@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['fixes', 'Evolutions play in full again: the tap that closed "What? It\'s evolving!" was skipping the whole show.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

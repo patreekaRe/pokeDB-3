@@ -3372,3 +3372,10 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Evolutions play in full again (2026-10-25, cloud)
+The user saw no evolution animation. Since the scene's tap-to-skip (2026-10-18), the tap that closed "What? X is
+evolving!" on its text box bubbled on up to the scene after the skip had started listening, and skipped the whole morph.
+`skipper()` in `js/evolution.js` now starts listening `SKIP_ARM_MS` (300 ms) later. Checked headless in the 3D gym
+(`?gym=lawrence&hp=0.01`, Three.js served locally): the same tap now leaves the morph to play out, and a tap of its own
+still skips it.
