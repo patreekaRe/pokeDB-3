@@ -495,6 +495,43 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
   100% { transform: translateX(-110%); }
 }
 @media (prefers-reduced-motion: reduce) { .ability-banner.show { animation: none; } }
+/* StS's turn banner (turnBanner() in js/battle.js): a dark stripe opens across the arena, the words slide in from the
+   right, hold, and slide out left as the stripe closes */
+.turn-banner {
+  position: absolute; left: 0; right: 0; top: 50%; z-index: 7;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 0 9px;
+  background: linear-gradient(90deg, rgba(16, 16, 24, 0), rgba(16, 16, 24, 0.82) 18%, rgba(16, 16, 24, 0.82) 82%, rgba(16, 16, 24, 0));
+  border-block: 2px solid rgba(255, 216, 74, 0.55);
+  font-family: var(--pixel-font); font-synthesis-weight: none; text-align: center;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.turn-banner[data-side="enemy"] { border-color: rgba(232, 80, 72, 0.6); }
+.turn-banner strong {
+  font-size: 1.35rem; font-weight: normal; color: #fff; letter-spacing: 1px;
+  text-shadow: 2px 2px 0 #303038, -1px -1px 0 #303038, 1px -1px 0 #303038, -1px 1px 0 #303038;
+}
+.turn-banner[data-side="enemy"] strong { color: #ff8a80; }
+.turn-banner span { font-size: 0.8rem; color: #ffd84a; text-shadow: 1px 1px 0 #303038; }
+.turn-banner span:empty { display: none; }
+.turn-banner.show { animation: turnStripe 1.15s ease-out both; }
+.turn-banner.show > * { animation: turnWords 1.15s cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+.turn-banner.show span { animation-delay: 0.04s; }
+@keyframes turnStripe {
+  0% { opacity: 0; transform: translateY(-50%) scaleY(0); }
+  14%, 80% { opacity: 1; transform: translateY(-50%) scaleY(1); }
+  100% { opacity: 0; transform: translateY(-50%) scaleY(0.4); }
+}
+@keyframes turnWords {
+  0% { opacity: 0; transform: translateX(45%); }
+  22%, 76% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateX(-45%); }
+}
+.fast-battle .turn-banner.show, .fast-battle .turn-banner.show > * { animation-duration: 0.58s; }
+.calm-fx .turn-banner.show > * { animation-name: turnFade; }
+@keyframes turnFade { 0%, 100% { opacity: 0; } 20%, 78% { opacity: 1; } }
+@media (min-width: 900px) { .turn-banner strong { font-size: 1.8rem; } .turn-banner span { font-size: 0.95rem; } }
 @media (min-width: 900px) { .ability-banner { padding: 9px 20px 9px 16px; } .ability-banner span { font-size: 0.85rem; } .ability-banner strong { font-size: 1.2rem; } }
 .nameplate .gb-hp { width: 100%; margin: 0; }
 /* under the HP bar: the status chips from the left, growing right, and the HP numbers on the right */

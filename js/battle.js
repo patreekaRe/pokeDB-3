@@ -563,7 +563,8 @@ function beginPlayerTurn() {
   if (trialBroken(b)) return failTrial(b);
   b.turn += 1;
   b.struck = false;   // the next hit hasn't landed yet: the held shield shows again (shieldPreview())
-  if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure') || hasAbility('snow-warning'))) abilityBanner();
+  turnBanner('you', b.turn);
+  if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure') || hasAbility('snow-warning'))) afterTurnBanner(b, abilityBanner);
   const p = b.powers;
   // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
   const a = b.aug;
@@ -2461,9 +2462,11 @@ async function endTurn() {
   }
   renderAll();
 
-  await pause(500);
+  const skips = (b.aug.timeWarp && b.turn % b.aug.timeWarp === 0) || b.skipEnemy;
+  if (!skips) turnBanner('enemy');
+  await pause(skips || !battleFx() ? 500 : 750);
   if (battle !== b) return;                      // the player left the battle
-  if ((b.aug.timeWarp && b.turn % b.aug.timeWarp === 0) || b.skipEnemy) {   // Time Warp, Eye of the Storm: the enemy skips this turn
+  if (skips) {   // Time Warp, Eye of the Storm: the enemy skips this turn
     const storm = b.skipEnemy;
     b.skipEnemy = false;
     pop('enemy-zone', storm ? '🌀 Eye of the Storm!' : '⌛ Time Warp!', 'note good');
@@ -2897,6 +2900,30 @@ function sizeSprite(img, lean, times, min, max, stage = 1, target = img) {
  * the fight's start, Blaze lighting up, Overgrow after a win), so it's clear what the Ability is and when it counts.
  */
 let bannerTimer = 0;
+let turnTimer = 0;
+const TURN_BANNER_MS = 1150;
+
+/** StS's turn banner: a dark stripe across the arena, "Your Turn" with the turn's number, or "Enemy Turn". It never
+    blocks a tap (the hand is live under it), and Settings' battle effects turn it off. */
+function turnBanner(side, turn) {
+  const banner = $('turn-banner');
+  clearTimeout(turnTimer);
+  banner.classList.remove('show');
+  if (!battleFx()) { banner.hidden = true; return; }
+  banner.dataset.side = side;
+  $('turn-banner-title').textContent = side === 'you' ? 'Your Turn' : 'Enemy Turn';
+  $('turn-banner-count').textContent = side === 'you' ? `Turn ${turn}` : '';
+  banner.hidden = false;
+  void banner.offsetWidth;   // restarts the slide
+  banner.classList.add('show');
+  turnTimer = setTimeout(() => { banner.hidden = true; banner.classList.remove('show'); }, TURN_BANNER_MS / speed());
+}
+
+/** Something that would land on top of the turn banner waits for it to go. */
+function afterTurnBanner(b, fn) {
+  if (!battleFx()) return fn();
+  setTimeout(() => { if (battle === b && !b.over) fn(); }, TURN_BANNER_MS / speed());
+}
 function abilityBanner() {
   const b = battle, banner = $('ability-banner');
   $('ability-banner-who').textContent = `${stageName(b.starter, b.stage)}'s`;
@@ -2972,6 +2999,8 @@ function dressPlayer() {
   if (b.ability) $('player-ability').replaceChildren(el('i', 'ability-shine'), b.ability.name);
   showAbilityState();
   $('ability-banner').hidden = true;
+  clearTimeout(turnTimer);
+  $('turn-banner').hidden = true;
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
   $('player-sprite').alt = stageName(b.starter, b.stage);
   $('player-sprite').dataset.stage = String(b.stage);

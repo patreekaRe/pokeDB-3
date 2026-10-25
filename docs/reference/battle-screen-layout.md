@@ -316,3 +316,9 @@ starts calm.
 Before adding a
 generic class name, grep `css/` and `js/` for it.
 
+**Turn banner** (2026-10-25, the user's ask, from Slay the Spire's): `turnBanner()` in `js/battle.js` lays a dark stripe
+across the middle of `.arena` (`#turn-banner`, `.turn-banner` in `css/screens.css`) at the start of each of your turns,
+"Your Turn" over "Turn N", and "Enemy Turn" (a red rim) after End Turn, unless Time Warp or Eye of the Storm skips the
+enemy. It never blocks a tap; off with Settings' battle effects (`battleFx()`), a fade only under `calmFx()`, half as
+long at 2x. Turn 1's Ability banner (Torrent, Pressure, Snow Warning) waits for it to go (`afterTurnBanner()`). The
+Enemy Turn wait after End Turn went from 500 to 750 ms to let it read.
