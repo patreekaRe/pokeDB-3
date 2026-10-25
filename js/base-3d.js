@@ -22,7 +22,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
-import { baseSong, isPlayer, openJukebox, smeargleDue, smeargleGift, pickPlayer } from './jukebox.js';
+import { baseSong, isPlayer, openJukebox, smeargleDue, replaySmeargle, smeargleGift, pickPlayer } from './jukebox.js';
 import { RECORDS_BY_ID, GIFT_RECORD } from './data/records.js';
 import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
@@ -1252,14 +1252,6 @@ const visitLines = () => [
   'See you at the shop!',
 ];
 
-/** Any free tile away from the doors, the back first; or the free one nearest the middle. */
-function loneSpot() {
-  const busy = taken(), ok = (t) => inRoom(t) && !blocked.has(key(t.x, t.y)) && !busy.has(key(t.x, t.y)) && !doors.some(d => Math.abs(d.tile.x - t.x) + Math.abs(d.tile.y - t.y) < 2);
-  for (let y = 0; y < ROWS; y++) for (const x of [...Array(COLS).keys()].sort((a, b) => Math.abs(a - COLS / 2) - Math.abs(b - COLS / 2))) if (ok({ x, y })) return { x, y };
-  const c = nearestFree({ x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) });
-  return busy.has(key(c.x, c.y)) || blocked.has(key(c.x, c.y)) ? null : c;
-}
-
 /** Two free tiles side by side near the middle of the back: Smeargle, then its easel to its right. */
 function visitSpot() {
   const busy = taken(), ok = (t) => inRoom(t) && !blocked.has(key(t.x, t.y)) && !busy.has(key(t.x, t.y)) && !doors.some(d => Math.abs(d.tile.x - t.x) + Math.abs(d.tile.y - t.y) < 2);
@@ -1270,28 +1262,21 @@ function visitSpot() {
 async function startVisit() {
   if (visit || yardTalk || host) return;
   if (outdoors()) return yardIntro();
+  if (smeargleDue() && (metSmeargle(base) || replaySmeargle())) return jukeboxIntro();
   if (base.here) return;
-  if (metSmeargle(base)) return smeargleDue() ? paintVisit('jukebox') : leaderVisit();
-  return paintVisit();
-}
-
-/** Smeargle at its easel: the housewarming, or (`kind` 'jukebox') back with the jukebox (jukeboxLines()). */
-async function paintVisit(kind = null) {
-  // a well-furnished room may have no two tiles free side by side at the back: then the jukebox visit comes without
-  // the easel, wherever there's a tile (it must not be missed, 2026-10-25: a full base never saw it)
-  let spot = visitSpot(), easel = true;
-  if (!spot && kind) { spot = loneSpot(); easel = false; }
+  if (metSmeargle(base)) return leaderVisit();
+  const spot = visitSpot();
   if (!spot) return;
-  visit = { kind, phase: 'load', tiles: easel ? [key(spot.x, spot.y), key(spot.x + 1, spot.y)] : [key(spot.x, spot.y)] };
+  visit = { phase: 'load', tiles: [key(spot.x, spot.y), key(spot.x + 1, spot.y)] };
   const v = visit;
   for (const t of v.tiles) blocked.add(t);
   root.classList.add('visiting');
   refresh();
   const m = await makeMon(SMEARGLE, false);
   if (visit !== v) { dispose(m.group); scene.remove(m.group); return; }
-  if (easel && PIECES.easel) { v.easel = makePiece({ id: 'easel', x: spot.x + 1, y: spot.y, dir: 0 }); scene.add(v.easel); }
+  if (PIECES.easel) { v.easel = makePiece({ id: 'easel', x: spot.x + 1, y: spot.y, dir: 0 }); scene.add(v.easel); }
   const top = v.easel ? new THREE.Box3().setFromObject(v.easel).max.y : 1.6;
-  Object.assign(v, { mon: m, canvasAt: [tileX(spot.x + 1), top * 0.72, tileZ(spot.y) + 0.12], phase: 'paint', t: performance.now() + (v.easel ? 2200 : 700), dab: v.easel ? 0 : Infinity,
+  Object.assign(v, { mon: m, canvasAt: [tileX(spot.x + 1), top * 0.72, tileZ(spot.y) + 0.12], phase: 'paint', t: performance.now() + 2200, dab: 0,
     w: { tile: spot, x: tileX(spot.x), z: tileZ(spot.y), y: 0, path: [], facing: 'front', flip: true, hop: 0 } });
 }
 
@@ -1408,7 +1393,7 @@ function dab() {
 
 function startTalk(now) {
   const { w } = visit;
-  Object.assign(visit, { phase: 'talk', lines: visit.kind === 'jukebox' ? jukeboxLines() : visitLines(), i: -1 });
+  Object.assign(visit, { phase: 'talk', lines: visitLines(), i: -1 });
   root.querySelector('.b3-talk b').textContent = SMEARGLE.name;
   w.flip = walker.x > w.x;
   w.hopUntil = now + 500;
@@ -1422,7 +1407,6 @@ function sayNext() {
   if (visit.i === SAVED_AT && !visit.leader) meetSmeargle(base);
   const box = root.querySelector('.b3-talk');
   if (visit.i >= visit.lines.length) return leaveVisit();
-  if (visit.lines[visit.i] === PICK) return jukeboxPick();
   const line = visit.lines[visit.i], tag = visit.leader && line.match(/^([A-Z]+): /);
   if (visit.leader) box.querySelector('b').textContent = tag ? tag[1] : visit.leader.name;
   box.querySelector('span').textContent = tag ? line.slice(tag[0].length) : line;
@@ -1471,54 +1455,57 @@ function endVisit() {
 
 /* ---------- Smeargle brings the jukebox ---------- */
 
-/* Records (js/data/records.js; the user's ask, 2026-10-25): once, back at its easel, Smeargle says what a jukebox is
-   for, has you pick one of the five players (pickPlayer()), sets it down where the easel stood with the Clearing's
-   record on, and says where more records are sold. Who and when: smeargleDue() in js/jukebox.js. */
-const PICK = Symbol('pick');
-const jukeboxLines = () => [
-  'Hey, neighbour! Smeargle again. Don\'t mind the easel: I\'ve been painting jukeboxes!',
+/* Records (js/data/records.js; the user's ask, 2026-10-25): once, Smeargle slides in on the yard's talk window (no
+   Smeargle in the room: the user's call, the same day, after the walking one could find no tiles in a full room), says
+   what a jukebox is for, has you pick one of the five players (pickPlayer()), sets it down beside your partner with the
+   Clearing's record on, and says where more records are sold. Who and when: smeargleDue() in js/jukebox.js. */
+const JUKEBOX_HELLO = [
+  'Hey, neighbour! Smeargle again. I\'ve been busy painting something new for your home: jukeboxes!',
   'A jukebox puts music in your home. Tap it, pick a record, and that song plays all through the house.',
   'The record you leave on is your base\'s own song, too. Friends who come to visit hear it the moment they walk in!',
   'And I\'d like you to have one. On the house! Just the one, so choose well.',
-  PICK,
-  'Here\'s your first record to go with it: the Clearing\'s song, right from your doorstep. Hear that? It\'s on!',
+];
+const jukeboxBye = (placed) => [
+  `${placed ? 'There, all set up!' : 'It\'s in your storage: set it out from Decorate.'} And here\'s your first record to go with it: the Clearing\'s song, right from your doorstep.${placed ? ' Hear that? It\'s on!' : ''}`,
   'Want more? Every town\'s trading post sells records of the songs from round there.',
   'You\'ll have to mend a town\'s Waystone and travel there to shop, mind. Happy listening!',
 ];
 
-async function jukeboxPick() {
-  const v = visit, box = root.querySelector('.b3-talk');
-  v.phase = 'pick';
-  box.hidden = true;
-  let kind = null;
-  while (!kind) kind = await pickPlayer();
-  if (visit !== v) return;
-  smeargleGift(base, kind);
-  const { x, y } = v.w.tile;
-  if (v.easel) {
-    const [fx, , fz] = v.canvasAt;
-    for (let i = 0; i < 6; i++) setTimeout(() => puff('star', { x: fx + rand(-0.3, 0.3), y: 0, z: fz }, { top: rand(0.2, 1) }), i * 60);
-    dispose(v.easel); scene.remove(v.easel); v.easel = null;
-    // the easel's tile was kept for the visit; the jukebox takes it over, so the visit leaving doesn't free it
-    const easelTile = key(x + 1, y);
-    v.tiles = v.tiles.filter(t => t !== easelTile);
-    blocked.delete(easelTile);
+async function jukeboxIntro() {
+  yardTalk = true;
+  try {
+    await new Promise(r => setTimeout(r, calm ? 200 : 900));
+    if (!root.isConnected || host) return;
+    Object.assign(walker, { path: [], goal: null, through: null });
+    refresh();
+    playCry('smeargle');
+    const { gymTalk } = await import('./gym.js');
+    await gymTalk(YARD_SMEARGLE, JUKEBOX_HELLO, { lit: true, title: 'PAINTER ' });
+    let kind = null;
+    while (!kind) kind = await pickPlayer();
+    if (!root.isConnected || host) return;
+    smeargleGift(base, kind);
+    const it = setDown(kind);
+    if (it) base.items.push(it);
+    base.song = GIFT_RECORD;
+    save();
+    buildPieces();
+    if (it) for (let i = 0; i < 6; i++) setTimeout(() => puff('star', { x: tileX(it.x) + rand(-0.3, 0.3), y: 0, z: tileZ(it.y) }, { top: rand(0.2, 1) }), i * 60);
+    playSound('item-get');
+    playMusic(baseSong(base));
+    await gymTalk(YARD_SMEARGLE, jukeboxBye(!!it), { lit: true, title: 'PAINTER ' });
+  } finally { yardTalk = false; refresh(); }
+}
+
+/** Where Smeargle's gift is set down: a free tile near your partner, clear of the doors; null (storage) if none fits. */
+function setDown(kind) {
+  const busy = taken(), { x, y } = walker.tile;
+  for (let r = 1; r <= 3; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+    const c = { id: kind, x: x + dx, y: y + dy, dir: 0 };
+    if (inRoom(c) && !blocked.has(key(c.x, c.y)) && !busy.has(key(c.x, c.y)) && !doors.some(d => Math.abs(d.tile.x - c.x) + Math.abs(d.tile.y - c.y) < 2) && fits(c, -1, base)) return c;
   }
-  // where the easel stood, or with no easel a free tile beside Smeargle; storage if nothing fits
-  const busy = taken();
-  const it = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ id: kind, x: x + dx, y: y + dy, dir: 0 }))
-    .find(c => inRoom(c) && !blocked.has(key(c.x, c.y)) && !busy.has(key(c.x, c.y)) && !doors.some(d => Math.abs(d.tile.x - c.x) + Math.abs(d.tile.y - c.y) < 2) && fits(c, -1, base));
-  const placed = !!it;
-  if (placed) base.items.push(it);
-  else v.lines[v.i + 1] = `I've put it in your storage: set it out from Decorate. ${v.lines[v.i + 1]}`;
-  base.song = GIFT_RECORD;
-  save();
-  buildPieces();
-  playSound('item-get');
-  playMusic(baseSong(base));
-  v.phase = 'talk';
-  refresh();
-  sayNext();
+  return null;
 }
 
 /* ---------- Smeargle in the yard ---------- */

@@ -1056,13 +1056,14 @@ selling its own song plus more, so mending every Waystone and going back pays. T
   where the song comes round to its start just before the fade (chroma alone, then the waveform). Gains set the loop
   to about -30 LUFS played, level with the towns' songs and `secret-base` measured the same way (K-weighted, mono fold).
   The town shop's grid scrolls past 4 rows (`.town-shop .tshop-grid`).
-- **Smeargle brings the jukebox** (2026-10-25, the user's ask): once, back at its easel in the main room (`paintVisit
-  ('jukebox')`, `jukeboxLines()` / `jukeboxPick()` in js/base-3d.js), Smeargle says what a jukebox does and that the
-  record left on is the base's song friends hear, has you pick one of the five `PLAYER_KINDS` (`pickPlayer()`, which
-  comes back if shut unpicked), sets it down where the easel stood (storage if it doesn't fit) with the gift record
-  `clearing` (the Clearing's `clearing-hub`, `gift: true`, never sold) on, then says more records are at the towns'
-  trading posts once their Waystone is mended. Who (`smeargleDue()` in js/jukebox.js): once (`save.recordsIntro`),
-  after the housewarming; a player from before records (`save.recordsOld`, stamped by `stampRecords()` on the first load
-  with records open: true if the base was already housewarmed) the first time home; a newer player the first time home
-  with a Waystone mended (the Clearing's first). `?smeargle` (with `?records`) brings it again; its gifts are kept. A room with no two tiles free side by side at the
-  back (where the easel goes) gets it without the easel, on any free tile (`loneSpot()`), the player set down beside it.
+- **Smeargle brings the jukebox** (2026-10-25, the user's ask; a slide-in since the same day, the user's call, after the
+  walking visit found no tiles in a full room): once, Smeargle slides in on the yard's talk window (`jukeboxIntro()` in
+  js/base-3d.js, `gymTalk()`, `JUKEBOX_HELLO`), no Smeargle in the room. It says what a jukebox does and that the record
+  left on is the base's song friends hear, has you pick one of the five `PLAYER_KINDS` (`pickPlayer()`, back if shut
+  unpicked), sets it down near your partner (`setDown()`; storage if nothing fits) with the gift record `clearing` (the
+  Clearing's `clearing-hub`, `gift: true`, never sold) on, then (`jukeboxBye()`) says more records are at the towns'
+  trading posts once their Waystone is mended. Who (`smeargleDue()` in js/jukebox.js): once (`save.recordsIntro`), after
+  the housewarming, in any room indoors; a player from before records (`save.recordsOld`, stamped by `stampRecords()` on
+  the first load with records open: true if the base was already housewarmed) the first time home; a newer player the
+  first time home with a Waystone mended (the Clearing's first). `?smeargle` (with `?records`) brings it again, even
+  before the housewarming (`replaySmeargle()`); its gifts are kept.

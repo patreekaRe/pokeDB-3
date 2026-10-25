@@ -167,13 +167,16 @@ export function openJukebox(b, save) {
   });
 }
 
-/* ---------- Smeargle brings the jukebox (js/base-3d.js's jukeboxVisit()) ---------- */
+/* ---------- Smeargle brings the jukebox (js/base-3d.js's jukeboxIntro()) ---------- */
+
+/** `?smeargle` (with `?records`): its talk again, even before the housewarming. */
+export const replaySmeargle = () => new URLSearchParams(location.search).has('smeargle');
 
 /** Whether Smeargle comes with the jukebox this time home: once, with your first Waystone mended, or at once for a
     player from before records (stampRecords()). `?smeargle` brings it again for a playtest (its gifts are kept). */
 export function smeargleDue(save = getSave()) {
   if (!recordsOpen()) return false;
-  if (new URLSearchParams(location.search).has('smeargle')) return true;
+  if (replaySmeargle()) return true;
   return !save.recordsIntro && (!!save.recordsOld || ['clearing', ...RING.map(t => t.id)].some(id => mended(townState(save, id))));
 }
 

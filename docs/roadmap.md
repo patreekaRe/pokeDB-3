@@ -1212,7 +1212,7 @@ files folded to mono, every one looped and levelled), and the trader's Records t
 `?records&mended&coins=5000` on a githack link (Waystone travel to a town, its trader's shop, the Records tab). **Then**:
 the user says if a song's loop or loudness is off, or a record belongs in another town, and when to go live (flip
 `RECORDS_LIVE`, add a patch note). More mp3s: each a TRACKS line, loop points, a TRACK_GAIN and a RECORDS line.
-**Smeargle's jukebox visit** (same day, the user's ask): once, at home, Smeargle explains the jukebox, gives a one-time
+**Smeargle's jukebox visit** (same day, the user's ask; a slide-in talk, not Smeargle in the room, the user's call): once, at home, Smeargle explains the jukebox, gives a one-time
 pick of the five players, sets it down with the gift record (the Clearing's song) playing, and points to the towns'
 trading posts. Players from before the patch get it the first time home after it goes live; newer players the first
 time home after mending their first Waystone. ▶ Playtest: `?records&base&smeargle` (it really gives the pick and the
