@@ -1187,6 +1187,9 @@ the Guide, pack berries and a kit item, then see Prepare's "Bringing:" line. The
 forward to the avenue's edges the same day (the user's ask), and the route sign was taken out; the user checks they don't hide the gate's runes. Then, ▶ LOCAL if the kiosk's look or the
 window needs work (effort: low). ▶ Playtest on the live site.
 
+**Take off a held berry** was built 2026-10-25 (branch `claude/berries-during-runs-pmaxy1` and `main`; archive). **Next: the
+user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lum`, open the Bag's Items, Take off, then Hold.
+
 ## Ideas, not agreed yet (ask the user before building)
 
 **Friends playing it as an app on their phones** (the user's question, 2026-10-24: "turn it into a game on Unity or

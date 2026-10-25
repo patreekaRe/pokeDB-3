@@ -86,6 +86,18 @@ test('the Berry Pouch: the first berry held at the start, a swap while it\'s une
   assert.ok(canHold({ biome: 0, held: null, pouch: ['oran'] }));
 });
 
+test('an uneaten held berry comes off to the front of the pouch, and the next can still go on that biome', async () => {
+  const { takeOff, canHold, holdFromPouch } = await import('../js/data/held.js');
+  let run = { biome: 0, heldAte: null, held: { id: 'oran', used: false }, pouch: ['lum'] };
+  run = { ...run, ...takeOff(run) };
+  assert.deepEqual([run.held, run.pouch], [null, ['oran', 'lum']]);
+  assert.ok(canHold(run));
+  assert.equal(takeOff(run), null, 'nothing held');
+  run = { ...run, ...holdFromPouch(run, 1) };
+  assert.deepEqual([run.held, run.pouch], [{ id: 'lum', used: false }, ['oran']]);
+  assert.equal(takeOff({ ...run, held: { id: 'lum', used: true } }), null, 'an eaten one can\'t come off');
+});
+
 test('packing the Berry Pouch takes each berry from what Kurt kept, repeats only while enough are kept, three at most', async () => {
   const { packPouch, workshopOf } = await import('../js/data/workshop.js');
   const ws = { ...workshopOf({}), kit: { 'held-oran': 2, 'held-lum': 1, 'kit-revive': 1 } };

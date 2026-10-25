@@ -3569,3 +3569,9 @@ call). Built in sessions 1, A, B and C plus the lawn, each playtested on the bra
 
 A key right of the map's floor tag opens the abandon confirm; its runner ticks across three LCD segments with ghosts.
 Detail: `docs/reference/map-screen.md`, "Abandon run beside the floor".
+
+## Take off a held berry (2026-10-25, the user's ask; branch `claude/berries-during-runs-pmaxy1`, and `main`)
+
+The Bag's "Held:" line has a Take off button on the map while the berry's uneaten, so it can be saved for a fight ahead:
+it goes to the front of the Berry Pouch (`takeOff()` in `js/data/held.js`, `takeOffBerry()` in `js/run.js`). It wasn't
+eaten, so the one-a-biome rule doesn't start; Hold puts any back on. Playtest kit `&berries=oran,lum` added.

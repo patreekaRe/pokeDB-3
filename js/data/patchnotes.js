@@ -56,6 +56,7 @@ export const NEXT = [
   ['base', 'Every room of your Secret Base, the backyard too, picks from all your Safari catches, up to 6 a room, and your first two catches move in by themselves.'],
   ['runs', 'The run map has an Abandon run key beside the floor, a Game & Watch runner dashing across it.'],
   ['music', 'The Safari Zone has its own song, in its lobby and on every area\'s map.'],
+  ['runs', 'A held berry not yet eaten can come off again from the Bag\'s Items on the map, back into the Berry Pouch, to save it for a fight ahead.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

@@ -103,7 +103,7 @@ up to `POUCH` (3) packed, the first held as the run sets out (`setOut()`, so a o
 only, never in battle or on a reward screen: while the held one is uneaten, Hold swaps them (it goes back in that berry's
 place); once one's eaten, `heldGoes()` sets `run.heldAte` to `run.biome` (through `battle.ate()`), and `canHold()` keeps the
 next off till `run.biome` is past it, the buttons greyed under "Your next berry can go on in the next biome". A Hold is
-saved at once (`afterBagChange()`, Toss's way). `pouch` and `heldAte` are saved with the run; missing reads as empty / none. **First-time tips** (2026-10-16, the user's ask), each once a save, flagged in
+saved at once (`afterBagChange()`, Toss's way). **Take off** (2026-10-25, the user's ask: save a berry for a fight ahead): the Held line's button, on the map only, while it's uneaten; `takeOff()` puts it at the front of the pouch and `run.held` goes null (the note says nothing's held). It wasn't eaten, so `heldAte` is untouched and one can go back on the same biome. Playtest: `&berries=oran,lum` on any throwaway run (`playtestKit()`). `pouch` and `heldAte` are saved with the run; missing reads as empty / none. **First-time tips** (2026-10-16, the user's ask), each once a save, flagged in
 `save.workshop.told` as it shows (`toldHeld()` / `tellHeld()` in `js/held-tips.js`; under `?satchel` once a page load, never
 saved): `held`, Kurt slides in (`gymTalk()`, APRICORN SMITH) after the forge of your first held berry with
 `CLEARING.homes.workshop.heldTalk` in `js/data/towns.js` (the bench closes while he talks and comes back as it was); `kit`, the same

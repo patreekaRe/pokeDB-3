@@ -20,7 +20,7 @@ import { timeOfDay } from './daytime.js';
 import { leaderFor, gymWins, friendWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch, giftMeetDue, meetKey } from './data/workshop.js';
-import { HELD_BY_ID, setOut, canHold, holdFromPouch, nextBerryReady } from './data/held.js';
+import { HELD_BY_ID, POUCH, setOut, canHold, holdFromPouch, takeOff, nextBerryReady } from './data/held.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
@@ -719,12 +719,14 @@ export function peekArena(starter, kind, biome = null, slot = null) {
 }
 
 /** A playtest run's kit from the URL (any throwaway run: ?arena=, ?biome=, ?gym=, ?bossfight=...): &relics=wide-lens,sticky-barb,
-    &cards=blazing-torque,ignite+ (added to the deck; a + is PP Upped) and &items=hyper-potion. Unknown ids are skipped. */
+    &cards=blazing-torque,ignite+ (added to the deck; a + is PP Upped), &items=hyper-potion and &berries=oran,lum (a Berry
+    Pouch, the first held). Unknown ids are skipped. */
 function playtestKit(r) {
   const list = (key) => (new URLSearchParams(location.search).get(key) || '').split(',').filter(Boolean);
   r.relics.push(...list('relics').filter(id => RELICS_BY_ID[id] && !r.relics.includes(id)));
   r.deck.push(...list('cards').filter(id => CARDS_BY_ID[id]));
   r.items.push(...list('items').filter(id => ITEMS_BY_ID[id]));
+  if (list('berries').length) Object.assign(r, setOut(list('berries').slice(0, POUCH)));
 }
 
 /** Playtest shortcut: ?gym=phil (any Gym Leader, js/data/gym.js; &n=2 their second boss, &starter=id, &hp=0.1 shrinks the
@@ -1611,7 +1613,8 @@ function renderItemList() {
 
 /** The Items pocket's first lines: the berry your Pokémon holds (js/data/held.js), eaten or not, then the Berry Pouch's,
     each with Hold: on the map only (never in battle or the rewards, which a checkpoint would split), a swap while the held
-    one's uneaten, and once one's eaten only from the next biome on (canHold()). */
+    one's uneaten, and once one's eaten only from the next biome on (canHold()). An uneaten held one can Take off, into the
+    pouch, to keep it for a fight ahead (the user's ask, 2026-10-25). */
 function heldRow(onMap) {
   const h = HELD_BY_ID[run.held?.id], pouch = run.pouch || [];
   if (!h && !pouch.length) return [];
@@ -1620,6 +1623,14 @@ function heldRow(onMap) {
     const row = el('div', `howto-li item-row held-row${run.held.used ? ' used' : ''}`), text = el('span', 'howto-li-text');
     text.append(el('b', '', `Held: ${h.name}${run.held.used ? ' (eaten)' : ''}`), el('small', '', run.held.used ? `${starterName()} ate it. A held berry goes off once.` : h.text));
     row.append(itemSprite(h, 'howto-node'), text);
+    if (!run.held.used) {
+      const acts = el('span', 'item-actions'), off = el('button', 'btn item-use', 'Take off');
+      off.type = 'button';
+      off.disabled = !onMap;
+      off.addEventListener('click', takeOffBerry);
+      acts.append(off);
+      row.append(acts);
+    }
     rows.push(row);
   }
   const ok = canHold(run);
@@ -1635,7 +1646,8 @@ function heldRow(onMap) {
     rows.push(row);
   });
   if (pouch.length) rows.push(el('p', 'drop-note pouch-note', !ok ? 'Your next berry can go on in the next biome.'
-    : !onMap ? 'A berry from the pouch goes on from the map.' : run.held && !run.held.used ? 'Hold swaps it for the one held.' : 'One held berry a biome.'));
+    : !onMap ? 'A berry from the pouch goes on from the map.' : run.held && !run.held.used ? 'Hold swaps it for the one held.'
+    : !run.held ? `${starterName()} isn't holding a berry. Hold one to put it on.` : 'One held berry a biome.'));
   return rows;
 }
 
@@ -1660,6 +1672,17 @@ function holdBerry(i) {
   Object.assign(run, out);
   playSound('confirm');
   tell(`${starterName()} is holding ${an(HELD_BY_ID[run.held.id].name)} now.`);
+  afterBagChange();
+}
+
+/** The uneaten held berry comes off into the pouch, saved at once like a Hold. */
+function takeOffBerry() {
+  const out = takeOff(run);
+  if (!out) return;
+  const name = HELD_BY_ID[run.held.id].name;
+  Object.assign(run, out);
+  playSound('confirm');
+  tell(`Took the ${name} off ${starterName()}. It's back in the Berry Pouch.`);
   afterBagChange();
 }
 
