@@ -1200,7 +1200,11 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**Battle juice, after the turn banner** (2026-10-25: the user asked what other "cool aesthetic UI stuff like this" the
+**Battle juice, after the turn banner** (2026-10-25; **1-3 built** the same day on branch
+`claude/slay-spire-turn-animation-9g5d7p`, NOT on `main` until the user's playtest yes, then merge; 4-8 still ideas.
+Built: `incoming()` + `.lethal` / `.arena.danger` in `renderIntent()`, `fired()` / `relicFlash()` at ~55 relic trigger
+points (passive damage/draw modifiers left out), `turnBanner('win' | 'lose')` in `finish()` with a falling `defeat` blip
+sting; the win keeps its fanfare. Original note: the user asked what other "cool aesthetic UI stuff like this" the
 game could use; Claude's list, none picked yet). Claude's top three first: (1) **lethal warning**: when the enemy's
 intent would get through your block and KO you, the intent bubble throbs red with a 💀 and the screen's edges pulse red;
 when your block covers the hit, a small ✓ shield on the bubble instead. (2) **Relic pop**: relics don't show in battle,

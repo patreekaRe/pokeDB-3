@@ -30,7 +30,7 @@ import { toldHeld, tellHeld } from './held-tips.js';
 import { isShiny, getSave, updateSave, markSeen, safariSparkle } from './storage.js';
 import { shinyImage } from './data/shinies.js';
 import { vibrate, battleFx, calmFx } from './prefs.js';
-import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
+import { ABILITIES, ENERGY_RELICS, RELICS_BY_ID } from './data/relics.js';
 import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems, syncDecks } from './data/duo.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
@@ -154,6 +154,8 @@ const innateUp = (deck) => [...deck.filter(c => !c.innate), ...deck.filter(c => 
 export const isBattleRunning = () => battle !== null && !battle.over;
 
 const hasRelic = (id) => battle.relics.includes(id);
+/** hasRelic() for a relic doing something now: true flashes its icon over your Pokémon (relicFlash()), like StS's. */
+const fired = (id) => hasRelic(id) && (relicFlash(id), true);
 /** The starter's Ability (Blaze / Overgrow / Torrent / Pressure), from its type: ABILITIES in data/relics.js. */
 const hasAbility = (id) => battle.ability?.id === id;
 /** The types this fight's deck plays: a duo's two, else the starter's. */
@@ -578,8 +580,8 @@ function beginPlayerTurn() {
   const p = b.powers;
   // block only lasts one round, unless Shell Armor or Aqua Veil keeps it (Everstone: it drops by 10)
   const a = b.aug;
-  const fresh = (b.turn === 1 && hasRelic('iron-plate') ? 8 : 0) + (b.turn === 2 && hasRelic('stone-plate') ? 12 : 0)
-    + (hasRelic('eviolite') ? 3 : 0) + (p.blockEachTurn || 0) + b.blockNext + (b.turn === 1 ? a.startBlock || 0 : 0) + (a.turnBlock || 0);
+  const fresh = (b.turn === 1 && fired('iron-plate') ? 8 : 0) + (b.turn === 2 && fired('stone-plate') ? 12 : 0)
+    + (fired('eviolite') ? 3 : 0) + (p.blockEachTurn || 0) + b.blockNext + (b.turn === 1 ? a.startBlock || 0 : 0) + (a.turnBlock || 0);
   b.block = (p.keepBlock || b.blur ? b.block : hasRelic('everstone') ? Math.max(0, b.block - 10) : Math.floor(b.block * (a.keepBlock || 0))) + fresh;
   if (a.minBlock) b.block = Math.max(b.block, a.minBlock);   // Ironclad's set bonus
   if (b.blur) b.blur -= 1;
@@ -587,8 +589,8 @@ function beginPlayerTurn() {
   if (b.block) statFx('player');
   const bossEnergy = ENERGY_RELICS.filter(hasRelic).length;
   const leftover = hasRelic('casteliacone') || p.keepEnergy ? b.energy : 0;   // Casteliacone (StS's Ice Cream), Battery: unspent PP carries over
-  b.energy = ENERGY_PER_TURN + (p.energyEachTurn || 0) + b.nextEnergy + (hasRelic('exp-share') ? 1 : 0) + bossEnergy + leftover + (hasRelic('soothe-bell') && b.turn % 3 === 0 ? 1 : 0)
-    + (b.turn === 1 && hasRelic('lemonade') ? 1 : 0) + (b.turn === 1 ? a.turn1Energy || 0 : 0) + (a.energyEachTurn || 0) + b.abyss
+  b.energy = ENERGY_PER_TURN + (p.energyEachTurn || 0) + b.nextEnergy + (hasRelic('exp-share') ? 1 : 0) + bossEnergy + leftover + (b.turn % 3 === 0 && fired('soothe-bell') ? 1 : 0)
+    + (b.turn === 1 && fired('lemonade') ? 1 : 0) + (b.turn === 1 ? a.turn1Energy || 0 : 0) + (a.energyEachTurn || 0) + b.abyss
     + (a.lowEnergy && b.hp < b.maxHp / 4 ? a.lowEnergy : 0);
   b.turnEnergy = b.energy;
   b.nextEnergy = 0;
@@ -607,15 +609,15 @@ function beginPlayerTurn() {
   b.echoNext = 0;      // Inferno Overdrive / Gold Bottle Cap: only this turn's next card
   b.sooted = false;    // Soot Sack has given its PP this turn
   b.splashed = false;  // Splash Plate has drawn this turn
-  if (b.turn % 6 === 0 && hasRelic('bright-powder')) { b.guard = true; pop('player-zone', '✨ Bright Powder', 'block', 100); }   // StS's Incense Burner
+  if (b.turn % 6 === 0 && fired('bright-powder')) { b.guard = true; pop('player-zone', '✨ Bright Powder', 'block', 100); }   // StS's Incense Burner
 
-  if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; markHurt(); pop('player-zone', '-1 ☠️', 'dmg'); }
+  if (b.hp > 1 && fired('toxic-orb')) { b.hp -= 1; b.damageTaken += 1; markHurt(); pop('player-zone', '-1 ☠️', 'dmg'); }
   if (p.brutality) loseHp(p.brutality);
-  if (hasRelic('leftovers')) healPlayer(2);
-  if (b.turn === 1 && hasRelic('lava-cookie')) healPlayer(3);   // StS's Blood Vial
+  if (fired('leftovers')) healPlayer(2);
+  if (b.turn === 1 && fired('lava-cookie')) healPlayer(3);   // StS's Blood Vial
   if (p.healEachTurn && healPlayer(p.healEachTurn + healBonus())) playSound('heal-hp');
   if (p.regen && healPlayer(p.regen)) playSound('heal-hp');   // Sweet Heart
-  if (hasRelic('grassy-seed') && b.turn % 3 === 0) gainStrength(1, '🍀 +1 strength');
+  if (b.turn % 3 === 0 && fired('grassy-seed')) gainStrength(1, '🍀 +1 strength');
   if (a.strengthEvery && b.turn % a.strengthEvery === 0) gainStrength(1, '📈 +1 strength');
   if (a.healEachTurn && healPlayer(a.healEachTurn)) playSound('heal-hp');
   if (p.burnEachTurn) burnEnemy(p.burnEachTurn);
@@ -636,12 +638,12 @@ function beginPlayerTurn() {
   b.disguised = false;
   if (p.mirage) disguise();   // Mirage
   b.evasion = hasRelic('flying-memory') ? Math.floor(b.evasion / 2) : 0;   // Evasion lasts until your next turn (banked, it lifted Flying 15 points over the other types, 2026-10-20)
-  if (b.turn === 1 && hasRelic('air-balloon')) gainEvasion(2);
+  if (b.turn === 1 && fired('air-balloon')) gainEvasion(2);
   if (p.evasionEachTurn) gainEvasion(p.evasionEachTurn);   // Wind Wall
   if (b.tailwind && p.tailwindEvasion) gainEvasion(p.tailwindEvasion);   // Wind Dancer
   if (b.tailwind && p.tailwindBlock) gainBlock(p.tailwindBlock);   // Jet Stream
   if (b.tailwind && p.tailwindDamage) { const d = hurtEnemy(p.tailwindDamage); pop('enemy-zone', d > 0 ? `-${d} 🏄` : 'Blocked', d > 0 ? 'dmg' : 'note', 120); }   // Wind Rider
-  if (b.turn === 1 && hasRelic('ring-target')) gainCounter(8);
+  if (b.turn === 1 && fired('ring-target')) gainCounter(8);
   if (b.bide && --b.bide.turns <= 0) {   // Bide lets go: twice the HP the enemy's attacks took meanwhile
     const back = b.bide.stored * 2;
     b.bide = null;
@@ -652,16 +654,16 @@ function beginPlayerTurn() {
   }
   if (p.tideEachTurn) gainTide(p.tideEachTurn);
   if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
-  if (hasRelic('blue-flute')) gainTide(1);
+  if (fired('blue-flute')) gainTide(1);
   if (fresh && p.riptide) riptide();
-  if (hasRelic('sticky-barb')) { const dealt = hurtEnemy(3); pop('enemy-zone', dealt > 0 ? `-${dealt} 🌵` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 120); }   // StS's Mercury Hourglass
-  if (hasRelic('spelon-berry') && b.enemy.burn >= 2) {
+  if (fired('sticky-barb')) { const dealt = hurtEnemy(3); pop('enemy-zone', dealt > 0 ? `-${dealt} 🌵` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 120); }   // StS's Mercury Hourglass
+  if (b.enemy.burn >= 2 && fired('spelon-berry')) {
     const dealt = hurtEnemy(Math.floor(b.enemy.burn / 2));
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${dealt} 🔥`, 'dmg', 150);
     playSound('burn');
   }
-  if (hasRelic('exp-share')) { playSound('fortify'); pop('player-zone', '🎓 +1 card', 'block', 150); }   // the user's call: his shout every time his relic draws
+  if (fired('exp-share')) { playSound('fortify'); pop('player-zone', '🎓 +1 card', 'block', 150); }   // the user's call: his shout every time his relic draws
   if (a.infiniteLoop && b.discard.length) { b.drawPile = shuffle([...b.drawPile, ...b.discard]); b.discard = []; }   // Infinite Loop
   if (b.duo) b.duo.drew = b.duo.drew.map((_, i) => i === b.duo.run.out);
   b.emptied = false;
@@ -672,14 +674,14 @@ function beginPlayerTurn() {
   if ((b.turn === 1 || b.keenNext) && hasAbility('keen-eye')) keenEye();
   b.keenNext = false;
   if (b.turn === 1 && hasAbility('intimidate')) intimidate();
-  if (b.turn === 1 && hasRelic('razor-claw')) taunt();
-  if (b.turn === 1 && hasRelic('dread-plate')) steal(1);
+  if (b.turn === 1 && fired('razor-claw')) taunt();
+  if (b.turn === 1 && fired('dread-plate')) steal(1);
   if (p.stealEachTurn) steal(p.stealEachTurn);   // Magician (Dark Memory adds only to a card's Steal)
   if (p.punishDraw && punishing()) { draw(p.punishDraw); pop('player-zone', '🃏 Prankster', 'note good', 150); }
   if (p.intentBlock && punishing()) gainBlock(p.intentBlock);   // Night Watch
   if (p.intentWeak && punishing()) applyDebuff('weaken', p.intentWeak);   // Pressure
   if (p.statusHeldBlock && statusHeld()) gainBlock(p.statusHeldBlock * statusHeld());   // Gritted Teeth, on the hand just drawn
-  if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
+  if (b.turn === 1 && fired('strange-souvenir')) addRandomCards(1);
   if (a.randomCard) addRandomCards(a.randomCard);
   if (a.copycat) copycat();
   surface();
@@ -773,8 +775,8 @@ function healPlayer(amount) {
     pop('player-zone', `+${healed} HP`, 'heal');
     b.healedThisTurn = true;
     if (b.powers.healStrength && !b.pledged) { b.pledged = true; gainStrength(b.powers.healStrength); }
-    if (hasRelic('luminous-moss')) gainBlock(2);
-    if (hasRelic('enigma-berry')) { const dealt = hurtEnemy(healed); pop('enemy-zone', dealt > 0 ? `-${dealt} 🫐` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150); }
+    if (fired('luminous-moss')) gainBlock(2);
+    if (fired('enigma-berry')) { const dealt = hurtEnemy(healed); pop('enemy-zone', dealt > 0 ? `-${dealt} 🫐` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150); }
   }
   if (amount > healed && b.powers.overheal) gainBlock(amount - healed);
   if (amount > healed && b.aug.overheal) gainBlock((amount - healed) * b.aug.overheal);
@@ -865,7 +867,7 @@ function gainEvasion(n, delay = 0) {
   pop('player-zone', `🪶 Evasion ${n}`, 'note good', 100 + delay);
   statFx('player');
   if (battle.powers.evasionBlock) gainBlock(battle.powers.evasionBlock);   // Big Pecks
-  if (hasRelic('pretty-wing')) gainBlock(2);
+  if (fired('pretty-wing')) gainBlock(2);
 }
 
 /** An enemy hit as Evasion leaves it: halved while you have any. */
@@ -934,7 +936,7 @@ function disguise() {
   pop('player-zone', '🎭 Disguised', 'note good', 100);
   statFx('player');
   if (b.powers.disguiseBlock) gainBlock(b.powers.disguiseBlock);   // Costume Change
-  if (hasRelic('reveal-glass')) gainBlock(3);
+  if (fired('reveal-glass')) gainBlock(3);
   if (b.powers.disguiseWeak && b.enemy.hp > 0) applyDebuff('weaken', b.powers.disguiseWeak);   // Phantom Mask
 }
 
@@ -962,7 +964,7 @@ function applyFault(n, delay = 0) {
   pop('enemy-zone', `🌋 Fault ${n}`, 'note', 100 + delay);
   statFx('enemy', 'down');
   if (battle.powers.faultBlock) gainBlock(battle.powers.faultBlock);   // Tectonics
-  if (hasRelic('light-clay')) gainBlock(2);
+  if (fired('light-clay')) gainBlock(2);
 }
 
 /** The Fault that counts: Alphas and bosses count half theirs (Ground Memory: all of it). */
@@ -1055,11 +1057,11 @@ function logMore() {
 function markHurt() {
   battle.hurtThisTurn = true;
   battle.timesHurt += 1;
-  if (hasRelic('salac-berry')) draw(1);   // Salac Berry (StS's Runic Cube): a card for every HP loss, the enemy's hits too
-  if (hasRelic('kee-berry')) battle.blockNext += 3;   // StS's Self-Forming Clay
+  if (fired('salac-berry')) draw(1);   // Salac Berry (StS's Runic Cube): a card for every HP loss, the enemy's hits too
+  if (fired('kee-berry')) battle.blockNext += 3;   // StS's Self-Forming Clay
   if (!battle.hurtOnce) {
     battle.hurtOnce = true;
-    if (hasRelic('adrenaline-orb')) { draw(3); pop('player-zone', '🟢 +3 cards', 'note good', 150); }   // StS's Centennial Puzzle
+    if (fired('adrenaline-orb')) { draw(3); pop('player-zone', '🟢 +3 cards', 'note good', 150); }   // StS's Centennial Puzzle
   }
 }
 
@@ -1286,7 +1288,7 @@ async function playCard(uid) {
   const cost = costOf(card);
   const x = cost === 'X' ? b.energy : 0;
   b.energy -= cost === 'X' ? b.energy : cost;
-  if (hasRelic('zap-plate') && cost !== 'X' && cost >= 3) gainBlock(8);   // Overcharge's payoff
+  if (cost !== 'X' && cost >= 3 && fired('zap-plate')) gainBlock(8);   // Overcharge's payoff
   if (!card.power && (card.exhaust || corrupts(card) || lumCures(card))) burnOut(uid);   // it burns away as it's played
   else flyCard(uid, card);
   if (card.safari && card.from && battleFx() && safariSparkle(card.from) >= 2) shinySparkle($('player-zone'));   // its shiny's Sparkle ★2
@@ -1333,7 +1335,7 @@ async function playCard(uid) {
     switched();
     renderAll();
   }
-  if (!b.hand.length && hasRelic('magnet')) { draw(1); pop('player-zone', '🧿 Quick Powder', 'note good'); }
+  if (!b.hand.length && fired('magnet')) { draw(1); pop('player-zone', '🧿 Quick Powder', 'note good'); }
   if (!b.hand.length && (b.powers.emptyDraw || b.powers.emptyBlock) && !b.emptied) {   // Feather Light, Weightless: the first time each turn
     b.emptied = true;
     if (b.powers.emptyBlock) gainBlock(b.powers.emptyBlock);
@@ -1422,14 +1424,14 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     const total = hits.length > 1 ? `${hits.join(' + ')} damage` : `${hits[0]} damage`;
     log(`${who} used ${card.name}! ${total}${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
     b.firstAttack = false;
-    if (hasRelic('shell-bell')) healPlayer(1);
+    if (fired('shell-bell')) healPlayer(1);
     if (b.aug.attackHeal && healPlayer(b.aug.attackHeal)) playSound('heal-hp');
     if (b.aug.vampire && Math.floor(through * b.aug.vampire) && healPlayer(Math.floor(through * b.aug.vampire))) playSound('heal-hp');
     if (b.aug.bulwark && Math.floor(through * b.aug.bulwark)) gainBlock(Math.floor(through * b.aug.bulwark));
     if (b.aug.comboBlock && b.attacks === 3) gainBlock(b.aug.comboBlock);
-    if (hasRelic('black-sludge') && !b.sludged) { b.sludged = true; loseHp(1); }
-    if (b.attacks % 3 === 0 && hasRelic('protein')) gainStrength(1, '💪 +1 Protein');
-    if (b.attacks % 3 === 0 && hasRelic('fist-plate')) gainBlock(4);
+    if (!b.sludged && fired('black-sludge')) { b.sludged = true; loseHp(1); }
+    if (b.attacks % 3 === 0 && fired('protein')) gainStrength(1, '💪 +1 Protein');
+    if (b.attacks % 3 === 0 && fired('fist-plate')) gainBlock(4);
     if (e.healDealt && healPlayer(through)) playSound('heal-hp');
     if (through > 0 && b.powers.attackHeal && healPlayer(b.powers.attackHeal)) playSound('heal-hp');
     if (e.perTide) e.tideSpent = spendTide();   // Brine: its blockPerTide counts the same Tide
@@ -1471,13 +1473,13 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
   else if (card.effects.surface) {   // Dig (Foxhole, Shuca Berry: block as it goes under)
     b.underground.push({ card: settled(card), owner: b.duo?.piles ? b.duo.run.out : null, exhaust: !!(card.exhaust || exhaust || corrupts(card) || lumCures(card)) });
     if (b.powers.digBlock) gainBlock(b.powers.digBlock);
-    if (hasRelic('shuca-berry')) gainBlock(3);
+    if (fired('shuca-berry')) gainBlock(3);
   }
   else if (card.exhaust || exhaust || corrupts(card) || lumCures(card)) exhaustCard(card);
   else b.discard.push(card.growOnPlay ? grownCopy(settled(card)) : settled(card));
-  if (card.power && hasRelic('power-herb')) draw(1);
-  if (card.power && hasRelic('shiny-stone') && healPlayer(4)) playSound('heal-hp');   // StS's Bird-Faced Urn
-  if (!isAttack(card) && !card.status && (b.skills = (b.skills || 0) + 1) % 3 === 0 && hasRelic('spell-tag') && b.enemy.hp > 0) {   // StS's Letter Opener
+  if (card.power && fired('power-herb')) draw(1);
+  if (card.power && fired('shiny-stone') && healPlayer(4)) playSound('heal-hp');   // StS's Bird-Faced Urn
+  if (!isAttack(card) && !card.status && (b.skills = (b.skills || 0) + 1) % 3 === 0 && b.enemy.hp > 0 && fired('spell-tag')) {   // StS's Letter Opener
     const dealt = hurtEnemy(5);
     pop('enemy-zone', dealt > 0 ? `-${dealt} 🏷️` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150);
   }
@@ -1487,15 +1489,15 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
   if (followed) {   // whenever a Follow-up happens: Inner Focus, No Guard, Focus Band
     if (b.powers.followBlock) gainBlock(b.powers.followBlock);
     if (b.powers.followCounter) gainCounter(b.powers.followCounter);
-    if (hasRelic('focus-band')) gainBlock(3);
+    if (fired('focus-band')) gainBlock(3);
   }
   if (unburden) {
     if (b.powers.unburdenBlock) gainBlock(b.powers.unburdenBlock);
-    if (hasRelic('coba-berry')) gainBlock(3);
+    if (fired('coba-berry')) gainBlock(3);
   }
   if (punished && b.powers.punishDamage && b.enemy.hp > 0) { const d = hurtEnemy(b.powers.punishDamage); pop('enemy-zone', d > 0 ? `-${d} 😰` : 'Blocked', d > 0 ? 'dmg' : 'note', 200); }   // Unnerve
   if (punished && b.powers.punishBlock) gainBlock(b.powers.punishBlock);   // Vendetta
-  if (punished && hasRelic('colbur-berry')) gainBlock(3);
+  if (punished && fired('colbur-berry')) gainBlock(3);
   if (illusive(card)) {
     b.illusions += 1;
     if (b.powers.illusionBlock) gainBlock(b.powers.illusionBlock);   // Hall of Mirrors
@@ -1665,7 +1667,7 @@ function spendTide() {
   b.tide = b.aug.tideKeep ? spent : hasRelic('lustrous-orb') || b.aug.tideHalf ? Math.floor(spent / 2) : 0;
   pop('player-zone', `🌊 ${spent} Tide spent`, 'note', 200);
   if (b.powers.tideSpendBlock) gainBlock(spent * b.powers.tideSpendBlock);
-  if (hasRelic('splash-plate') && !b.splashed) { b.splashed = true; draw(2); }
+  if (!b.splashed && fired('splash-plate')) { b.splashed = true; draw(2); }
   return spent;
 }
 
@@ -1814,11 +1816,11 @@ function exhaustCard(card) {
   if (b.powers.exhaustBurn) burnEnemy(b.powers.exhaustBurn, 150);
   if (card.status && b.powers.statusStrength) gainStrength(b.powers.statusStrength, `😠 +${b.powers.statusStrength} strength`);   // Defiant
   if (card.status && b.powers.statusBlock) gainBlock(b.powers.statusBlock);   // Vital Spirit
-  if (card.status && hasRelic('weakness-policy')) gainBlock(3);
-  if (hasRelic('eject-pack')) draw(1);
-  if (hasRelic('smoke-poke-tail')) { const dealt = hurtEnemy(4); pop('enemy-zone', dealt > 0 ? `-${dealt} 💨` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 200); }
-  if (hasRelic('dawn-stone')) addTypeCard();
-  if (hasRelic('soot-sack') && !b.sooted && !b.enemyActing) { b.sooted = true; b.energy += 1; b.turnEnergy += 1; pop('player-zone', '👝 +1 PP', 'note good', 200); }
+  if (card.status && fired('weakness-policy')) gainBlock(3);
+  if (fired('eject-pack')) draw(1);
+  if (fired('smoke-poke-tail')) { const dealt = hurtEnemy(4); pop('enemy-zone', dealt > 0 ? `-${dealt} 💨` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 200); }
+  if (fired('dawn-stone')) addTypeCard();
+  if (!b.sooted && !b.enemyActing && fired('soot-sack')) { b.sooted = true; b.energy += 1; b.turnEnergy += 1; pop('player-zone', '👝 +1 PP', 'note good', 200); }
   if (b.aug.exhaustDamage) { const dealt = hurtEnemy(b.aug.exhaustDamage); pop('enemy-zone', dealt > 0 ? `-${dealt} ☄️` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 250); }
 }
 
@@ -1899,8 +1901,8 @@ function discardFromHand(entry) {
   if (b.powers.discardTide) gainTide(b.powers.discardTide);
   if (b.aug.discardTide) gainTide(b.aug.discardTide);
   if (b.powers.discardBlock) gainBlock(b.powers.discardBlock);
-  if (hasRelic('heart-scale')) gainBlock(3);
-  if (hasRelic('tidal-bell')) { const dealt = hurtEnemy(3); pop('enemy-zone', dealt > 0 ? `-${dealt} 🔔` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150); }   // StS's Tingsha
+  if (fired('heart-scale')) gainBlock(3);
+  if (fired('tidal-bell')) { const dealt = hurtEnemy(3); pop('enemy-zone', dealt > 0 ? `-${dealt} 🔔` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150); }   // StS's Tingsha
 }
 
 /**
@@ -2409,7 +2411,7 @@ async function endTurn() {
     if (hail) {
       if (b.powers.hailFrost && b.enemy.hp > 0) applyFrost(b.powers.hailFrost, 200);
       if (b.powers.hailChipBlock) gainBlock(b.powers.hailChipBlock);   // Polar Vortex
-      if (hasRelic('safety-goggles')) gainBlock(3);
+      if (fired('safety-goggles')) gainBlock(3);
       if (b.powers.hailIcicle) addCards({ id: 'icicle', n: b.powers.hailIcicle });   // Icefall
     } else {
       if (b.powers.sandFault && b.enemy.hp > 0) applyFault(b.powers.sandFault, 200);   // Desert Spirit
@@ -2435,7 +2437,7 @@ async function endTurn() {
     if (b.hp <= 0) return finish(false);
   }
   if (b.flex) { b.strength -= b.flex; b.flex = 0; }
-  if (hasRelic('lagging-tail') && b.played <= 3) b.drawNext += 3;   // StS's Pocketwatch
+  if (b.played <= 3 && fired('lagging-tail')) b.drawNext += 3;   // StS's Pocketwatch
   if (b.powers.strengthBlock && b.strength > 0) gainBlock(b.strength * b.powers.strengthBlock);   // Overgrowth
   if (b.powers.energyBlock && b.energy > 0) gainBlock(b.powers.energyBlock * b.energy);   // Dynamo
   if (b.aug.patience && b.energy > 0) gainBlock(b.aug.patience * b.energy);   // Patience
@@ -2510,7 +2512,7 @@ async function enemyTurn() {
     pop('enemy-zone', `-${burnDamage} 🔥`, 'dmg');
     log(`${b.def.name} took ${burnDamage} burn damage.`);
     playSound('burn');
-    if (hasRelic('heat-rock')) healPlayer(2);
+    if (fired('heat-rock')) healPlayer(2);
     if (b.aug.burnHeal) healPlayer(b.aug.burnHeal);
     renderAll();
     await pause(600);
@@ -2555,7 +2557,7 @@ async function enemyTurn() {
   if (stuck) {
     en.static = hasRelic('electric-memory') ? Math.floor(en.static / 2) : 0;
     en.paras += 1;
-    if (hasRelic('electirizer')) { b.drawNext += 2; pop('player-zone', '📚 +2 cards next turn', 'note good', 300); }
+    if (fired('electirizer')) { b.drawNext += 2; pop('player-zone', '📚 +2 cards next turn', 'note good', 300); }
     $('enemy-portrait-box').classList.remove('charging');
     pop('enemy-zone', '⚡ Paralyzed!', 'note good');
     playSound('stat-down');
@@ -2602,12 +2604,12 @@ async function enemyTurn() {
         if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
         if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
         log(withRevive(`${b.def.name} used ${move.name}! ${hit} damage${dodged ? ' (halved by Evasion)' : ''}${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, hit) ? `, ${Math.min(shield, hit)} blocked` : ''}.`));
-        if (hasRelic('rocky-helmet')) {
+        if (fired('rocky-helmet')) {
           hurtEnemy(3);
           pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
         }
-        if (hasRelic('big-pearl') && through === 0 && damage > 0) gainTide(2);
-        if (hasRelic('wave-incense') && through === 0 && damage > 0) {
+        if (through === 0 && damage > 0 && fired('big-pearl')) gainTide(2);
+        if (through === 0 && damage > 0 && fired('wave-incense')) {
           hurtEnemy(5);
           pop('enemy-zone', '-5 🌊', 'dmg', 320);
         }
@@ -2785,9 +2787,10 @@ async function finish(won) {
   setStorm(false); arenaMod?.stormArena(false);
   renderAll();
 
+  turnBanner(won ? 'win' : 'lose');
   if (won) {
     const grew = hasAbility('overgrow') && healPlayer(b.ability.amount);
-    if (grew) abilityBanner();
+    if (grew) setTimeout(() => battle === b && abilityBanner(), battleFx() ? TURN_BANNER_MS / speed() : 0);
     $('enemy-portrait-box').classList.add('defeated');
     playSound('faint');
     playMusic(winTrack(b.kind, b.leader), { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
@@ -2796,7 +2799,7 @@ async function finish(won) {
     $('player-sprite').classList.add('defeated');
     log(`${stageName(b.starter, b.stage)} fainted…`);
   }
-  await sleep(won && hasAbility('overgrow') ? 1700 : 1200);   // time to read Overgrow's banner
+  await sleep(won && hasAbility('overgrow') ? 2600 : 1300);   // time to read the Victory banner, then Overgrow's
   if (battle !== b) return;
   if (!won && b.def.taunts?.win) {
     log(b.def.taunts.win);
@@ -2927,13 +2930,28 @@ function turnBanner(side, turn) {
   banner.classList.remove('show');
   if (!battleFx()) { banner.hidden = true; return; }
   banner.dataset.side = side;
-  $('turn-banner-title').textContent = { start: 'Battle Start!', you: 'Your Turn:', enemy: 'Enemy Turn' }[side];
+  $('turn-banner-title').textContent = { start: 'Battle Start!', you: 'Your Turn:', enemy: 'Enemy Turn', win: 'Victory!', lose: 'Defeat…' }[side];
   $('turn-banner-count').textContent = side === 'you' ? String(turn) : '';
   banner.hidden = false;
   void banner.offsetWidth;   // restarts the slide
   banner.classList.add('show');
-  playSound({ start: 'battle-start', you: 'your-turn', enemy: 'enemy-turn' }[side]);
+  const sting = { start: 'battle-start', you: 'your-turn', enemy: 'enemy-turn', lose: 'defeat' }[side];   // a win has its fanfare
+  if (sting) playSound(sting);
   turnTimer = setTimeout(() => { banner.hidden = true; banner.classList.remove('show'); }, TURN_BANNER_MS / speed());
+}
+
+/** StS's relic flash: relics don't show in battle, so one doing something pops its icon and name over your Pokémon.
+    Several at once queue a beat apart, so a turn's start (Leftovers, Sticky Barb...) reads one by one. */
+let relicSlot = 0;
+function relicFlash(id) {
+  const relic = RELICS_BY_ID[id];
+  if (!relic || !battleFx()) return;
+  const now = performance.now(), at = Math.max(now, relicSlot);
+  relicSlot = at + 260 / speed();
+  const chip = el('span', 'relic-flash', `${relic.icon} ${relic.name}`);
+  chip.style.animationDelay = `${at - now}ms`;
+  $('player-zone').append(chip);
+  setTimeout(() => chip.remove(), at - now + 1300 / speed());
 }
 
 /** Something that would land on top of the turn banner waits for it to go. */
@@ -3250,7 +3268,7 @@ function switched() {
   if (p.switchWeak) applyDebuff('weaken', p.switchWeak);       // Shock Tactics
   if (p.switchStatic) applyStatic(p.switchStatic);              // Galvanize
   if (p.switchSap) applyDebuff('sap', p.switchSap);             // Minus
-  if (hasRelic('eject-button')) gainBlock(4);
+  if (fired('eject-button')) gainBlock(4);
 }
 
 /** The armed switch's Go pill over your plate: who comes out, its price, that it ends the turn, and how the enemy's coming
@@ -3388,7 +3406,7 @@ function renderBars() {
 function renderIntent() {
   const b = battle;
   const box = $('enemy-intent');
-  if (b.over) { box.textContent = ''; box.className = 'intent'; delete box.dataset.move; return; }
+  if (b.over) { box.textContent = ''; box.className = 'intent'; delete box.dataset.move; $('arena').classList.remove('danger'); return; }
 
   const move = currentMove();
   let icon = '⚔️', value = '', kind = 'attack', detail = '';
@@ -3422,6 +3440,12 @@ function renderIntent() {
   box.className = `intent ${kind} fresh`;
   if (fresh) { box.classList.remove('fresh'); void box.offsetWidth; box.classList.add('fresh'); }
   box.replaceChildren(el('span', 'intent-icon', icon), el('b', 'intent-value', value), el('span', 'intent-name', kind === 'paralyzed' ? 'Paralyzed' : move.name));
+  const through = kind === 'attack' || kind === 'drain' ? incoming(move) : null;
+  const lethal = through !== null && through >= b.hp && !b.guard;
+  box.classList.toggle('lethal', lethal);
+  $('arena').classList.toggle('danger', lethal && battleFx());
+  if (lethal) { box.append(el('span', 'intent-mark', '💀')); detail += ': enough to knock you out!'; }
+  else if (through === 0 && !b.guard && attackDamage(move) > 0) { box.append(el('span', 'intent-mark safe', '✔')); detail += ', all blocked'; }
   if (kind === 'paralyzed') { box.title = `Next turn: ${detail}`; return; }
   if (move.adds && move.kind !== 'status') box.append(el('span', 'intent-icon intent-adds', CARDS_BY_ID[move.adds.card].art));
   if (move.adds) {
@@ -3435,6 +3459,16 @@ function renderIntent() {
     box.append(el('span', 'intent-then', `then ${hits ? `⚔️${attackDamage(then)}` : { defend: '🛡️', buff: '💪', charge: '⚠️' }[then.kind] ?? '❔'} ${then.name}`));
     box.title += `, then ${then.name}${hits ? ` (${attackDamage(then)} damage)` : ''}`;
   }
+}
+
+/** The HP the enemy's next hit would take through your block, as hurtPlayer() would count it (Evasion, Protective Pads,
+    Assault Vest), for the intent's lethal warning. */
+function incoming(move) {
+  const b = battle;
+  let through = Math.max(0, evaded(attackDamage(move)) - b.block);
+  if (through > 0 && through <= 5 && hasRelic('protective-pads')) through = 1;
+  if (through > 0 && hasRelic('assault-vest')) through -= 1;
+  return through;
 }
 
 function renderStatus() {

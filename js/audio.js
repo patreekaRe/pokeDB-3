@@ -196,7 +196,8 @@ const SOUNDS = {
   shiny:        { synth: shinyChime, gain: 0.55 },
   'battle-start': { synth: battleSting },
   'your-turn':  { synth: ac => turnBlips(ac, [1047, 1319, 1568], 0.045), gain: 0.4 },   // ...then each of your turns: Game Boy menu blips up (the user's pick over soft chimes)...
-  'enemy-turn': { synth: ac => turnBlips(ac, [330, 247], 0.07, true), gain: 0.45 },     // ...and the enemy's: two low ones down over a swish   // the "Battle Start!" banner (turnBanner() in battle.js): a whoosh, a thump and a bright chiptune stab   // a wild shiny's sparkle as it appears (battle.js)
+  'enemy-turn': { synth: ac => turnBlips(ac, [330, 247], 0.07, true), gain: 0.45 },     // ...and the enemy's: two low ones down over a swish
+  defeat:       { synth: ac => turnBlips(ac, [392, 330, 262, 196], 0.16), gain: 0.5 },   // ...and the Defeat banner: four slow blips falling   // the "Battle Start!" banner (turnBanner() in battle.js): a whoosh, a thump and a bright chiptune stab   // a wild shiny's sparkle as it appears (battle.js)
   // the Safari areas' boss preludes (SAFARI_PRELUDES in scene.js)
   'leaf-storm': { synth: leafStorm },        // the Meadow's: the wind rises and the Lone Tree's crown thrashes...
   flock:        { synth: flockBurst },       // ...and its birds burst out

@@ -335,3 +335,11 @@ hint's look; gone after the first hold), centred on its pose's middle (`centreSw
 on the plate's corner (and `HEAD_FIT`) came and went the same day: the Pokémon moved too much to read at that size. The
 plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.
 >>>>>>> origin/main
+**Lethal warning, relic flash, Victory / Defeat** (2026-10-25, the user's picks from the battle-juice list): when the
+enemy's next attack would get through your block (`incoming()`: Evasion, Protective Pads, Assault Vest) for your HP or
+more, the intent gets `.lethal` (a red throb and a 💀) and `.arena.danger` pulses red edges (`battleFx()` only; still
+under `calmFx()`); a hit your block fully covers gets a blue ✔. Relics doing something call `fired(id)` (hasRelic() plus
+`relicFlash()`): a gold chip with the icon and name rises over your Pokémon, several queued 260 ms apart; passive
+modifiers (damage, draw counts) use plain `hasRelic()` since they're read in previews too. `finish()` shows
+`turnBanner('win')` (gold "Victory!", the fanfare is its sound) or `'lose'` ("Defeat…", grey, a falling `defeat` blip);
+Overgrow's banner waits for it.

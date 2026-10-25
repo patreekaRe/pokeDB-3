@@ -492,6 +492,9 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 }
 .turn-banner[data-side="enemy"] strong { color: #ff8a80; }
 .turn-banner[data-side="start"] strong { color: #ffd84a; }
+.turn-banner[data-side="win"] strong { color: #ffd84a; font-size: 1.7rem; }
+.turn-banner[data-side="lose"] { border-color: rgba(140, 140, 160, 0.6); }
+.turn-banner[data-side="lose"] strong { color: #b8b8c8; }
 /* the turn's number: a chunky slanted gold numeral that slams in just after the words */
 .turn-banner b {
   font-family: "Chakra Petch", var(--pixel-font); font-weight: 700; font-style: italic; font-size: 2.6rem; line-height: 0.8;
@@ -772,6 +775,38 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
   color: #c02020;
   animation: cursorBlink 1s steps(1) infinite;
 }
+
+/* the relic flash (relicFlash() in js/battle.js): a relic doing something rises over your Pokémon, its icon and name */
+.relic-flash {
+  position: absolute; left: 50%; top: 8%; z-index: 8;
+  padding: 3px 8px; border: 2px solid #c8a030; border-radius: var(--round-sm);
+  background: var(--win-bg); color: var(--win-ink); box-shadow: 0 0 0 2px #303038, 0 0 10px rgba(255, 216, 74, 0.6);
+  font-family: var(--pixel-font); font-size: 0.75rem; white-space: nowrap;
+  pointer-events: none; opacity: 0;
+  animation: relicRise 1.25s ease-out both;
+}
+@keyframes relicRise {
+  0% { opacity: 0; transform: translate(-50%, 12px) scale(0.7); }
+  14% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+  24%, 70% { opacity: 1; transform: translate(-50%, -6px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -30px); }
+}
+.calm-fx .relic-flash { animation-name: turnFade; }
+.fast-battle .relic-flash { animation-duration: 0.62s; }
+/* the lethal warning (renderIntent()): the bubble throbs red with a skull, and the arena's edges pulse red */
+.intent.lethal { --kind: #ff2020; }
+.intent.lethal.fresh, .intent.lethal { animation: lethalThrob 0.9s ease-in-out infinite; }
+@keyframes lethalThrob { 50% { box-shadow: 0 0 0 2px #303038, 0 0 14px 4px rgba(255, 32, 32, 0.75); } }
+.intent-mark { font-size: 0.95rem; }
+.intent-mark.safe { font-size: 0.8rem; color: #fff; background: #3878f0; border-radius: 50%; width: 18px; height: 18px; display: grid; place-items: center; }
+.arena.danger::after {
+  content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  box-shadow: inset 0 0 40px 10px rgba(255, 24, 24, 0.55);
+  animation: dangerPulse 1.4s ease-in-out infinite;
+}
+@keyframes dangerPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.calm-fx .intent.lethal { animation: none; box-shadow: 0 0 0 2px #303038, 0 0 12px 3px rgba(255, 32, 32, 0.6); }
+.calm-fx .arena.danger::after { animation: none; opacity: 0.6; }
 
 /* --- floating numbers --- */
 .pop {
