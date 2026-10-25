@@ -3593,3 +3593,5 @@ can check it), wrapping round once the rarity runs short (rares, 4 a type). Stil
   `docs/reference/battle-screen-layout.md`).
 - **Turn sounds** (2026-10-25, same branch, merged to `main`): Game Boy blips on Your Turn / Enemy Turn
   (`turnBlips()`), the user's pick after hearing soft bell chimes (liked too) beside them.
+- **Mart relic slots refill** (2026-10-25, `main`): a Mart's relic you picked up on the way there (stock is rolled at
+  biome start) gets another relic in its place on walking in, instead of a SOLD OUT you never bought (`martRoom()`).

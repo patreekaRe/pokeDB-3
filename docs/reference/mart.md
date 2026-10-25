@@ -21,6 +21,9 @@ some start couldn't reach any); the Level 0 bot moved within noise (~94.6%).
 Measure with a route-share count over a few thousand `generateMap()` calls. Its stock (`node.stock`:
 cards, items and relics, each `{ id, price, sold }`) is rolled in `startBiome()`
 and saved with the map, so a refresh can't reroll the shelves.
+On walking in (2026-10-25, the user's ask) `martRoom()` gives a relic slot you've since picked up elsewhere
+(a reward, the grotto, an event, another Mart) to a relic you don't hold, on the room's seed, so SOLD OUT on a relic only
+ever means bought in that Mart. The sim's shop mirrors it.
 `martRoom()` in `js/run.js` reuses the reward screen (`showChoice`) and
 re-renders itself after each purchase; `ware()` wraps a card/item/relic tile with
 its price tag (red when you can't afford it; since 2026-10-25, the user's ask, a ware too dear or with the Bag full is `blocked`, not `disabled`: it still opens to read, the reason under it and Buy greyed), a `group` and a

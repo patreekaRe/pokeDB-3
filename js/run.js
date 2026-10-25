@@ -5282,6 +5282,13 @@ function ware(option, price, onBuy, { group, name, blocked }) {
 /* Purchases are only checkpointed when you leave for the map, so a refresh inside the Mart undoes them along with the money. */
 function martRoom() {
   const { stock } = run.map.byId[run.current];
+  // the shelves were stocked when the biome began: a relic picked up since then gives its slot to one you don't hold,
+  // so SOLD OUT only ever means bought here (rolled on the room's seed, and saved on the node like the rest)
+  for (const item of stock.relics) {
+    if (item.sold || !run.relics.includes(item.id)) continue;
+    const fresh = relicChoices(run).find(r => !stock.relics.some(s => s.id === r.id));
+    if (fresh) Object.assign(item, { id: fresh.id, price: jitter(MART_RELIC_PRICES[fresh.rarity]) });
+  }
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
 
   const cards = stock.cards.filter(item => !item.sold && copies(item.id) < MAX_COPIES).map(item => {
