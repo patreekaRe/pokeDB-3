@@ -339,8 +339,10 @@ plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not em
 enemy's next attack would get through your block (`incoming()`: Evasion, Protective Pads, Assault Vest) for your HP or
 more, the intent gets `.lethal` (a red throb and a 💀) and `#player-plate.danger` blinks your HP bar red (`battleFx()`
 only; still under `calmFx()`; red arena edges were tried first and looked like a frame on a phone, the user's call); a hit your block fully covers gets a blue ✔. Relics doing something call `fired(id)` (hasRelic() plus
-`relicFlash()`): a gold chip rises over your Pokémon for 2 s, with the name only the first time a relic fires in a fight and the icon
-alone after (the user found every-turn relics too fast and busy), several queued 650 / 400 ms apart (keyframes
+`relicFlash()`): the first time a relic fires in a fight it gets a stripe in the turn banner's style (`#relic-banner`, `relicBanner()`:
+queued after any turn banner via `turnBusy`, relics firing in the same moment share one, a new turn banner replaces
+it); after that its bare icon (no window) rises over your Pokémon for 2 s, several 400 ms apart (the user's calls:
+chips with names every time were too fast and busy) (keyframes
 `relicFlashRise`: `relicRise` is the reward screen's); passive
 modifiers (damage, draw counts) use plain `hasRelic()` since they're read in previews too. `finish()` shows
 `turnBanner('win')` (gold "Victory!", the fanfare is its sound) or `'lose'` ("Defeat…", grey, a falling `defeat` blip);

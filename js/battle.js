@@ -574,7 +574,11 @@ function beginPlayerTurn() {
   if (trialBroken(b)) return failTrial(b);
   b.turn += 1;
   b.struck = false;   // the next hit hasn't landed yet: the held shield shows again (shieldPreview())
-  if (b.turn === 1) { turnBanner('start'); turnNext = setTimeout(() => { if (battle === b && !b.over) turnBanner('you', 1); }, TURN_BANNER_MS / speed()); }
+  if (b.turn === 1) {
+    turnBanner('start');
+    turnNext = setTimeout(() => { if (battle === b && !b.over) turnBanner('you', 1); }, TURN_BANNER_MS / speed());
+    turnBusy = performance.now() + 2 * TURN_BANNER_MS / speed();
+  }
   else turnBanner('you', b.turn);
   if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure') || hasAbility('snow-warning'))) afterTurnBanner(b, abilityBanner, 2);
   const p = b.powers;
@@ -2919,6 +2923,7 @@ function sizeSprite(img, lean, times, min, max, stage = 1, target = img) {
 let bannerTimer = 0;
 let turnTimer = 0;
 let turnNext = 0;   // turn 1's "Your Turn", queued behind "Battle Start!"
+let turnBusy = 0;   // when the turn banners on screen or queued are done, so a relic's banner waits for them
 const TURN_BANNER_MS = 1150;
 
 /** StS's turn banner: a dark stripe across the arena, "Battle Start!" (with its own sting) before turn 1, "Your Turn: N", or "Enemy Turn". It never
@@ -2929,36 +2934,66 @@ function turnBanner(side, turn) {
   clearTimeout(turnNext);
   banner.classList.remove('show');
   if (!battleFx()) { banner.hidden = true; return; }
+  $('relic-banner').hidden = true;   // a newer banner takes the stripe's place
   banner.dataset.side = side;
   $('turn-banner-title').textContent = { start: 'Battle Start!', you: 'Your Turn:', enemy: 'Enemy Turn', win: 'Victory!', lose: 'Defeat…' }[side];
   $('turn-banner-count').textContent = side === 'you' ? String(turn) : '';
   banner.hidden = false;
   void banner.offsetWidth;   // restarts the slide
   banner.classList.add('show');
+  turnBusy = Math.max(turnBusy, performance.now() + TURN_BANNER_MS / speed());
   const sting = { start: 'battle-start', you: 'your-turn', enemy: 'enemy-turn', lose: 'defeat' }[side];   // a win has its fanfare
   if (sting) playSound(sting);
   turnTimer = setTimeout(() => { banner.hidden = true; banner.classList.remove('show'); }, TURN_BANNER_MS / speed());
 }
 
-/** StS's relic flash: relics don't show in battle, so one doing something pops its icon over your Pokémon, with its
-    name the first time it fires in a fight (after that the icon alone, the user's call: every-turn relics got busy).
-    Several at once queue a beat apart, so a turn's start (Leftovers, Sticky Barb...) reads one by one. */
+/** StS's relic flash: relics don't show in battle, so the first time one does something in a fight its icon and name
+    get a banner in the turn banner's style (the user's call), queued after any turn banner, relics firing together
+    sharing one; after that its icon alone rises over your Pokémon, several a beat apart. */
 let relicSlot = 0;
 let relicsNamed = new Set();
 let relicsFight = null;
+let relicsDue = [];
+let relicBusy = 0;
+const relicTimers = new Set();
 function relicFlash(id) {
   const relic = RELICS_BY_ID[id];
   if (!relic || !battleFx()) return;
-  if (relicsFight !== battle) { relicsFight = battle; relicsNamed = new Set(); }
-  const named = !relicsNamed.has(id);
-  relicsNamed.add(id);
+  if (relicsFight !== battle) { relicsFight = battle; relicsNamed = new Set(); relicsDue = []; }
+  if (!relicsNamed.has(id)) {
+    relicsNamed.add(id);
+    if (!relicsDue.length) setTimeout(relicBanner);   // gathers everything firing in this same moment
+    relicsDue.push(relic);
+    return;
+  }
   const now = performance.now(), at = Math.max(now, relicSlot);
-  relicSlot = at + (named ? 650 : 400) / speed();
-  const chip = el('span', named ? 'relic-flash' : 'relic-flash mini', named ? `${relic.icon} ${relic.name}` : relic.icon);
-  chip.title = relic.name;
-  chip.style.animationDelay = `${at - now}ms`;
-  $('player-zone').append(chip);
-  setTimeout(() => chip.remove(), at - now + 2000 / speed());
+  relicSlot = at + 400 / speed();
+  const icon = el('span', 'relic-flash', relic.icon);
+  icon.title = relic.name;
+  icon.style.animationDelay = `${at - now}ms`;
+  $('player-zone').append(icon);
+  setTimeout(() => icon.remove(), at - now + 2000 / speed());
+}
+
+function relicBanner() {
+  const b = battle, due = relicsDue;
+  relicsDue = [];
+  if (!due.length || !b || b.over) return;
+  const now = performance.now(), at = Math.max(now, turnBusy, relicBusy), ms = TURN_BANNER_MS / speed();
+  relicBusy = at + ms;
+  const show = () => {
+    if (battle !== b || b.over) return;
+    const banner = $('relic-banner');
+    $('relic-banner-title').textContent = due.map(r => `${r.icon} ${r.name}`).join('   ');
+    banner.hidden = false;
+    banner.classList.remove('show');
+    void banner.offsetWidth;
+    banner.classList.add('show');
+    const t = setTimeout(() => { relicTimers.delete(t); banner.hidden = true; banner.classList.remove('show'); }, ms);
+    relicTimers.add(t);
+  };
+  const t = setTimeout(() => { relicTimers.delete(t); show(); }, at - now);
+  relicTimers.add(t);
 }
 
 /** Something that would land on top of the turn banner waits for it to go. */
@@ -3045,6 +3080,10 @@ function dressPlayer() {
   clearTimeout(turnTimer);
   clearTimeout(turnNext);
   $('turn-banner').hidden = true;
+  relicTimers.forEach(clearTimeout);
+  relicTimers.clear();
+  relicBusy = turnBusy = 0;
+  $('relic-banner').hidden = true;
   $('player-sprite').src = spriteUrl(b.starter, 'back', b.stage);
   $('player-sprite').alt = stageName(b.starter, b.stage);
   $('player-sprite').dataset.stage = String(b.stage);
