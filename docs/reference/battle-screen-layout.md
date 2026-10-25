@@ -321,7 +321,7 @@ generic class name, grep `css/` and `js/` for it.
 across the middle of `.arena` (`#turn-banner`, `.turn-banner` in `css/screens.css`) at the start of each of your turns,
 "Battle Start!" (gold, with its own synth sting, `battleSting()` in `js/audio.js`) first on turn 1 with turn 1's own banner queued behind it (`turnNext`, dropped if End Turn comes first),
 "Your Turn:" with the turn's number beside it (2026-10-25, the user's call: one line; a slanted gold Chakra Petch numeral that slams in), and "Enemy Turn" (a red rim) after End Turn, unless Time Warp or Eye of the Storm skips the
-enemy. It never blocks a tap; off with Settings' battle effects (`battleFx()`), a fade only under `calmFx()`, half as
+enemy. Your Turn and Enemy Turn each get a soft two-note chime (`turnChime()`, rising / falling; 2026-10-25, on a branch until the user's yes). It never blocks a tap; off with Settings' battle effects (`battleFx()`), a fade only under `calmFx()`, half as
 long at 2x. Turn 1's Ability banner (Torrent, Pressure, Snow Warning) waits for both to go (`afterTurnBanner()`). The
 Enemy Turn wait after End Turn went from 500 to 750 ms to let it read.
 =======

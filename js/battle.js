@@ -2932,7 +2932,7 @@ function turnBanner(side, turn) {
   banner.hidden = false;
   void banner.offsetWidth;   // restarts the slide
   banner.classList.add('show');
-  if (side === 'start') playSound('battle-start');
+  playSound({ start: 'battle-start', you: 'your-turn', enemy: 'enemy-turn' }[side]);
   turnTimer = setTimeout(() => { banner.hidden = true; banner.classList.remove('show'); }, TURN_BANNER_MS / speed());
 }
 
