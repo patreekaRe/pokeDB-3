@@ -3357,7 +3357,7 @@ body[data-screen="reward-screen"]:has(.mart-window) #backdrop::after { backgroun
 .mart-window .mart-ware { gap: 4px; }
 .mart-window .mart-price { padding: 0; border: 0; background: none; box-shadow: none; font-size: 0.75rem; white-space: nowrap; color: #283060; text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.7); }
 .mart-window .mart-price.too-dear { color: #c02020; }
-.mart-window .reward-option:disabled { opacity: 0.55; }
+.mart-window .reward-option:is(:disabled, .locked) { opacity: 0.55; }
 /* the glass counter, like the Gen 3 Marts', in front of the shelf's foot and hiding Kecleon's */
 .reward-options.mart-window::after {
   content: "";

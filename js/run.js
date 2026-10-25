@@ -5212,7 +5212,7 @@ function martStock() {
  * 'cards' (the top row), 'items' / 'relics' (rows of icons) or 'service' (forgetting a move).
  * Buying takes two taps: the first blows the tile up with a "Buy" button under it.
  */
-function ware(option, price, onBuy, { group, name }) {
+function ware(option, price, onBuy, { group, name, blocked }) {
   const node = el('div', 'mart-ware');
   const dear = price > run.money;
   node.append(option.node, el('span', `mart-price${dear ? ' too-dear' : ''}`, `💴 ${price}`));
@@ -5220,7 +5220,8 @@ function ware(option, price, onBuy, { group, name }) {
     node,
     zoom: option.zoom || option.node,
     group,
-    disabled: option.disabled || dear,
+    // broke or with a full Bag you can still tap it to read it, only Buy greyed (the user's ask, 2026-10-25)
+    blocked: blocked || (dear && `You can't afford that. You have ₽${run.money}.`),
     ask: `Buy ${name} for ₽${price}?`,
     note: option.note,
     confirm: `Buy ₽${price}`,
@@ -5258,12 +5259,12 @@ function martRoom() {
     const found = ITEMS_BY_ID[item.id];
     const option = itemOption(found);
     if (bagFull) option.node.append(el('span', 'item-full', dusk ? 'Dusk Stone' : 'Bag full'));
-    return ware({ ...option, disabled: bagFull }, martPrice(item.price), () => {
+    return ware(option, martPrice(item.price), () => {
       item.sold = true;
       run.items.push(found.id);
       tell(`Bought a ${found.name}.`);
       martRoom();
-    }, { group: 'items', name: `the ${found.name}` });
+    }, { group: 'items', name: `the ${found.name}`, blocked: bagFull && (dusk ? "Your Dusk Stone won't let you carry items." : 'Your Bag is full.') });
   });
 
   const relics = stock.relics.filter(item => !item.sold && !run.relics.includes(item.id)).map(item => {
@@ -5308,7 +5309,7 @@ function martRoom() {
     layout: 'mart-window',
   });
 
-  mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin });
+  mart3d({ cards, items, relics, removal, removalPrice, atMin });
   playMusic('mart');
 }
 
@@ -5316,7 +5317,7 @@ let brittTalk = 0;
 
 /** The walk-in 3D Mart (js/mart-3d.js) under the shop martRoom() just showed: every slot of the stock on its shelf, in
     order, each pointing at its choice (a sold one stays an empty slot). Without Three.js only the list of wares shows. */
-function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin }) {
+function mart3d({ cards, items, relics, removal, removalPrice, atMin }) {
   const { stock } = run.map.byId[run.current], box = $('reward-options'), thisRun = run;
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
   let at = 0;
@@ -5328,10 +5329,9 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
     { kind: 'pc', index: at, sign: stock.removed ? 'Sold out' : `Forget ₽${removalPrice}`, dear: removalPrice > run.money || atMin, sold: !!stock.removed },
   ];
   const options = [...cards, ...items, ...relics, removal];
-  // why a greyed choice can't be taken, said in the text box when it's tapped
+  // why the greyed PC can't be used, said in the text box when it's tapped (a greyed ware still opens, its `blocked` under it)
   const why = (o) => {
     if (o === removal) return stock.removed ? 'Only one move can be forgotten per Mart.' : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Forgetting a move costs ₽${removalPrice}. You have ₽${run.money}.`;
-    if (items.includes(o) && bagFull) return dusk ? "Your Dusk Stone won't let you carry items." : 'Your Bag is full.';
     return `You can't afford that. You have ₽${run.money}.`;
   };
   // the welcome waits until you're inside (a purchase's news is said at once: the room is already up)

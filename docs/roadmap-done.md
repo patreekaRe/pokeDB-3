@@ -3372,3 +3372,8 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Mart: a ware you can't buy still opens to read (2026-10-25, cloud)
+The user's ask: broke or with a full Bag, a tap on a ware only said why in the text box, so reading an item meant tossing
+one. Now `ware()` in `js/run.js` passes a `blocked` reason instead of `disabled`, and `showChoice()` / `openFocus()` in
+`js/rewards.js` blow it up as usual, the reason under it and Buy greyed (tapping the big tile does nothing). The PC is unchanged.
