@@ -49,6 +49,7 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['battle', 'Cards fly out of the draw pile and into the discard pile, a reshuffle streams back with a riffle, PP fills up each turn, and big hits land harder.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

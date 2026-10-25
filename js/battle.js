@@ -710,6 +710,25 @@ function beginPlayerTurn() {
   $('swap-hint').hidden = !b.duo || b.turn > HINT_TURNS || b.duo.held;   // a duo's "hold to swap", the hand hint's way
   if (!$('swap-hint').hidden) centreSwapHint();
   renderAll();
+  ppRefill(b);
+}
+
+/** The turn's PP fills one point at a time, the pill glowing, instead of just showing the new number. */
+let ppTimers = [];
+function ppRefill(b) {
+  ppTimers.forEach(clearTimeout);
+  ppTimers = [];
+  const orb = $('player-energy'), full = b.energy;
+  if (!battleFx() || !full) return;
+  const step = (n) => {
+    const count = orb.querySelector('.pp-count b');
+    if (battle !== b || b.energy !== full || !count) return;
+    count.textContent = String(n);
+    count.classList.remove('bump'); void count.offsetWidth; count.classList.add('bump');
+  };
+  step(0);
+  flash('player-energy', 'refill', (full * 110 + 500) / speed());
+  for (let n = 1; n <= full; n++) ppTimers.push(setTimeout(() => step(n), n * 110 / speed()));
 }
 
 /** Ground's Dig: every card underground surfaces, in the order dug, and does its Surface part (its hits through the
@@ -1117,6 +1136,7 @@ function drawTop() {
   const b = battle;
   if (b.drawPile.length === 0) {
     if (b.discard.length === 0) return null;
+    reshuffleFx(b.discard.length);
     b.drawPile = shuffle(b.discard);
     b.discard = [];
     b.refreshed = (b.refreshed || 0) + (b.aug.refresh || 0);   // Refresh: cards drawn on top of this draw
@@ -1421,7 +1441,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
       if (dealt > 0 && b.powers.attackStatic) applyStatic(b.powers.attackStatic);
       hitSound(dealt, multiplier);
       hitEffect('enemy-portrait-box');
-      bigHit(dealt, b.enemy.maxHp, 'enemy-img');
+      bigHit(dealt, b.enemy.maxHp, 'enemy-img', multiplier > 1);
       pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? (multiplier > 1 ? 'dmg super' : 'dmg') : 'note');
       if (b.enemy.hp <= 0) { await finishingBlow(dealt); break; }
       if (i < hits.length - 1) { renderBars(); await pause(200); }
@@ -1579,7 +1599,7 @@ function applyEffects(e) {
   if (e.tempSap)    { b.enemy.tempSap = (b.enemy.tempSap || 0) + e.tempSap; pop('enemy-zone', `💕 -${e.tempSap} this turn`, 'note', 150); statFx('enemy', 'down'); }   // Charm
   if (e.skipEnemy)  { b.skipEnemy = true; pop('enemy-zone', '🌀 Skips its turn', 'note good', 150); }   // Eye of the Storm (StS's Vault)
   if (e.echo)       { b.echoNext = (b.echoNext || 0) + e.echo; pop('player-zone', '♾️ Next card twice', 'note good', 150); }
-  if (e.reshuffle && b.discard.length) { b.drawPile = shuffle([...b.drawPile, ...b.discard]); b.discard = []; pop('player-zone', '♻️ Reshuffled', 'note', 150); }
+  if (e.reshuffle && b.discard.length) { reshuffleFx(b.discard.length); b.drawPile = shuffle([...b.drawPile, ...b.discard]); b.discard = []; pop('player-zone', '♻️ Reshuffled', 'note', 150); }
   if (e.upgradeAll) upgradeAll();
   if (e.weaken)     applyDebuff('weaken', e.weaken);
   if (e.vulnerable) applyDebuff('vulnerable', e.vulnerable);
@@ -2477,6 +2497,7 @@ async function endTurn() {
     await pickFromHand(b.powers.retainN, 'keep', (h) => kept.add(h), (h) => !kept.has(h));
     if (battle !== b) return;
   }
+  b.hand.filter(h => !kept.has(h)).forEach((h, i) => toPile(handCard(h.uid), $('discard-count'), i * 45));
   b.discard.push(...b.hand.filter(h => !kept.has(h)).map(h => h.card));
   b.hand = b.hand.filter(h => kept.has(h));
   if (b.duo) benchEndsTurn(b);
@@ -2950,7 +2971,8 @@ function turnBanner(side, turn) {
   if (!battleFx()) { banner.hidden = true; return; }
   $('relic-banner').hidden = true;   // a newer banner takes the stripe's place
   banner.dataset.side = side;
-  $('turn-banner-title').textContent = { start: 'Battle Start!', you: 'Your Turn:', enemy: 'Enemy Turn', win: 'Victory!', lose: 'Defeat…' }[side];
+  const foe = battle.kind === 'boss' || battle.leader ? `${battle.def.name}'s Turn` : 'Enemy Turn';   // a boss or a Gym Leader's ace by name
+  $('turn-banner-title').textContent = { start: 'Battle Start!', you: 'Your Turn:', enemy: foe, win: 'Victory!', lose: 'Defeat…' }[side];
   $('turn-banner-count').textContent = side === 'you' ? String(turn) : '';
   banner.hidden = false;
   void banner.offsetWidth;   // restarts the slide
@@ -3417,6 +3439,55 @@ function burnOut(uid) {
   return burnAway(src, pile, { fast: speed() > 1 });
 }
 
+/** Cards just drawn start their deal at the draw pile, so they fly out of it into the hand. */
+function fromPile(nodes) {
+  const pile = $('draw-count').getBoundingClientRect();
+  if (!nodes.length || !pile.width) return;
+  for (const node of nodes) {
+    const r = node.getBoundingClientRect();
+    node.style.setProperty('--from-x', `${pile.left + pile.width / 2 - (r.left + r.width / 2)}px`);
+    node.style.setProperty('--from-y', `${pile.top + pile.height / 2 - (r.top + r.height / 2)}px`);
+    node.classList.add('from-pile');
+  }
+}
+
+/** A card leaving the hand for a pile (the end of the turn's discard): a copy of it shrinks into the pile's button. */
+function toPile(src, pile, delay = 0) {
+  if (!src || !pile || !battleFx()) return;
+  const r = src.getBoundingClientRect(), to = pile.getBoundingClientRect();
+  if (!r.width || !to.width) return;
+  const ghost = src.cloneNode(true);
+  ghost.removeAttribute('data-uid');
+  ghost.className = `${src.className} pile-ghost`.replace(/\b(deal|from-pile|selected|in-hand)\b/g, '');
+  Object.assign(ghost.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, animationDelay: '' });
+  ghost.style.setProperty('--card-w', `${r.width}px`);
+  document.body.append(ghost);
+  const dx = to.left + to.width / 2 - (r.left + r.width / 2), dy = to.top + to.height / 2 - (r.top + r.height / 2);
+  ghost.animate([
+    { transform: 'none', opacity: 1 },
+    { transform: `translate(${dx}px, ${dy}px) scale(0.12) rotate(-25deg)`, opacity: 0.3 },
+  ], { duration: 480 / speed(), delay: delay / speed(), easing: 'cubic-bezier(0.5, 0, 0.75, 0)', fill: 'both' }).finished.then(() => ghost.remove(), () => ghost.remove());
+}
+
+/** The discard pile shuffled back into the draw pile: card backs stream from one button to the other, with a riffle. */
+function reshuffleFx(n) {
+  if (!battleFx()) return;
+  const from = $('discard-count').getBoundingClientRect(), to = $('draw-count').getBoundingClientRect();
+  if (!from.width || !to.width) return;
+  playSound('riffle');
+  for (let i = 0; i < Math.min(8, n); i++) {
+    const back = el('span', 'shuffle-back');
+    Object.assign(back.style, { left: `${from.left + from.width / 2}px`, top: `${from.top + from.height / 2}px` });
+    document.body.append(back);
+    const dx = to.left - from.left, dy = to.top - from.top;
+    back.animate([
+      { transform: 'translate(-50%, -50%) scale(0.6)', opacity: 0 },
+      { transform: `translate(calc(-50% + ${dx / 2}px), calc(-50% + ${dy / 2 + 26}px)) rotate(${180 + i * 20}deg)`, opacity: 1, offset: 0.5 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(360deg) scale(0.6)`, opacity: 0 },
+    ], { duration: 560 / speed(), delay: i * 55 / speed(), easing: 'ease-in-out', fill: 'both' }).finished.then(() => back.remove(), () => back.remove());
+  }
+}
+
 /** Items are used from the Bag's Items pocket (pickItem), not the battle screen: drop a pick that no longer stands. */
 function renderItems() {
   if (battle.busy || !battle.items[selectedItem]) selectedItem = null;
@@ -3624,6 +3695,7 @@ function renderHand() {
   const shown = new Map([...box.children].map(node => [Number(node.dataset.uid), node]));
   if (b.busy || !b.hand.some(entry => entry.uid === selectedUid)) selectedUid = null;
 
+  const dealt = [];
   const nodes = b.hand.map((entry, i) => {
     const { card } = entry;
     let node = makeCard(asShown(card), { stage: b.stage, cost: costOf(card) });
@@ -3651,9 +3723,10 @@ function renderHand() {
     else if (whyNotPlayable(card) && !b.busy) node.classList.add('unplayable');
     else if (b.busy) node.classList.add('waiting');
     if (entry.uid === (choosing ? choosing.picked : selectedUid)) node.classList.add('selected');
-    if (entry.fresh) {                            // cards just drawn slide in
+    if (entry.fresh) {                            // cards just drawn slide in, out of the draw pile
       node.classList.add('deal');
       node.style.animationDelay = `${i * 70}ms`;
+      if (battleFx()) dealt.push(node);
       entry.fresh = false;
     }
     node.setAttribute('aria-label', choosing?.only(entry) ? `Choose ${card.name}` : `${card.name}, costs ${costOf(card)}`);
@@ -3662,6 +3735,7 @@ function renderHand() {
   for (const node of [...box.children]) if (!nodes.includes(node)) { forgetCard(node); node.remove(); }
   nodes.forEach((node, i) => { if (box.children[i] !== node) box.insertBefore(node, box.children[i] ?? null); });
   fanHand();
+  fromPile(dealt);
   renderFocus();
   renderPose();
 }
@@ -4094,10 +4168,15 @@ function hitSound(through, multiplier) {
 }
 
 /** A hit that takes a big bite out of someone (a quarter of their HP, or 25) jolts the arena and flashes the screen; the enemy reels back from it (`recoil`, its sprite). */
-function bigHit(through, maxHp, recoil) {
-  if (through < Math.max(12, Math.min(25, maxHp * 0.25)) || !battleFx()) return;
-  flash('battle-screen', 'big-hit', 450);
-  if (recoil) flash(recoil, 'recoil', 520);
+function bigHit(through, maxHp, recoil, superEffective = false) {
+  if (through < (superEffective ? 8 : Math.max(12, Math.min(25, maxHp * 0.25))) || !battleFx()) return;
+  const screen = $('battle-screen');   // a beat of hit-stop first, then the jolt
+  screen.classList.add('hitstop');
+  setTimeout(() => {
+    screen.classList.remove('hitstop');
+    flash('battle-screen', 'big-hit', 450);
+    if (recoil) flash(recoil, 'recoil', 520);
+  }, 90 / speed());
 }
 
 /**
@@ -4140,6 +4219,8 @@ function checkStorm() {
 function pop(zoneId, text, kind = '', delay = 0) {
   const zone = $(zoneId);
   const node = el('span', `pop ${kind}`, text);
+  const hit = kind.includes('dmg') && /^-(\d+)/.exec(text);
+  if (hit) node.style.setProperty('--pop-scale', Math.min(1.7, 0.8 + Number(hit[1]) / 30).toFixed(2));   // the number grows with the hit
   delay /= speed();
   node.style.animationDelay = `${delay}ms`;
   zone.append(node);

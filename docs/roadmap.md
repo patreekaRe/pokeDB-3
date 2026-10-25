@@ -1201,7 +1201,10 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 ## Ideas, not agreed yet (ask the user before building)
 
 **Battle juice, after the turn banner** (2026-10-25: the user asked what other "cool aesthetic UI stuff like this" the
-game could use; 1-3 of Claude's list are built and on `main`, see the archive). Still ideas: (4) drawn cards fly out of the draw pile, played ones into the discard, and a reshuffle streams
+game could use; 1-3 of Claude's list are built and on `main`, see the archive). **4-7 built 2026-10-25 on branch
+`claude/slay-spire-turn-animation-9g5d7p`, NOT on `main`: the user asked for a playtest only; merge on their yes**
+(`fromPile()`, `toPile()`, `reshuffleFx()` + the `riffle` synth, `ppRefill()`, `--pop-scale` in `pop()` and a 90 ms
+hit-stop in `bigHit()`, boss / Gym Leader turn names in `turnBanner()`). 8 the user said no to. The list: (4) drawn cards fly out of the draw pile, played ones into the discard, and a reshuffle streams
 discard into draw with a riffle sound (today it's a "♻️ Reshuffled" pop); (5) the PP pill's pips fill one by one with a
 sparkle at turn start; (6) damage numbers that scale with the hit, and a short hit-stop and shake on big or super
 effective hits (hit-stop is only on a boss's last blow today); (7) "Groudon's Turn" in place of "Enemy Turn" for a boss

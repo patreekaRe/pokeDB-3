@@ -355,3 +355,10 @@ use in a fight a stripe like a relic's, with what it did (`ABILITY_GAIN`: "🌊 
 sliding in from the left only from turn 2 on (with battle effects off, the window as before). Static (each enemy attack)
 and Guts (lighting up as a status card comes in) now call it too; Overgrow's after a win queues behind Victory!
 (`relicBanner(..., late)`). `afterTurnBanner()` is gone: the stripe queue (`turnBusy`) does its job.
+**Card movement, PP refill, bigger hits, boss turn names** (2026-10-25, battle juice 4-7, the user's picks; all off with
+`battleFx()`): drawn cards deal out of the draw pile's button (`fromPile()` sets `--from-x/y`, `.deal.from-pile` in
+`css/cards.css`); the hand left at End Turn flies into the discard pile as shrinking copies (`toPile()`); a reshuffle
+(`drawTop()`, a card's `reshuffle`) streams up to 8 Poké Ball card backs from discard to draw (`reshuffleFx()`, the
+`riffle` synth); the turn's PP counts up from 0 a point at a time with the pill glowing (`ppRefill()`); a damage pop's
+size follows the damage (`--pop-scale`, 0.8x to 1.7x) and `bigHit()` holds a 90 ms hit-stop before its jolt, firing for a
+super effective hit from 8 damage; a boss's or a Gym Leader's turn reads "Miltank's Turn".

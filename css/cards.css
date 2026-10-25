@@ -261,6 +261,21 @@
   from { opacity: 0; transform: translateY(80px) rotate(8deg) scale(0.8); }
   to   { opacity: 1; transform: none; }
 }
+/* drawn out of the draw pile's button (fromPile() in js/battle.js) */
+.card.deal.from-pile { animation: dealFromPile 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) backwards; }
+@keyframes dealFromPile {
+  from { opacity: 0.4; transform: translate(var(--from-x, 0px), var(--from-y, 0px)) rotate(-14deg) scale(0.15); }
+  to   { opacity: 1; transform: none; }
+}
+/* a card's copy shrinking into the discard pile (toPile()) */
+.card.pile-ghost { position: fixed; margin: 0; z-index: 60; pointer-events: none; rotate: 0deg; translate: 0; }
+/* card backs streaming from the discard pile into the draw pile on a reshuffle (reshuffleFx()) */
+.shuffle-back {
+  position: fixed; z-index: 60; width: 16px; height: 22px; pointer-events: none;
+  border: 2px solid #fff; border-radius: 3px;
+  background: linear-gradient(180deg, #e04040 0 46%, #303038 46% 54%, #f4f4f4 54%);
+  box-shadow: 0 0 0 1px #303038, 0 2px 4px rgba(0, 0, 0, 0.4);
+}
 
 /* Fighting's Follow-up: a card whose Follow-up would happen if played now glows orange (a pick's gold ring wins) */
 .card.in-hand.follow-ready .card-face { --ring: 0 0 0 0.8cqw #fff3e0, 0 0 0 2.2cqw #ff9a50, 0 0 5cqw 1cqw rgba(255, 140, 60, 0.55); }

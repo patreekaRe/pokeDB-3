@@ -917,7 +917,8 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 .fast-battle .enemy-portrait.attacking { animation-duration: 0.15s; }
 .fast-battle #enemy-img.recoil { animation-duration: 0.26s; }
 /* a super-effective hit's number is red and a notch bigger */
-.pop.dmg.super { color: #ff5a3a; -webkit-text-stroke-color: #3a0000; font-size: 2.35rem; }
+.pop.dmg { font-size: calc(2rem * var(--pop-scale, 1)); }   /* pop() sets --pop-scale from the damage: a big hit, a big number */
+.pop.dmg.super { color: #ff5a3a; -webkit-text-stroke-color: #3a0000; font-size: calc(2.35rem * var(--pop-scale, 1)); }
 /* the block preview (showPreview() in battle.js): the block a raised card would add blinks on your nameplate */
 .nameplate.block-preview .gb-hp-track { animation: blockGhost 0.7s steps(1) infinite; }
 @keyframes blockGhost { 50% { border-color: #2060d8; box-shadow: 0 0 0 2px #88c0ff, 2px 2px 0 1px rgba(0, 0, 0, 0.45); } }
@@ -1100,6 +1101,10 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .pp-count { margin-left: auto; font-size: 1.35rem; }
 .energy-orb b { display: inline-block; font-weight: 400; }
 .energy-orb b.bump { animation: ppBump 0.35s ease-out; }
+/* the turn's PP filling up (ppRefill() in js/battle.js): the pill glows gold while it counts */
+.energy-orb.refill .pp-pill { animation: ppRefill 0.5s ease-in-out infinite alternate; }
+@keyframes ppRefill { to { box-shadow: 0 0 0 4px var(--rim, #c84840), inset 0 -3px 0 #d0d0d8, 0 0 14px 5px rgba(255, 216, 74, 0.9); } }
+.calm-fx .energy-orb.refill .pp-pill { animation: none; }
 .energy-orb.empty .pp-count { color: #e03828; text-shadow: 2px 2px 0 #f8b8a8; }
 @keyframes ppBump { 50% { transform: translateY(-4px) scale(1.15); } }
 .energy-orb.shake { animation: ppShake 0.36s linear; }   /* tried to play a card without enough PP */
