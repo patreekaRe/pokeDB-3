@@ -231,6 +231,7 @@ const SOUNDS = {
   'heal-hp':    { url: 'assets/audio/sfx/potion.mp3' },       // a card or power heals you in battle: the potion's file (the user's call); never the Center's heal
   power:        { url: 'assets/audio/sfx/power.mp3' },        // a power card is played (the Power Lens pop-up)
   burn:         { url: 'assets/audio/sfx/burn.mp3' },         // burn damage ticks on the enemy
+  sleeve:       { synth: sleeveFlip },                        // a record flipped past in a trader's crate (recordCrate() in js/jukebox.js)
   stick:        { synth: stickTick },                         // the Game Corner's joystick moves the cursor: made in code (the user's call)
   'dex-on':     { synth: ac => dexBlip(ac, true) },           // the Pokédex's lid swings open on a biome's page (pokedex.js)...
   'dex-off':    { synth: ac => dexBlip(ac, false) },          // ...and shuts going back to the biomes
@@ -1080,6 +1081,20 @@ function stickTick(ac) {
     out[i] = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * Math.exp(-t / 0.04) * fade;
   }
   return normalize(buffer, 0.12);
+}
+
+/** A record sleeve flipped over in a crate: a short brush of card on card, noise that dulls as it falls. */
+function sleeveFlip(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.09);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  let low = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    low += (0.45 - 0.35 * t / 0.09) * ((Math.random() * 2 - 1) - low);
+    out[i] = low * Math.exp(-t / 0.028) * Math.min(1, t / 0.005);
+  }
+  return normalize(buffer, 0.1);
 }
 
 /** A soft footfall on stone: a dull low thud under a short scuff of grit, a little different each time. */

@@ -3,7 +3,8 @@
    never sold in the Poké Mall: SHOP_STOCK designs a UTC day, dealt from the day's seed and the town, a design you own
    never dealt again (like the mall's store). Bought into the base's storage with buyPiece(). Its window is the device's
    (.dev-window): the day's pieces on a pale screen, a tap picks one, Buy takes it. With records (js/data/records.js) a
-   Records tab sells the town's songs, never dealt by the day: a tap plays it, Buy keeps it for the base's jukebox. */
+   Records tab sells the town's songs, never dealt by the day, in a crate you flip through (recordCrate() in
+   js/jukebox.js): a tap on the front record plays it, Buy keeps it for the base's jukebox. */
 
 import { getSave, updateSave } from './storage.js';
 import { playSound, playMusic, musicNow } from './audio.js';
@@ -14,7 +15,7 @@ import { SHOP_SHELVES, SHOP_STOCK, TOWNS } from './data/towns.js';
 import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
 import { recordsOf, recordsOpen, ownedRecords } from './data/records.js';
-import { disc } from './jukebox.js';
+import { recordCrate } from './jukebox.js';
 
 /** The designs a town's shelf holds (earned pieces never sold). */
 export const shelfOf = (town) => DESIGNS.filter(id => (SHOP_SHELVES[town] || []).includes(PIECES[id].group) && !FURNITURE_BY_KIND[id]);
@@ -57,7 +58,7 @@ export function openTownShop(town, keeper = TOWNS[town]?.trader?.name ?? '') {
       t.addEventListener('click', () => {
         if (tab === id) return;
         playSound('select');
-        tab = id; picked = null;
+        tab = id; picked = null; listening = null;
         playMusic(song);
         line(id === 'records' ? 'Songs from round here, pressed on records. Tap one to have a listen.' : GOODS_LINE);
         draw();
@@ -76,6 +77,7 @@ export function openTownShop(town, keeper = TOWNS[town]?.trader?.name ?? '') {
   const line = (t) => { say.textContent = keeper ? `${keeper}: ${t}` : t; };
   const drawGoods = () => {
     const stock = townStock(town), b = loadBase();
+    grid.classList.remove('crate');
     grid.replaceChildren(...(stock.length ? stock.map(id => {
       const p = PIECES[id], gone = soldOut(id, b), tile = el('button', `tshop-tile${picked === id ? ' on' : ''}${gone ? ' sold' : ''}`);
       tile.type = 'button';
@@ -91,22 +93,27 @@ export function openTownShop(town, keeper = TOWNS[town]?.trader?.name ?? '') {
     }) : [el('p', 'tshop-empty', 'Sold out! New stock tomorrow.')]));
     buy.disabled = !picked || !stock.includes(picked) || soldOut(picked, b);
   };
+  // the front record of the crate is the one Buy takes; a tap on it plays it, so flipping never stops the music
+  let crate = null, listening = null;
+  const owns = (r) => ownedRecords(getSave()).includes(r.id);
   const drawRecords = () => {
-    const owned = new Set(ownedRecords(getSave()));
-    grid.replaceChildren(...recordsOf(town).map(r => {
-      const have = owned.has(r.id), tile = el('button', `tshop-tile rec-tile${picked === r.id ? ' on' : ''}${have ? ' sold' : ''}`);
-      tile.type = 'button';
-      tile.append(disc(r, picked === r.id), el('span', 'tshop-name', r.name), el('span', 'tshop-price', have ? 'OWNED' : `${r.price.toLocaleString()}`));
-      tile.addEventListener('click', () => {
+    crate ??= recordCrate(recordsOf(town), {
+      look: (r) => ({ out: r.id === listening, note: `${owns(r) ? 'OWNED' : `${r.price.toLocaleString()} PokéCoins`} · ${r.id === listening ? 'playing' : 'tap to listen'}` }),
+      onFlip: (r) => { picked = r.id; buy.disabled = owns(r); },
+      onTap: (r) => {
+        if (listening === r.id) return;
         playSound('select');
-        picked = r.id;
+        listening = r.id;
         playMusic(r.track);
-        line(have ? `"${r.name}". That one's yours already.` : `"${r.name}". ${r.price.toLocaleString()} PokéCoins. Plays on any jukebox, record player or gramophone.`);
-        draw();
-      });
-      return tile;
-    }));
-    buy.disabled = !picked || owned.has(picked);
+        line(owns(r) ? `"${r.name}". That one's yours already.` : `"${r.name}". ${r.price.toLocaleString()} PokéCoins. Plays on any jukebox, record player or gramophone.`);
+        crate.refresh();
+      },
+    });
+    picked = crate.current().id;
+    crate.refresh();
+    grid.classList.add('crate');
+    grid.replaceChildren(crate.el);
+    buy.disabled = owns(crate.current());
   };
   const draw = () => {
     for (const t of tabs.children) t.classList.toggle('on', t.dataset.tab === tab);

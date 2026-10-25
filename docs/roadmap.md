@@ -1205,7 +1205,8 @@ only** (`RECORDS_LIVE` false in `js/data/records.js`). Records (songs) are sold 
 shop from home, a Records tab), each town its own song plus two more; a tap on a jukebox,
 record player or gramophone at home picks the base's song, and friends visiting hear it. The same day the user's 41
 Gen 1-4 town themes went in (55 records now, 500 coins each, split across the five towns by what suits them; the big
-files folded to mono, every one looped and levelled). Detail in `docs/reference/hub-base-mall.md`'s Records section.
+files folded to mono, every one looped and levelled), and the trader's Records tab became a crate you flip through
+(drag, wheel or ◀ ▶; tap the front record to hear it). Detail in `docs/reference/hub-base-mall.md`'s Records section.
 **Next: the user playtests**
 ▶ Playtest on the live site: `?records=all&base` (a jukebox in the base, tap it: listen to each record's loop join), and
 `?records&mended&coins=5000` on a githack link (Waystone travel to a town, its trader's shop, the Records tab). **Then**:

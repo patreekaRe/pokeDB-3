@@ -25,6 +25,102 @@ export function disc(r, spin = false) {
   return d;
 }
 
+const LEAN_BACK = 5, LIE_FORWARD = 2;
+
+/** A crate of record sleeves to flip through: the front one faces you, the rest lean behind it showing their top
+    edges, the ones flipped past lie forward over the crate's lip. A drag (sideways or down), the wheel, the arrow keys
+    or the ◀ ▶ buttons flip; a tap on the front sleeve calls `onTap(r)`, a tap on one behind flips to it. `look(r)` says
+    `{ out, note }`: the disc slid out and spinning, and the caption's second line. Only the sleeves near the front
+    are drawn. */
+export function recordCrate(recs, { at = 0, look = () => ({}), onFlip = () => {}, onTap = () => {} } = {}) {
+  let cur = Math.max(0, Math.min(recs.length - 1, at)), drag = null, dragged = false, wheelAt = 0;
+  const root = el('div', 'rec-crate-wrap');
+  const crate = el('div', 'rec-crate');
+  const name = el('p', 'rec-cap-name'), note = el('p', 'rec-cap-note'), count = el('p', 'rec-count');
+  const prev = el('button', 'rec-step', '◀'), next = el('button', 'rec-step', '▶');
+  prev.type = next.type = 'button';
+  prev.setAttribute('aria-label', 'Previous record');
+  next.setAttribute('aria-label', 'Next record');
+  const words = el('div', 'rec-cap-words');
+  words.append(name, note, count);
+  const caption = el('div', 'rec-caption');
+  caption.append(prev, words, next);
+  const sleeves = recs.map((r, i) => {
+    const s = el('button', 'rec-sleeve');
+    s.type = 'button';
+    s.style.setProperty('--ink', r.ink);
+    s.setAttribute('aria-label', r.name);
+    const game = r.name.match(/\(([^)]+)\)$/)?.[1];
+    s.append(disc(r), el('span', 'rec-cover'), ...(game ? [el('span', 'rec-tag', game)] : []));
+    s.addEventListener('click', () => {
+      if (dragged) return;
+      if (i === cur) onTap(r); else go(i);
+    });
+    return s;
+  });
+  crate.append(...sleeves);
+  root.append(crate, caption);
+
+  const refresh = () => {
+    sleeves.forEach((s, i) => {
+      const k = i - cur, c = Math.max(-LIE_FORWARD - 1, Math.min(LEAN_BACK + 1, k)), seen = k >= -LIE_FORWARD && k <= LEAN_BACK;
+      s.style.transform = k < 0 ? `translateY(4px) rotateX(${76 - c * 6}deg)`
+        : `translateY(${-c * 11}px) translateZ(${-c * 22}px) rotateX(-6deg)`;
+      s.style.zIndex = k < 0 ? 60 + k : 50 - k;
+      s.style.opacity = seen ? 1 : 0;
+      s.style.visibility = seen ? '' : 'hidden';
+      s.style.setProperty('--shade', k > 0 ? Math.min(0.6, k * 0.1) : k < 0 ? 0.25 : 0);
+      s.tabIndex = k === 0 ? 0 : -1;
+      const out = k === 0 && !!look(recs[i]).out;
+      s.classList.toggle('front', k === 0);
+      s.classList.toggle('out', out);
+      s.firstChild.classList.toggle('spin', out);
+    });
+    const r = recs[cur];
+    name.textContent = r?.name ?? '';
+    note.textContent = r ? look(r).note ?? '' : '';
+    count.textContent = `${cur + 1} / ${recs.length}`;
+    prev.disabled = cur === 0;
+    next.disabled = cur >= recs.length - 1;
+  };
+  const go = (i) => {
+    i = Math.max(0, Math.min(recs.length - 1, i));
+    if (i === cur) return;
+    playSound('sleeve');
+    cur = i;
+    refresh();
+    onFlip(recs[cur]);
+  };
+  prev.addEventListener('click', () => go(cur - 1));
+  next.addEventListener('click', () => go(cur + 1));
+  crate.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, from: cur }; dragged = false; });
+  crate.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const dx = drag.x - e.clientX, dy = e.clientY - drag.y, m = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+    if (!dragged && Math.abs(m) > 8) { dragged = true; crate.setPointerCapture(e.pointerId); }
+    if (dragged) go(drag.from + Math.trunc(m / 34));
+  });
+  const letGo = () => { drag = null; setTimeout(() => { dragged = false; }); };
+  crate.addEventListener('pointerup', letGo);
+  crate.addEventListener('pointercancel', letGo);
+  crate.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const now = performance.now(), d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    if (!d || now - wheelAt < 90) return;
+    wheelAt = now;
+    go(cur + Math.sign(d));
+  }, { passive: false });
+  root.addEventListener('keydown', (e) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    go(cur + step);
+    sleeves[cur].focus({ preventScroll: true });
+  });
+  refresh();
+  return { el: root, refresh, current: () => recs[cur] };
+}
+
 /** Pick the base's record. `b` is the base, `save()` keeps it. Resolves once the window shuts. */
 export function openJukebox(b, save) {
   const owned = new Set(ownedRecords(getSave()));
