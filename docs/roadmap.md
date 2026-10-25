@@ -1209,7 +1209,14 @@ through `does: 'player'` in `js/base-play.js`; visits already load your base fro
 jukebox gets a song picker (a little record-flip window); the pick saves on the base, rides to the Trainers page with
 it, and plays in place of the base's song while you're in the room, for you and for visitors. Ideas to ask about: a town's
 record unlocked the first time you reach (or mend) that town; more records later (gym, Safari, the Mall's songs); the
-song fading with distance from the jukebox. Read `hub-base-mall.md`, `music.md` and `cloud-save.md` first, and keep to
+song fading with distance from the jukebox.
+**The user's calls (2026-10-25):** records (songs) are **only bought, from a town's trader store, once you've mended
+that town's Waystone**. Each mended town's store sells its own song **plus more songs**, so mending every Waystone and
+going back is worth it. Claude reads "trader store" as the town shop (`js/town-shop.js`, reached from home through a
+mended Waystone, a day's stock in `SHOP_STOCK`), not the trade window (`js/town-trade.js`); check with the user. To
+settle when building: whether records sit outside the furniture's daily deal (always on sale until bought, a "Records"
+tab), what each costs, and which extra songs each town gets (e.g. that biome's map, elite, boss and gym music; each needs
+its loop points). The jukebox piece itself stays where it's sold now. Read `hub-base-mall.md`, `music.md` and `cloud-save.md` first, and keep to
 the one-looped-song-decoded rule (`js/audio.js`).
 
 **A basement in the Secret Base** (2026-10-25: the user asked whether you can build downstairs; you can't, floors only
