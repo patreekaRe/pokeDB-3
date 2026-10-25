@@ -6599,6 +6599,11 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 .town-shop .tshop-price { font-weight: bold; }
 .town-shop .tshop-empty { grid-column: 1 / -1; text-align: center; font-size: 0.8rem; }
 .town-shop .tshop-tile.sold { opacity: 0.55; }
+/* Smeargle's jukebox gift (pickPlayer() in js/jukebox.js): the tapped player turning on the Furniture store's turntable
+   (.mshop-stage in css/hub.css) over the five, kept small so the five still fit under it on a phone */
+.jukebox-pick .jbp-stage { width: min(100%, 210px, 26vh); margin-bottom: 4px; }
+.jukebox-pick .jbp-name { margin: 0 0 8px; text-align: center; font-size: 0.8rem; font-weight: bold; }
+.jukebox-pick .tshop-say { min-height: 0; }
 /* records (js/data/records.js): the trader's Records tab, and the jukebox's window at home (js/jukebox.js) */
 .town-shop .tshop-tabs { display: flex; gap: 6px; margin: 0 0 8px; }
 .town-shop .tshop-tab { flex: 1; padding: 5px 0; border: 2px solid #5a7a3a; border-radius: 6px; background: #dfe9c8; color: #1f3a14; font: inherit; font-size: 0.75rem; cursor: pointer; }

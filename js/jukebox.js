@@ -5,6 +5,7 @@ import { getSave, updateSave } from './storage.js';
 import { playSound, playMusic } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
+import { turner } from './turntable.js';
 import { PIECES, allItems } from './secret-base.js';
 import { RECORDS, RECORDS_BY_ID, PLAYERS, PLAYER_KINDS, GIFT_RECORD, ownedRecords, recordsOpen } from './data/records.js';
 import { TOWNS, RING, mended, townState } from './data/towns.js';
@@ -312,25 +313,41 @@ function pieceArt(id) {
   return c;
 }
 
-/** The one-time pick of a player, one of each kind. Resolves with the kind, or null if the window was shut unpicked. */
+const PICK_INK = '#c8443a';   // the pick window's velvet turntable, a jukebox's red
+
+/** The one-time pick of a player, one of each kind, the one tapped turning on a turntable over the five as in the
+    Furniture store's buy window (the user's ask, 2026-10-25: see each before choosing); the first is up to begin with.
+    Resolves with the kind, or null if the window was shut unpicked. */
 export function pickPlayer() {
+  const kinds = PLAYER_KINDS.filter(id => PIECES[id]);
   const d = el('dialog', 'dialog dev-window town-shop jukebox-pick');
   const say = el('p', 'tshop-say', 'Smeargle: Pick one! Whichever you like. You can only choose once, mind.');
+  const stage = el('div', 'mshop-stage jbp-stage'), cv = el('canvas', 'mshop-turn'), name = el('p', 'jbp-name');
+  stage.style.setProperty('--ink', PICK_INK);
+  stage.append(cv, el('span', 'mshop-hint', 'Drag to turn'));
   const grid = el('div', 'tshop-grid');
   const screen = el('div', 'dev-screen');
-  screen.append(say, grid);
+  screen.append(say, stage, name, grid);
   const take = el('button', 'btn danger', 'Choose');
   const acts = el('div', 'dialog-actions');
   acts.append(take);
   d.append(el('h2', '', 'A GIFT FROM SMEARGLE'), screen, acts);
   document.body.append(d);
-  let picked = null, chosen = null;
+  const turn = turner(stage, cv, () => d.isConnected);
+  const look = (id) => {
+    name.textContent = PIECES[id].name;
+    import('./mall-furniture.js').then(({ piecePreview }) => { if (picked === id) turn.show((T) => piecePreview(T, id, PICK_INK)); });
+  };
+  let picked = kinds[0] ?? null, chosen = null;
   const draw = () => {
-    grid.replaceChildren(...PLAYER_KINDS.filter(id => PIECES[id]).map(id => {
+    grid.replaceChildren(...kinds.map(id => {
       const t = el('button', `tshop-tile${picked === id ? ' on' : ''}`);
       t.type = 'button';
       t.append(pieceArt(id), el('span', 'tshop-name', PIECES[id].name));
-      t.addEventListener('click', () => { playSound('confirm'); picked = id; say.textContent = `Smeargle: The ${PIECES[id].name.toLowerCase()}? Good eye!`; draw(); });
+      t.addEventListener('click', () => {
+        if (picked === id) return;
+        playSound('confirm'); picked = id; say.textContent = `Smeargle: The ${PIECES[id].name.toLowerCase()}? Good eye!`; draw(); look(id);
+      });
       return t;
     }));
     take.disabled = !picked;
@@ -338,7 +355,8 @@ export function pickPlayer() {
   take.addEventListener('click', () => { chosen = picked; d.close(); });
   draw();
   return new Promise(res => {
-    d.addEventListener('close', () => { d.remove(); res(chosen); }, { once: true });
+    d.addEventListener('close', () => { turn.stop(); d.remove(); res(chosen); }, { once: true });
     d.showModal();
+    if (picked) look(picked);
   });
 }

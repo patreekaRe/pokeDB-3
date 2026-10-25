@@ -3621,5 +3621,5 @@ Records (songs) sold only by a mended town's trading post (its shop from home, a
 them with the user's 41 Gen 1-4 town themes; a jukebox, record player or gramophone at home picks the base's song, and
 friends visiting hear it. Smeargle slides in once (players from before the patch their first time home; newer players
 after their first Waystone is mended) with a one-time pick of the five players and the gift record, the Clearing's
-song. The jukebox window is a neon cabinet with a turntable deck and the records as sleeves in a crate. Detail:
+song (each player turning in 3D on the Furniture store's turntable as you tap it, the user's ask the same day). The jukebox window is a neon cabinet with a turntable deck and the records as sleeves in a crate. Detail:
 `docs/reference/hub-base-mall.md`'s Records section. Built and playtested behind `?records`, then `RECORDS_LIVE` on.

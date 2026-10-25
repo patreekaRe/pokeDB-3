@@ -1068,7 +1068,8 @@ selling its own song plus more, so mending every Waystone and going back pays. T
   walking visit found no tiles in a full room): once, Smeargle slides in on the yard's talk window (`jukeboxIntro()` in
   js/base-3d.js, `gymTalk()`, `JUKEBOX_HELLO`), no Smeargle in the room. It says what a jukebox does and that the record
   left on is the base's song friends hear, has you pick one of the five `PLAYER_KINDS` (`pickPlayer()`, back if shut
-  unpicked), sets it down near your partner (`setDown()`; storage if nothing fits) with the gift record `clearing` (the
+  unpicked; the tapped one turns on the Furniture store's turntable over the five, `turner()` in js/turntable.js with
+  `piecePreview()`, the first up to begin with: the user's ask, 2026-10-25), sets it down near your partner (`setDown()`; storage if nothing fits) with the gift record `clearing` (the
   Clearing's `clearing-hub`, `gift: true`, never sold) on, then (`jukeboxBye()`) says more records are at the towns'
   trading posts once their Waystone is mended. Who (`smeargleDue()` in js/jukebox.js): once (`save.recordsIntro`), after
   the housewarming, in any room indoors; a player from before records (`save.recordsOld`, stamped by `stampRecords()` on
