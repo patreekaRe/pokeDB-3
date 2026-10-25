@@ -1057,4 +1057,5 @@ selling its own song plus more, so mending every Waystone and going back pays. T
   trading posts once their Waystone is mended. Who (`smeargleDue()` in js/jukebox.js): once (`save.recordsIntro`),
   after the housewarming; a player from before records (`save.recordsOld`, stamped by `stampRecords()` on the first load
   with records open: true if the base was already housewarmed) the first time home; a newer player the first time home
-  with a Waystone mended (the Clearing's first). `?smeargle` (with `?records`) brings it again; its gifts are kept.
+  with a Waystone mended (the Clearing's first). `?smeargle` (with `?records`) brings it again; its gifts are kept. A room with no two tiles free side by side at the
+  back (where the easel goes) gets it without the easel, on any free tile (`loneSpot()`), the player set down beside it.

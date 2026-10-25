@@ -1252,6 +1252,14 @@ const visitLines = () => [
   'See you at the shop!',
 ];
 
+/** Any free tile away from the doors, the back first; or the free one nearest the middle. */
+function loneSpot() {
+  const busy = taken(), ok = (t) => inRoom(t) && !blocked.has(key(t.x, t.y)) && !busy.has(key(t.x, t.y)) && !doors.some(d => Math.abs(d.tile.x - t.x) + Math.abs(d.tile.y - t.y) < 2);
+  for (let y = 0; y < ROWS; y++) for (const x of [...Array(COLS).keys()].sort((a, b) => Math.abs(a - COLS / 2) - Math.abs(b - COLS / 2))) if (ok({ x, y })) return { x, y };
+  const c = nearestFree({ x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) });
+  return busy.has(key(c.x, c.y)) || blocked.has(key(c.x, c.y)) ? null : c;
+}
+
 /** Two free tiles side by side near the middle of the back: Smeargle, then its easel to its right. */
 function visitSpot() {
   const busy = taken(), ok = (t) => inRoom(t) && !blocked.has(key(t.x, t.y)) && !busy.has(key(t.x, t.y)) && !doors.some(d => Math.abs(d.tile.x - t.x) + Math.abs(d.tile.y - t.y) < 2);
@@ -1269,18 +1277,21 @@ async function startVisit() {
 
 /** Smeargle at its easel: the housewarming, or (`kind` 'jukebox') back with the jukebox (jukeboxLines()). */
 async function paintVisit(kind = null) {
-  const spot = visitSpot();
+  // a well-furnished room may have no two tiles free side by side at the back: then the jukebox visit comes without
+  // the easel, wherever there's a tile (it must not be missed, 2026-10-25: a full base never saw it)
+  let spot = visitSpot(), easel = true;
+  if (!spot && kind) { spot = loneSpot(); easel = false; }
   if (!spot) return;
-  visit = { kind, phase: 'load', tiles: [key(spot.x, spot.y), key(spot.x + 1, spot.y)] };
+  visit = { kind, phase: 'load', tiles: easel ? [key(spot.x, spot.y), key(spot.x + 1, spot.y)] : [key(spot.x, spot.y)] };
   const v = visit;
   for (const t of v.tiles) blocked.add(t);
   root.classList.add('visiting');
   refresh();
   const m = await makeMon(SMEARGLE, false);
   if (visit !== v) { dispose(m.group); scene.remove(m.group); return; }
-  if (PIECES.easel) { v.easel = makePiece({ id: 'easel', x: spot.x + 1, y: spot.y, dir: 0 }); scene.add(v.easel); }
+  if (easel && PIECES.easel) { v.easel = makePiece({ id: 'easel', x: spot.x + 1, y: spot.y, dir: 0 }); scene.add(v.easel); }
   const top = v.easel ? new THREE.Box3().setFromObject(v.easel).max.y : 1.6;
-  Object.assign(v, { mon: m, canvasAt: [tileX(spot.x + 1), top * 0.72, tileZ(spot.y) + 0.12], phase: 'paint', t: performance.now() + 2200, dab: 0,
+  Object.assign(v, { mon: m, canvasAt: [tileX(spot.x + 1), top * 0.72, tileZ(spot.y) + 0.12], phase: 'paint', t: performance.now() + (v.easel ? 2200 : 700), dab: v.easel ? 0 : Infinity,
     w: { tile: spot, x: tileX(spot.x), z: tileZ(spot.y), y: 0, path: [], facing: 'front', flip: true, hop: 0 } });
 }
 
@@ -1483,17 +1494,21 @@ async function jukeboxPick() {
   while (!kind) kind = await pickPlayer();
   if (visit !== v) return;
   smeargleGift(base, kind);
-  const it = v.easel && { id: kind, x: v.w.tile.x + 1, y: v.w.tile.y, dir: 0 };
+  const { x, y } = v.w.tile;
   if (v.easel) {
     const [fx, , fz] = v.canvasAt;
     for (let i = 0; i < 6; i++) setTimeout(() => puff('star', { x: fx + rand(-0.3, 0.3), y: 0, z: fz }, { top: rand(0.2, 1) }), i * 60);
     dispose(v.easel); scene.remove(v.easel); v.easel = null;
+    // the easel's tile was kept for the visit; the jukebox takes it over, so the visit leaving doesn't free it
+    const easelTile = key(x + 1, y);
+    v.tiles = v.tiles.filter(t => t !== easelTile);
+    blocked.delete(easelTile);
   }
-  // the easel's tile was kept for the visit; the jukebox takes it over, so the visit leaving doesn't free it
-  const easelTile = key(v.w.tile.x + 1, v.w.tile.y);
-  v.tiles = v.tiles.filter(t => t !== easelTile);
-  blocked.delete(easelTile);
-  const placed = it && fits(it, -1, base);
+  // where the easel stood, or with no easel a free tile beside Smeargle; storage if nothing fits
+  const busy = taken();
+  const it = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ id: kind, x: x + dx, y: y + dy, dir: 0 }))
+    .find(c => inRoom(c) && !blocked.has(key(c.x, c.y)) && !busy.has(key(c.x, c.y)) && !doors.some(d => Math.abs(d.tile.x - c.x) + Math.abs(d.tile.y - c.y) < 2) && fits(c, -1, base));
+  const placed = !!it;
   if (placed) base.items.push(it);
   else v.lines[v.i + 1] = `I've put it in your storage: set it out from Decorate. ${v.lines[v.i + 1]}`;
   base.song = GIFT_RECORD;
