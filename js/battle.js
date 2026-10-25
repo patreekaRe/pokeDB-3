@@ -2948,24 +2948,19 @@ function turnBanner(side, turn) {
 }
 
 /** StS's relic flash: relics don't show in battle, so the first time one does something in a fight its icon and name
-    get a banner in the turn banner's style (the user's call), queued after any turn banner, relics firing together
-    sharing one; after that its icon alone rises over your Pokémon, several a beat apart. */
+    get a banner in the turn banner's style (the user's call), queued after any turn banner, one relic a banner; after
+    that its icon alone rises over your Pokémon, several a beat apart. */
 let relicSlot = 0;
 let relicsNamed = new Set();
 let relicsFight = null;
-let relicsDue = [];
 let relicBusy = 0;
+let relicShown = null;   // the relic on the stripe now: the last one's hide timer can tie with the next one's show
 const relicTimers = new Set();
 function relicFlash(id) {
   const relic = RELICS_BY_ID[id];
   if (!relic || !battleFx()) return;
-  if (relicsFight !== battle) { relicsFight = battle; relicsNamed = new Set(); relicsDue = []; }
-  if (!relicsNamed.has(id)) {
-    relicsNamed.add(id);
-    if (!relicsDue.length) setTimeout(relicBanner);   // gathers everything firing in this same moment
-    relicsDue.push(relic);
-    return;
-  }
+  if (relicsFight !== battle) { relicsFight = battle; relicsNamed = new Set(); }
+  if (!relicsNamed.has(id)) { relicsNamed.add(id); return relicBanner(relic); }
   const now = performance.now(), at = Math.max(now, relicSlot);
   relicSlot = at + 400 / speed();
   const icon = el('span', 'relic-flash', relic.icon);
@@ -2975,21 +2970,20 @@ function relicFlash(id) {
   setTimeout(() => icon.remove(), at - now + 2000 / speed());
 }
 
-function relicBanner() {
-  const b = battle, due = relicsDue;
-  relicsDue = [];
-  if (!due.length || !b || b.over) return;
+function relicBanner(relic) {
+  const b = battle;
   const now = performance.now(), at = Math.max(now, turnBusy, relicBusy), ms = TURN_BANNER_MS / speed();
   relicBusy = at + ms;
   const show = () => {
     if (battle !== b || b.over) return;
     const banner = $('relic-banner');
-    $('relic-banner-title').textContent = due.map(r => `${r.icon} ${r.name}`).join('   ');
+    relicShown = relic;
+    $('relic-banner-title').textContent = `${relic.icon} ${relic.name}`;
     banner.hidden = false;
     banner.classList.remove('show');
     void banner.offsetWidth;
     banner.classList.add('show');
-    const t = setTimeout(() => { relicTimers.delete(t); banner.hidden = true; banner.classList.remove('show'); }, ms);
+    const t = setTimeout(() => { relicTimers.delete(t); if (relicShown === relic) { banner.hidden = true; banner.classList.remove('show'); } }, ms);
     relicTimers.add(t);
   };
   const t = setTimeout(() => { relicTimers.delete(t); show(); }, at - now);

@@ -340,8 +340,8 @@ enemy's next attack would get through your block (`incoming()`: Evasion, Protect
 more, the intent gets `.lethal` (a red throb and a 💀) and `#player-plate.danger` blinks your HP bar red (`battleFx()`
 only; still under `calmFx()`; red arena edges were tried first and looked like a frame on a phone, the user's call); a hit your block fully covers gets a blue ✔. Relics doing something call `fired(id)` (hasRelic() plus
 `relicFlash()`): the first time a relic fires in a fight it gets a stripe in the turn banner's style (`#relic-banner`, `relicBanner()`:
-queued after any turn banner via `turnBusy`, relics firing in the same moment share one, a new turn banner replaces
-it); after that its bare icon (no window) rises over your Pokémon for 2 s, several 400 ms apart (the user's calls:
+queued after any turn banner via `turnBusy`, one relic a stripe, one after another (the user's call), a new turn banner
+replaces it); after that its bare icon (no window) rises over your Pokémon for 2 s, several 400 ms apart (the user's calls:
 chips with names every time were too fast and busy) (keyframes
 `relicFlashRise`: `relicRise` is the reward screen's); passive
 modifiers (damage, draw counts) use plain `hasRelic()` since they're read in previews too. `finish()` shows
