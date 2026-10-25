@@ -198,7 +198,9 @@ export function openJukebox(b, save) {
     offs.forEach((off, i) => { if (Math.abs(off) < Math.abs(offs[best])) best = i; });
     sleeves.forEach((s, i) => {
       const a = Math.max(-3, Math.min(3, offs[i]));
-      s.style.transform = `translateX(${-a * 10}px) rotateY(${Math.max(-60, Math.min(60, -a * 48))}deg) scale(${1 - Math.min(Math.abs(a), 1.5) * 0.16})`;
+      // pushed back as it turns, so its near edge stays behind the front sleeve's vinyl (Safari sorts tilted layers by
+      // depth, not z-index: a turned neighbour's edge, 45px forward at 48deg, covered the record peeking out)
+      s.style.transform = `translateX(${-a * 10}px) translateZ(${-Math.min(Math.abs(a), 1.5) * 72}px) rotateY(${Math.max(-60, Math.min(60, -a * 48))}deg) scale(${1 - Math.min(Math.abs(a), 1.5) * 0.06})`;
       s.style.zIndex = `${100 - Math.round(Math.abs(a) * 10)}`;
     });
     if (best !== mid) {

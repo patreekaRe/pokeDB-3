@@ -6683,7 +6683,7 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 .jukebox .jb-crate::-webkit-scrollbar { display: none; }
 .jukebox .jb-crate::before, .jukebox .jb-crate::after { content: ''; flex: none; width: calc(50% - 46px); }
 .jukebox .jb-sleeve { position: relative; flex: none; width: 120px; height: 120px; margin: 0 -14px; padding: 0; border: 0; background: none; font: inherit;
-  scroll-snap-align: center; cursor: pointer; transform-style: preserve-3d; }
+  scroll-snap-align: center; cursor: pointer; }
 .jukebox .jb-sleeve .rec-disc { position: absolute; top: 6px; left: 6px; width: 108px; height: 108px; transition: transform 0.35s ease, opacity 0.35s; }
 .jukebox .jb-sleeve.mid .rec-disc { transform: translateX(36px); }
 .jukebox .jb-sleeve.out .rec-disc { transform: translate(20px, -160px) scale(0.6); opacity: 0; transition: transform 0.45s ease-in, opacity 0.45s ease-in; }
