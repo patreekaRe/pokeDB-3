@@ -6591,7 +6591,7 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 /* a gateway town's furniture shop, visited from home (js/town-shop.js): the device's window, the day's pieces on its screen */
 .town-shop { width: min(460px, calc(100vw - 32px)); }
 .town-shop .tshop-say { margin: 0 0 10px; font-size: 0.8rem; line-height: 1.4; min-height: 2.8em; }
-.town-shop .tshop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.town-shop .tshop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: min(52vh, 420px); overflow-y: auto; padding: 2px; }
 .town-shop .tshop-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; border: 2px solid #5a7a3a; border-radius: 8px; background: #eef6dc; color: #1f3a14; font: inherit; font-size: 0.75rem; cursor: pointer; }
 .town-shop .tshop-tile.on { border-color: #e8b020; background: #fff6c8; box-shadow: 0 0 0 2px #e8b020; }
 .town-shop .tshop-pic { width: 64px; height: 64px; object-fit: contain; image-rendering: auto; }

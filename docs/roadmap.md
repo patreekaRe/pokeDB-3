@@ -1202,12 +1202,15 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 **Records for the Base jukebox** (2026-10-25, the user's idea and calls): built the same day on `main`, **playtest
 only** (`RECORDS_LIVE` false in `js/data/records.js`). Records (songs) are sold only by a mended town's trader (its
-shop from home, a Records tab), each town its own song plus two more (14 in all, 450-600 coins); a tap on a jukebox,
-record player or gramophone at home picks the base's song, and friends visiting hear it. Detail in
-`docs/reference/hub-base-mall.md`'s Records section. **Next: the user playtests**
-▶ Playtest on the live site: `?records=all&base` (a jukebox in the base, tap it), and `?records&mended&coins=5000`
-(Waystone travel to a town, its trader's shop, the Records tab). **Then**: the user adds more mp3s (each a TRACKS line,
-loop points, a TRACK_GAIN and a RECORDS line), and says when to go live (flip `RECORDS_LIVE`, add a patch note).
+shop from home, a Records tab), each town its own song plus two more; a tap on a jukebox,
+record player or gramophone at home picks the base's song, and friends visiting hear it. The same day the user's 41
+Gen 1-4 town themes went in (55 records now, 500 coins each, split across the five towns by what suits them; the big
+files folded to mono, every one looped and levelled). Detail in `docs/reference/hub-base-mall.md`'s Records section.
+**Next: the user playtests**
+▶ Playtest on the live site: `?records=all&base` (a jukebox in the base, tap it: listen to each record's loop join), and
+`?records&mended&coins=5000` on a githack link (Waystone travel to a town, its trader's shop, the Records tab). **Then**:
+the user says if a song's loop or loudness is off, or a record belongs in another town, and when to go live (flip
+`RECORDS_LIVE`, add a patch note). More mp3s: each a TRACKS line, loop points, a TRACK_GAIN and a RECORDS line.
 **Smeargle's jukebox visit** (same day, the user's ask): once, at home, Smeargle explains the jukebox, gives a one-time
 pick of the five players, sets it down with the gift record (the Clearing's song) playing, and points to the towns'
 trading posts. Players from before the patch get it the first time home after it goes live; newer players the first
