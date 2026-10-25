@@ -1200,6 +1200,18 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**A Base jukebox that plays town music, and friends hear it** (2026-10-25, the user: "eventually"; not started). You
+set a song on a jukebox in your Secret Base, and a friend who visits hears it. The songs are the towns' music. What's
+already there: the jukebox pieces (`jukebox`, `dnrjukebox`, plus the record player and music boxes) play a synth phrase
+through `does: 'player'` in `js/base-play.js`; visits already load your base from your Trainers page (`openBase3d({ guest
+})`, `docs/reference/cloud-save.md`); the town songs are `town-lantern`, `town-cinder`, `town-driftwood` and
+`town-sunwell` in `js/audio.js`, with loop points (Highbough plays `seal`, the Clearing `title`). Claude's lean: the
+jukebox gets a song picker (a little record-flip window); the pick saves on the base, rides to the Trainers page with
+it, and plays in place of the base's song while you're in the room, for you and for visitors. Ideas to ask about: a town's
+record unlocked the first time you reach (or mend) that town; more records later (gym, Safari, the Mall's songs); the
+song fading with distance from the jukebox. Read `hub-base-mall.md`, `music.md` and `cloud-save.md` first, and keep to
+the one-looped-song-decoded rule (`js/audio.js`).
+
 **A basement in the Secret Base** (2026-10-25: the user asked whether you can build downstairs; you can't, floors only
 go up, `lv` 0 the ground and each one up a staircase). Not asked for yet, only noted: it would take a negative `lv`, a
 stairwell down in a ground-floor room (the `stairwell` branch's look) and its own floor tab on the blueprint.
