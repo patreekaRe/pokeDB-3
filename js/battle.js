@@ -3008,8 +3008,8 @@ function relicBanner(relic, gain, late = false) {
 
 /** What an Ability just did, for its first stripe of a fight. */
 const ABILITY_GAIN = {
-  blaze: n => `+${n} damage`, overgrow: n => `+${n} HP`, torrent: n => `+${n} Tide`, pressure: n => `+${n} Focus`, static: n => `+${n} Static on the foe`,
-  'snow-warning': n => `Hail, ${n} turns`, guts: n => `+${n} damage`, 'keen-eye': n => `+${n} card`, intimidate: n => `${n} Weak`, sturdy: () => 'held on at 1 HP',
+  blaze: n => `below half HP: +${n} damage`, overgrow: n => `+${n} HP`, torrent: n => `+${n} Tide`, pressure: n => `+${n} Focus`, static: n => `+${n} Static on the foe`,
+  'snow-warning': n => `Hail, ${n} turns`, guts: n => `status card held: +${n} damage`, 'keen-eye': n => `+${n} card`, intimidate: n => `${n} Weak`, sturdy: () => 'held on at 1 HP',
 };
 
 /** Gen 5's Ability pop-up. The first time an Ability fires in a fight it gets a stripe in the turn banner's style, as a
