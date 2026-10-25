@@ -13,6 +13,6 @@ export function seedGate(saved) {
   if ((saved.unlocked || []).includes('mewtwo')) return 0;
   const dealt = (saved.hallOfFame || [])
     .filter(w => w.starter !== 'mewtwo')
-    .reduce((sum, w) => sum + (GATE_HIT[w.level] ?? 0), 0);
+    .reduce((sum, w) => sum + (GATE_HIT[Math.min(w.level, GATE_HIT.length - 1)] ?? 0), 0);
   return Math.max(GATE_SLIVER, GATE_HP - dealt);
 }

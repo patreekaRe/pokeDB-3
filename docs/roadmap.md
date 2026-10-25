@@ -14,12 +14,29 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 a new `tools/run-probe.mjs` (fight after fight on one page) found no growth over a run, the map level near 120 MB and each
 fight peaking near 185 MB. Fixed: every ? room, gym and town painted its side wall twice (towns 10-21 MB less each, the
 gym 9, the dojo 8; budgets recorded lower). On a phone: a long run, towns and gyms included; Settings' Save group lists
-any reload (`js/crumbs.js`) with where it happened. **Next, if it still reloads** (▶ Run in: CLOUD), the next offenders
-measured: a Center or Mart left for the map stays awake (`putAway()` keeps its context for the rooms the map warms, but
-only `js/event-3d.js` warms in its own; ~26 MB of buffers beside the warmed arena), and the song playing (15-35 MB decoded;
-a lower `AudioContext` sample rate would halve it, a sound-quality call for the user). Prompt: "▶ Run in: CLOUD. Read
-walk-in-rooms.md's 'One side-wall painting'. Run tools/run-probe.mjs, then put a Center or Mart left for the map to sleep
-(sleepGL after putAway), re-run it and the budget check, and push. My phone's reload log says: [paste Settings' list]."
+any reload (`js/crumbs.js`) with where it happened. **Round eight done 2026-10-24** (branch `claude/pc-app-launch-000m1y`,
+on `main` too): a Center or Mart left for the map now sleeps (`putAway(view, scene, renderer)`), and every looped song
+is folded to mono once decoded (the user's pick over a lower sample rate). Headless, the map after a Center 85 -> 52 MB,
+after a Mart 100 -> 58, one context awake instead of two; a song's decoded memory halves. On a phone: a long run with
+Centers and Marts, and whether any song sounds wrong on headphones. **Round nine 2026-10-25** (on `main`): the user's
+phone reloaded at Biome 1's crossroads after a double tap on the Shrine road's board. Headless, the taps grow nothing (12
+double taps on the board: flat), and a whole Clearing run on one page shows no runaway growth (map ~50 -> ~120 MB over
+the biome, all bounded caches: one Mart, one Center, the arena's ground per stage, the last two rooms). Fixed: the
+biome's last two rooms (its gym's hand-over and a ? room) stayed kept beside the next town as it was built; walking on
+now lets them go (`forgetBiome()`, `docs/reference/walk-in-rooms.md`): headless, a whole Clearing run into Lantern Village
+peaks ~232 MB in the town instead of ~260 (a scratchpad probe, not kept). A town's folk load in over its first ~2.5
+minutes and then hold (Lantern Village alone ~150 -> 155.5 MB, flat after). On a phone: the crossroads and the first town
+after Biome 1, and what Settings' Save card says if it reloads again.
+
+**▶ PLAYTEST ON THE LIVE SITE. Perf audit of the Clearing, the Safari areas and the Duo Run: done 2026-10-21**
+(`docs/roadmap-done.md`; branch `claude/perf-audit-clearing-features-xshrrn`, pushed to `main` too). On a phone: a Duo
+Run's map should feel smoother; its rare-spawn and material badges still glow and bob, reachable rooms still blink.
+**Leads not taken, measured** (▶ Run in: CLOUD, effort medium, only if a phone still lags or reloads): on the map, style
+recalc stays ~100-170 ms a second in headless Chrome with only composited animations running (the coin's `filter:
+brightness` spin is the last repainting one, ~50 ms/s; dropping its flash is a look call for the user); during a run the
+Clearing's vista canvas (`hub-vista.js`, 7.3 MB) and the character select's sky layers (`select-sky.js`, ~6.6 MB, its frame
+loop ticking unseen under the Clearing) stay held. The title's `pressBlink` is gone (2026-10-24: its button has been
+invisible since 2026-10-08); `tdevGo` didn't run unseen when checked that day. `NODE_PATH=$(npm root -g) node tools/fps-probe.mjs --only=duo-map,clearing` measures them.
 
 **▶ PLAYTEST ON THE LIVE SITE. Safari shinies everywhere: done 2026-10-19, on `main`, waiting on the user** (the three
 sessions are in `docs/roadmap-done.md`). Look at `?sparkle=3` (every Safari shiny lent at ★3: the Safari Pokédex's ✨
@@ -228,8 +245,45 @@ Sessions, in order, each ▶ Run in: CLOUD (both repos):
    Electric (-10) and Water (-6) pairs dip, for the balance pass (15). Every type is now whole. Playtest: the githack link
    with `?duorun&duopool&nightalley&coins=500`, or `?area=nightalley`, `?bossfight=nightalley&starter=sandile`,
    `?arena=fight&starter=sandile&cards=turnabout,retribution,ill-gotten-gains,costume-change,phantom-mask&relics=dark-memory`.
-   **Waiting on the user**: the playtest (the Moves app now has 11 type tabs on a phone); whether Night Alley should look
+   **Waiting on the user**: the playtest (the Moves app's 11 tabs show only their type badges since 2026-10-21); whether Night Alley should look
    like night at every hour (as built) or follow the clock like the other areas.
+**Done 2026-10-20 (branch `claude/new-starters-lists-tkfrt4`, off `duo-types`): the duo starter unlock window.** A catch
+that adds a duo starter now opens the unlock window (`duoNews(windows)` in `js/run.js`, the `feat` form of
+`unlockWindow`: "🔓 New duo starter!", its sprite and cry, whether it opened a type or is a new look), not a line in the
+catch box. **Then 14 more duo starter lines as looks** (the user: "add as many as you think can be starter skins";
+enemies allowed): Magnemite; Poliwag, Ralts; Gible, Geodude, Nidoran♂, Nidoran♀; Togepi, Zubat, Hoppip, Dratini, Bagon;
+Larvitar, Seedot (`DUO_LINES`, `DUO_STARTERS`, PokeAPI backs and shinies, 33 cries at -13 LUFS, `SPRITE_FIT` / `BODY_X`).
+Not moved into their type areas (`docs/duo-design.md` section 3). The user misread earlier: two-stage lines aren't
+wanted, so nothing to decide there. **Merged into `main` 2026-10-20** (it had split off before the go-live, so the live site showed the old Duo app). pokeDB-sim's switch merged into its `main` the same day. The balance pass (session 15) ran before the turn-ending switch; a ~150-a-pair re-check under it is worth one session (▶ CLOUD, effort: high). **Waiting on the user**: a playtest.
+Also fixed (2026-10-20, the user's phone): the Duo app wouldn't scroll (`.cdev-dex`'s `overflow: hidden` beat the app
+panel's `overflow: auto`; `.cdev-app.sp-duo-app` now scrolls).
+**The Duo app's new layout** (2026-10-20, the user's asks from their phone): the window stays up with the picked pair at
+the gate, updating as you pick; the pool comes first; today's road folds per area (number, name, Safari Dex count); the
+type emoji are round badges (`js/type-badge.js`); the portraits centre their sprite. Detail: `docs/reference/safari.md`'s
+"The Duo key". **Waiting on the user**: the look on a phone (the badges' glyphs were drawn blind, no screenshot).
+Then each area's row shows its main types and a green ▲ / red ▼ count in view, folded or not (the user's pick from the
+categorized mock's road; only that part, the rest stays); a tap on either explains it under the row (`faresLine()`).
+Then (same day): each road row is one line (a round number, the name, ▲ ▼, the count; the types inside the fold), and the
+roster grew: Poliwag out, Ice / Fighting / Dark filled to 8 / 10 / 9 with two-stage lines and single Pokémon that power up
+with a legendary's aura (`docs/duo-design.md` section 3). 47 duo looks in all. **Waiting on the user**: a playtest of the
+auras (80 new GIFs, ~8 MB, loaded only for the two starters in a run).
+Then the Duo Run's own three areas (`duoRoad()`) and the map's badge on rooms holding a duo starter not caught yet
+(`docs/reference/safari.md`).
+Then every duo type to 10 looks (60 in all; `docs/duo-design.md` section 3), the type badges everywhere a type was an emoji
+(`typeText()` in `js/type-badge.js`: card faces, the battle's plates, the Pokédex and Stats chips, the Hall of Fame, the
+map's match marks, the crossroads), and the duo's swap button on the plate's top-left corner (`#player-plate .bench-chip`).
+Then the switch reworked (the user's calls, same day): the bench portrait is gone (the Pokémon moved too much to read);
+you **hold your Pokémon** to bring up the Go pill, and **a switch ends your turn** as in the games (1 PP still; a card's
+switch stays free and mid-turn). pokeDB-sim mirrors it (same branch name there); its bot now only switches last, keeping
+the PP back when the coming hit is ▲ on the one out and not the partner. Bot check (150 a pair, 8 pairs): mean 65.2 -> 74.1,
+switches a run ~44 -> under 1 (the old bot's hand-fetching churn cost it; pokeDB-sim's README). Session 15 measures with it.
+Then "hold to swap" fades over your Pokémon through a duo fight's first two turns.
+**Waiting on the user** (2026-10-20, from their phone): the Ice Cave's intro film showed black behind its title and snow,
+and the map card's Pokémon came out of its ball small and choppy. Not reproduced headless (the film draws fully, day or
+night, every area; a Duo Run's map holds ~131 MB, as the start screen does; run-map within budget). The phone was on low
+battery with 7 tabs open, so likely Safari dropping a canvas under memory pressure. If it repeats in a fresh tab, note the
+area and time, and add a guard that repaints a lost film canvas.
+
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
 set is built (the helpers' brief, budgets, the check) is its "Building a set" section. Done so far: every kind
@@ -306,6 +360,8 @@ roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no 
   a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
   b) Done 2026-10-14, on `main`: 16 outdoor kinds, Smeargle's garden catalogue (docs/roadmap-done.md).
   c) Done 2026-10-14, on `main`: the 6 on show let out from the yard's Pokémon tab; swim, swing, sit (docs/roadmap-done.md).
+     2026-10-23: every room, the yard too, now picks from the whole Safari list, up to 6 a room, and a new Safari player's
+     first two catches move in by themselves, with a window (docs/roadmap-done.md).
      Not yet seen in a browser: playtest `?yard&guests` with a swing set and pond out (`?base&yard` opens the main
      room: `?base` is read first).
   d) Done 2026-10-14, on `main`: berry plots in Smeargle's catalogue, five berries, coins capped at 100 a day, a basket
@@ -1133,7 +1189,142 @@ Trainer Mail through the PC (Easy Chat-style phrase parts, a stationery pick, an
 `adds/`), Friends tabs on the Safari / Sky Pillar / Arcade boards, the visit guestbook of stamps, and trading spare
 furniture or Safari Pokémon (hardest: both sides must agree at once). All need `firestore.rules` published first.
 
+**The Berry Booth** was built 2026-10-23 (branch `claude/berry-booth-roadmap-build-h6mbqh` and `main`; archive). **Next: the
+user playtests it** (needs Kurt's Workshop open and held berries kept): walk to the kiosk left of the gate, step through
+the Guide, pack berries and a kit item, then see Prepare's "Bringing:" line. The booth and the Pokéstop moved a row
+forward to the avenue's edges the same day (the user's ask), and the route sign was taken out; the user checks they don't hide the gate's runes. Then, ▶ LOCAL if the kiosk's look or the
+window needs work (effort: low). ▶ Playtest on the live site.
+
+**Take off a held berry** was built 2026-10-25 (branch `claude/berries-during-runs-pmaxy1` and `main`; archive). **Next: the
+user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lum`, open the Bag's Items, Take off, then Hold.
+
 ## Ideas, not agreed yet (ask the user before building)
+
+**Friends playing it as an app on their phones** (the user's question, 2026-10-24: "turn it into a game on Unity or
+something other than a browser"). Claude's answer, not decided yet: **no Unity**, since that means rewriting ~200k lines
+of JS and every three.js place from scratch. The game is already an installable web app (`manifest.webmanifest`,
+`fullScreenApp()`), so friends can Add to Home Screen today. Steps, cheapest first: (1) **a service worker** (there is none
+yet), so it opens instantly and works offline once cached. Cache assets as they're used, not the whole 186 MB (111 MB of
+Pokémon GIFs, 72 MB of audio), and version the cache so a push still reaches players. ▶ CLOUD, effort high. (2) **Lighter
+downloads**: re-encode the audio smaller and look at WebP for the GIFs, checked by `tools/budget-check.mjs`. (3) **A
+Capacitor wrapper**, the same code in a real Android / iOS app: an Android APK can go to friends directly, but iOS needs a
+Mac and Apple's $99 a year. **The app stores are a no**, because Pokémon's names, sprites and cries are Nintendo's and the
+stores take such apps down. They could only take it with original art and names.
+**The user's go, 2026-10-24** ("I want both"), as two sessions: **1, smoothness** (done the same day: the Center and Mart
+sleep, mono songs, the hidden title blink; "Mid-run reloads" above), then **2, loading** (▶ Run in: CLOUD, effort high):
+the service worker of (1), and the music re-encoded smaller with every `LOOP_POINTS` loop checked after (re-encoding can
+shift timing). The GIF-to-WebP step is out: `js/gif-frames.js` decodes GIFs itself, for little gain. Claude's note to the
+user: neither makes play smoother, only loading.
+
+**Cloud save: look at the cloud again when the game comes back from the background** (Claude's offer, 2026-10-23, not
+answered yet): a tab left open on one device only learns the other played at its next save, then asks "Two saves found".
+Re-checking on return would take the newer cloud save quietly when this device hadn't changed (a reload mid-play, so ask
+the user first). ▶ Run in: CLOUD, effort medium.
+
+**Secret Base houses: still open after launch (2026-10-23).** The houses went live (archive: "Secret Base houses").
+Waiting on the user: **insides per house** (Claude's pick: drop them, since a round or narrow room breaks friends' laid-out
+rooms; a safe middle is house-themed floors, wallpaper and window frames only). Watch for: a friend's lawn shows the
+Ancient Tree until they open the game after launch (their page then carries `lot`); the first real Trainers-app visit
+through the lawn is its first test with the cloud (a githack link has none).
+
+**The game feels too easy, Grass most of all; healing feels overpowered** (2026-10-22, the user, after a Servine run where
+Apple Acid+ (1 PP, 11 + Vulnerable 2) sat beside Seed Bomb (2 PP, 10 + Vulnerable 2)). The human bot, 150 a cell, sim
+variants `heal75` / `heal50` / `heal0` / `appleNerf` / `synthEx` (pokeDB-sim, branch `claude/game-difficulty-healing-balance-e107sm`):
+- Base: Grass L0 62.0 / L3 46.7, Fire L0 76.0, Water L0 60.0. To the bot Grass isn't the easiest; Fire is.
+- **Grass is built on healing**: in-fight healing x0.75 takes Grass 62 -> 42 (L3 47 -> 23), x0.5 to 33, none to 6, while
+  Fire only drops 76 -> 64 and Water 60 -> 43-53. A blanket heal cut would break Grass long before it touched the others.
+- Single cards move nothing: Apple Acid+ at 10 + Vulnerable 1 (70.7, noise) or Synthesis with Exhaust (61.3).
+- Out-of-fight heals are big too: evolving **fully heals** below Level 5, the Center 35%, Overgrow 3 a fight.
+Claude's plan, put to the user (not agreed yet; ▶ CLOUD, both repos, effort: high):
+1. **Trainer Levels 6-10** (StS's Ascension went to 20; ours stops at 5), for a player who wins at 5. Level 0 stays as it
+   is for new players. Candidates, each set by the bot: "Bitter Medicine" (in-fight healing 15-20% less, with Grass given
+   something back so its gap stays inside the others'), evolving no longer heals, Centers 0% (resting only upgrades or
+   forgets), elites with a buff, a curse in the starting deck (with the Curses idea below), a tougher last boss.
+2. **Enemies that answer healing**: a Heal Block move on a few enemies and elites (your heals do nothing for 2 turns), a
+   counter Leech Seed on you. Pressure on heal decks only when they meet it. Pairs with "Enemy variety" below.
+3. **Apple Acid+ to 10 damage + Vulnerable 1**, so Seed Bomb isn't strictly worse (the bot sees no change in difficulty;
+   a fix for the card's design, not the difficulty).
+First question for the user: which Trainer Level they were playing. At Level 0-2, try climbing first; at 5, build 1.
+**The user: Level 5.** Levels 6-10 and the Apple Acid+ change were built the same day (see the archive).
+
+**Rewards for Trainer Levels 6-10** (2026-10-22, the user: "What should we reward players for 6-10? Has to be worth it
+right?"). Today a win from 5 up counts as a Level 5 win (gold star, Hall of Fame, the gate, badges), coins keep +10% a
+Level (Level 10 pays double) and the Journal pays 2000 for unlocking Level 10. Claude's lean: nothing that makes a run
+easier (it would undo the challenge and leak into the Safari and Sky Pillar); prestige that friends can see, coins, and
+things for the Secret Base. **The user: "send it"; 1-3 built the same day** (archive); 4 and 5 still open:
+1. ~~**A star that climbs**~~ done: a starter's gold ⭐ becomes the highest Level won with it, gold at 5 and a
+   colour per Level up to a rainbow star at 10, on the portrait, the Trainer Card, a friend's Trainers page and the Hall
+   of Fame entry. ▶ CLOUD, effort: medium.
+2. ~~**A first-win jackpot per Level**~~ done:, as Level 5's 500 per type: the League mails 600 / 700 / 800 / 900 for the first
+   win on 6-9 and 2000 for 10 (once ever, or once per type at 10). Data and mail only. ▶ CLOUD, effort: low.
+3. ~~**A Level 10 title and look**~~ done 2026-10-22 (branch `claude/pokemon-master-title-cape-b33c37` and `main`; archive):
+   "Pokémon Master" on the Trainer Card and a crystal pedestal in the Hall of Fame. **No cape** (the user's call, after
+   one was built; seen again 2026-10-23: "looks retarded"). **The Champion's Crown instead** (2026-10-23, on `main`;
+   archive): a 3D gold crown with rainbow gems floating and turning over the walking buddy, and a pixel one over the
+   Trainer Card's partner, with a Crown key. **Next: the user playtests** `?master` (walk the Clearing; the Trainer
+   Card). Maybe later: friends' buddies in the Plaza wearing theirs. ▶ Playtest on the live site.
+   **A preview of the crown before it's earned** (2026-10-23, the user: "Is there a way to give the player a preview of the
+   crown somewhere?"). **(a) and (c) done 2026-10-23 on `main`** (the user: "Let's just do 1 and 3"; archive): the Level
+   picker shows the pixel crown and how to earn it from Level 5 up, and the Trainer Card a greyed crown, "Win Lv 10".
+   Not picked: (b) a glass case with the 3D crown in the mall or the Clearing, (d) a "try it on" there.
+   `?master` now skips the new-player setup and How to play (2026-10-23: the user's playtest link "doesn't work", as an
+   empty githack save hid the buddy behind them).
+   ~~**A Super Saiyan aura for each Level won**~~ done 2026-10-23 on `main` (archive). **Next: the user playtests**
+   `?aura=6` to `?aura=10` (walk the Clearing; the Trainer Card's Aura key; the Level picker from 6 up) and says if 10 is
+   crazy enough or any Level too strong. The user found 10 "laggy af" (cut to three draws), then loved it but found the
+   crown hidden behind it and asked for it smaller (2026-10-23): every Level smaller, the crown drawn over it. **Next:**
+   the user checks the size and the crown, and says if it still lags. Maybe later: friends' buddies in the Plaza wearing theirs. ▶ Playtest on the live site.
+4. **Trophies for the Secret Base**: a cup for each of Levels 6-9 and the Champion's Trophy for 10, earned furniture
+   (each a painting and a hand-built model). ▶ CLOUD, effort: high.
+5. **Master Badges**: a Level 10 win with a Fire, a Water and a Grass starter, and all three (each a `LOOK` line). ▶
+   CLOUD, effort: medium.
+More creative ones (2026-10-23, the user: "Lets give them some cool creative stuff"; Claude's pitch; still no outfits
+and nothing that makes a run easier). **The user picked 6, 7 and 10** (2026-10-23: "I like 6 7 and 10"); 8, 9, 11 and 12
+not picked. **6, 7 and 10 built together 2026-10-23** (branch `claude/cloud-build-shells-letters-jggbf4` and `main`; archive):
+the user playtests them (below). The user also asked to see the cape again: its build is
+still playable pinned at `e3f047fc` (`rawcdn.githack.com/patreekaRe/pokeDB-3/e3f047fcbae98bf6bcf5b1d001d0d0a374389168/index.html?master`,
+`&mall=outfitter` for its stand). If they want it back, revert `11f820a7`.
+6. ~~**Foil decks**~~ done: a run with a starter won on Level 6-9 wears foil-edged cards in its star's colour, Level 10 a
+   rainbow edge and a holo that follows the pointer or the tilt (Settings, Foil cards). **The user playtests** with
+   `?foil=6` to `?foil=10` (lent for a page load, any run) and says if the edge is too thin or the holo too strong.
+   ▶ Playtest on the live site.
+7. ~~**Gold and Crystal Pokédex shells**~~ done as **Gilded** (Level 8) and **Clear** (Level 10; `?master` lends it):
+   "gold" and "crystal" were already taken by Grand Champion's and the Catalogue's. The user looks at both (Settings,
+   Device colour) and says if Clear is see-through enough. ▶ Playtest on the live site (`?master` lends both).
+8. **The Master's constellation**: each Level won lights a star in the Clearing's night sky, in your starter's shape;
+   Level 10 joins them up. Friends visiting see it. ▶ CLOUD, effort: high.
+9. **A golden statue in the Clearing**: a Level 10 win casts that starter in gold on a plinth with your name and the
+   date, one per type, up to three. ▶ CLOUD, effort: high.
+10. ~~**Letters from the Gym Leaders**~~ done: three friends write on each Level 6-9 first win, the Nietos for everyone
+    at 10 with a signed group photo (a wall piece). The user reads them (`?mail` doesn't hold them; a real first win
+    does) and says if the voices are right. ▶ Playtest on the live site.
+11. **The homecoming parade**: after the first Level 10 win, the Clearing at dusk with fireworks in the star's colours
+    and the Gym Leaders lined up cheering (Lantern Village's fireworks reused), once. ▶ CLOUD, effort: high.
+12. **The silent champion**: after Level 10, a secret summit with one last fight at Level 10's rules; a win puts a gold
+    plaque in the Hall of Fame. New content, not power, and needs the bot. ▶ CLOUD, effort: high.
+
+**Picking a duo's look and shiny** (2026-10-21, the user's question: "is this the best way to cycle through our
+starters? any other ideas for shiny toggles?"). Built so far: ◀ ▶ under each portrait, and a ✨ on its corner (archive).
+Ideas put to the user, none agreed (▶ CLOUD, effort: medium):
+- **A look sheet** (recommended): tap a portrait's name to open a strip of every owned look of its type as small faces,
+  an owned shiny as a second sparkly face beside its normal one; one tap picks look and colours together. ◀ ▶ could stay
+  for a quick flip, or go.
+- **Swipe the portrait** left / right to change look, in place of the arrows (saves the row; less obvious).
+- **Shinies in the cycle**: ◀ ▶ step through normal and shiny looks alike (Charmander, ✨ Charmander, Cyndaquil...), no
+  separate button.
+- **A 🎲 random look** per portrait, among owned looks and shinies.
+- **An "all shiny" switch** at the pool's head, for every owned shiny at once.
+
+**After the Sky Pillar F100 combo pass** (2026-10-21; the pass is in the archive): left for the user.
+- **Fire leads at Level 0 by ~8** since Flame Wall 9 (human bot, 300 a cell: Fire 79 / 55 / 32 at L0 / L3 / L5 against
+  Grass ~69 / 54 / 28 and Water ~66 / 45 / 28; Fire trailed at L3 before). If Charmander plays too easy, Flame Wall goes
+  back to 8 (only its upgrade at 13 lifted nothing) or Fire gets a lift aimed at L3 / L5. Waiting on the user's playtest.
+- **Duo Runs**: Fighting's pairs now sit with Ground's at the top (~76), while Flying's and Dark's trail (~58, the mean
+  ~68): for the next duo balance pass (▶ CLOUD, both repos, effort: high).
+- Not touched, from the same sweep: Psychic's Safeguard + Amnesia; and if healing still runs away at the tower's top
+  floors, the tower's own heal pressure (a `healMult` past floor ~50) rather than cutting heal cards.
+- Two probes already failed on `main` before the pass: `tools/electric-probe.mjs` clicks `#player-bench` (gone with the
+  turn-ending switch) and `tools/dark-probe.mjs`'s Night Alley day check. A small fix (▶ CLOUD, effort: low).
 
 **A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
@@ -1148,6 +1339,11 @@ the new-type areas (Power Plant, Ice Cave, Dojo Mountain, ...), so every Duo Run
 own difficulty step (~x6.3 / +29 / boss +40) set by the bot: duos already win less than solo (electric+fire / +grass /
 +water 64.7 / 43.7 / 36.3 against solo ~71), so area 4 may need to be gentler, or come with an extra card reward. Build it
 on `duo-types` (the Duo Run isn't on `main`). **The user's call: wait until the duo types are finished**, then build it.
+The user asked again on 2026-10-20 ("didn't we agree to have 4 biomes for duo run? And aren't the biomes completely
+different from the daily seeded run?"). Not built: today a Duo Run replays the day's three areas on a fresh seed. Open,
+for the user: 4 areas, and whether all four are the Duo Run's own rather than the Daily's.
+**Settled the same day** (the user: "I think we keep it 3 biomes but always different than the daily seed"): built,
+`duoRoad()`; 3 areas, never the Daily's. The 4th area is off.
 
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
 from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6
@@ -1177,6 +1373,11 @@ for its looks. The mock (https://claude.ai/artifact/YQMMJCScQXDoPqKtXfqmQq) has 
 then three groups: **Starter types** (Fire / Water / Grass), **Caught in the Safari**, **Still to find** (locked, with
 where to catch one). Each type is a card with its Ability and a scrolling row of every owned look (legendaries tagged),
 then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict before building.
+
+**The Safari lobby's area rows with the Duo app's silhouettes** (2026-10-20, the user: "I might want a mix of those
+1/2/3 biome names with number caught mixed with the sprites too"; **not decided for the Daily lobby**). The Duo app now
+has that mix (collapsible rows with name, count, types and Pokémon; below). Open: whether the Daily lobby's LCD rows
+should fold out the same way (`render()` in `js/safariprep.js` could reuse `road()` from `js/duoprep.js`).
 
 **Safari duos, real types and new areas** (the user's shape, 2026-10-19; a plan to pick up, ▶ Run in: CLOUD, both repos):
 - **The duo** (built first, Safari only): bring two starters of different types, one out at a time. Switch for 1 PP
@@ -1344,10 +1545,11 @@ then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict bef
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
-- **Turn banner** (2026-10-25, branch `claude/slay-spire-turn-animation-9g5d7p`, NOT on `main` yet: the user's call,
-  playtest first; code commit `c434203`): Slay the Spire's turn banner, "Battle Start!", "Your Turn / Turn N" and "Enemy Turn" across the
-  arena (`turnBanner()`, `docs/reference/battle-screen-layout.md`). Playtest on the branch's githack link (any fight,
-  e.g. `?bossfight=forest`); on a yes, merge the branch to `main`. ▶ Run in: PLAYTEST ON THE LIVE SITE (branch link).
+<<<<<<< HEAD
+- **The Safari's song** (2026-10-24, the user's MP3, on `main`; `docs/reference/music.md`): plays in the Safari lobby and on
+  every area's map, Daily and Duo Runs, looped over 17.25-48.34 s. Listen for the loop's join (~48 s in) and the level
+  against the Clearing's song. ▶ Run in: PLAYTEST ON THE LIVE SITE.
+>>>>>>> origin/main
 - **The Nietos' mansion** (2026-10-20, branch `claude/nieto-house-extravagant-mansion-sf3f5m`, on `main` too; archive):
   the cottage is now a white château (turrets, portico, golden Kangaskhan at the gate) and inside a marble-and-gilt hall
   with chandeliers and a family portrait. Walk up to it in the Clearing (south-east), and go in with `?nietos&gymwins=1`

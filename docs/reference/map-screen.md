@@ -247,3 +247,21 @@ disabled room swallowed the tap). A tap shows a bubble saying what it is (`mapTi
 the map's visible top, gone on the next tap or after 4 s.
 
 **Home key** (2026-10-07): on this screen the top bar's Pokédex (`#brand-btn`) shows as `.home-key` (a round shell-coloured key with a house, `css/screens.css`) instead of the pixel handheld; it opens the device home, where Main menu lives. No Main menu button on the map itself (the user asked; one more tap away is safer than a mis-tap ending the screen).
+
+**Map animations stay on the compositor** (2026-10-21, the perf audit): the map is the busiest page there is (~14k DOM
+nodes), so an animation that repaints on the main thread costs it dearly. A badge's glow (`.map-sparkle`, the Safari's
+`.map-grass`) swells as a `::before` halo fading in and out (`glintHalo`), its drop-shadow fixed; the bob and swell are
+`translate` / `scale`. Animating the drop-shadow itself cost ~200 ms a second of main thread on a Duo Run's map
+(`tools/fps-probe.mjs`: 500 -> 296 ms/s). A reachable room's blink is a white ring over its border (`.map-town::after`,
+`townBlink` on opacity), not a blinking `border-color`. A new map animation: `translate`, `scale`, `rotate`, `transform`
+or `opacity` only.
+
+
+## Abandon run beside the floor (2026-10-23, the user's ask)
+
+The run card's top row has an Abandon run key right of the floor (`#map-flee`, in the top bar after `.floor-tag`; the
+floor gives up its auto margin to it), only on a run's map, not a Sky Pillar climb's bar. It asks through
+`requestAbandon()` in `js/main.js`, the same as the device's Settings and the title's Run key. Its glyph is a Game & Watch
+runner (`gameWatchRunner()` in `js/smooth-icons.js`): three segments printed on the LCD (stride, passing step, stride),
+each lit in turn by `gwTick` (opacity, `step-end`, 0.75 s) while the unlit ones stay as faint ghosts, as on the real
+handhelds; reduced motion lights only the middle one.

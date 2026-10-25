@@ -11,7 +11,7 @@ import { claimable } from './missions.js';
 const SEEN_KEY = 'pokedb.pcSeen';   // per device, like the patch notes' "!"
 const LOOKED_KEY = 'pokedb.pcLooked';   // the news the hub's "!" over the PC last showed when you logged on
 
-const hasBase = (save) => !!(save.baseOwned || save.secretBase);
+const hasBase = (save) => !!(save.baseOwned || save.secretBase?.v >= 2);   // a `secretBase` of only `mons` is the first catches moved in before the base is bought
 
 /** Each new page: the menu it sits in, and whether it's any use yet (a base page waits for a base). */
 const NEWS = {

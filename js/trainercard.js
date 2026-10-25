@@ -21,12 +21,13 @@ import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { ALL_CARDS } from './data/cards.js';
 import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
+import { bestWin, starClass, starName, isMaster, wearsCrown, auraBest, aurasEarned, auraWorn } from './data/difficulty.js';
 import { safariDexCount } from './safaridex.js';
 import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { tipAt } from './tips.js';
 import { playSound } from './audio.js';
-import { $, el, openDialog } from './ui.js';
+import { $, el, openDialog, crownArt, auraArt } from './ui.js';
 import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
@@ -336,6 +337,16 @@ const playTime = (ms = 0) => {
 
 /* ---------- the window ---------- */
 
+/** STARS: up to three stars, the starters' best first, each tinted by its best Level won (gold at 5, a rainbow at 10). */
+function starRow(save) {
+  const best = Object.keys(save.stats.level5WinsBy || {}).concat((save.hallOfFame || []).map(w => w.starter))
+    .filter((id, i, all) => id !== 'mewtwo' && all.indexOf(id) === i).map(id => bestWin(save, id)).filter(lv => lv >= 5).sort((a, b) => b - a);
+  const dd = el('dd', '');
+  for (const lv of best.slice(0, 3)) dd.append(el('span', starClass(lv), '⭐'));
+  if (best.length > 3) dd.append(`×${best.length}`);
+  return dd;
+}
+
 /** The starter it picks by itself: the one with the most wins (a Level 5 win counts big), else Charmander. */
 function autoPartner(save) {
   const s = save.stats;
@@ -409,12 +420,19 @@ export function buddyChoices(save = getSave()) {
 export function buddy(save = getSave()) {
   const all = buddyChoices(save);
   const chosen = save.buddy && all.find(m => m.key === save.buddy);
-  if (chosen) return chosen;
+  if (chosen) return { ...chosen, crown: crownOn, aura: auraOn };
   const s = save.stats, score = (id) => (s.winsBy?.[id] || 0) + 10 * (s.level5WinsBy?.[id] || 0);
   const plain = all.filter(m => !m.shiny), best = [...plain].sort((a, b) => score(b.id) - score(a.id))[0] ?? plain[0];
   const st = STARTERS_BY_ID[best?.id ?? 'charmander'], shiny = isShiny(st.id) && (save.shiny?.owned || []).includes(st.id);
-  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny };
+  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny, crown: crownOn, aura: auraOn };
 }
+
+/** Whether the walking buddy wears the Champion's Crown right now: js/hd2d.js's drawMon() asks each frame, so the Trainer
+    Card's Crown key shows at once. */
+const crownOn = () => wearsCrown(getSave());
+/** The Level of the Super Saiyan aura it wears (0: none), asked each frame the same way. */
+const auraOn = () => auraWorn(getSave());
+
 
 /** The walking buddy as a `save.buddy` key, picked or not. */
 export const buddyKey = (save = getSave()) => { const b = buddy(save); return b.key ?? `starter:${b.id}${b.shiny ? ':shiny' : ''}`; };
@@ -597,13 +615,14 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   // each line says what it counts when tapped (js/tips.js reads the title): STARS and TIME weren't clear on their own
   const lines = [
     ['NAME', trainerName().toUpperCase(), 'Your nickname, shown on the leaderboards. Tap Edit to change it.'],
+    ...(isMaster(save) ? [['TITLE', 'POKéMON MASTER', 'Your title, for winning a run on Trainer Level 10, the top Level.']] : []),
     ['WINS', String(s.runsWon), 'Runs you have won, at any Trainer Level.'],
     ['POKéDEX', `${dex.n}/${dex.total}`, dex.all ? 'Pokémon beaten on every Pokédex page you have found.' : 'Pokémon beaten in the three biomes. Beat them all to open the Safari Zone.'],
     ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---', safari ? 'Pokémon caught in the Safari Zone.' : 'Pokémon caught in the Safari Zone, once it opens.'],
     ['SHINIES', safari ? `${shinyTotal(save)}/${SAFARI_ROSTER.length}` : '---', 'Safari Pokémon whose shiny is yours, caught in the wild or pulled at the Shiny Exchange.'],
     ['JOURNAL', journalRank(save).rank.name.toUpperCase(), 'Your rank in the Trainer\'s Journal, from tasks claimed at the Clearing\'s PC.'],
     ['RANGER', safari ? rankOf(save).rank.name.toUpperCase() : '---', 'Your Ranger Rank, from tasks claimed on the Safari Outfitter\'s Ranger Task Board.'],
-    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A gold star for each starter you have won a Level 5 run with.'],
+    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A star for each starter you have won a Level 5 run with: gold at Level 5, a new colour each Level up, a rainbow at 10.'],
     ['TIME', playTime(s.playMs), 'Play time, in hours and minutes.'],
     ...(myCode() ? [['CODE', formatCode(myCode()), 'Your trainer code. A friend types it in the Trainers app to add you.']] : []),
   ];
@@ -611,7 +630,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const list = el('dl', 'tc-lines');
   const redraw = () => openTrainerCard(into, { reopen: true });
   for (const [k, v, tip] of lines) {
-    const dt = el('dt', '', k), dd = k === 'NAME' ? nameField(redraw) : el('dd', '', v);
+    const dt = el('dt', '', k), dd = k === 'NAME' ? nameField(redraw) : k === 'STARS' && stars ? starRow(save) : el('dd', k === 'TITLE' ? 'tc-master' : '', v);
     dt.title = tip;
     if (k !== 'NAME') dd.title = tip;
     list.append(dt, dd);
@@ -624,7 +643,16 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const img = el('img', 'pixel');
   img.src = mate.src;
   img.alt = '';
-  pic.append(img, el('span', 'tc-partner-edit', 'Change'));
+  if (wearsCrown(save)) pic.append(crownArt());
+  const aura = auraWorn(save) ? auraArt(auraWorn(save)) : null;
+  if (aura) {
+    // its feet on the partner's: the picture is 96px tall under the button's 6px padding
+    for (const box of [aura.back, aura.front].filter(Boolean)) box.style.top = `${104 - aura.h}px`;
+    pic.append(aura.back);
+  }
+  pic.append(img);
+  if (aura?.front) pic.append(aura.front);
+  pic.append(el('span', 'tc-partner-edit', 'Change'));
   pic.addEventListener('click', () => {
     playSound('confirm');
     partnerPicker(body, () => openTrainerCard(into, { reopen: true }));
@@ -643,6 +671,46 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
       openTrainerCard(into, { reopen: true });
     });
     frame.append(flip);
+  }
+  if (isMaster(save)) {
+    const on = wearsCrown(save), key = el('button', `tc-shiny tc-crown-key${on ? ' on' : ''}`, on ? '👑 Crown' : 'Crown');
+    key.type = 'button';
+    key.title = on ? 'The Champion\'s Crown is on: tap to take it off' : 'Tap to wear the Champion\'s Crown';
+    key.setAttribute('aria-pressed', String(on));
+    key.setAttribute('aria-label', 'Champion\'s Crown');
+    key.addEventListener('click', () => {
+      updateSave(d => { d.crown = !on; });
+      playSound('confirm');
+      openTrainerCard(into, { reopen: true });
+    });
+    frame.append(key);
+  } else {
+    // a preview of the crown for everyone not yet a Master, greyed, saying how it's earned (the user's pick, 2026-10-23)
+    const lock = el('span', 'tc-shiny tc-crown-locked');
+    lock.append(crownArt('tc-crown-mini'), ' Win Lv 10');
+    lock.title = 'The Champion\'s Crown: win a run on Trainer Level 10 and it floats over your partner.';
+    frame.append(lock);
+  }
+  const earnedAuras = aurasEarned(save);
+  if (earnedAuras.length) {
+    // the Aura key steps through every aura earned, then off (the user's go, 2026-10-23); the best one isn't saved as a
+    // pick, so a higher Level won later puts its aura on by itself
+    const on = auraWorn(save), best = auraBest(save), cycle = [...earnedAuras, 0], next = cycle[(cycle.indexOf(on) + 1) % cycle.length];
+    const key = el('button', `tc-shiny tc-aura-key${on ? ` on aura-key-lv${on}` : ''}`, on ? `🔥 Lv ${on}` : 'Aura');
+    key.type = 'button';
+    key.title = `${on ? `The ${starName(on)} aura, for a Level ${on} win, is on` : 'Your aura is off'}: tap for ${next ? `the ${starName(next)} aura` : 'none'}`;
+    key.setAttribute('aria-label', `Super Saiyan aura: ${on ? starName(on) : 'off'}`);
+    key.addEventListener('click', () => {
+      updateSave(d => { if (next === best) delete d.aura; else d.aura = next; });
+      playSound('confirm');
+      openTrainerCard(into, { reopen: true });
+    });
+    frame.append(key);
+  } else {
+    const lock = el('span', 'tc-shiny tc-crown-locked tc-aura-locked');
+    lock.append(auraArt(6, { cls: 'tc-aura-mini', s: 16 }).back, ' Win Lv 6');
+    lock.title = 'A Super Saiyan aura: win a run on Trainer Level 6 and your partner glows ruby, bigger each Level up to 10.';
+    frame.append(lock);
   }
   info.append(list, frame);
 
