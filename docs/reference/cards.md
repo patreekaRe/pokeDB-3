@@ -153,7 +153,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   **No duplicates in one run** (the user found Fire Lash = Double Hit, 2026-09-28): no two cards a run can meet (its type's
   pool, the neutral pool, its starting deck) may share cost and text. `noOffer: true` keeps a card out of `poolForType()`
   (Block: Grass's starting Defend, which offered doubled Water's Withdraw); Tackle is Pommel Strike (6 + draw 1) and Fire
-  Lash burns. Cross-type twins (Scorch / Seed Bomb, Firestorm / Solar Beam...) never meet in a run, so they stay.
+  Lash burns. **Since 2026-10-26 the rule is stricter** (the twin pass, below): not even the same card with other numbers.
 
 - **Electric** (2026-10-19, the Safari's duo pool; `docs/duo-design.md` section 5, `docs/reference/safari.md`'s duo
   section): `ELECTRIC_CARDS` / `ELECTRIC_EVO_*`, art in `js/card-art-electric.js`. New keys: `static`, `perStatic`,
@@ -320,3 +320,31 @@ roadmap entry of that name). Targeted fixes, not a blanket nerf, all mirrored in
   67.6, the rest within noise). Fire now leads at L0 by ~8 (level at L3 / L5, where it trailed). Sky Pillar (`towerCfg`,
   10 flights, 60 climbs a type), reach floor 100: fire 27 -> 40%, grass 30 -> 23%, water 27 -> 30% (noisy at 60). Detail:
   pokeDB-sim's README.
+
+## The twin pass (2026-10-26)
+
+The user found Bubble and Bubble Beam (Deal 5 / 6. Weak 2. Tide 1 / 2.) in one hand: "no cards that repeat ... very unique
+and distinct differences", all across the board. `docs/card-twins.md` lists every card that changed, what it read like
+and what it does now.
+- **The rule** (`tools/card-twins.mjs`, run by `tests/cards.test.mjs`): two cards one run can meet (its type's pool, the
+  Neutral pool, its starting deck, both evolutions' cards; a Duo Run both types') are **twins** if their lines match once
+  numbers are out, whatever they cost, and **near twins** if they cost the same and one is the other plus a line, sharing
+  two or more. A line is a sentence of `describe()`; an "If ...:" / "Punish:" / "Surface:" / "Unburden:" clause and what
+  follows it is one line; each keyword (Exhaust, Retain, Innate, Ethereal, Power, Icicle, Illusion) is a line. "If the
+  enemy intends to attack:" is Punish's older wording (`punishing()`), so the tool reads them as one; made cards read
+  alike whatever their count ("Add a Cinder" / "Add 3 Cinders"). Only each type's plain Strike and Defend (a starting
+  card that is just "Deal N damage." or "Gain N block.") may match another type's in a Duo Run.
+- **How each family was settled**: one card keeps a template, usually the starting-deck or common one, and the others
+  take a different line of their own type's mechanics. No pure generic card is left in a Duo type (a plain "Deal X.
+  Apply Weak." or "Bash" belongs to nobody), since every type meets every other in some Duo Run: each Bash in a starting
+  deck carries its type's rider (Scorch Burn 2, Seed Bomb Leech Seed 1, Wing Attack Unburden: draw; Spark, Snatch,
+  Bulldoze, Icy Wind already had one). Evolution cards that were a common with bigger numbers became signature moves;
+  the three Z-Moves (Gigavolt Havoc, Subzero Slammer, Black Hole Eclipse) exhaust. Power was kept card for card (StS's
+  numbers, x~1.2); no new mechanics, so pokeDB-sim's engine needed nothing. `perDiscard` (Flip Turn) was in
+  `damageFor()` and the sim before any card used it.
+- **Names and ids**: every id stays (saved runs load as they were); Disable+ is named **Imprison** (a card named like
+  an upgrade read as a second Disable).
+- **Safari signature cards** (514) are outside the rule: one per Pokémon, one copy a run. 170 still read like a card
+  their run can meet (200 before); `tests/safarimons.test.mjs` keeps them from reading exactly like one.
+- **Kenmatta's dojo** keeps the cards its trials were built on: `DOJO_CARDS` (`dojo-<id>`, in `CARDS_BY_ID` only, art by
+  name through `cardArt()`'s namesake) holds the 15 changed cards as they were, and the trial decks deal those.

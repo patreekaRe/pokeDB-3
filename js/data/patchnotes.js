@@ -53,6 +53,7 @@ export const NEXT = [
   ['fixes', 'Evolutions play in full again: the tap that closed "What? It\'s evolving!" was skipping the whole show.'],
   ['base', 'Jukeboxes play records now: Smeargle brings you one (each turning in 3D as you pick) with your first record, the Clearing\'s song, and friends visiting hear it. Mended towns\' trading posts sell 55 more.'],
   ['runs', 'A crossroads board shows its biome\'s research beside its Pokédex: how many of its Pokémon you\'ve researched, on a bar of its own.'],
+  ['battle', 'No two cards one run can meet are the same card with other numbers any more: 197 cards (Bubble Beam, Ransack, Fly...) got moves of their own.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

@@ -128,7 +128,9 @@ context small. Where two notes disagree, the later date wins.
 These used to be buried in the notes. Each one has its detail in the reference file named.
 
 - **Never remove a card id.** A saved run holding it would be thrown away. Count copies with `baseId()`. (`cards.md`)
-- **No two cards one run can meet may share a cost and text.** `noOffer: true` keeps a card out of the pools. (`cards.md`)
+- **No two cards one run can meet may read alike**: the same lines with other numbers (whatever they cost), or one plus a
+  line at the same cost (`node tools/card-twins.mjs`; the user's call, 2026-10-26, `docs/card-twins.md`). Only each type's
+  plain Strike and Defend may match. `noOffer: true` keeps a card out of the pools. (`cards.md`)
 - A new card gets an `ART` line in `js/card-art.js`. A new mechanic gets a `describe()` line and a `cardTerms()` line.
   A battle rule change is mirrored in pokeDB-sim's `sim/engine.js`. (`cards.md`)
 - Keep Mewtwo's type and all its cards masked as `???` until it's unlocked. The gate's achievement stays last in

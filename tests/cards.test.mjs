@@ -9,37 +9,11 @@ const { RELICS, ENERGY_RELICS } = await import('../js/data/relics.js');
 const { ITEMS } = await import('../js/data/items.js');
 const { CARD_ART_IDS } = await import('../js/card-art.js');
 
-const STARTER = { fire: 'charmander', grass: 'bulbasaur', water: 'squirtle', psychic: 'mewtwo', electric: 'shinx', ice: 'vanillite', fighting: 'timburr', ground: 'trapinch', flying: 'starly', dark: 'deino' };
-
-test('no two cards a run can meet share a cost and text (CLAUDE.md\'s rule)', () => {
-  for (const [type, id] of Object.entries(STARTER)) {
-    const cards = new Map();
-    for (const c of [...poolForType(type, ['electric', 'ice', 'fighting', 'ground', 'flying', 'dark'].includes(type)), ...STARTERS_BY_ID[id].deck.map(x => CARDS_BY_ID[x])]) cards.set(c.id, c);
-    const seen = new Map(), dupes = [];
-    for (const c of cards.values()) {
-      const key = `${c.cost}|${describe(c)}|${!!c.exhaust}|${!!c.retain}|${!!c.power}|${!!c.innate}|${!!c.ethereal}`;
-      if (seen.has(key)) dupes.push(`${type}: ${c.id} reads like ${seen.get(key)}`);
-      seen.set(key, c.id);
-    }
-    assert.deepEqual(dupes, []);
-  }
-});
-
-// a Duo Run meets two types' pools (docs/duo-design.md): same-text cards of two types still play differently there (STAB,
-// the chart), so the type is part of the key; same type or Neutral twins would still be caught
-test('no two cards a duo can meet share a type, cost and text', () => {
-  const types = ['fire', 'grass', 'water', 'electric', 'ice', 'fighting', 'ground', 'flying', 'dark'];
-  for (const [i, a] of types.entries()) for (const b of types.slice(i + 1)) {
-    const cards = new Map();
-    for (const t of [a, b]) for (const c of [...poolForType(t, true), ...STARTERS_BY_ID[STARTER[t]].deck.map(x => CARDS_BY_ID[x])]) cards.set(c.id, c);
-    const seen = new Map(), dupes = [];
-    for (const c of cards.values()) {
-      const key = `${c.type}|${c.cost}|${describe(c)}|${!!c.exhaust}|${!!c.retain}|${!!c.power}|${!!c.innate}|${!!c.ethereal}`;
-      if (seen.has(key)) dupes.push(`${a}+${b}: ${c.id} reads like ${seen.get(key)}`);
-      seen.set(key, c.id);
-    }
-    assert.deepEqual(dupes, []);
-  }
+// the user's call (2026-10-26, after Bubble and Bubble Beam sat in one hand): not even the same card with other numbers.
+// tools/card-twins.mjs lists any it finds, with the runs that meet them
+test('no two cards a run can meet read alike: the same lines with other numbers, or one plus a line (CLAUDE.md\'s rule)', async () => {
+  const { twinReport } = await import('../tools/card-twins.mjs');
+  assert.deepEqual(twinReport().map(p => `${p.kind}: ${p.a.id} / ${p.b.id} (${p.runs[0]})`), []);
 });
 
 test('every card has text, its art and an upgrade that changes something', () => {

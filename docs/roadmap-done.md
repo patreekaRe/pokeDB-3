@@ -3634,3 +3634,12 @@ style and paint, ~4 ms a record flipped. The pick's turntable costs what any Fur
 The user's ask from a phone screenshot of the Ember Wastes board: the Pokédex note shows two bars, Defeated (as before)
 and ★ Research (the page's entries whose research is done, `isResearched()`, a blue fill), in `fillPanel()` in
 `js/crossroads-3d.js`. The painted fallback's card has no Pokédex bar, so it has none.
+
+## No twin cards (2026-10-26, the user's ask; on `main`)
+
+Bubble and Bubble Beam in one hand: "no cards that repeat". `tools/card-twins.mjs` found 378 twin pairs (the same lines
+with other numbers, any cost) and 182 near twins (the same cost, one plus a line) across 332 cards, single runs and Duo
+Runs; 197 cards got moves of their own (`docs/card-twins.md`, before and now), every id kept, Disable+ named Imprison.
+The test now fails on any twin. The dojo deals frozen copies (`DOJO_CARDS`), its trials solving as before. Rule and bot
+check: `docs/reference/cards.md`'s "The twin pass". Open questions (signature cards, basics, the dojo): roadmap Ideas.
+

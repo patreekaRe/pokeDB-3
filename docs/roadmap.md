@@ -9,6 +9,13 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**▶ PLAYTEST ON THE LIVE SITE. No twin cards: done 2026-10-26, on `main`** (the user's ask: Bubble and Bubble Beam in one
+hand, "no cards that repeat ... all across the board"). 197 cards have new moves so no two cards one run can meet read
+alike (`docs/card-twins.md` lists each: what it read like, before, now); `tools/card-twins.mjs` finds any and
+`tests/cards.test.mjs` fails on them. Kenmatta's dojo keeps the old copies its 20 trials were built on. Bot check in
+`docs/reference/cards.md`'s "The twin pass". On a phone: a few runs of each type and a Duo Run or two; say which new
+moves feel off or too strong, and whether "Imprison" (was Disable+) and the unplayable Splash read clearly.
+
 **▶ PLAYTEST ON THE LIVE SITE. Mid-run reloads, round seven: done 2026-10-19, on `main`, waiting on the user's phone**
 (`docs/reference/walk-in-rooms.md`, "One side-wall painting"). The full `tools/budget-check.mjs` passed before the change;
 a new `tools/run-probe.mjs` (fight after fight on one page) found no growth over a run, the map level near 120 MB and each
@@ -1199,6 +1206,13 @@ window needs work (effort: low). ▶ Playtest on the live site.
 user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lum`, open the Bag's Items, Take off, then Hold.
 
 ## Ideas, not agreed yet (ask the user before building)
+
+**Twins, what the 2026-10-26 pass left** (asked of the user, not answered yet): (1) the 514 **Safari signature cards**, one
+per Safari Pokémon, are outside the twin rule (170 still read like a card their run can meet with other numbers; none
+exactly): redo them too, or leave them as each Pokémon's own flavour? (2) each type's plain **Strike and Defend** still
+match in a Duo Run (Ember / Thunder Shock both "Deal N damage."): give each type's basics a rider, or keep StS's plain
+basics? (3) **Kenmatta's dojo** deals the 15 changed cards as they were (`DOJO_CARDS`): re-cut those trials on the new
+cards, or keep them as they are?
 
 **Records and the jukebox, what's left** (live 2026-10-25, see the archive). Ideas not yet asked for: music fading with
 distance from the jukebox; the player piece animating while a record plays; a nudge to go home once a new player mends

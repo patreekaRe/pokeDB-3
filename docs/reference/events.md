@@ -368,7 +368,10 @@ real, like walking in); `?trials` opens every trial in the window for the page l
   Trial-only, so `sim/engine.js` needs nothing. Every trial was played through headless with its intended line
   (2026-10-15); a new one needs the same: `tools/dojo-solve.mjs` lists every line that clears a trial (a light copy of
   the battle rules, which throws on an effect it doesn't know; each of 9-20 has only its intended idea, and every card of it is needed), and `tools/dojo-play.cjs`
-  plays a line on the real battle screen in headless Chromium and says if it earns the star.
+  plays a line on the real battle screen in headless Chromium and says if it earns the star. **The twin pass
+  (2026-10-26)** changed 15 cards the trials deal (Splash, Fire Punch, Quick Attack, Crabhammer...): the decks deal
+  `dojo-<id>` copies of them as they were (`DOJO_CARDS` in `js/data/cards.js`, same names, art by name), and
+  `tools/dojo-solve.mjs` finds every trial's answers exactly as before. A new trial uses the cards as they are now.
 - **The dojo set** (`DOJO_REWARDS`, `js/base-furniture-dojo.js`, the `dojo` source in `js/data/furniture.js`; one
   colour each, group Dojo): Kenmatta's poster (1 star), Dojo mat (yellow), Wooden dummy (green), Dragonite medallion (6
   stars), Kenmatta's sandbag (blue), Dojo gong (brown), Black belt trophy (black). The window lists them, greyed till
