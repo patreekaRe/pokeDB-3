@@ -3372,3 +3372,7 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### The Depths camp's own song (2026-10-26, cloud)
+Walking into the camp from the Clearing's Sealed Gate kept `clearing-hub` playing: `homeRoom()` set no song. It now plays a
+home place's `music` (the camp's `map4`, the user's 2026-10-15 pick); the Clearing's houses map to `clearing-hub` as before.
