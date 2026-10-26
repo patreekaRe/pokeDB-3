@@ -3376,6 +3376,7 @@ The user's call from a phone screenshot: the Duo key moved from the bottom row i
 ### The Depths camp's own song (2026-10-26, cloud)
 Walking into the camp from the Clearing's Sealed Gate kept `clearing-hub` playing: `homeRoom()` set no song. It now plays a
 home place's `music` (the camp's `map4`, the user's 2026-10-15 pick); the Clearing's houses map to `clearing-hub` as before.
+
 ### Duo Run picker: locked types show only ??? (2026-10-20, cloud)
 The user's call: a type not caught yet shows its ??? name and no "Catch X in the Safari" hint, so players find out
 themselves (`hintFor()` gone from `js/duoprep.js`).
