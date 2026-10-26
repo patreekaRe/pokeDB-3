@@ -2441,6 +2441,7 @@ function homeRoom(b, onward = null) {
     } },
     onFail: out,
   });
+  if (town.home && !home.dojo) playMusic(town.music);   // the Depths camp's own song: a visit from the hub carried the Clearing's in
   if (home.dojo) {
     playMusic('event-room');
     const word = t.trialSaid;   // back from a trial: his word on it, then any new belt

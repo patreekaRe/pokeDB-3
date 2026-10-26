@@ -3373,6 +3373,9 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
 
+### The Depths camp's own song (2026-10-26, cloud)
+Walking into the camp from the Clearing's Sealed Gate kept `clearing-hub` playing: `homeRoom()` set no song. It now plays a
+home place's `music` (the camp's `map4`, the user's 2026-10-15 pick); the Clearing's houses map to `clearing-hub` as before.
 ### Duo Run picker: locked types show only ??? (2026-10-20, cloud)
 The user's call: a type not caught yet shows its ??? name and no "Catch X in the Safari" hint, so players find out
 themselves (`hintFor()` gone from `js/duoprep.js`).
@@ -3642,4 +3645,3 @@ with other numbers, any cost) and 182 near twins (the same cost, one plus a line
 Runs; 197 cards got moves of their own (`docs/card-twins.md`, before and now), every id kept, Disable+ named Imprison.
 The test now fails on any twin. The dojo deals frozen copies (`DOJO_CARDS`), its trials solving as before. Rule and bot
 check: `docs/reference/cards.md`'s "The twin pass". Open questions (signature cards, basics, the dojo): roadmap Ideas.
-
