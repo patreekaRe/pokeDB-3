@@ -347,10 +347,27 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   your owned starters of the type), how the pair fares in each area (`fares()`), A = Pick 2 / Start Duo / Locked.
   Start Duo goes through `safariTicket()` (the Day Pass) and `onDuo` in `js/main.js`. Locked until the day's free try
   ends, won or lost (`save.safari.done`, set in `endRun()`; abandoning never gets there); `?duorun` lends it.
+  **Its layout** (the user's calls, 2026-10-20): the Duo app alone keeps the lobby's window (`window: true` in `APPS`),
+  and the picks stand at the gate as they're made, lead on the left (`dressGate()` in `js/safariprep.js`, `duoLooks()`;
+  "Pick your duo" / "Pick a partner" until two are picked). Below it the panel scrolls: the pool first, then today's
+  road, each area a `<details>` row (number, name, its Safari Dex count; collapsed by default, its open state kept
+  across a pick's re-render) holding the types, Pokémon and fares. The road is the Daily run's own three areas and the
+  counts are the one Safari Dex, the same as the lobby's rows. Type chips and the portraits' corners are round badges
+  (`typeBadge()` in `js/type-badge.js`, SVG glyphs in the games' icon colours, not the emoji), and each portrait stands
+  its sprite by `SPRITE_FIT` / `BODY_X` (`faceSprite()`), not by its GIF's frame.
+- **The Duo Run's own road** (the user's call, 2026-10-20: "keep it 3 biomes but always different than the daily"):
+  `duoRoad(daily)` in `js/data/safari.js` deals three of the day's other areas on `${seed}|duo-areas`, the same all day
+  for everyone, so the Duo app shows it ahead; `beginSafari()` swaps it in for a duo, and each try still rolls a fresh
+  seed for its maps. `?powerplant` and the like still put their area first. Pinned by `tests/duo.test.mjs`.
+- **New duo starters on the map** (2026-10-20): on a Safari map (not a peek), a wild room whose Pokémon is a stage of a
+  duo line you haven't caught (`duoGains()`) shows its type's badge on the room's top-left (14px, `.map-duo`) (`map-duo`, `duoNew` in
+  `tracking()` in `js/run.js`), unnamed like every room; a tap says a new duo starter lives there.
 - **The duo pool**: `save.duoPool` holds the types caught beyond Fire / Grass / Water (type -> starter ids as looks);
   the base three are every owned starter of the type. `duoNews()` in `js/run.js` (from `creditSafari()`) adds a type
   when a stage of one of its `DUO_LINES` starter lines is in `save.safariDex.caught`, old catches included, with the
-  reward box's "Shinx joined your duo pool! Electric unlocked." `DUO_LINES` is empty until the type sessions.
+  unlock window ("🔓 New duo starter!", 2026-10-20: `duoNews(windows)` feeds `unlockWindow`'s `feat` form; a line in
+  the reward box was easy to miss). 30 lines in all; the 14 added 2026-10-20 (`docs/duo-design.md` section 3) stay in the
+  areas they already lived in.
 - **Electric** (session 3, 2026-10-19; its rules and card table are `docs/duo-design.md` section 5's "Electric's first
   session"): the first new type. **Shinx** (`DUO_STARTERS` in `js/data/starters.js`: looked up by id only, never in
   `STARTERS`, so no character select, Game Corner, statue or "every starter" count sees it; its back GIFs, `SPRITE_FIT`,
@@ -460,6 +477,8 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 - **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting, Ground, Flying and Dark; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` / `&windycliffs` / `&nightalley` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
+
+- **Shinies in the Duo picker** (2026-10-21, the user's ask): a portrait whose shown look's shiny you own wears a round ✨ button on its top-right corner (`.duo-shiny`, gold when on), flipping the same `save.shiny.on` as the character select's ✨ Shiny. Not under the arrows: a second row there made the cards uneven (the user's "ew", same day). The ◀ ▶ row never wraps (`.duo-count` a fixed width).
 
 ## The areas' scenes (phase 5b, 2026-10-02)
 

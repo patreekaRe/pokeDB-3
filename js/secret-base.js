@@ -18,6 +18,7 @@ import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES, BASE_LINES } from './data/towns.js';
 import { workshopOf, heartsOf, baseFriends, HEARTS, FRIENDS } from './data/workshop.js';
 import { todaysGuest } from './towns.js';
+import { RECORDS_BY_ID } from './data/records.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, shapeOf, ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
@@ -180,11 +181,43 @@ export function buyDoor(b, a, pa, c, pc) {
   return { moved };
 }
 
-/** Take a room down; its furniture goes back into storage (storage is what you own less what stands in a room). If
-    you're standing in it, you're back in the main room. False if other rooms are only reached through it. */
+/* The Safari catches living here (`mons`, or before a pick the first residentCap() caught, all in the main room) each
+   live in one room (`at`, by id; none for the main room), the backyard too. Every room picks from the whole Safari
+   list, up to residentCap() a room (the user's call, 2026-10-23: the yard listed only the six indoors, which made no
+   sense), and a Pokémon is never in two rooms at once. `out`, the old list of the ones let out in the yard, moves over. */
+// a resident of a room that isn't there (a lent yard taken back) is in none, not crowding the main room past its cap
+export const monRoom = (b, id) => b.at?.[id] || 'main';
+/** Who lives in room `room`, of `shown` (every resident, js/pc.js's residents()). */
+export const monsIn = (b, shown, room) => shown.filter(id => monRoom(b, id) === room);
+/** A tap on `id` in room `room`'s picker: one living there goes back in the box ('out'), any other moves in from
+    wherever it was ('in'), unless the room has `cap` already ('full'). Mutates the base; the caller saves. */
+export function placeMon(b, shown, id, room, cap) {
+  if (shown.includes(id) && monRoom(b, id) === room) {
+    b.mons = shown.filter(x => x !== id);
+    if (b.at) delete b.at[id];
+    return 'out';
+  }
+  if (monsIn(b, shown, room).length >= cap) return 'full';
+  b.mons = shown.includes(id) ? shown : [...shown, id];
+  b.at ||= {};
+  if (room === 'main') delete b.at[id]; else b.at[id] = room;
+  return 'in';
+}
+const movedOut = (b) => {
+  if (b.at && typeof b.at !== 'object') delete b.at;
+  if (Array.isArray(b.out)) for (const id of b.out) if (typeof id === 'string') (b.at ||= {})[id] ??= 'yard';
+  delete b.out;
+};
+
+/** Take a room down; its furniture goes back into storage (storage is what you own less what stands in a room), and its
+    Pokémon back in the box. If you're standing in it, you're back in the main room. False if other rooms are only
+    reached through it. */
 export function takeDown(b, id) {
   if ((b.here || 'main') === id) goRoom(b, 'main');
   if (!removeRoom(b.house, id)) return false;
+  const gone = Object.keys(b.at || {}).filter(m => b.at[m] === id);
+  if (gone.length && b.mons) b.mons = b.mons.filter(m => !gone.includes(m));
+  for (const m of gone) delete b.at[m];
   saveBase(b);
   return true;
 }
@@ -277,6 +310,7 @@ export function loadBase() {
   if (lendYard() && !b.house?.yard) { b.house ||= freshHouse(); b.house.yard = { ...freshYard(), size: lendSize(), lent: 1 }; }
   if (b !== saved) return b;
   b.owned ||= {};
+  movedOut(b);
   // furniture was once owned colour by colour (`bed-fire`), then kind by kind; now a kind or a whole set (`own`) is owned, every colour and style with it
   for (const id of Object.keys(b.owned)) {
     const kind = PIECES[id]?.own;
@@ -311,8 +345,10 @@ export function readGuestBase(json) {
     if (!roomById(b.house, 'main')?.shape) return null;
     b.owned = b.owned && typeof b.owned === 'object' ? b.owned : {};
     b.mons = Array.isArray(b.mons) ? b.mons.filter(id => typeof id === 'string') : [];
-    b.out = Array.isArray(b.out) ? b.out.filter(id => typeof id === 'string') : [];
+    movedOut(b);
+    b.at = b.at ? Object.fromEntries(Object.entries(b.at).filter(([, r]) => typeof r === 'string')) : {};
     b.liveSeen = b.liveSeen && typeof b.liveSeen === 'object' ? b.liveSeen : {};
+    if (!RECORDS_BY_ID[b.song]) delete b.song;
     return b;
   } catch { return null; }
 }

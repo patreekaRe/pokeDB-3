@@ -316,3 +316,42 @@ starts calm.
 Before adding a
 generic class name, grep `css/` and `js/` for it.
 
+<<<<<<< HEAD
+**Turn banner** (2026-10-25, the user's ask, from Slay the Spire's): `turnBanner()` in `js/battle.js` lays a dark stripe
+across the middle of `.arena` (`#turn-banner`, `.turn-banner` in `css/screens.css`) at the start of each of your turns,
+"Battle Start!" (gold, with its own synth sting, `battleSting()` in `js/audio.js`) first on turn 1 with turn 1's own banner queued behind it (`turnNext`, dropped if End Turn comes first),
+"Your Turn:" with the turn's number beside it (2026-10-25, the user's call: one line; a slanted gold Chakra Petch numeral that slams in), and "Enemy Turn" (a red rim) after End Turn, unless Time Warp or Eye of the Storm skips the
+enemy. Your Turn and Enemy Turn each get Game Boy menu blips (`turnBlips()` in `js/audio.js`: three up, or two low ones down over a swish; 2026-10-25, the user's pick over soft bell chimes; a stat sound at turn start can cover them, which the user is fine with). It never blocks a tap; off with Settings' battle effects (`battleFx()`), a fade only under `calmFx()`, half as
+long at 2x. Turn 1's Ability banner (Torrent, Pressure, Snow Warning) waits for both to go (`afterTurnBanner()`). The
+Enemy Turn wait after End Turn went from 500 to 750 ms to let it read.
+=======
+
+**A duo's switch** (2026-10-20, the user's calls from their phone): hold your Pokémon (`#player-zone`, `holdStart()` /
+`holdEnd()` in `js/battle.js`, 450 ms; a conic ring fills round it, `.player-zone.duo.holding::after`) and the Go pill
+comes up just over your plate, small (the user's call, 2026-10-20: not a centred window, so the enemy and its intent stay
+in view): "⇄ Bulbasaur", then "1 PP · ends turn" and, when it matters, "▲ Ice Punch" / "▼ Ice Punch" in red / blue; the
+full sentence is its title. A tap gives "Hold your Pokémon to switch partners." Through a duo fight's first two turns, "hold to swap" fades in and out over your Pokémon (`#swap-hint`, the hand
+hint's look; gone after the first hold), centred on its pose's middle (`centreSwapHint()`, by `SPRITE_FIT`). A tap anywhere else puts the pill away. The bench portrait
+on the plate's corner (and `HEAD_FIT`) came and went the same day: the Pokémon moved too much to read at that size. The
+plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.
+>>>>>>> origin/main
+**Lethal warning, relic flash, Victory / Defeat** (2026-10-25, the user's picks from the battle-juice list): when the
+enemy's next attack would get through your block (`incoming()`: Evasion, Protective Pads, Assault Vest) for your HP or
+more, the intent gets `.lethal` (a red throb and a 💀) and `#player-plate.danger` blinks your HP bar red (`battleFx()`
+only; still under `calmFx()`; red arena edges were tried first and looked like a frame on a phone, the user's call); a hit your block fully covers gets a blue ✔. Relics doing something call `fired(id)` (hasRelic() plus
+`relicFlash()`): the first time a relic fires in a fight it gets a stripe in the turn banner's style (`#relic-banner`, `relicBanner()`:
+queued after any turn banner via `turnBusy`, one relic a stripe, one after another (the user's call), a new turn banner
+replaces it), with what it did in green beside its name (`RELIC_GAIN`, "+2 HP"; `fired(id, gain)` for one that varies:
+Enigma Berry, Spelon Berry; a new relic trigger needs a `RELIC_GAIN` line); no icons on turn 1, which has its banners; after that its icon, in Torrent's window (the user's call, after trying it bare), slides in from the arena's left edge
+like Torrent's pop-up (`bannerIn`, above
+where Torrent's shows), one at a time, the next sliding in as the last slides out (the user's calls:
+chips with names every time were too fast and busy) (keyframes
+`relicFlashRise`: `relicRise` is the reward screen's); passive
+modifiers (damage, draw counts) use plain `hasRelic()` since they're read in previews too. `finish()` shows
+`turnBanner('win')` (gold "Victory!", the fanfare is its sound) or `'lose'` ("Defeat…", grey, a falling `defeat` blip);
+Overgrow's banner waits for it.
+**Abilities in the same style** (2026-10-25, the user's call, every starter): `abilityBanner()` gives an Ability's first
+use in a fight a stripe like a relic's, with what it did (`ABILITY_GAIN`: "🌊 Torrent +2 Tide"), and the Gen 5 window
+sliding in from the left only from turn 2 on (with battle effects off, the window as before). Static (each enemy attack)
+and Guts (lighting up as a status card comes in) now call it too; Overgrow's after a win queues behind Victory!
+(`relicBanner(..., late)`). `afterTurnBanner()` is gone: the stripe queue (`turnBusy`) does its job.

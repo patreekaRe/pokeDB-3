@@ -14,12 +14,13 @@ import { ALL_CARDS, TYPES } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { BIOMES, ENEMY_DEFS } from './data/enemies.js';
-import { MAX_LEVEL } from './data/difficulty.js';
+import { MAX_LEVEL, starClass } from './data/difficulty.js';
 import { DEX_PAGES } from './data/pokedex.js';
 import { researchCount, progressBar, still, sceneImg } from './pokedex.js';
 import { el, itemSprite } from './ui.js';
 import { smoothIcon } from './smooth-icons.js';
 import { playCry, playSound } from './audio.js';
+import { typeText } from './type-badge.js';
 
 const DEX_IDS = new Set(DEX_PAGES.flatMap(p => p.ids));   // the Depths' page is counted apart
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -311,9 +312,12 @@ function championsPage(n) {
     const lv = bestLv(st);
     const name = el('b', 'sdx-summary-name', st.line[finalStage(st)].name);
     if (st === crown) name.prepend(el('span', 'sdx-crown', '♛ '));
-    info.append(name, el('span', `index-only type-${st.type}`, `${TYPES[st.type].icon} ${TYPES[st.type].label}`),
+    const typeChip = el('span', `index-only type-${st.type}`);
+    typeChip.append(typeText(st.type, TYPES[st.type].icon, TYPES[st.type].label));
+    info.append(name, typeChip,
       el('span', '', `Wins: ${s.winsBy[st.id]}`),
-      el('span', '', lv >= 0 ? `Best: Level ${lv}${(s.level5WinsBy?.[st.id] || 0) ? ' ⭐' : ''}` : 'Best: -'));
+      el('span', '', lv >= 0 ? `Best: Level ${lv}` : 'Best: -'));
+    if (lv >= 5) info.lastChild.append(' ', el('span', starClass(lv), '⭐'));
     card.replaceChildren(pic, info);
   };
   const box = el('div', 'sdx-box');

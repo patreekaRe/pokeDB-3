@@ -22,19 +22,21 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
+import { baseSong, isPlayer, openJukebox, smeargleDue, replaySmeargle, smeargleGift, pickPlayer } from './jukebox.js';
+import { RECORDS_BY_ID, GIFT_RECORD } from './data/records.js';
 import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { isPlot, tendPlot, forgetPlots, liveGarden, openGarden } from './berry-garden.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
-  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard, visitBase, readGuestBase, freshDesigns, seeDesign } from './secret-base.js';
+  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard, visitBase, readGuestBase, freshDesigns, seeDesign, monRoom, monsIn, placeMon } from './secret-base.js';
 import { lendTrainerShows } from './base-furniture-trainer.js';
 import { loadStatues, statuesIn } from './base-furniture-statues.js';
 import { loadFigures } from './base-figures.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
-import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
+import { roomById, roomName, roomTag, doorsOf, pipTile, floorName } from './data/house.js';
 import { publishTrainer } from './trainers.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
@@ -153,8 +155,12 @@ function buildRoom() {
   const paper = (from, len) => new THREE.MeshStandardMaterial({ map: tex(crop(art, from * T, 0, len * T, WALL)), roughness: 1 });
   const add = (mesh, x, y, z) => { mesh.position.set(x, y, z); mesh.receiveShadow = true; roomGroup.add(mesh); return mesh; };
 
-  for (const [x, y, w, h] of shape.rects) {
-    const top = new THREE.MeshStandardMaterial({ map: tex(crop(art, x * T, WALL + y * T, w * T, h * T)), roughness: 1 });
+  doors = doorsOf(base.house, here().id).map(d => ({ ...d, tile: pipTile(shape, [d.side, d.at]) }));
+  // a staircase down is a stairwell cut into the floor before the back wall, so the floor's blocks are cut round it
+  let blocks = shape.rects;
+  for (const d of doors) if (d.stairs === 'down') blocks = blocks.flatMap(r => cutWell(r, d.tile));
+  for (const [x, y, w, h] of blocks) {
+    const top = new THREE.MeshStandardMaterial({ map: tex(crop(art, Math.round(x * T), WALL + Math.round(y * T), Math.round(w * T), Math.round(h * T))), roughness: 1 });
     add(new THREE.Mesh(new THREE.BoxGeometry(w, 0.6, h), [edge, edge, top, edge, under, edge]), x + w / 2 - COLS / 2, -0.3, y + h / 2 - ROWS / 2);
   }
   const on = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && onFloor(x, y);
@@ -180,33 +186,54 @@ function buildRoom() {
     add(new THREE.Mesh(new THREE.BoxGeometry(0.4, tall, len), faces), x + (s > 0 ? 1 : 0) - COLS / 2 + s * 0.2, tall / 2, y - ROWS / 2 + len / 2).castShadow = true;
     y = e + 1;
   }
-  doors = doorsOf(base.house, here().id).map(d => ({ ...d, tile: pipTile(shape, [d.side, d.at]) }));
   for (const d of doors) addDoor(d, [outer, outer, cap, outer, outer, outer]);
 }
 
-const throughTex = {};
-/** The dark of a doorway: the next room unlit beyond it, a little warm light on its floor; `down`, the top of a flight
-    of stairs going down into it instead, its treads fading into the dark. */
-function throughMat(down = false) {
-  if (!throughTex[down]) {
+// the stairwell down: its span across its tile, how far it reaches into the room from the back wall, and its drop
+const WELL = { in: 0.06, out: 0.94, deep: 0.88, steps: 4, drop: 0.56 };
+
+/** Floor rect `r` ([x, y, w, h]) less the stairwell on tile `t`: the rect itself if the well isn't in it, else the
+    blocks round it. */
+function cutWell(r, t) {
+  const [x, y, w, h] = r, l = t.x + WELL.in, rt = t.x + WELL.out, f = t.y + WELL.deep;
+  if (t.x < x || t.x >= x + w || t.y < y || t.y >= y + h) return [r];
+  return [[x, y, l - x, h], [rt, y, x + w - rt, h], [l, f, rt - l, y + h - f], [l, y, rt - l, t.y - y]].filter(([, , bw, bh]) => bw > 0.001 && bh > 0.001);
+}
+
+// the flight up: how far it reaches into the room from the back wall, its steps and how high it climbs to the doorway
+const FLIGHT = { deep: 0.94, steps: 5, climb: 0.85 };
+
+/** How far up or down a staircase something standing at (x, z) is: nothing on the floor, climbing or sinking step by
+    step as it walks toward the back wall and through it. */
+function stairY(x, z) {
+  for (const d of doors) {
+    if (!d.stairs || d.side !== 'n') continue;
+    const [deep, by] = d.stairs === 'down' ? [WELL.deep, -WELL.drop] : [FLIGHT.deep, FLIGHT.climb];
+    const lx = x - tileX(d.tile.x), lz = z - (d.tile.y - ROWS / 2);
+    if (Math.abs(lx) < 0.5 && lz < deep) return Math.min(1, (deep - lz) / deep) * by;
+  }
+  return 0;
+}
+
+let throughTex;
+/** The dark of a doorway: the next room unlit beyond it, a little warm light on its floor. */
+function throughMat() {
+  if (!throughTex) {
     const c = document.createElement('canvas');
     c.width = 64; c.height = 128;
     const g = c.getContext('2d'), v = g.createLinearGradient(0, 0, 0, 128);
-    v.addColorStop(0, '#08060e'); v.addColorStop(0.7, '#1a1420'); v.addColorStop(1, down ? '#1a1420' : '#4a3428');
+    v.addColorStop(0, '#08060e'); v.addColorStop(0.7, '#1a1420'); v.addColorStop(1, '#4a3428');
     g.fillStyle = v; g.beginPath(); g.roundRect(0, 0, 64, 128, [28, 28, 0, 0]); g.fill();
-    if (down) for (let i = 0; i < 5; i++) {
-      g.fillStyle = `rgba(168, 122, 76, ${0.75 - i * 0.15})`;
-      g.fillRect(6 + i * 3, 124 - i * 11, 52 - i * 6, 4);
-    }
-    throughTex[down] = new THREE.CanvasTexture(c);
-    throughTex[down].colorSpace = THREE.SRGBColorSpace;
+    throughTex = new THREE.CanvasTexture(c);
+    throughTex.colorSpace = THREE.SRGBColorSpace;
   }
-  return new THREE.MeshBasicMaterial({ map: throughTex[down], transparent: true });
+  return new THREE.MeshBasicMaterial({ map: throughTex, transparent: true });
 }
 
 /** A doorway: on the front edge a doormat like the way out; in a wall a dark way through under a wooden frame, a small
-    mat before it pointing in, or for a staircase (only ever in a back wall) wooden steps climbing into it, or the top
-    of a flight going down. A tap on any of it walks your partner through (goThrough()). */
+    mat before it pointing in, or for a staircase (only ever in a back wall) wooden steps climbing into it, or going
+    down, a stairwell in the floor before the wall (stairwell()). A tap on any of it walks your partner through
+    (goThrough()). */
 function addDoor(d, stepMat) {
   const { x: tx, y: ty } = d.tile;
   if (d.side === 's') {
@@ -218,7 +245,14 @@ function addDoor(d, stepMat) {
     return;
   }
   const g = new THREE.Group(), wood = solid('#7a5434');
-  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat(d.stairs === 'down'));
+  if (d.stairs) {
+    (d.stairs === 'down' ? stairwell : flightUp)(g, wood);
+    g.position.set(tileX(tx), 0, ty - ROWS / 2);
+    g.traverse(o => { o.userData.door = d; });
+    roomGroup.add(g);
+    return;
+  }
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat());
   dark.position.set(0, 1.05, 0.03);
   const post = (x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.24, 0.14), wood); m.position.set(x, 1.12, 0.07); m.castShadow = true; return m; };
   const lintel = new THREE.Mesh(new THREE.BoxGeometry(1.44, 0.18, 0.16), wood);
@@ -228,22 +262,73 @@ function addDoor(d, stepMat) {
   mat.position.set(0, 0.012, 0.45);
   mat.rotation.z = Math.PI;
   g.add(dark, post(-0.61), post(0.61), lintel);
-  if (d.stairs) {
-    // up: steps climbing into the wall, each higher; down: a landing tread at the top, the rest painted going down
-    const tread = solid('#a87a4c');
-    for (let i = 0; i < (d.stairs === 'up' ? 4 : 1); i++) {
-      const hgt = d.stairs === 'up' ? 0.16 * (i + 1) : 0.04, step = new THREE.Mesh(new THREE.BoxGeometry(1.0, hgt, 0.22), i % 2 ? wood : tread);
-      step.position.set(0, hgt / 2, 0.5 - i * 0.22);
-      step.castShadow = step.receiveShadow = true;
-      g.add(step);
-    }
-  } else g.add(mat);
+  g.add(mat);
   if (d.side === 'n') g.position.set(tileX(tx), 0, ty - ROWS / 2);
   if (d.side === 'w') { g.position.set(tx - COLS / 2, 0, tileZ(ty)); g.rotation.y = Math.PI / 2; }
   if (d.side === 'e') { g.position.set(tx + 1 - COLS / 2, 0, tileZ(ty)); g.rotation.y = -Math.PI / 2; }
   g.traverse(o => { o.userData.door = d; });
   roomGroup.add(g);
-  if (!d.stairs) doorMats.push(mat);
+  doorMats.push(mat);
+}
+
+/** A flight going up into group `g` (its origin the middle of the back wall's foot): steps climbing to a doorway high in
+    the wall, under a wooden frame, a banister up each side (2026-10-25, the user's ask: steps in a doorway on the
+    floor didn't read as stairs up). */
+function flightUp(g, wood) {
+  const n = FLIGHT.steps, run = FLIGHT.deep / n, rise = FLIGHT.climb / n, w = 1.0, hi = 2.8;
+  const tread = solid('#c09060'), riser = solid('#7a5434');
+  for (let i = 0; i < n; i++) {
+    const top = (i + 1) * rise, step = new THREE.Mesh(new THREE.BoxGeometry(w, top, run), [riser, riser, tread, riser, riser, riser]);
+    step.position.set(0, top / 2, FLIGHT.deep - run * (i + 0.5));
+    step.castShadow = step.receiveShadow = true;
+    g.add(step);
+  }
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, hi - FLIGHT.climb), throughMat());
+  dark.position.set(0, (hi + FLIGHT.climb) / 2, 0.03);
+  g.add(dark);
+  const cap = solid('#9a6c40'), part = (geo, mat, x, y, z, tilt = 0) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z); m.rotation.x = tilt; m.castShadow = true; g.add(m);
+  };
+  for (const s of [-1, 1]) part(new THREE.BoxGeometry(0.14, hi, 0.14), wood, s * 0.61, hi / 2, 0.07);
+  part(new THREE.BoxGeometry(1.44, 0.18, 0.16), wood, 0, hi, 0.07);
+  // the rail runs from 0.6 over the floor at the foot to 0.6 over the top step, rising with the treads
+  const railAt = (z) => 0.6 + (FLIGHT.deep - z) / FLIGHT.deep * FLIGHT.climb, len = Math.hypot(FLIGHT.deep, FLIGHT.climb);
+  for (const s of [-1, 1]) {
+    const x = s * (w / 2 - 0.04);
+    part(new THREE.BoxGeometry(0.08, 0.72, 0.08), wood, x, 0.36, FLIGHT.deep - 0.04);
+    for (let i = 0; i < n; i++) {
+      const z = FLIGHT.deep - run * (i + 0.5), foot = (i + 1) * rise, h = railAt(z) - foot;
+      part(new THREE.BoxGeometry(0.035, h, 0.035), wood, x, foot + h / 2, z);
+    }
+    part(new THREE.BoxGeometry(0.08, 0.05, len), cap, x, railAt(FLIGHT.deep / 2) + 0.02, FLIGHT.deep / 2, Math.atan2(FLIGHT.climb, FLIGHT.deep));
+  }
+}
+
+/** A flight going down into group `g` (its origin the middle of the back wall's foot over the well): treads stepping
+    down toward the wall and on under it, darker the deeper, the dark below closing it off behind, and a wooden banister
+    down each side, the front left open to walk in from (2026-10-25, the user's ask: a doorway with one step in it
+    didn't read as stairs). */
+function stairwell(g, wood) {
+  const n = WELL.steps, run = WELL.deep / n, rise = WELL.drop / n, w = WELL.out - WELL.in;
+  for (let i = 0; i < n; i++) {
+    const top = -(i + 1) * rise, k = 1 - i * 0.2, tread = solid(shade('#c09060', k)), riser = solid(shade('#7a5434', k * 0.85));
+    const step = new THREE.Mesh(new THREE.BoxGeometry(w, top + 0.6, run), [riser, riser, tread, riser, riser, riser]);
+    step.position.set(0, (top - 0.6) / 2, WELL.deep - run * (i + 0.5));
+    step.receiveShadow = true;
+    g.add(step);
+  }
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(w, 0.6), new THREE.MeshBasicMaterial({ color: '#08060e' }));
+  dark.position.set(0, -0.3, 0.001);
+  g.add(dark);
+  const cap = solid('#9a6c40'), part = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); };
+  for (const s of [-1, 1]) {
+    const x = s * (w / 2 + 0.02);
+    part(new THREE.BoxGeometry(0.07, 0.62, 0.07), wood, x, 0.31, WELL.deep - 0.04);
+    part(new THREE.BoxGeometry(0.07, 0.62, 0.07), wood, x, 0.31, 0.06);
+    for (let j = 1; j < 4; j++) part(new THREE.BoxGeometry(0.035, 0.5, 0.035), wood, x, 0.25, 0.06 + (WELL.deep - 0.1) * j / 4);
+    part(new THREE.BoxGeometry(0.09, 0.05, WELL.deep + 0.02), cap, x, 0.63, WELL.deep / 2 + 0.01);
+  }
 }
 
 /** Your partner walks to a doorway and through it: out over the main room's doormat, the way out of the base, or into
@@ -825,17 +910,15 @@ const rand = (a, b) => a + Math.random() * (b - a);
 /** The catches on show: the save's pick, or before one is made the first onShowMax() caught, so the room is never empty.
     `&guests` lends every Safari Pokémon as caught for the page load, to playtest without a full Safari Pokédex. */
 function onShow() {
-  if (host) { const all = base.mons.filter(id => ENEMY_DEFS[id] && SAFARI_DEX_PAGES.some(p => p.ids.includes(id))).slice(0, 12); return { all, shown: all }; }
+  if (host) { const all = base.mons.filter(id => ENEMY_DEFS[id] && SAFARI_DEX_PAGES.some(p => p.ids.includes(id))); return { all, shown: all }; }
   const lend = new URLSearchParams(location.search).has('guests');
   const caught = new Set(getSave().safariDex?.caught || []);
   const all = [...new Set(SAFARI_DEX_PAGES.flatMap(p => p.ids))].filter(id => (lend || caught.has(id)) && ENEMY_DEFS[id]);
   return { all, shown: (base.mons ?? all.slice(0, onShowMax())).filter(id => all.includes(id)) };
 }
 
-/** Whether a resident lives out in the yard (let out on the yard's Pokémon tab) rather than indoors. */
-const livesOut = (id) => !!roomById(base.house, 'yard') && !!base.out?.includes(id);
-/** The guests in the room you're in: out in the yard the ones let out, indoors the rest. */
-const homeHere = (g) => livesOut(g.id) === outdoors();
+/** Whether a resident lives in the room you're in: each lives in one room, the yard too (monRoom() in js/secret-base.js). */
+const homeHere = (g) => monRoom(base, g.id) === (base.here || 'main');
 const present = () => guests.filter(g => g.w && homeHere(g));
 
 /** Tiles someone stands on or is heading for, so two never pick the same one. */
@@ -856,9 +939,10 @@ function freeTiles(skip) {
   return out;
 }
 
-/** Bring the room's guests in line with the pick: new ones load in (a hop and hearts as they arrive), dropped ones go. */
+/** Bring the guests in line with the room you're in: only its residents are loaded (a friend's base, 12 a room at most),
+    new ones load in (a hop and hearts as they arrive), the rest go. */
 function syncGuests() {
-  const { shown } = onShow();
+  const shown = monsIn(base, onShow().shown, base.here || 'main').slice(0, host ? 12 : Infinity);
   for (const g of guests.filter(g => !shown.includes(g.id))) dropGuest(g);
   for (const id of shown) if (!guests.some(g => g.id === id)) addGuest(id);
 }
@@ -882,19 +966,9 @@ async function addGuest(id) {
   if (homeHere(g)) cheer(g, 2);
 }
 
-/** Out to the yard or back in, from the yard's Pokémon tab: let out, it hops in on a free patch of lawn with hearts;
-    called in, it's off its seat and gone in a twinkle. */
-function letOut(id) {
-  const g = guests.find(x => x.id === id), w = g?.w;
-  if (!w) return;
-  if (!homeHere(g)) {
-    for (let i = 0; i < 4; i++) setTimeout(() => puff('star', { x: w.x + rand(-0.3, 0.3), y: w.y, z: w.z }, { top: rand(0.1, 0.5) }), i * 60);
-    Object.assign(w, { seat: null, goal: null, jump: null, sleeping: false, path: [], y: 0 });
-    return;
-  }
-  const spots = freeTiles(w), t = spots.length ? spots[Math.floor(Math.random() * spots.length)] : nearestFree(walker.tile);
-  Object.assign(w, { seat: null, goal: null, jump: null, sleeping: false, path: [], y: 0, tile: t, x: tileX(t.x), z: tileZ(t.y), think: performance.now() + rand(1500, 3500) });
-  cheer(g, 3);
+/** Sent back to the box from the Pokémon tab: gone in a twinkle where it stood. */
+function twinkle(w) {
+  for (let i = 0; i < 4; i++) setTimeout(() => puff('star', { x: w.x + rand(-0.3, 0.3), y: w.y, z: w.z }, { top: rand(0.1, 0.5) }), i * 60);
 }
 
 /** The places on a piece a Pokémon can sit: a bed or a cushion its middle; a chair, sofa or bench one a tile, a
@@ -1103,7 +1177,7 @@ function liveGuest(g, dt, now) {
   }
   const happy = w.hopUntil > now;
   const bob = calm ? 0 : w.path.length ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06 : happy ? Math.abs(Math.sin((w.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  m.group.position.set(w.x, w.y, w.z);
+  m.group.position.set(w.x, w.y + (w.seat ? 0 : stairY(w.x, w.z)), w.z);
   m.board.position.y = bob;
   m.board.scale.x = w.flip ? -1 : 1;
   drawMon(m, w, dt);
@@ -1188,6 +1262,7 @@ function visitSpot() {
 async function startVisit() {
   if (visit || yardTalk || host) return;
   if (outdoors()) return yardIntro();
+  if (smeargleDue() && (metSmeargle(base) || replaySmeargle())) return jukeboxIntro();
   if (base.here) return;
   if (metSmeargle(base)) return leaderVisit();
   const spot = visitSpot();
@@ -1378,6 +1453,61 @@ function endVisit() {
   refresh();
 }
 
+/* ---------- Smeargle brings the jukebox ---------- */
+
+/* Records (js/data/records.js; the user's ask, 2026-10-25): once, Smeargle slides in on the yard's talk window (no
+   Smeargle in the room: the user's call, the same day, after the walking one could find no tiles in a full room), says
+   what a jukebox is for, has you pick one of the five players (pickPlayer()), sets it down beside your partner with the
+   Clearing's record on, and says where more records are sold. Who and when: smeargleDue() in js/jukebox.js. */
+const JUKEBOX_HELLO = [
+  'Hey, neighbour! Smeargle again. I\'ve been busy painting something new for your home: jukeboxes!',
+  'A jukebox puts music in your home. Tap it, pick a record, and that song plays all through the house.',
+  'The record you leave on is your base\'s own song, too. Friends who come to visit hear it the moment they walk in!',
+  'And I\'d like you to have one. On the house! Just the one, so choose well.',
+];
+const jukeboxBye = (placed) => [
+  `${placed ? 'There, all set up!' : 'It\'s in your storage: set it out from Decorate.'} And here\'s your first record to go with it: the Clearing\'s song, right from your doorstep.${placed ? ' Hear that? It\'s on!' : ''}`,
+  'Want more? Every town\'s trading post sells records of the songs from round there.',
+  'You\'ll have to mend a town\'s Waystone and travel there to shop, mind. Happy listening!',
+];
+
+async function jukeboxIntro() {
+  yardTalk = true;
+  try {
+    await new Promise(r => setTimeout(r, calm ? 200 : 900));
+    if (!root.isConnected || host) return;
+    Object.assign(walker, { path: [], goal: null, through: null });
+    refresh();
+    playCry('smeargle');
+    const { gymTalk } = await import('./gym.js');
+    await gymTalk(YARD_SMEARGLE, JUKEBOX_HELLO, { lit: true, title: 'PAINTER ' });
+    let kind = null;
+    while (!kind) kind = await pickPlayer();
+    if (!root.isConnected || host) return;
+    smeargleGift(base, kind);
+    const it = setDown(kind);
+    if (it) base.items.push(it);
+    base.song = GIFT_RECORD;
+    save();
+    buildPieces();
+    if (it) for (let i = 0; i < 6; i++) setTimeout(() => puff('star', { x: tileX(it.x) + rand(-0.3, 0.3), y: 0, z: tileZ(it.y) }, { top: rand(0.2, 1) }), i * 60);
+    playSound('item-get');
+    playMusic(baseSong(base));
+    await gymTalk(YARD_SMEARGLE, jukeboxBye(!!it), { lit: true, title: 'PAINTER ' });
+  } finally { yardTalk = false; refresh(); }
+}
+
+/** Where Smeargle's gift is set down: a free tile near your partner, clear of the doors; null (storage) if none fits. */
+function setDown(kind) {
+  const busy = taken(), { x, y } = walker.tile;
+  for (let r = 1; r <= 3; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+    const c = { id: kind, x: x + dx, y: y + dy, dir: 0 };
+    if (inRoom(c) && !blocked.has(key(c.x, c.y)) && !busy.has(key(c.x, c.y)) && !doors.some(d => Math.abs(d.tile.x - c.x) + Math.abs(d.tile.y - c.y) < 2) && fits(c, -1, base)) return c;
+  }
+  return null;
+}
+
 /* ---------- Smeargle in the yard ---------- */
 
 /* The first time out in the yard (2026-10-15, the user's ask), once the housewarming indoors is over (a lent ?yard yard
@@ -1392,7 +1522,7 @@ async function yardLines() {
     `${metSmeargle(base) ? 'Hello again!' : 'Hello there! I\'m Smeargle.'} So this is your backyard. What a lovely patch of lawn!`,
     `It's yours to furnish. Garden pieces come from my garden catalogue at the Poké Mall${metSmeargle(base) ? '' : ', which opens tomorrow'}: just tap me at the shop.`,
     'Whatever you buy waits in storage. Set it out with Furniture, the same as indoors.',
-    `And the Pokémon tab lets the ${onShowMax()} on show come out to play. They'll swim, swing and sit wherever you give them room.`,
+    `And on the Pokémon tab, up to ${onShowMax()} of your Safari catches can live out here. They'll swim, swing and sit wherever you give them room.`,
     'Oh! I left you a Berry plot in storage, too. Set it down, then tap it while walking to plant a berry.',
     'Cheri, Oran and Pecha Berries take a day, Sitrus two and Lum three. They ripen at midnight, UTC.',
     'Water a growing plot once a day, and it gives one more berry for every day it was watered.',
@@ -1646,6 +1776,13 @@ function onTap(e) {
     if (PIECES[it.id].own === FREE_PC) return logOn();
     if (isPlot(PIECES[it.id])) { playSound('select'); walker.hopUntil = performance.now() + 500; return openGarden(base, plotsHere(), save, it); }
     if (homeGame(it.id)) { playSound('confirm'); walker.hopUntil = performance.now() + 500; return playAtHome(it.id); }
+    // with records (js/data/records.js) a player picks the base's song rather than its little tune; on a visit it says theirs
+    if (isPlayer(it.id)) {
+      walker.hopUntil = performance.now() + 500;
+      if (host) return guestSays(RECORDS_BY_ID[base.song] ? `${host.name}'s ${PIECES[it.id].name.toLowerCase()} is playing "${RECORDS_BY_ID[base.song].name}".` : `${host.name}'s ${PIECES[it.id].name.toLowerCase()}. No record on.`);
+      playSound('select');
+      return openJukebox(base, save);
+    }
     // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
     if (play) {
       const r = tapPlay(play), now = performance.now();
@@ -1740,28 +1877,18 @@ function tray(which = tab) {
     .forEach(s => add(s.name, () => paperArt(field, s.id), base[field] === s.id, () => paperTap(field, s), ownsPaper(base, field, s) ? '' : s.price.toLocaleString()));
   if (tab === 'wall') swatch(WALLPAPERS, 'wall');
   if (tab === 'floor') swatch(FLOORS, 'floor');
-  if (tab === 'mons' && outdoors()) {
-    // out in the yard: the ones on show, a tap letting one out onto the lawn or calling it back in
-    for (const id of onShow().shown) {
+  if (tab === 'mons') {
+    const { all, shown } = onShow(), mine = monsIn(base, shown, base.here || 'main');
+    // the ones in this room first, then the ones living in another room (tagged with it), then every other catch in Pokédex order
+    for (const id of [...mine, ...shown.filter(id => !mine.includes(id)), ...all.filter(id => !shown.includes(id))]) {
       const img = Object.assign(document.createElement('img'), { loading: 'lazy', src: resident(id).image, alt: '', draggable: false, className: 'pixel' });
-      add(resident(id).name, img, livesOut(id), () => {
-        base.out = livesOut(id) ? base.out.filter(x => x !== id) : [...(base.out || []), id];
-        playSound(livesOut(id) ? 'confirm' : 'cancel');
-        save(); letOut(id); tray(); refresh();
-      }, livesOut(id) ? '✓' : '');
-    }
-  } else if (tab === 'mons') {
-    const { all, shown } = onShow();
-    // the ones on show first, then every other catch in Pokédex order
-    for (const id of [...shown, ...all.filter(id => !shown.includes(id))]) {
-      const img = Object.assign(document.createElement('img'), { loading: 'lazy', src: resident(id).image, alt: '', draggable: false, className: 'pixel' });
-      add(resident(id).name, img, shown.includes(id), () => {
-        const now = onShow().shown;
-        if (now.includes(id)) { base.mons = now.filter(x => x !== id); base.out = base.out?.filter(x => x !== id); playSound('cancel'); }
-        else if (now.length >= onShowMax()) { playSound('cancel'); hushed = null; hud.hint.classList.remove('hush'); hud.hint.textContent = `${onShowMax()} can live here at once. Tap one to send it back first.`; return; }
-        else { base.mons = [...now, id]; playSound('confirm'); }
+      add(resident(id).name, img, mine.includes(id), () => {
+        const w = guests.find(g => g.id === id && homeHere(g))?.w, did = placeMon(base, onShow().shown, id, base.here || 'main', onShowMax());
+        if (did === 'full') { playSound('cancel'); hushed = null; hud.hint.classList.remove('hush'); hud.hint.textContent = `${onShowMax()} can live in each room. Tap one here to send it back first.`; return; }
+        if (did === 'out' && w) twinkle(w);
+        playSound(did === 'in' ? 'confirm' : 'cancel');
         save(); syncGuests(); tray(); refresh();
-      }, shown.includes(id) ? (livesOut(id) ? 'Yard' : '✓') : '');
+      }, mine.includes(id) ? '✓' : shown.includes(id) ? roomTag(base.house, monRoom(base, id)) : '');
     }
   }
 }
@@ -1854,8 +1981,7 @@ function refresh() {
     : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
     : tab === 'furniture' && outdoors() && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'No garden pieces in storage. Smeargle sells them at the Poké Mall: tap Smeargle for the garden catalogue.'
     : tab === 'furniture' && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
-    : tab === 'mons' && outdoors() && mons.shown.length ? 'Tap one to let it out in the yard, or call it back in.'
-    : tab === 'mons' ? (mons.all.length ? `Up to ${onShowMax()} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
+    : tab === 'mons' ? (mons.all.length ? `Up to ${onShowMax()} can live in each room. A tag says which room one lives in now.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : '';
   hud.hint.classList.toggle('hush', hud.hint.textContent === hushed);
   if (sel >= 0) {
@@ -2040,7 +2166,7 @@ function frame(now) {
   if (!calm) for (const m of doorMats) m.material.emissiveIntensity = mode === 'walk' ? 0.12 + Math.sin(now / 420) * 0.1 : 0;
   const happy = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : happy ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  mon.group.position.set(walker.x, walker.y ?? 0, walker.z);
+  mon.group.position.set(walker.x, (walker.y ?? 0) + stairY(walker.x, walker.z), walker.z);
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
@@ -2168,6 +2294,7 @@ function showRoom(spot = () => null) {
     const spots = freeTiles(w), t = spots.length ? spots[Math.floor(Math.random() * spots.length)] : walker.tile;
     Object.assign(w, { seat: null, goal: null, jump: null, sleeping: false, y: 0, path: [], tile: t, x: tileX(t.x), z: tileZ(t.y), think: performance.now() + rand(800, 3000) });
   }
+  syncGuests();
   zoom = 1; camZ = panZ = 0; follow = true;
   camX = panX = walker.x;
   shots = fitted = null;
@@ -2267,7 +2394,7 @@ function endGuest() {
 
 /** Back in a second time: the room as it was left, the partner in at the door, any new catches moved in. */
 async function reopen(first) {
-  playMusic('secret-base');
+  playMusic(baseSong(first, !host));
   calm = calmFx();
   base = first;   // the mall's Furniture store may have bought into it since; in at the front door
   root.classList.toggle('guest', !!host);
@@ -2296,7 +2423,7 @@ export async function openBase3d({ onLeave = null, start = 'main', guest = null 
   // a friend's trophy cases show what they held the last time they were home (their `liveSeen`), not your save
   lendTrainerShows(host ? Object.fromEntries(Object.entries(first.liveSeen).filter(([id, v]) => PIECES[id] && typeof v === 'string').map(([id, v]) => [PIECES[id].fam, v])) : null);
   leaveTo = onLeave;
-  playMusic('secret-base');
+  playMusic(baseSong(first, !host));
   // the statues' sprites are fetched only now: a room built without them would carve its statue models bare
   const every = !host && new URLSearchParams(location.search).has('allfurniture'), owned = Object.keys(first.owned || {});
   await Promise.all([loadStatues(every ? undefined : statuesIn(owned)), loadFigures(every ? undefined : owned)]);

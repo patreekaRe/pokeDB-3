@@ -97,6 +97,17 @@
   --shell-rim: #6a4a08; --shell-deep: #4a3204; --shell-hinge: #7a5a10;
   --btn-a: radial-gradient(circle at 35% 30%, #ffc0b0 0 12%, #d83a2a 40%, #8a1810);
 }
+:root[data-shell="gilded"], [data-shell-of="gilded"] {   /* a Level 8 win's (LEVEL_SHELLS in js/data/difficulty.js): polished, so wider
+  from light to dark than Grand Champion's flat gold */
+  --shell-hi: #fff2a8; --shell: #e8b42c; --shell-lo: #b47c10; --shell-fold: #9c680a;
+  --shell-rim: #5a3a02; --shell-deep: #3a2400; --shell-hinge: #84580a;
+  --btn-a: radial-gradient(circle at 35% 30%, #ffc8d8 0 12%, #d8284a 40%, #84081e);
+}
+:root[data-shell="clear"], [data-shell-of="clear"] {   /* a Pokémon Master's: the see-through Game Boy, the scenery showing through */
+  --shell-hi: rgba(240, 248, 255, 0.62); --shell: rgba(196, 216, 236, 0.46); --shell-lo: rgba(168, 192, 220, 0.56);
+  --shell-fold: rgba(150, 176, 208, 0.6); --shell-rim: #6a84a4; --shell-deep: #3e4e66; --shell-hinge: rgba(120, 146, 180, 0.8);
+  --btn-a: radial-gradient(circle at 35% 30%, #e8d8ff 0 12%, #8a5ae0 40%, #4a2690);
+}
 :root[data-shell="black"], [data-shell-of="black"] {
   --shell-hi: #50505c; --shell: #383840; --shell-lo: #2a2a32; --shell-fold: #26262c;
   --shell-rim: #101014; --shell-deep: #060608; --shell-hinge: #1c1c22;

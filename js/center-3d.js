@@ -846,7 +846,7 @@ function unmount() {
   busy = false; aim = null; healing = null; flashing = null; going = null; popping = null;
   if (walker) walker.size = 1;
   if (machine) machine.ball.visible = false;
-  if (view) putAway(view, scene);
+  if (view) putAway(view, scene, renderer);
 }
 
 /* ---------- in ---------- */
