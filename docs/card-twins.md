@@ -180,16 +180,16 @@ Kept on purpose:
 
 | Card | Read like | Before | Now |
 |---|---|---|---|
-| **Circle Throw** uncommon | Vital Throw, Wide Guard, Seismic Toss | [2] Gain 12 block. Counter 6. | [2] Gain 10 block. If the enemy attacked you last turn: Counter 8. |
+| **Circle Throw** uncommon | Vital Throw, Wide Guard, Seismic Toss | [2] Gain 12 block. Counter 6. | [2] Gain 12 block. If the enemy attacked you last turn: Counter 8. |
 | **Wide Guard** evolution 1 | Vital Throw, Circle Throw, Seismic Toss | [1] Gain 10 block. Counter 5. | [1] Counter 6. Next turn, gain 8 block. |
-| **Seismic Toss** evolution 2 | Vital Throw, Circle Throw, Wide Guard | [1] Gain 12 block. Counter 12. | [1] Counter 12. Draw 1 card. |
+| **Seismic Toss** evolution 2 | Vital Throw, Circle Throw, Wide Guard | [1] Gain 12 block. Counter 12. | [1] Gain 10 block. Counter twice the HP you lost last enemy turn. |
 | **Submission** evolution 1 | Close Combat, Meteor Assault | [1] Deal 16 damage. Add a Sore to your hand. | [1] Deal 9 damage 2 times. Add a Sore to your hand. |
 | **Meteor Assault** rare | Close Combat, Hammer Arm (+1 line), Submission | [2] Deal 26 damage. Add 2 Sores to your hand. | [2] Deal 22 damage. +4 for each status card in your hand. Add 2 Sores to your hand. |
-| **Brace** uncommon | No Retreat (+1 line), Parry (+1 line) | [1] Gain 10 block. Add a Sore to your hand. Follow-up (attack): Draw 1 card. | [1] Next turn, gain 11 block. Follow-up (attack): Draw 1 card. |
-| **Scrappy** uncommon | No Retreat (+1 line), Rage Powder (+1 line) | [1] Apply 1 Weak. Gain 8 block. Add a Sore to your hand. | [1] Apply 2 Weak. Gain 1 energy. Add a Sore to your hand. |
+| **Brace** uncommon | No Retreat (+1 line), Parry (+1 line) | [1] Gain 10 block. Add a Sore to your hand. Follow-up (attack): Draw 1 card. | [1] Next turn, gain 12 block. Follow-up (attack): Draw 1 card. |
+| **Scrappy** uncommon | No Retreat (+1 line), Rage Powder (+1 line) | [1] Apply 1 Weak. Gain 8 block. Add a Sore to your hand. | [1] Apply 2 Weak. Gain 5 block. Gain 1 energy. Add a Sore to your hand. |
 | **Dynamic Punch** evolution 2 | Reversal | [2] Deal 24 damage. +4 for each status card in your hand. | [2] Deal 22 damage. Apply 2 Vulnerable. Add a Sore to your hand. |
 | **Sacred Sword** rare | Low Sweep, Wood Hammer (+1 line), Muddy Water (+1 line), Scald (+1 line) +3 | [2] Deal 14 damage. Apply 2 Weak. Follow-up (skill): Gain 12 block. | [2] Deal 18 damage. Follow-up (skill): Gain 12 block. |
-| **Iron Will** uncommon | Grit | [2] Gain 10 block. +4 block for each status card in your hand. | [2] Gain 12 block. +3 Counter for each status card in your hand. |
+| **Iron Will** uncommon | Grit | [2] Gain 10 block. +4 block for each status card in your hand. | [2] Gain 14 block. +3 Counter for each status card in your hand. |
 | **Cross Chop** evolution 1 | Tackle, Quick Attack, Fire Punch, Incinerate (+1 line) +1 | [2] Deal 18 damage. Draw 1 card. | [2] Deal 9 damage 2 times. Follow-up (skill): Draw 2 cards. |
 | **Stare Down** uncommon | Poison Powder | [1] Apply 1 Weak. Apply 1 Sap. | [1] Apply 2 Weak. If the enemy attacked you last turn: Apply 1 Sap. |
 | **Flying Press** evolution 2 | Scorch, Seed Bomb, Apple Acid, Liquidation +1 | [3] Deal 34 damage. Apply 2 Vulnerable. | [3] Deal 28 damage. Apply 2 Vulnerable. Counter 8. |
@@ -294,3 +294,4 @@ Kept on purpose:
 | **Psycho Boost** rare | Hyper Beam | [2] Deal 30 damage. 1 less energy next turn. | [2] Deal 32 damage. Exhaust. |
 | **Dream World** rare | Psychic Fortress | [2] At the start of each turn, gain 3 block. Draw 1 more card each turn. | [2] At the start of each turn, heal 2 HP. Draw 1 more card each turn. |
 | **Mindstorm** evolution 2 | Mind Storm | [X] Deal 8 damage X times. | [X] Deal 6 damage X times. Apply 1 Weak X times. |
+
