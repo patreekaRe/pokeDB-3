@@ -6272,6 +6272,9 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .xr-dex { display: flex; align-items: center; gap: 10px; }
 .xr-dex .dex-bar { flex: 1; margin: 0; height: 10px; background: #eadcc0; box-shadow: inset 0 0 0 1px rgba(58, 46, 36, 0.3); }
 .xr-dex-n { font-size: 0.8rem; min-width: 3.5em; text-align: right; font-weight: bold; }
+.xr-dex + .xr-dex { margin-top: 6px; }
+.xr-dex-l { flex: none; width: 7.5em; font-size: 0.75rem; }
+.xr-dex-research .ach-fill { background: linear-gradient(90deg, #7fd0ff, #3a7bd5); }
 .xr-body .xr-swap { grid-column: 1 / -1; justify-self: center; margin: 0; }
 .crossroads-scene.chosen .xr-panel { opacity: 0; transition: opacity 0.4s; }
 .crossroads-scene.still .xr-panel { animation: none; }

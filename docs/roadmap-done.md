@@ -3629,3 +3629,8 @@ falling). A scratchpad probe found no leak: one decoded song after 10 records pu
 record letting it go, and 0 MB / 0 listeners / 0 textures left after the jukebox opened 6 times, the trader's crate 5
 (20 listens) and Smeargle's pick 3. Over a 2D screen the jukebox and crate cost ~0.2 ms of JS a frame, ~1-1.5 ms
 style and paint, ~4 ms a record flipped. The pick's turntable costs what any Furniture store buy window does.
+
+### Crossroads board: a Research bar (2026-10-26, cloud)
+The user's ask from a phone screenshot of the Ember Wastes board: the Pokédex note shows two bars, Defeated (as before)
+and ★ Research (the page's entries whose research is done, `isResearched()`, a blue fill), in `fillPanel()` in
+`js/crossroads-3d.js`. The painted fallback's card has no Pokédex bar, so it has none.
