@@ -353,5 +353,5 @@ and what it does now.
   within noise. The first cut had Fighting 5-10 lower (it had swapped block for other lines on Seismic Toss, Iron Will,
   Circle Throw, Scrappy and Brace); with the block back, at 300: solo 89.3 -> 82.0, fighting+ice 71.3 -> 74.3,
   ground+fighting 73.3 -> 68.3, fighting+fire 72.7 -> 78.0. ~8,000 runs, ~2 h on 4 cores.
-- **Kenmatta's dojo** keeps the cards its trials were built on: `DOJO_CARDS` (`dojo-<id>`, in `CARDS_BY_ID` only, art by
-  name through `cardArt()`'s namesake) holds the 15 changed cards as they were, and the trial decks deal those.
+- **Kenmatta's dojo** was rebuilt on the new cards (the user's pick, 2026-10-26; `docs/reference/events.md`'s dojo
+  notes): each trial keeps its idea, its decks and HP retuned and solved again.

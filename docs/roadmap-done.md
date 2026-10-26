@@ -3644,5 +3644,6 @@ and ★ Research (the page's entries whose research is done, `isResearched()`, a
 Bubble and Bubble Beam in one hand: "no cards that repeat". `tools/card-twins.mjs` found 378 twin pairs (the same lines
 with other numbers, any cost) and 182 near twins (the same cost, one plus a line) across 332 cards, single runs and Duo
 Runs; 197 cards got moves of their own (`docs/card-twins.md`, before and now), every id kept, Disable+ named Imprison.
-The test now fails on any twin. The dojo deals frozen copies (`DOJO_CARDS`), its trials solving as before. Rule and bot
-check: `docs/reference/cards.md`'s "The twin pass". Open questions (signature cards, basics, the dojo): roadmap Ideas.
+The test now fails on any twin. Kenmatta's trials were rebuilt on the new cards (the user's pick): Patience a new puzzle,
+seven HPs retuned, every trial solved and starred headless. Rule and bot check: `docs/reference/cards.md`'s "The twin
+pass". Open questions (signature cards, basics): roadmap Ideas.

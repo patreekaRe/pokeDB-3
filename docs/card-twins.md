@@ -37,9 +37,8 @@ Kept on purpose:
 - **Safari signature cards** (514, one per Safari Pokémon, one copy a run, caught one at a time) are outside this pass.
   The pass took the ones that read like a card their run meets from 200 to 170 (439 pairs to 174), and none reads
   exactly like one (`tests/safarimons.test.mjs`). The roadmap's Ideas has the question of doing them too.
-- **Kenmatta's dojo trials** keep the cards they were built on: `DOJO_CARDS` in `js/data/cards.js` holds the 15 changed
-  cards as they were (`dojo-<id>`, same names and art, never in a run), and `tools/dojo-solve.mjs` finds every trial's
-  answers exactly as before.
+- **Kenmatta's dojo trials** were rebuilt on the new cards (the user's pick): each keeps its idea, and the solver finds
+  only that idea in trials 9-20 (`docs/reference/events.md`).
 
 ## Every card that changed
 

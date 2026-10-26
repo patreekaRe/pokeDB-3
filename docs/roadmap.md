@@ -12,9 +12,10 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 **▶ PLAYTEST ON THE LIVE SITE. No twin cards: done 2026-10-26, on `main`** (the user's ask: Bubble and Bubble Beam in one
 hand, "no cards that repeat ... all across the board"). 197 cards have new moves so no two cards one run can meet read
 alike (`docs/card-twins.md` lists each: what it read like, before, now); `tools/card-twins.mjs` finds any and
-`tests/cards.test.mjs` fails on them. Kenmatta's dojo keeps the old copies its 20 trials were built on. Bot check
+`tests/cards.test.mjs` fails on them. Kenmatta's 20 trials were rebuilt on the new cards (the user's pick). Bot check
 (`docs/reference/cards.md`'s "The twin pass"): every type within noise of before, Fighting after giving its block back. On a phone: a few runs of each type and a Duo Run or two; say which new
-moves feel off or too strong, and whether "Imprison" (was Disable+) and the unplayable Splash read clearly.
+moves feel off or too strong, and whether "Imprison" (was Disable+) and the unplayable Splash read clearly. In the dojo
+(`?dojo&trials`): Patience is a new puzzle, and seven trials' HP changed.
 
 **▶ PLAYTEST ON THE LIVE SITE. Mid-run reloads, round seven: done 2026-10-19, on `main`, waiting on the user's phone**
 (`docs/reference/walk-in-rooms.md`, "One side-wall painting"). The full `tools/budget-check.mjs` passed before the change;
@@ -1211,8 +1212,7 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 per Safari Pokémon, are outside the twin rule (170 still read like a card their run can meet with other numbers; none
 exactly): redo them too, or leave them as each Pokémon's own flavour? (2) each type's plain **Strike and Defend** still
 match in a Duo Run (Ember / Thunder Shock both "Deal N damage."): give each type's basics a rider, or keep StS's plain
-basics? (3) **Kenmatta's dojo** deals the 15 changed cards as they were (`DOJO_CARDS`): re-cut those trials on the new
-cards, or keep them as they are?
+basics? (3) Kenmatta's dojo: the user picked "rebuild around the new cards", done 2026-10-26.
 
 **Records and the jukebox, what's left** (live 2026-10-25, see the archive). Ideas not yet asked for: music fading with
 distance from the jukebox; the player piece animating while a record plays; a nudge to go home once a new player mends

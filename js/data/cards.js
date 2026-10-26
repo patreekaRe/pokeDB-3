@@ -1121,27 +1121,6 @@ const STATUS_CARDS = [
   { id: 'sore',      name: 'Sore',      type: 'normal', cost: 0, art: '🩹', effects: {}, status: true, unplayable: true, ethereal: true },   // Fighting's Guts moves make these (Reckless Charge's Dazed)
 ];
 
-/* Kenmatta's dojo trials (js/data/dojo.js) are puzzles built on these cards as they read before the twin pass
-   (2026-10-26, docs/card-twins.md): kept here so every trial keeps its one answer. Dojo-only: in CARDS_BY_ID, never in a
-   run, a reward or the Card index. */
-const DOJO_CARDS = [
-  { id: 'dojo-fire-punch', name: 'Fire Punch', type: 'fire', cost: 1, art: '🥊', sprite: 'expert-belt', effects: { damage: 10, draw: 1 }, dojo: true },
-  { id: 'dojo-quick-attack', name: 'Quick Attack', type: 'normal', cost: 0, art: '💨', sprite: 'quick-ball', effects: { damage: 4, draw: 1 }, dojo: true },
-  { id: 'dojo-splash', name: 'Splash', type: 'water', cost: 0, art: '💦', sprite: 'lure-ball', effects: { block: 4 }, dojo: true },
-  { id: 'dojo-crabhammer', name: 'Crabhammer', type: 'water', cost: 2, art: '🦀', sprite: 'kings-rock', effects: { damage: 12, perTide: 3 }, dojo: true },
-  { id: 'dojo-flare', name: 'Flare', type: 'fire', cost: 0, art: '🔥', sprite: 'figy-berry', effects: { damage: 4, burn: 1 }, dojo: true },
-  { id: 'dojo-mega-drain', name: 'Mega Drain', type: 'grass', cost: 2, art: '💚', sprite: 'luminous-moss', effects: { damage: 12, heal: 6 }, dojo: true },
-  { id: 'dojo-scorch', name: 'Scorch', type: 'fire', cost: 2, art: '☄️', sprite: 'burn-drive', effects: { damage: 10, vulnerable: 2 }, dojo: true },
-  { id: 'dojo-rain-dance', name: 'Rain Dance', type: 'water', cost: 1, art: '🌧️', sprite: 'sprinklotad', effects: { block: 4, tide: 2 }, dojo: true },
-  { id: 'dojo-sparkling-aria', name: 'Sparkling Aria', type: 'water', cost: 2, art: '✨', sprite: 'primarium-z', effects: { tide: 4 }, dojo: true },
-  { id: 'dojo-inferno-charge', name: 'Inferno Charge', type: 'fire', cost: 2, art: '⚡', sprite: 'cell-battery', effects: { damage: 9, nextEnergy: 2 }, dojo: true },
-  { id: 'dojo-aqua-ring', name: 'Aqua Ring', type: 'water', cost: 1, art: '⭕', sprite: 'pearl-string', effects: { heal: 3, block: 6 }, dojo: true },
-  { id: 'dojo-solar-blade', name: 'Solar Blade', type: 'grass', cost: 2, art: '🌞', sprite: 'solganium-z', effects: { damage: 8, strengthMult: 4 }, retain: true, dojo: true },
-  { id: 'dojo-bubble-shield', name: 'Bubble Shield', type: 'water', cost: 1, art: '🫧', sprite: 'soda-pop', effects: { block: 12 }, ethereal: true, dojo: true },
-  { id: 'dojo-giga-drain', name: 'Giga Drain', type: 'grass', cost: 2, art: '🩸', sprite: 'grassium-z', effects: { damage: 20, heal: 12 }, dojo: true },
-  { id: 'dojo-frenzy-plant', name: 'Frenzy Plant', type: 'grass', cost: 3, art: '🌳', sprite: 'venusaurite', effects: { damage: 30, strengthMult: 4 }, dojo: true },
-];
-
 /* The Safari Zone's cards (docs/reference/safari.md): never offered outside a Safari run, never in ALL_CARDS (so not in
    the Card index). Bait and Rock join a Safari run's card rewards; a caught Pokémon offers its signature card, built
    from its own best-known move with the cards' existing mechanics, one copy a run. `from` is the Pokémon's ENEMY_DEFS id. */
@@ -1260,7 +1239,7 @@ function upgradeOf(card) {
 }
 const upgraded = (card) => ({ ...card, ...upgradeOf(card), id: upgradeId(card.id), name: `${card.name}+`, base: card.id, upgraded: true });
 
-export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS, ...DOJO_CARDS].map(c => [c.id, c]));
+export const CARDS_BY_ID = Object.fromEntries([...ALL_CARDS, ...TOKEN_CARDS, ...STATUS_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS].map(c => [c.id, c]));
 for (const card of [...ALL_CARDS, ...TOKEN_CARDS, ...SAFARI_ONLY_CARDS, ...SIGNATURE_CARDS]) CARDS_BY_ID[upgradeId(card.id)] = upgraded(card);
 
 const TYPE_SETS = { fire: FIRE_CARDS, grass: GRASS_CARDS, water: WATER_CARDS, psychic: PSYCHIC_CARDS, electric: ELECTRIC_CARDS, ice: ICE_CARDS, fighting: FIGHTING_CARDS, ground: GROUND_CARDS, flying: FLYING_CARDS, dark: DARK_CARDS };

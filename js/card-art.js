@@ -221,8 +221,7 @@ const ART = {
 };
 
 /** The card's smooth picture in its art window, or null to keep the item sprite. */
-/** A Safari signature card sharing a pool card's move (Fire Punch, Aqua Ring...) borrows its picture, as a dojo trial's
-    card (`dojo-<id>`, js/data/cards.js's DOJO_CARDS) does its namesake's. */
+/** A Safari signature card sharing a pool card's move (Fire Punch, Aqua Ring...) borrows its picture. */
 let byName;
 function namesake(card) {
   byName ||= new Map(ALL_CARDS.filter((c) => ART[c.id]).map((c) => [c.name, c.id]));
@@ -231,7 +230,7 @@ function namesake(card) {
 
 export function cardArt(card) {
   const base = card.orig || card;
-  const svg = !OFF && (ART[base.id.replace(/\+$/, '')] || (/^(sig|dojo)-/.test(base.id) && namesake(base)));
+  const svg = !OFF && (ART[base.id.replace(/\+$/, '')] || (base.id.startsWith('sig-') && namesake(base)));
   if (!svg) return null;
   const tag = `ca${(drawn++).toString(36)}`;
   const art = document.createElement('div');
