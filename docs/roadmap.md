@@ -12,8 +12,8 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 **▶ PLAYTEST ON THE LIVE SITE. No twin cards: done 2026-10-26, on `main`** (the user's ask: Bubble and Bubble Beam in one
 hand, "no cards that repeat ... all across the board"). 197 cards have new moves so no two cards one run can meet read
 alike (`docs/card-twins.md` lists each: what it read like, before, now); `tools/card-twins.mjs` finds any and
-`tests/cards.test.mjs` fails on them. Kenmatta's dojo keeps the old copies its 20 trials were built on. Bot check in
-`docs/reference/cards.md`'s "The twin pass". On a phone: a few runs of each type and a Duo Run or two; say which new
+`tests/cards.test.mjs` fails on them. Kenmatta's dojo keeps the old copies its 20 trials were built on. Bot check
+(`docs/reference/cards.md`'s "The twin pass"): every type within noise of before, Fighting after giving its block back. On a phone: a few runs of each type and a Duo Run or two; say which new
 moves feel off or too strong, and whether "Imprison" (was Disable+) and the unplayable Splash read clearly.
 
 **▶ PLAYTEST ON THE LIVE SITE. Mid-run reloads, round seven: done 2026-10-19, on `main`, waiting on the user's phone**

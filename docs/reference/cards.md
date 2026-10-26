@@ -346,5 +346,12 @@ and what it does now.
   an upgrade read as a second Disable).
 - **Safari signature cards** (514) are outside the rule: one per Pokémon, one copy a run. 170 still read like a card
   their run can meet (200 before); `tests/safarimons.test.mjs` keeps them from reading exactly like one.
+- **Bot check** (human bot; before = the commit before the pass, the same bot; 150 runs a cell, Fighting's at 300):
+  fire / grass / water L0 81.3 / 66.0 / 62.0 -> 76.7 / 73.3 / 66.0, L3 54.7 / 48.7 / 46.0 -> 61.3 / 50.7 / 51.3; Mewtwo
+  (L0) 42.7 -> 44.0; solo L0 electric / ice / ground / flying / dark 82.0 / 82.7 / 96.7 / 77.3 / 85.3 -> 79.3 / 87.3 /
+  95.3 / 74.7 / 84.0; nine Duo pairs covering each type twice (Safari days, `safariCfg`) 67.3 -> 65.8 mean, every pair
+  within noise. The first cut had Fighting 5-10 lower (it had swapped block for other lines on Seismic Toss, Iron Will,
+  Circle Throw, Scrappy and Brace); with the block back, at 300: solo 89.3 -> 82.0, fighting+ice 71.3 -> 74.3,
+  ground+fighting 73.3 -> 68.3, fighting+fire 72.7 -> 78.0. ~8,000 runs, ~2 h on 4 cores.
 - **Kenmatta's dojo** keeps the cards its trials were built on: `DOJO_CARDS` (`dojo-<id>`, in `CARDS_BY_ID` only, art by
   name through `cardArt()`'s namesake) holds the 15 changed cards as they were, and the trial decks deal those.
