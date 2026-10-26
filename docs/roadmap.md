@@ -1444,6 +1444,31 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
   - **A guided first fight**, if `?onboard` doesn't already teach Block, energy and intents.
   - **Tests on every push**: a GitHub Action running `node --test` (later a short `budget-check`) on pushes to `main`,
     since nothing reviews a push before the live site gets it.
+- **Suggested 2026-10-26, not picked** (the user: "running out of ideas"; each ▶ Run in: CLOUD, both repos where a battle
+  rule changes; none overlap the lists above):
+  - **A Rival** (Claude's top pick): Blue-style, met 2-3 times a run on the map, his starter the one strong against yours.
+    Last time he fights with the deck you lost your previous run with (a ghost of it, saved at the run's end), so every
+    loss sets up a revenge match. Beating him gives a rare card. Engine-light: an enemy built from a card list.
+  - **Mega Evolution in battle**: a Mega Stone relic (one per starter) fills a meter as you play cards; full, the partner
+    Megas for 3 turns (new sprite, +damage, a power of its own). The boss-relic fight's big moment. Sim mirror, bot-checked.
+  - **The Elite Four**: unlocked after every gym badge, four bosses and the Champion back to back, a heal only between
+    them, its own board. Who they are could be more of the user's friends (`gym-leaders.md`).
+  - **Battle Factory** (a Frontier facility beside the Sky Pillar): no deck of your own, you draft one from packs of
+    rental cards before each set of fights. Tests card knowledge, not unlocks, so fair for new players.
+  - **A weekly Raid boss**: one giant Pokémon everyone fights through the week, each fight's damage taken off a shared HP
+    bar (the leaderboards' backend), furniture for all when it falls. The first thing that makes the friends list play together.
+  - **Trading with friends**: swap Safari catches through the Trainers app; Haunter, Kadabra, Machoke and Graveler evolve
+    when traded, as in the games.
+  - **Photo mode / Pokémon Snap**: a camera in the Safari and the hub, each shot scored on size, pose and how centred, an
+    album app on the Pokédex, a "best shot" per Pokémon. Mostly UI over the sprites already there.
+  - **Underground digging** (Sinnoh's wall-mining): a tap minigame in the Secret Base or the arcade, fossils revived at a
+    lab into a Kabuto / Omanyte / Aerodactyl skin or furniture, spheres sold for coins.
+  - **Alt-art cards and a binder**: booster packs (PokéCoins) of cosmetic full-art and holo versions of the cards you
+    play, a Binder app, a holo shine on the card in battle. Cosmetic only, like skins.
+  - **Mass outbreaks**: for one real hour, one Pokémon swarms a Safari area with better shiny odds, flagged on the Safari
+    gate. Seeded by the UTC hour so it's the same for everyone (`js/rng.js`).
+  - **Mystery Gift codes**: a PC app where a typed code gives a piece of furniture or a skin, so the user can hand out
+    gifts to friends in person.
 - Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a
   win, Endless mode after Eternatus, Custom runs (switches that count for nothing), Unown letters hidden in the Depths.
 
