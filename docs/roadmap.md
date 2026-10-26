@@ -1444,8 +1444,8 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
   - **A guided first fight**, if `?onboard` doesn't already teach Block, energy and intents.
   - **Tests on every push**: a GitHub Action running `node --test` (later a short `budget-check`) on pushes to `main`,
     since nothing reviews a push before the live site gets it.
-- **Suggested 2026-10-26, not picked** (the user: "running out of ideas"; each ▶ Run in: CLOUD, both repos where a battle
-  rule changes; none overlap the lists above):
+- **Suggested 2026-10-26, the user said "nah" to all of them** (asked "what other cool things can we add"; kept so they
+  aren't offered again):
   - **A Rival** (Claude's top pick): Blue-style, met 2-3 times a run on the map, his starter the one strong against yours.
     Last time he fights with the deck you lost your previous run with (a ghost of it, saved at the run's end), so every
     loss sets up a revenge match. Beating him gives a rare card. Engine-light: an enemy built from a card list.
@@ -1469,6 +1469,28 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
     gate. Seeded by the UTC hour so it's the same for everyone (`js/rng.js`).
   - **Mystery Gift codes**: a PC app where a typed code gives a piece of furniture or a skin, so the user can hand out
     gifts to friends in person.
+- **Second batch, 2026-10-26, not picked yet** (after the "nah" above; weirder, world and hub life; each ▶ Run in: CLOUD):
+  - **MissingNo.**: a rare glitched node on a run's map, the map tiles scrambling round it; inside, a fight with
+    MissingNo. (garbled sprite, moves named in static), glitch cards that do odd things, and a corrupted-looking skin or
+    furniture as the prize. A secret people talk about.
+  - **Team Rocket takes over**: a weekend world event where Rocket grunts hold the Clearing and the mall (shops shut,
+    Meowth gone), beaten in fights round the hub, Giovanni at the end, and the place back to normal with a reward.
+  - **Roaming legendaries**: Raikou / Entei / Suicune turn up on a run's map as a node that flees; hit it a little each
+    run, and after a few runs it's cornered for a real fight and its skin.
+  - **Camp curry**: cook at a rest stop on the run map (Sword and Shield's camp), berries and ingredients in, a run buff
+    out, a recipe book filling up. Builds on the berry garden.
+  - **Your Pokémon go travelling**: a Safari catch leaves the base for a few days and sends postcards (mail) from the
+    towns and biomes, then comes home with a souvenir piece of furniture.
+  - **Real weather in the hub**: it rains, snows or clears in the Clearing and the towns as it does where you are (a
+    free weather API, the location asked once, off by default).
+  - **Riding**: ride a Rapidash round the Clearing and the towns, Lapras across the pond, a Charizard flight between
+    mended Waystones instead of the jump.
+  - **Your own Gym**: build a gym (its puzzle tiles, its deck, your look) that friends challenge from the Trainers app;
+    the badge they win from it carries your name.
+  - **Poké Stock Exchange** in the mall: buy shares in Pokémon whose price moves with how often everyone picks them as a
+    starter or catches them. PokéCoins only, a daily tick.
+  - **A Poké Walker**: take the partner for a walk with your phone in your pocket, steps (the phone's motion sensor)
+    earning items and hearts.
 - Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a
   win, Endless mode after Eternatus, Custom runs (switches that count for nothing), Unown letters hidden in the Depths.
 
