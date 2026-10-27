@@ -1211,6 +1211,13 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Friends' buddies wearing their aura and crown** (asked 2026-10-27, "does this show on our friends walking buddies?"):
+not yet. The Trainer Plaza's buddies (`js/hub-buddies.js`) build from `graves/<uid>`, which holds only the buddy key and
+card tier, so the Super Saiyan aura (`auraWorn()`) and the Level 10 crown show on your own buddy alone. To build: add
+`aura` (0, 6-10) to the graves doc (`publishGraves()`, `checkGraves()`, `validGraves` in `firestore.rules`, which the
+user re-publishes in Firebase), then pass `aura: () => fr.aura` and `crown: () => fr.aura === 10` to `monBoard()`; the
+budget check with four aura'd buddies in the Plaza (`?graves=4` plus a sample aura). ▶ Run in: CLOUD, effort medium.
+
 **Twins, what the 2026-10-26 pass left**: (1) the Safari signature cards: done 2026-10-27 (the user went with Claude's
 recommendation; all of the twin rule, not only the 170 first counted, see the archive); (2) each type's plain **Strike
 and Defend** stay plain (Claude's recommendation, 2026-10-27: a Duo Run's partners draw from their own decks, so two
