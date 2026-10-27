@@ -6594,6 +6594,24 @@ button.craft-mat.on { box-shadow: inset 0 0 0 3px #f0a820; background: #fff8e0; 
 .craft-pill.carried { background: #f0c040; color: #3a2414; }
 .dialog.craft .craft-empty { margin: 12px 4px; text-align: center; font-size: 0.8rem; color: #fbe8c0; }
 .craft-close { align-self: center; }
+/* more below (scrollCue() in js/ui.js, 2026-10-27, the user's ask): a ▼ MORE tag stuck to a scroll box's bottom edge
+   while anything's hidden under it. It takes no room (its negative margin eats its height and the box's gap) and lets
+   taps through to the row under it, then fades out at the end. */
+.scroll-cue { --cue-gap: 0px; }
+.scroll-cue::after {
+  content: '▼ MORE ▼'; position: sticky; bottom: 4px; z-index: 4; flex: none; align-self: center; display: block; width: max-content;
+  margin: calc(-26px - var(--cue-gap)) auto 0; padding: 0 12px; height: 26px; line-height: 26px; box-sizing: border-box;
+  border: 2px solid #2a170c; border-radius: 999px; background: #ffd860; color: #3a2414; font-size: 0.75rem; letter-spacing: 0.06em;
+  box-shadow: 0 3px 0 #2a170c, 0 0 14px 4px rgba(42, 23, 12, 0.55); pointer-events: none;
+  opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s;
+}
+.scroll-cue.more::after { opacity: 1; visibility: visible; animation: cueBob 1.2s ease-in-out infinite; }
+@keyframes cueBob { 50% { translate: 0 3px; } }
+.scroll-cue.more .scroll-cue.more::after { opacity: 0; visibility: hidden; }
+.calm-fx .scroll-cue.more::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { .scroll-cue.more::after { animation: none; } }
+.dialog.craft { --cue-gap: 10px; }
+.dialog.craft .craft-list { --cue-gap: 6px; }
 .dialog.craft.busy .craft-tab, .dialog.craft.busy .craft-row, .dialog.craft.busy .craft-close { pointer-events: none; }
 /* the forge */
 .craft-forge { position: absolute; inset: 0; z-index: 3; cursor: pointer; background: rgba(40, 20, 8, 0); transition: background 0.3s, opacity 0.25s; }

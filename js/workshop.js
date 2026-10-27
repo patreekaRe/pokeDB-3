@@ -5,7 +5,7 @@
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
-import { el } from './ui.js';
+import { el, scrollCue } from './ui.js';
 import { calmFx } from './prefs.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID, matHints } from './data/satchel.js';
 import { RECIPES, TABS, FRIENDS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT, GIFT_TOLD } from './data/workshop.js';
@@ -129,6 +129,7 @@ export function openWorkshop() {
   close.type = 'button';
   d.append(head, talk, tabs, card, list, close);
   document.body.append(d);
+  scrollCue(d, list);
   let tab = TABS.find(t => shelf(t.id).length)?.id ?? 'skin', picked = null, hint = null, busy = false, aside = false;
   const line = (t) => { say.textContent = t; };
   const draw = () => {

@@ -3372,3 +3372,10 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### "More below" tag on scrolling windows (2026-10-27, cloud)
+The user's ask from a phone screenshot: players didn't know Kurt's Workshop or the Berry Garden scrolled. `scrollCue()`
+in `js/ui.js` puts `.more` on a scroll box while anything's hidden under its bottom edge, and `.scroll-cue::after` in
+`css/screens.css` draws a bobbing ▼ MORE tag stuck to that edge (no room taken, taps pass through; an inner box's tag
+hides while its window's own shows). On the Workshop, Berry Garden and dojo windows and their lists; any other long
+window can call it too.

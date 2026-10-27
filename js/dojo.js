@@ -5,7 +5,7 @@
 
 import { getSave } from './storage.js';
 import { playSound } from './audio.js';
-import { el } from './ui.js';
+import { el, scrollCue } from './ui.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
 import { BELTS, TRIALS, DOJO_REWARDS, dojoOf, beltOf, nextBelt, starsOf, kenWinsOf, trialOpen, dojoEarned, dojoHow } from './data/dojo.js';
 import { PIECES } from './secret-base.js';
@@ -59,6 +59,7 @@ export function openDojo() {
   close.type = 'button';
   d.append(head, rank, card, list, gifts, close);
   document.body.append(d);
+  scrollCue(d, list);
   let picked = TRIALS.findIndex((t, i) => isOpen(save, i) && !ds.stars.includes(t.id));
   if (picked < 0) picked = 0;
   let chosen = null;

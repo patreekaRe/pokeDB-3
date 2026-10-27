@@ -6,7 +6,7 @@
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
-import { el, refreshCoins, confirmDialog } from './ui.js';
+import { el, refreshCoins, confirmDialog, scrollCue } from './ui.js';
 import { BERRIES, BERRY, DAY_CAP, sow, stageOf, minutesLeft, harvest, coinsLeft, water, canWater, wetToday, yieldOf, sell } from './data/berries.js';
 import { satchelOf, matCount } from './data/satchel.js';
 import { gainMat } from './satchel.js';
@@ -252,6 +252,7 @@ export function openGarden(b, list, save, at = null) {
   const close = button('btn secondary craft-close', 'Close');
   d.append(head, talk, tabs, card, rows, close);
   document.body.append(d);
+  scrollCue(d, rows);
 
   let tab = 'plots', plot = at || [...list].sort((x, y) => plotRank(x) - plotRank(y))[0], seed = BERRIES[0].id, stand = BERRIES[0].id;
   let target = null, changed = false, said = '';

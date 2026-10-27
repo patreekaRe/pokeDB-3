@@ -94,6 +94,22 @@ export function fitText(node, min = 7) {
   });
 }
 
+/** Tell a scroll box with more below its bottom edge (2026-10-27, the user's ask: players didn't know Kurt's shelves or
+    the Berry Garden scrolled): `.more` on it while anything's hidden down there, which `.scroll-cue::after` in CSS
+    draws as a bobbing ▼ MORE tag. Rechecked on scroll, on resize and whenever what's inside changes. */
+export function scrollCue(...boxes) {
+  for (const box of boxes) {
+    box.classList.add('scroll-cue');
+    let queued = false;
+    const check = () => { queued = false; box.classList.toggle('more', box.scrollHeight - box.scrollTop - box.clientHeight > 8); };
+    const soon = () => { if (!queued) { queued = true; requestAnimationFrame(check); } };
+    box.addEventListener('scroll', soon, { passive: true });
+    new ResizeObserver(soon).observe(box);
+    new MutationObserver(soon).observe(box, { childList: true, subtree: true });
+    soon();
+  }
+}
+
 /** A pixel-art ∞ (the pixel font has none), 9x5 pixels, sized by `--ip` in CSS (`.inf-px`). */
 export function infGlyph() {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

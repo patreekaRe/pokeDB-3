@@ -51,3 +51,7 @@ same thing again, puts it away. Taps on buttons and other controls do their own 
 note there calls `tipAt()` (a locked starter, the locked Safari gem, an unseen Pokédex tile: those tiles are
 `aria-disabled`, not `disabled`, so the tap reaches them). `showTip()` tries above, below, right and left of the thing
 and takes the first spot that covers no button or tab (else the one covering least).
+
+**More below (2026-10-27, the user's ask):** a window or list that scrolls calls `scrollCue(box, ...)` (`js/ui.js`) so
+a bobbing ▼ MORE tag shows at its bottom edge while anything's hidden under it (`.scroll-cue` in `css/screens.css`; set
+`--cue-gap` to the box's flex `gap` so the tag takes no room). Kurt's Workshop, the Berry Garden and the dojo use it.
