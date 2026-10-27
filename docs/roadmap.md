@@ -1219,7 +1219,12 @@ types' Strikes never share a hand); (3) Kenmatta's dojo was rebuilt on the new c
 "5 damage twice" as "Deal 10" (`docs/card-twins.md`'s "Taken out of the pools", the archive). (5) **Signature cards and
 the hits rule**, waiting on the user: under it 97 signature moves would read like a run card or each other (Swift 3x3
 Retain / Night Slash 10 Retain...), and a Pokémon can't lose its signature, so each needs a real idea or stays; Claude's
-recommendation: redo them in one pass, a type's area at a time. ▶ Run in: CLOUD, effort medium, both repos.
+recommendation: redo them in one pass, a type's area at a time. ▶ Run in: CLOUD, effort medium, both repos. (6) **Fire's first
+evolution offers only Flame Charge and Incinerate** since Fire Fang and Flame Wheel left: Claude's recommendation (the
+user asked "you tell me", 2026-10-27), first a playtest of the removals, then one session doing (6) and (5) together:
+Fire Fang gets a move that is really its own (a bite that does something no Fire card does) so the stage offers a
+choice again, then the signature moves, each tied to what its Pokémon does, and one left as it is where no real idea
+fits.
 
 **Records and the jukebox, what's left** (live 2026-10-25, see the archive). Ideas not yet asked for: music fading with
 distance from the jukebox; the player piece animating while a record plays; a nudge to go home once a new player mends
