@@ -26,6 +26,7 @@ import { safariDexCount } from './safaridex.js';
 import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { tipAt } from './tips.js';
+import { calmFx } from './prefs.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog, crownArt, auraArt } from './ui.js';
 import { satchelNews, questNews } from './satchel.js';
@@ -307,6 +308,14 @@ export const TIERS = [
 const earnedIds = (save) => new Set((save.badges || []).filter(id => EARNABLE.some(b => b.id === id)));
 /** A badge the card may pin for friends to see (`save.pinBadge`): earned, and never one of the Depths' secret ones. */
 export const pinnable = (id, save = getSave()) => !!id && earnedIds(save).has(id) && !BADGES.find(b => b.id === id)?.secret;
+/** The badge in a group's slot on the Pokédex cover: the one set for it (`save.coverBadges`), else the pinned one if it's
+    in the group, else the last earned in the group's list order. */
+export function coverBadge(groupId, save = getSave()) {
+  const have = earnedIds(save);
+  const mine = EARNABLE.filter(b => b.group === groupId && have.has(b.id));
+  const pin = pinnable(save.pinBadge, save) ? save.pinBadge : null;
+  return mine.find(b => b.id === save.coverBadges?.[groupId]) ?? mine.find(b => b.id === pin) ?? mine.at(-1) ?? null;
+}
 /** The card's colour from the badges earned; violet once Eternatus is beaten. */
 export function cardTier(save = getSave()) {
   const earned = earnedIds(save);
@@ -522,6 +531,58 @@ function pinPicker(body, done) {
   body.scrollTop = 0;
 }
 
+/** The cover picker over the card's body (the user's ask, 2026-10-27: choose the cover's 12 badges): a row per badge
+    group with any earned, Auto first; a tap sets that group's slot and the picker stays open for the next. */
+function coverPicker(body, done) {
+  const save = getSave();
+  const head = el('div', 'tc-head');
+  head.append(el('h2', 'tc-title', 'YOUR COVER'));
+  const back = el('button', 'tc-pick-back', 'Back');
+  back.type = 'button';
+  back.addEventListener('click', done);
+  head.append(back);
+  const earned = earnedIds(save);
+  const groups = BADGE_GROUPS.map(g => {
+    const mine = EARNABLE.filter(b => b.group === g.id && earned.has(b.id));
+    if (!mine.length) return null;
+    const set = mine.some(b => b.id === save.coverBadges?.[g.id]) ? save.coverBadges[g.id] : null;
+    const grid = el('div', 'tc-pick-grid');
+    const pick = (id, btn) => {
+      updateSave(d => {
+        d.coverBadges = { ...d.coverBadges };
+        if (id) d.coverBadges[g.id] = id; else delete d.coverBadges[g.id];
+      });
+      playSound('confirm');
+      grid.querySelectorAll('.tc-pick.on').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+    };
+    const auto = el('button', `tc-pick tc-pick-word${set ? '' : ' on'}`, 'AUTO');
+    auto.type = 'button';
+    auto.title = 'Auto: your pinned badge if it\'s in this group, else the newest';
+    auto.addEventListener('click', () => pick(null, auto));
+    grid.append(auto, ...mine.map(b => {
+      const btn = el('button', `tc-pick${b.id === set ? ' on' : ''}`);
+      btn.type = 'button';
+      btn.title = b.name;
+      btn.setAttribute('aria-label', `Show ${b.name} on the cover`);
+      const img = el('img', '');
+      img.src = badgeArt(b.id, true);
+      img.alt = '';
+      img.draggable = false;
+      btn.append(img);
+      btn.addEventListener('click', () => pick(b.id, btn));
+      return btn;
+    }));
+    const box = el('div', 'tc-pick-group');
+    box.append(el('span', 'tc-case-label', `${g.name.toUpperCase()} · ${mine.length}`), grid);
+    return box;
+  }).filter(Boolean);
+  const note = el('p', 'tc-pick-note', 'Your Pokédex cover has a slot for each badge group. Choose the badge each one shows.');
+  body.replaceChildren(head, note, ...(groups.length ? groups : [el('p', 'tc-pick-note', 'Earn a badge first!')]));
+  head.querySelector('h2').tabIndex = -1;
+  body.scrollTop = 0;
+}
+
 const hintFor = (b, save) => {
   if (b.secret && !(save.unlocked || []).includes('mewtwo')) return 'A secret badge. Something sleeps behind the Sealed Gate...';
   return b.locked ? b.text : `Not earned yet. ${b.text}.`;
@@ -731,17 +792,35 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   head.querySelector('h2').tabIndex = -1;
   const foot = el('p', 'tc-foot', `${earned.size}/${EARNABLE.length} badges${tier.next ? ` · ${tier.next}` : ''}`);
   const body = into ?? $('trainer-body');
-  const label = el('span', 'tc-case-label', 'BADGE CASE');
+  const label = el('div', 'tc-case-label');
+  label.append(el('span', '', 'BADGE CASE'));
+  const cover = el('button', 'tc-pin-btn tc-cover-btn', 'Cover');
+  cover.type = 'button';
+  cover.title = 'Choose the badges on your Pokédex cover';
+  cover.addEventListener('click', () => { playSound('confirm'); coverPicker(body, redraw); });
+  const keys = el('span', 'tc-case-keys');
+  keys.append(cover);
+  label.append(keys);
   if (myCode() || new URLSearchParams(location.search).has('mycard')) {
-    // signed in, friends see your page: pin one badge for it (the Trainers app shows it by your partner)
+    // signed in, friends see your page: pin one badge for it (the Trainers app shows it by your partner). The user found
+    // a faint "Pinned" tab easy to miss (2026-10-27): it's a gold plate now, and the badge sits pinned on the partner too
     const pinned = pinnable(save.pinBadge, save) ? save.pinBadge : null;
-    const pin = el('button', 'tc-pin-btn');
+    const openPin = () => { playSound('confirm'); pinPicker(body, redraw); };
+    const pin = el('button', `tc-pin-btn${pinned ? '' : ' empty'}${pinned || calmFx() ? '' : ' shine'}`);
     pin.type = 'button';
     pin.title = pinned ? 'Your pinned badge, on your Trainers page. Tap to change it' : 'Pin a badge to your Trainers page';
-    if (pinned) { const art = el('img', ''); art.src = badgeArt(pinned, true); art.alt = ''; pin.append(art); }
-    pin.append(el('span', '', pinned ? 'Pinned' : 'Pin a badge'));
-    pin.addEventListener('click', () => { playSound('confirm'); pinPicker(body, redraw); });
-    label.append(pin);
+    const art = el('span', 'tc-pin-art');
+    if (pinned) { const im = el('img', ''); im.src = badgeArt(pinned, true); im.alt = ''; art.append(im); }
+    pin.append(art, el('span', '', pinned ? 'Pinned badge' : 'Pin a badge'));
+    pin.addEventListener('click', openPin);
+    keys.append(pin);
+    const tack = el('button', `tc-tack${pinned ? '' : ' empty'}`);
+    tack.type = 'button';
+    tack.title = pin.title;
+    tack.setAttribute('aria-label', pinned ? `Pinned badge: ${BADGES.find(b => b.id === pinned).name}. Change it` : 'Pin a badge');
+    if (pinned) { const im = el('img', ''); im.src = badgeArt(pinned, true); im.alt = ''; tack.append(im); } else tack.textContent = '+';
+    tack.addEventListener('click', openPin);
+    frame.append(tack);
   }
   if (fresh.length > 1) {
     const all = el('button', 'tc-seen-all', 'Clear all !');
@@ -753,7 +832,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
       all.remove();
       markSeen(fresh);
     });
-    label.append(all);
+    keys.append(all);
   }
   body.replaceChildren(head, info, label, caseBox, foot);
   if (!into && !reopen) openDialog('trainer-dialog');

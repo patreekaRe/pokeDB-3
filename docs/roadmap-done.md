@@ -3668,3 +3668,7 @@ The user: players didn't know they had wallpaper and floors, and wanted many mor
 one-time line in the base, and Smeargle's Wallpaper & floors catalogue at the Poké Mall (`js/paper-shop.js`). Branch
 `claude/flooring-wallpaper-inventory-lmgj0a`, also pushed to `main`. Detail in `docs/reference/hub-base-mall.md`.
 
+**The pin made easy to find, and the cover's badges chosen** (2026-10-27, the user: "that Pinned tab is like hidden", and
+"is there a way to set the 12 badges in the Pokédex?"): a gold pin plate, the pinned badge on the partner's portrait, and
+a Cover key on the Badge Case to pick each of the cover's 12 slots (`coverPicker()` / `coverBadge()`), on `main`. Detail in
+`docs/reference/badges-and-trainer-card.md`.

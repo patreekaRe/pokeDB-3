@@ -1455,7 +1455,9 @@ html.calm-fx .aura-strip { animation: none; }
 /* A Pokémon Master's title (js/data/difficulty.js's isMaster(), a Level 10 win): a dark chip with a rainbow underline, like the rainbow star. */
 .tc-lines dd.tc-master { justify-self: end; padding: 3px 7px 4px; border-radius: 4px; color: #f8d048;
   background: linear-gradient(90deg, #ff5a5a, #ffd84a, #6ee86e, #5ac8ff, #b07af0) 0 100% / 100% 2px no-repeat, #1f3a14; }
-.tc-case-label { display: block; margin: 14px 0 6px; font-size: 0.75rem; color: #fff; text-shadow: 1px 1px 0 var(--tc3); }
+.tc-case-label { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin: 14px 0 8px; font-size: 0.75rem; color: #fff; text-shadow: 1px 1px 0 var(--tc3); }
+.tc-case-label > span:first-child { white-space: nowrap; }
+.tc-case-keys { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin-left: auto; }
 .tc-case { display: grid; gap: 8px; padding: 10px; border-radius: var(--round-sm); background: #2a3048;
   box-shadow: 0 0 0 3px #181820, inset 0 3px 0 rgba(0, 0, 0, 0.35); }
 .tc-row { display: grid; gap: 4px; }
@@ -1535,9 +1537,29 @@ html.calm-fx .aura-strip { animation: none; }
 .tc-new { top: -5px; right: -5px; width: 13px; height: 13px; font-size: 12px; }
 .tc-seen-all { float: right; padding: 3px 7px; border: 0; border-radius: var(--round-xs); font: 0.75rem/1 var(--pixel-font);
   color: #3a1c0c; background: #ffd040; box-shadow: 0 0 0 2px #3a1c0c; cursor: pointer; }
-.tc-pin-btn { float: right; display: inline-flex; align-items: center; gap: 5px; margin: -4px 0 0 8px; padding: 3px 8px; border: 0; border-radius: var(--round-xs);
-  font: 0.75rem/1 var(--pixel-font); color: #fff; background: rgba(0, 0, 0, 0.3); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5); cursor: pointer; text-shadow: none; }
-.tc-pin-btn img { width: 20px; height: 20px; object-fit: contain; }
+/* the pin plate: gold on the card's dark ink, so it reads on every tier's stripes (a faint grey tab was missed, 2026-10-27) */
+.tc-pin-btn { position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 4px; overflow: hidden; border: 0; border-radius: 999px;
+  font: 0.75rem/1 var(--pixel-font); color: #fff; background: var(--tc3); box-shadow: 0 0 0 2px #ffd040, 0 3px 0 rgba(0, 0, 0, 0.35), 0 0 12px rgba(255, 208, 64, 0.45);
+  cursor: pointer; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4); }
+.tc-pin-btn:hover, .tc-pin-btn:focus-visible { filter: brightness(1.2); outline: none; }
+.tc-pin-btn:active { transform: translateY(2px); box-shadow: 0 0 0 2px #ffd040, 0 1px 0 rgba(0, 0, 0, 0.35); }
+.tc-pin-art { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fffbe8, #f0e0b0);
+  box-shadow: inset 0 0 0 2px #ffd040; }
+.tc-pin-art img { width: 22px; height: 22px; object-fit: contain; }
+.tc-cover-btn { padding: 8px 12px 7px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 3px 0 rgba(0, 0, 0, 0.35); }
+.tc-cover-btn:active { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 1px 0 rgba(0, 0, 0, 0.35); }
+.tc-pick-word { font: 0.75rem/1 var(--pixel-font); color: var(--tc3); }
+.tc-pin-btn.empty .tc-pin-art::before { content: '+'; color: var(--tc3); font-size: 1rem; text-shadow: none; }
+.tc-pin-btn.shine::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+  transform: translateX(-100%); animation: tc-pin-shine 2.8s ease-in-out infinite; pointer-events: none; }
+@keyframes tc-pin-shine { 60%, 100% { transform: translateX(100%); } }
+/* the same badge pinned to the partner's portrait, as friends see it beside them */
+.tc-tack { position: absolute; top: -6px; left: -6px; z-index: 1; display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fffbe8, #f0e0b0); box-shadow: 0 0 0 2px #ffd040, 0 0 0 4px var(--tc3), 0 3px 4px rgba(0, 0, 0, 0.35);
+  transform: rotate(-12deg); cursor: pointer; font: 1rem/1 var(--pixel-font); color: var(--tc3); }
+.tc-tack img { width: 28px; height: 28px; object-fit: contain; }
+.tc-tack:hover, .tc-tack:focus-visible { transform: rotate(-12deg) scale(1.1); outline: none; }
+.tc-tack.empty { opacity: 0.85; }
 /* a new relic, item or move (newFinds in the save) leaves the same trail: every Pokédex / Home key, the app's tile, its
    banner and slot, or the Moves tab and card, till it's been on screen */
 :where(.dex-news) { position: relative; }
@@ -1553,7 +1575,7 @@ html.calm-fx .aura-strip { animation: none; }
 .mv-tab.news::after { top: -4px; right: -4px; width: 13px; height: 13px; font-size: 12px; }
 .pdx-slot.news, .card.news { box-shadow: 0 0 0 2px #ffd040, 0 0 10px rgba(255, 208, 64, 0.6); }
 .card-new { position: absolute; top: -5px; right: -5px; z-index: 3; }
-@media (prefers-reduced-motion: reduce) { .cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new, .dex-news::after, .bdx-banner.news::after, .mv-tab.news::after { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .tc-pin-btn.shine::after, .cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new, .dex-news::after, .bdx-banner.news::after, .mv-tab.news::after { animation: none !important; } }
 @keyframes newsBob { to { translate: 0 -3px; } }
 @media (prefers-reduced-motion: reduce) { .badge-news::after, .badge-news::before, .badge-news .gem-icon::after { animation: none !important; } }
 .bag-pocket .tc-icon { width: 30px; }

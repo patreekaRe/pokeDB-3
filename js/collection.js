@@ -34,7 +34,7 @@ import { howtoApp } from './howto.js';
 import { statsApp } from './statsdex.js';
 import { recordsApp, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
-import { openTrainerCard, trainerTile, badgeNews, deviceNews, newFinds, partner, cardTier, badgeArt, pinnable } from './trainercard.js';
+import { openTrainerCard, trainerTile, badgeNews, deviceNews, newFinds, partner, cardTier, badgeArt, coverBadge } from './trainercard.js';
 import { BADGES, BADGE_GROUPS } from './data/badges.js';
 import { trainerName } from './leaderboard.js';
 import { showName } from './settings.js';
@@ -109,7 +109,6 @@ export function coverArt() {
     (the one pinned for friends, if it's there; else the last earned in the group's order) and gold-rimmed once the group's full. */
 function badgeCase(save) {
   const have = new Set(save.badges || []);
-  const pin = pinnable(save.pinBadge, save) ? save.pinBadge : null;
   let got = 0, all = 0;
   const grid = el('span', 'cdev-cover-badges');
   grid.append(...BADGE_GROUPS.map(g => {
@@ -117,7 +116,7 @@ function badgeCase(save) {
     const mine = group.filter(b => have.has(b.id));
     got += mine.length;
     all += group.length;
-    const best = mine.find(b => b.id === pin) ?? mine.at(-1);
+    const best = coverBadge(g.id, save);
     const slot = el('span', `cdev-cover-slot${!best ? ' empty' : mine.length === group.length ? ' full' : ''}`);
     slot.title = `${g.name}: ${mine.length}/${group.length}`;
     if (best) {

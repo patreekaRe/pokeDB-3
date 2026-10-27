@@ -49,7 +49,8 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['dex', 'The Pokédex\'s cover holds a Badge Case: a slot per badge group with your best one in it, gold-rimmed once the group is full, instead of every badge in a pile.'],
+  ['dex', 'The Pokédex\'s cover holds a Badge Case: a slot per badge group, gold-rimmed once full. Choose each slot\'s badge with the Trainer Card\'s new Cover key.'],
+  ['dex', 'Your pinned badge wears a gold plate on the Trainer Card and sits pinned on your partner\'s portrait, so it\'s easy to find.'],
   ['base', 'Secret Base stairs look like stairs now: a flight with banisters up to a doorway high in the wall, and a stairwell in the floor going down.'],
   ['fixes', 'Evolutions play in full again: the tap that closed "What? It\'s evolving!" was skipping the whole show, and the Depths camp plays its own song, not the Clearing\'s.'],
   ['base', 'Jukeboxes play records now: Smeargle brings you one (each turning in 3D as you pick) with your first record, the Clearing\'s song, and friends visiting hear it. Mended towns\' trading posts sell 55 more.'],

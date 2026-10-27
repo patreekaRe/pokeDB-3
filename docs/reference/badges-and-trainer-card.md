@@ -54,3 +54,12 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   that group's pinned badge (`save.pinBadge`) if it's there, else the last earned in the group's list order; a full group's
   slot is gold-rimmed, an empty one a dark socket, and a line under it counts every badge. A new group adds a slot (13 would
   wrap to a third row: change the grid's columns).
+- **Choosing the cover's badges, and the pin made easy to find** (2026-10-27, the user: the "Pinned" tab looked hidden, and
+  could the cover's 12 be set?): the Badge Case label is a flex row (`.tc-case-label`, keys in `.tc-case-keys`). A **Cover**
+  key opens `coverPicker()` in `js/trainercard.js`: a row per group with any earned, AUTO first, a tap saving
+  `save.coverBadges[group]` (AUTO deletes it); `coverBadge(groupId, save)` is the slot's badge (the set one, else the pin
+  if it's in the group, else the last earned) and `badgeCase()` in `js/collection.js` reads it. The pin key is a gold-ringed
+  plate in the card's dark ink with the badge in a cream disc (`.tc-pin-btn`, `.tc-pin-art`), a shine sweeping it while
+  nothing is pinned (not under `calmFx()` or reduced motion), and the same badge sits as a tilted pin on the partner's
+  portrait's corner (`.tc-tack`, "+" when empty), both opening `pinPicker()`. Both appear only when friends can see your
+  page (`myCode()` or `?mycard`); Cover always.
