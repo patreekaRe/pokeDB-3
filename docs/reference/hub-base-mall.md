@@ -1078,3 +1078,12 @@ selling its own song plus more, so mending every Waystone and going back pays. T
   the first load with records open: true if the base was already housewarmed) the first time home; a newer player the
   first time home with a Waystone mended (the Clearing's first). `?smeargle` (with `?records`) brings it again, even
   before the housewarming (`replaySmeargle()`); its gifts are kept.
+
+## Game Corner regulars keep clear of the games (2026-10-27, the user's ask)
+
+Kangaskhan stood on High-Low's step, hiding the table and catching the tap meant for it. Now, in `js/corner-crowd.js`:
+the four floor tables (Blackjack, High-Low, Voltorb Flip, Who's That Pokémon?) are played from a seat at either end
+(`stations[].at`, `face`), not the step in front; nobody stops in the two rows in front of a table or on any game's step
+(`lane`, `steps`, `inLane()`: `spotAround()`, the counter, the greeting), and one standing there or on the tile you're
+walking to steps aside. A tap on a regular passing in front of a table goes to the table (`inFront()`, `onTap()` in
+`js/mall-3d.js`).
