@@ -3679,3 +3679,11 @@ sprite at 3x, crisp. The Apricorn skin carried from Kurt's Workshop (`ws.skin`) 
 well as the Safari Ball (`sendSprite()`); the Workshop's words say so. Kurt slides in once a save on the next visit to
 the Clearing (`ballNews()`), naming the ball carried, or how to make one, then your partner walks to his door; a first
 meeting says it instead. Tests 390 pass; the clearing and gym within budget. Detail in `docs/reference/towns.md`.
+The user's yes the same day to both follow-ups, and a third ask: every ball the Center's 3D ball. `js/ball-looks.js` holds
+one skin painter a ball (27: the Poké and Safari Balls, the eight Outfitter balls moved in from js/mall-outfitter.js, and
+all 18 Apricorns), wrapped round the Center's machine ball (now your carried one) and the Outfitter's, and
+`tools/ball-sheets.mjs` renders each to a 16-frame spinning WebP sheet in `assets/balls/` (about 1 MB in all; a sheet,
+not a WebGL context, on the battle screen). The Trainer Card's Ball key (`ballPicker()`) carries any ball you own; the
+Outfitter's Apricorn stand sells one of Kurt's seven a UTC day for 350 (`apricornToday()`), kept in `workshop.bought`
+apart from `made` so a purchase doesn't open the Workshop early. Tests 428 pass; Clearing, Outfitter, Center and gym
+within budget.

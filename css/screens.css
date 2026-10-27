@@ -1033,20 +1033,24 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
   font-size: 80px;   /* the flash is sized in em */
   pointer-events: none;
 }
-/* the ball's item sprite (js/data/workshop.js's sendSprite(): a Poké Ball, or the Apricorn skin carried) at 3x its
-   own pixels, so a 30px and a 32px sprite both stay crisp */
-.intro-ball img { position: absolute; max-width: none; translate: -50% -50%; scale: 3; image-rendering: pixelated; }
+/* a 3D ball (js/ball-looks.js): its sheet's 16 frames of one clockwise turn in a row (tools/ball-sheets.mjs), --b its
+   size; `.spin` turns it, `.back` the other way */
+.ball3d { --b: 64px; display: block; width: var(--b); height: var(--b); background: var(--sheet) 0 0 / calc(var(--b) * 16) var(--b) no-repeat; }
+.ball3d.spin { animation: ballRoll 0.28s steps(16) infinite; }
+.ball3d.spin.back { animation-direction: reverse; }
+@keyframes ballRoll { to { background-position-x: calc(var(--b) * -16); } }
+/* the ball your partner comes out of (js/data/workshop.js's sendSprite(): a Poké Ball, or the Apricorn ball carried) */
+.intro-ball .ball3d { position: absolute; translate: -50% -50%; filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.35)); }
 /* thrown in an arc, spinning, from off the window's bottom-left corner (--from-x/y are set by playIntro()) */
 .intro-ball.thrown { animation: ballArcX 0.7s linear both; }
-.intro-ball.thrown img { animation: ballArcY 0.7s both, ballSpin 0.7s linear both; }
+.intro-ball.thrown .ball3d { animation: ballArcY 0.7s both, ballRoll 0.28s steps(16) infinite; }
 @keyframes ballArcX { from { transform: translateX(var(--from-x)); } }
 @keyframes ballArcY {
   from { top: var(--from-y); animation-timing-function: ease-out; }
   45%  { top: -16vh; animation-timing-function: ease-in; }
   to   { top: 0; }
 }
-@keyframes ballSpin { from { rotate: -900deg; } }
-.intro-ball.open img { animation: ballPop 0.3s ease-in both; }
+.intro-ball.open .ball3d { animation: ballPop 0.3s ease-in both; }
 @keyframes ballPop { to { transform: scale(1.5); opacity: 0; } }
 .intro-ball.open::after {
   content: "";
@@ -1167,9 +1171,9 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .ball-odds { min-width: 3ch; text-align: right; font-weight: 400; color: #2e7020; }
 /* the thrown ball (ballAnimation()): moved by the Web Animations API, from the arena's top-left corner */
 .thrown-ball { position: absolute; left: 0; top: 0; z-index: 4; width: 0; height: 0; pointer-events: none; }
-.thrown-ball .item-sprite { position: absolute; width: 40px; height: 40px; translate: -50% -50%; image-rendering: pixelated; }
-.thrown-ball.caught .item-sprite { filter: brightness(0.6); transition: filter 0.4s ease; }
-.thrown-ball.burst .item-sprite { animation: ballPop 0.3s ease-in both; }
+.thrown-ball .ball3d { --b: 46px; position: absolute; translate: -50% -50%; filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.35)); }
+.thrown-ball.caught .ball3d { filter: brightness(0.6); transition: filter 0.4s ease; }
+.thrown-ball.burst .ball3d { animation: ballPop 0.3s ease-in both; }
 /* pulled into the ball: a white flash and a shrink into it, like the games */
 .enemy-portrait.captured { transition: transform 0.4s ease-in, opacity 0.4s ease-in, filter 0.2s ease-out; transform: scale(0.05) translateY(40%); opacity: 0; filter: brightness(8); }
 .enemy-portrait.ran { transition: transform 1s ease-in, opacity 1s ease-in; transform: translateX(140px); opacity: 0; }
@@ -6387,8 +6391,7 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 /* their own ball, thrown from the right onto the boss's pad (leaderThrow() in js/battle.js), and the boss bursting out */
 .intro-ball.enemy-ball { position: fixed; z-index: 980; }
 .intro-ball.enemy-ball.thrown { animation: ballArcX 0.7s linear both; }
-.intro-ball.enemy-ball.thrown img { animation: ballArcY 0.7s both, ballSpinBack 0.7s linear both; }
-@keyframes ballSpinBack { from { rotate: 900deg; } }
+.intro-ball.enemy-ball.thrown .ball3d { animation: ballArcY 0.7s both, ballRoll 0.28s steps(16) infinite reverse; }
 .enemy-zone.ball-out .enemy-portrait { transform-origin: 50% 85%; animation: enemyBallOut 0.6s ease-out; }
 .enemy-zone.ball-out #enemy-img { animation: enemyBallGlow 0.6s ease-out; }
 .enemy-zone.ball-out .intent { visibility: hidden; }
@@ -7090,8 +7093,8 @@ button.craft-mat.on { box-shadow: inset 0 0 0 3px #f0a820; background: #fff8e0; 
 .shiny-banner-star { font-size: 1.1rem; }
 .shiny-banner.show { animation: shinyBannerIn 2.6s ease-out both; }
 @keyframes shinyBannerIn { 0% { transform: translateX(-110%); } 12%, 86% { transform: none; } 100% { transform: translateX(110%); } }
-.thrown-ball.gold .item-sprite { filter: drop-shadow(0 0 3px #ffd34a) drop-shadow(0 0 7px rgba(255, 211, 74, 0.75)); }
-.thrown-ball.gold.caught .item-sprite { filter: brightness(0.6) drop-shadow(0 0 3px #ffd34a); }
+.thrown-ball.gold .ball3d { filter: drop-shadow(0 0 3px #ffd34a) drop-shadow(0 0 7px rgba(255, 211, 74, 0.75)); }
+.thrown-ball.gold.caught .ball3d { filter: brightness(0.6) drop-shadow(0 0 3px #ffd34a); }
 .gold-spark { left: -5px; top: -5px; width: 10px; height: 10px; background: #ffe27a; opacity: 0; animation: goldSpark 0.8s ease-out var(--delay) forwards; }
 @keyframes goldSpark { 0% { opacity: 1; transform: translate(0, 0) scale(0.6); } 100% { opacity: 0; transform: translate(var(--dx), -48px) scale(1.2); } }
 #reward-screen .reward-log.shiny-catch {

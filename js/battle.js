@@ -43,6 +43,7 @@ import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSound
 import { setAura, stopAura } from './aura.js';
 import { randIndex, pickOne, random } from './rng.js';
 import { safariSprite, sendSprite, workshopOf } from './data/workshop.js';
+import { ball3d, setBall3d } from './ball-looks.js';
 import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows, safariBallsLeft } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 import { flyTrail, burnAway } from './cardfx.js';
@@ -499,7 +500,7 @@ async function playIntro() {
   }
 
   if (motion) {
-    ball.querySelector('img').src = `assets/items/${sendSprite(workshopOf(getSave()))}.png`;
+    setBall3d(ball.querySelector('.ball3d'), sendSprite(workshopOf(getSave())));
     ball.hidden = false;
     // start off the left edge near the bottom; starting below the window would make the page scrollable for a moment
     const at = ball.getBoundingClientRect();
@@ -567,10 +568,7 @@ async function leaderThrow(still) {
   const at = $('enemy-portrait-box').getBoundingClientRect();
   const ball = el('div', 'intro-ball enemy-ball');
   ball.setAttribute('aria-hidden', 'true');
-  const img = el('img');
-  img.src = 'assets/items/poke-ball.png';
-  img.alt = '';
-  ball.append(img);
+  ball.append(ball3d('poke-ball'));
   const x = at.left + at.width / 2, y = at.top + at.height * 0.62;
   ball.style.left = `${x}px`;
   ball.style.top = `${y}px`;
@@ -2172,7 +2170,8 @@ async function ballAnimation(ball, shakes, caught) {
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const box = $('enemy-portrait-box'), arena = $('arena');
   const thrown = el('span', `thrown-ball${b.shiny ? ' gold' : ''}`);   // a shiny's ball shakes in gold
-  thrown.append(itemSprite(looks(ball)));
+  const look = ball3d(looks(ball).sprite);
+  thrown.append(look);
   arena.append(thrown);
   const a = arena.getBoundingClientRect(), target = box.getBoundingClientRect(), from = $('player-zone').getBoundingClientRect();
   const x = target.left + target.width / 2 - a.left, y = target.top + target.height * 0.45 - a.top;
@@ -2181,11 +2180,13 @@ async function ballAnimation(ball, shakes, caught) {
   const at = (px, py) => `translate(${Math.round(px)}px, ${Math.round(py)}px)`;
   playSound('ball-throw');
   if (motion) {
+    look.classList.add('spin', 'back');
     await thrown.animate([
-      { transform: `${at(sx, sy)} rotate(0deg)` },
-      { transform: `${at((sx + x) / 2, Math.min(sy, y) - 90)} rotate(-540deg)`, offset: 0.5 },
-      { transform: `${at(x, y)} rotate(-1080deg)` },
+      { transform: at(sx, sy) },
+      { transform: at((sx + x) / 2, Math.min(sy, y) - 90), offset: 0.5 },
+      { transform: at(x, y) },
     ], { duration: 650, easing: 'linear', fill: 'forwards' }).finished;
+    look.classList.remove('spin', 'back');
   }
   thrown.style.transform = at(x, y);
   if (battle !== b) { thrown.remove(); return false; }

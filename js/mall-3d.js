@@ -30,9 +30,10 @@ import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { turner } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { buildArcade } from './mall-arcade.js';
-import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow } from './mall-outfitter.js';
+import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow, apricornWindow } from './mall-outfitter.js';
+import { APRICORN_PRICE, apricornToday, workshopOf, ownsSkin, withBought } from './data/workshop.js';
 import { safariOpen } from './data/pokedex.js';
-import { safariDaily } from './data/safari.js';
+import { safariDaily, safariDay } from './data/safari.js';
 import { DAY_PASS } from './data/balls.js';
 import { cabinetUp } from './home-arcade.js';
 import { dressHall, dressFronts, FOUNTAINS, FOUNTAIN_SCALE } from './mall-hall.js';
@@ -1024,6 +1025,18 @@ async function passTap(spot) {
   thanks('Here\'s your Day Pass! Replay the Safari as much as you like today.');
 }
 
+/** Today's Apricorn ball (2026-10-27, the user's yes): its window, and Buy makes it yours and carries it at once; swap
+    it on the Trainer Card or at Kurt's bench. */
+async function apricornTap(spot) {
+  const r = apricornToday(safariDay());
+  pick(spot);
+  if (!await merchant(apricornWindow())) return pick(null);
+  const coins = getSave().coins ?? 0;
+  if (coins < APRICORN_PRICE) { playSound('cancel'); pick(null); return talk(`The ${r.name} is ${APRICORN_PRICE} PokéCoins, and you have ${coins.toLocaleString()}.`, 3600); }
+  updateSave(d => { d.coins -= APRICORN_PRICE; d.workshop = withBought(workshopOf(d), r); });
+  thanks(`A ${r.name}! Your partner comes out of it in every battle now. Swap balls any time on your Trainer Card.`);
+}
+
 /** After a buy: the till, two happy hops, the tags repainted and the keeper's thanks. */
 function thanks(line) {
   playSound('buy');
@@ -1287,6 +1300,7 @@ function say(fr, ms = 2600) {
   lineEl.lastChild.textContent = fr.kind === 'bay' ? `The ${fr.name.toLowerCase()}: ${PIECES[fr.piece].price.toLocaleString()} PokéCoins.`
     : fr.kind === 'prize' ? prizeLine(cornerEntries(fr.row)[fr.i])
     : fr.kind === 'ware' ? prizeLine(wareOf(fr))
+    : fr.kind === 'apricorn' ? `Today's Apricorn ball, the ${fr.name}: ${ownsSkin(workshopOf(getSave()), apricornToday(safariDay())) ? 'yours already.' : `${APRICORN_PRICE} PokéCoins.`}`
     : fr.kind === 'pass' ? `The Day Pass machine: ${passState() === 'pass' ? 'yours for today.' : `${DAY_PASS} PokéCoins.`}`
     : fr.kind === 'lift' ? (floorOf() > 1 || loadBase().upstairs ? 'The lift. Tap it to pick a floor.' : 'The lift upstairs is roped off.')
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
@@ -1314,6 +1328,7 @@ function enterFront(fr) {
   if (fr.kind === 'game') return gameTap(fr);
   if (fr.kind === 'ware') return wareTap(fr);
   if (fr.kind === 'pass') return passTap(fr);
+  if (fr.kind === 'apricorn') return apricornTap(fr);
   if (fr.kind === 'door') return throughDoor(fr);
   if (!fr.open) { playSound('cancel'); return say(fr); }
   const r = ribbons.find(r => r.shop === fr && r.group.visible);

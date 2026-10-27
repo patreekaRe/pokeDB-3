@@ -32,7 +32,8 @@ import { $, el, openDialog, crownArt, auraArt } from './ui.js';
 import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
-import { FRIENDS } from './data/workshop.js';
+import { FRIENDS, SKINS, SKIN_BY_ID, workshopOf, ownsSkin } from './data/workshop.js';
+import { ball3d } from './ball-looks.js';
 import { myCode, publishTrainer } from './trainers.js';
 import { formatCode } from './data/trainers.js';
 
@@ -583,6 +584,45 @@ function coverPicker(body, done) {
   body.scrollTop = 0;
 }
 
+/** The ball picker over the card's body (2026-10-27, the user's yes: a quicker place than Kurt's bench): the Poké Ball,
+    every Apricorn ball you own, then Kurt's seven still to get, greyed; a tap carries it and the picker stays open. */
+function ballPicker(body, done) {
+  const ws = workshopOf(getSave());
+  const head = el('div', 'tc-head');
+  head.append(el('h2', 'tc-title', 'YOUR BALL'));
+  const back = el('button', 'tc-pick-back', 'Back');
+  back.type = 'button';
+  back.addEventListener('click', done);
+  head.append(back);
+  const now = el('p', 'tc-pick-note tc-ball-now');
+  const say = (skin) => { now.textContent = `Carrying: ${SKIN_BY_ID[skin]?.name ?? 'Poké Ball'}.`; };
+  say(ws.skin);
+  const grid = el('div', 'tc-pick-grid');
+  const tile = (skin, sprite, name, owned, hint) => {
+    const btn = el('button', `tc-pick tc-ball${(ws.skin ?? null) === skin ? ' on' : ''}${owned ? '' : ' locked'}`);
+    btn.type = 'button';
+    btn.title = owned ? name : `${name}: ${hint}`;
+    btn.setAttribute('aria-label', owned ? `Carry the ${name}` : `${name}, not yours yet`);
+    btn.append(ball3d(sprite));
+    btn.addEventListener('click', () => {
+      if (!owned) { playSound('no-pp'); now.textContent = `${name}: ${hint}`; return; }
+      updateSave(d => { d.workshop = { ...workshopOf(d), skin }; });
+      playSound('confirm');
+      grid.querySelectorAll('.tc-pick.on').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      say(skin);
+    });
+    return btn;
+  };
+  grid.append(tile(null, 'poke-ball', 'Poké Ball', true),
+    ...SKINS.filter(r => ownsSkin(ws, r)).map(r => tile(r.makes, r.sprite, r.name, true)),
+    ...SKINS.filter(r => !r.secret && !ownsSkin(ws, r)).map(r => tile(r.makes, r.sprite, r.name, false, 'Kurt\'s Workshop makes it, and the Safari Outfitter sells one Apricorn ball a day.')));
+  const note = el('p', 'tc-pick-note', 'Your partner comes out of this ball at the start of every battle, and your Safari Balls wear it. Looks only: every ball throws the same.');
+  body.replaceChildren(head, note, now, grid);
+  head.querySelector('h2').tabIndex = -1;
+  body.scrollTop = 0;
+}
+
 const hintFor = (b, save) => {
   if (b.secret && !(save.unlocked || []).includes('mewtwo')) return 'A secret badge. Something sleeps behind the Sealed Gate...';
   return b.locked ? b.text : `Not earned yet. ${b.text}.`;
@@ -720,6 +760,14 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   });
   const frame = el('div', 'tc-partner-frame');
   frame.append(pic);
+  const carried = SKIN_BY_ID[workshopOf(save).skin];
+  const ballKey = el('button', 'tc-shiny tc-ball-key');
+  ballKey.type = 'button';
+  ballKey.title = 'The ball your partner comes out of in battle: tap to choose';
+  ballKey.setAttribute('aria-label', `Ball: ${carried?.name ?? 'Poké Ball'}. Choose another`);
+  ballKey.append(ball3d(carried?.sprite ?? 'poke-ball'), carried?.name.replace(/ Ball$/, '') ?? 'Poké');
+  ballKey.addEventListener('click', () => { playSound('confirm'); ballPicker(body, redraw); });
+  frame.append(ballKey);
   if (mate.twin) {
     const flip = el('button', `tc-shiny${mate.shiny ? ' on' : ''}`, mate.shiny ? '✨ Shiny' : 'Shiny');
     flip.type = 'button';

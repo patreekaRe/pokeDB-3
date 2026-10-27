@@ -139,7 +139,7 @@ export function shortOf(recipe, sat) {
 export function isMade(recipe, ws, sat) {
   if (recipe.kind === 'key') return sat.keys.includes(recipe.makes);
   if (recipe.kind === 'gift' || repeats(recipe)) return false;
-  return ws.made.includes(recipe.id);
+  return recipe.kind === 'skin' ? ownsSkin(ws, recipe) : ws.made.includes(recipe.id);
 }
 
 /** Whether the Workshop shows a recipe (see the top of this file). `towns` is the save's per-town states
@@ -289,6 +289,22 @@ export const needsLine = (recipe, sat) => Object.entries(recipe.needs)
 export const safariSprite = (ws) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : 'safari-ball');
 /** The ball your partner comes out of at a battle's start: a Poké Ball, or the Apricorn skin carried. */
 export const sendSprite = (ws) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : 'poke-ball');
+
+/** Whether an Apricorn ball is yours: made at Kurt's, or bought at the Safari Outfitter (`bought`, kept apart from `made`:
+    anything made opens Kurt's Workshop, js/data/towns.js's workshopOpen()). */
+export const ownsSkin = (ws, r) => ws.made.includes(r.id) || !!ws.bought?.includes(r.id);
+/** The Apricorn balls you own, in the Workshop's order. */
+export const ownedSkins = (ws) => SKINS.filter(r => ownsSkin(ws, r));
+
+/** The Safari Outfitter's Apricorn ball (2026-10-27, the user's yes: for players who haven't reached the towns): one of
+    Kurt's seven a UTC day (`day` as 'YYYY-MM-DD'), never a friend's secret one, at APRICORN_PRICE PokéCoins. */
+export const APRICORN_PRICE = 350;
+export function apricornToday(day) {
+  const plain = SKINS.filter(s => !s.secret);
+  return plain[Math.floor(Date.parse(day) / 864e5) % plain.length];
+}
+/** The Workshop's save with an Apricorn ball bought and carried at once. */
+export const withBought = (ws, r) => ({ ...ws, bought: [...new Set([...(ws.bought || []), r.id])], skin: r.makes });
 
 /** Each friend teaches Kurt their secret recipe (SECRETS, their own Safari Ball look) at SECRET_AT hearts, between their
     second and third signature pieces; nothing saved, so an old save that far along knows them on load. */

@@ -1647,12 +1647,13 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
-- **Ball skins in every battle** (2026-10-27, branch `claude/pokeball-appearance-customization-4ww68i`, on `main` too;
-  archive): the send-out Poké Ball is now the clean item sprite (no blue rim), and the Apricorn ball carried from Kurt's
-  Workshop (Apricorns shelf, Carry it) is the one your partner comes out of in every battle. Kurt slides in once in the
-  Clearing to say so. Check a battle's intro ball, and Kurt on the next visit home. ▶ Run in: PLAYTEST ON THE LIVE SITE.
-  Ideas from it, not agreed: a quicker place to swap the ball too (the Bag or the Trainer Card), and Apricorn balls you
-  could buy at the Outfitter for players far from the towns.
+- **3D balls, the Trainer Card's Ball key, the Outfitter's Apricorn** (2026-10-27, branch
+  `claude/pokeball-appearance-customization-4ww68i`, on `main` too; archive): every ball thrown in battle (the send-out,
+  a Gym Leader's, a Safari catch) is the Center's 3D ball as a pre-rendered spinning sheet, your partner comes out of the
+  Apricorn ball you carry, chosen on the Trainer Card (Ball key under the partner) or at Kurt's bench, and the Safari
+  Outfitter sells one of Kurt's seven a day. Look at a battle's throw, the Trainer Card's picker, and
+  `?mall=outfitter&safari&coins=1000`. ▶ Run in: PLAYTEST ON THE LIVE SITE. Not done, to ask: three Apricorns a day at the
+  Outfitter instead of one; the Bag's ball picker icons are still the item sprites.
 - **The Safari's song** (2026-10-24, the user's MP3, on `main`; `docs/reference/music.md`): plays in the Safari lobby and on
   every area's map, Daily and Duo Runs, looped over 17.25-48.34 s. Listen for the loop's join (~48 s in) and the level
   against the Clearing's song. ▶ Run in: PLAYTEST ON THE LIVE SITE.

@@ -2260,8 +2260,8 @@ export const CLEARING = {
         every: 'Carry one from my bench and your partner comes out of it at the start of every battle. Every run, every Gym, not just your Safari Balls.',
         carried: 'Your {ball}\'s on your belt already. You\'ll see it fly next battle.',
         made: 'You\'ve one made already. Tap it on my bench\'s Apricorns shelf, then Carry it.',
-        none: 'Bring me three of one town\'s materials and I\'ll carve you one. They\'re all on my bench\'s Apricorns shelf.',
-        close: 'Looks only, mind. A ball\'s a ball.',
+        none: 'Bring me three of one town\'s materials and I\'ll carve you one, or buy the one I send the Safari Outfitter each day.',
+        close: 'Swap balls any time on your Trainer Card. Looks only, mind. A ball\'s a ball.',
       },
       // the first held berry he makes you (js/workshop.js, 2026-10-16, the user's ask): how they work, once a save
       heldTalk: [

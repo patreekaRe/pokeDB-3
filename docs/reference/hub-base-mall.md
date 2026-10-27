@@ -341,6 +341,10 @@ The mall's east front (`FRONTS` id `outfitter`, place `so`), so each shop is one
 `js/mall-outfitter.js` paints its hall front (`outfitterFront()`, `outfitterSign()`, `outfitterAwning()`; the 3D awning and
 ball crates are `dressFronts()`'s last branch in `js/mall-hall.js`) and builds its lodge (`buildOutfitter()`); `js/mall-3d.js`
 walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
+- **Today's Apricorn ball** (2026-10-27, the user's yes): a basket on a stump left of the Day Pass dais (`APRICORN`,
+  mirroring the Shiny Exchange's kiosk), one of Kurt's seven a UTC day (`apricornToday()` in `js/data/workshop.js`, never a
+  friend's secret one) for `APRICORN_PRICE` (350); `apricornWindow()`, `apricornTap()` buys and carries it
+  (`withBought()`, `workshop.bought`). The balls' skins are `js/ball-looks.js`'s, shared with the battle and the Center.
 - **Open** once the Safari Zone is (`safariOpen()`; `?ribbon` opens it for a page load), taped shut before that with
   Kangaskhan's note; its first opening has a ribbon to cut (`RIBBONS.outfitter`, saved as `outfitterRibbon`).
 - **The lodge** (made grand the same day, the user's ask: "way bigger", price cards they couldn't read, "more of a safari

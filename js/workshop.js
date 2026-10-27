@@ -8,7 +8,7 @@ import { playSound } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID, matHints } from './data/satchel.js';
-import { RECIPES, TABS, FRIENDS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT, GIFT_TOLD } from './data/workshop.js';
+import { RECIPES, TABS, FRIENDS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT, GIFT_TOLD, ownsSkin } from './data/workshop.js';
 import { RING, townState, CLEARING } from './data/towns.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { GYM_BY_ID, friendWins } from './data/gym.js';
@@ -194,7 +194,7 @@ export function openWorkshop() {
       box.append(el('p', 'craft-where-head', `${tip.icon} Where to find ${tip.name}`), ...whereOf(tip).map(t => el('p', 'craft-where-line', t)));
       mats.append(box);
     }
-    const madeSkin = r.kind === 'skin' && ws.made.includes(r.id);
+    const madeSkin = r.kind === 'skin' && ownsSkin(ws, r);
     const go = el('button', `craft-make ${st}`, madeSkin ? (ws.skin === r.makes ? 'Put away' : 'Carry it') : st === 'made' ? 'Made ✓' : st === 'ready' ? (keptOf(r, ws) ? 'Make another' : 'Make it!') : `Need ${missing(r, sat)} more`);
     go.type = 'button';
     go.disabled = !madeSkin && st !== 'ready';
@@ -216,7 +216,7 @@ export function openWorkshop() {
   const make = async (r) => {
     if (busy) return;
     const ws = workshopOf(getSave());
-    if (r.kind === 'skin' && ws.made.includes(r.id)) {
+    if (r.kind === 'skin' && ownsSkin(ws, r)) {
       const on = ws.skin !== r.makes;
       carrySkin(on ? r.makes : null);
       playSound(on ? 'confirm' : 'cancel');

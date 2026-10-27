@@ -51,7 +51,7 @@ import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, friendWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { asking, favourOf } from './data/favours.js';
-import { workshopOf, heartsOf, boothBeckons, SKINS, SKIN_BY_ID } from './data/workshop.js';
+import { workshopOf, heartsOf, boothBeckons, ownedSkins, SKIN_BY_ID } from './data/workshop.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { unclaimed, friendMail, houseMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
@@ -2277,7 +2277,7 @@ async function homeNews() {
 async function ballNews() {
   const ws = workshopOf(getSave()), on = SKIN_BY_ID[ws.skin], t = CLEARING.homes.workshop.ballTalk;
   tellHeld('ball-look');
-  const lines = [t.open, t.every, on ? t.carried.replace('{ball}', on.name) : SKINS.some(s => ws.made.includes(s.id)) ? t.made : t.none, t.close];
+  const lines = [t.open, t.every, on ? t.carried.replace('{ball}', on.name) : ownedSkins(ws).length ? t.made : t.none, t.close];
   const { gymTalk } = await import('./gym.js');
   await gymTalk({ id: 'kurt', name: 'KURT', talk: 'assets/trainers/kurt.png' }, lines, { lit: true, title: 'APRICORN SMITH ' });
   const p = running && !held && !entering && places.find(q => q.id === 'workshop');

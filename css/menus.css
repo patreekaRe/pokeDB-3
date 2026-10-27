@@ -1420,6 +1420,11 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tc-pick:hover, .tc-pick:focus-visible { background: rgba(48, 48, 56, 0.18); outline: none; }
 .tc-pick.on, .tc-pick-auto.on { box-shadow: 0 0 0 3px var(--tc2), 0 0 0 5px #303038; }
 .tc-partner img { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; }
+/* the ball your partner comes out of (ballPicker() in js/trainercard.js): a 3D ball (js/ball-looks.js) by its name */
+.tc-ball-key { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+.tc-ball-key .ball3d { --b: 18px; flex: none; }
+.tc-ball .ball3d { --b: 44px; position: absolute; inset: 0; margin: auto; }
+.tc-ball.locked .ball3d { filter: grayscale(1) brightness(0.55); opacity: 0.45; }
 /* The Champion's Crown (js/data/difficulty.js's wearsCrown(), a Level 10 win) floating over the partner, bobbing like the
    walking buddy's. */
 .tc-crown { position: absolute; z-index: 2; left: 50%; top: -6px; width: 36px; translate: -50% 0; pointer-events: none;

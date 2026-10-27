@@ -17,6 +17,9 @@ import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { PIECES } from './secret-base.js';
+import { getSave } from './storage.js';
+import { sendSprite, workshopOf } from './data/workshop.js';
+import { ballSkinCanvas } from './ball-looks.js';
 
 const COLS = 11, ROWS = 8;
 const U = 20;                 // the paintings' units a tile
@@ -418,16 +421,10 @@ function rbox(w, h, d, r) {
   return g;
 }
 
-/** The Poké Ball's skin on a sphere: red over a black band over white (its button is a part of its own). */
-function ballSkin() {
-  const c = document.createElement('canvas');
-  c.width = 256; c.height = 128;
-  const g = c.getContext('2d'), red = g.createLinearGradient(0, 0, 0, 60);
-  red.addColorStop(0, '#ff6a5a'); red.addColorStop(1, '#e02a20');
-  g.fillStyle = red; g.fillRect(0, 0, 256, 60);
-  g.fillStyle = '#f8f8fa'; g.fillRect(0, 68, 256, 60);
-  g.fillStyle = '#22222a'; g.fillRect(0, 59, 256, 10);
-  const t = new THREE.CanvasTexture(c);
+/** Your ball's skin on a sphere (its button is a part of its own): the Poké Ball, or the Apricorn ball carried, as the
+    battle throws it (js/ball-looks.js; the user's ask, 2026-10-27). */
+function ballSkin(sprite) {
+  const t = new THREE.CanvasTexture(ballSkinCanvas(sprite, 4));
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 4;
   return t;
@@ -455,7 +452,7 @@ function buildMachine() {
   for (const x of [-0.5, 0.5]) add(rbox(0.12, 0.08, 0.14, 0.03), white, x, 1.0, -0.2);
   // the ball, hidden till it's needed: a true sphere with its button facing out
   const ball = new THREE.Group(), R = 0.16;
-  const skin = std({ map: ballSkin(), roughness: 0.22, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0 });
+  const sprite = sendSprite(workshopOf(getSave())), skin = std({ map: ballSkin(sprite), roughness: 0.22, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0 });
   const sphere = new THREE.Mesh(new THREE.SphereGeometry(R, 48, 32), skin);
   sphere.castShadow = true;
   const ink = std({ color: '#22222a', roughness: 0.3 }), knob = std({ color: '#f8f8fa', roughness: 0.2, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0 });
@@ -470,7 +467,7 @@ function buildMachine() {
   g.traverse(o => { o.userData.spot = 'machine'; });
   room.add(g);
   scene.add(ball);   // in world space, so it can fly from your Pokémon to the dish
-  machine = { group: g, ball, R, skin, knob, glow, dish: new THREE.Vector3(x, 1.06 + R, z + 0.04) };
+  machine = { group: g, ball, R, skin, sprite, knob, glow, dish: new THREE.Vector3(x, 1.06 + R, z + 0.04) };
   blocked.add(key(3, 0)); blocked.add(key(4, 0));
   anchors.machine = new THREE.Vector3(x - 0.2, 0.32, tileZ(COUNTER.y) + COUNTER.d / 2 + 0.1);   // on the counter's front, under the machine
 }
@@ -941,6 +938,8 @@ async function enterCenter(o) {
     /** Your Pokémon's ball thrown into the machine's dish; resolves once it's in. */
     heal() {
       busy = true;
+      const sprite = sendSprite(workshopOf(getSave()));   // a ball swapped on the Trainer Card since the room was built
+      if (sprite !== machine.sprite) { machine.skin.map.dispose(); machine.skin.map = ballSkin(sprite); machine.skin.needsUpdate = true; machine.sprite = sprite; }
       walker.path = []; aim = null;
       walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
       return new Promise(done => { healing = { from: performance.now(), ms: calm ? 150 : 1800, done }; });

@@ -63,3 +63,8 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   nothing is pinned (not under `calmFx()` or reduced motion), and the same badge sits as a tilted pin on the partner's
   portrait's corner (`.tc-tack`, "+" when empty), both opening `pinPicker()`. Both appear only when friends can see your
   page (`myCode()` or `?mycard`); Cover always.
+
+**The Ball key** (2026-10-27, the user's yes): a chip under the partner with the carried ball (a 3D ball, js/ball-looks.js)
+and its name opens `ballPicker()`: the Poké Ball, every Apricorn ball owned (made at Kurt's or bought at the Safari
+Outfitter), then Kurt's seven not yet owned, greyed, saying where they come from. A tap carries it (`workshop.skin`):
+the ball your partner comes out of in every battle, and the Safari Balls' look.
