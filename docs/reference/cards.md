@@ -353,5 +353,14 @@ and what it does now.
   within noise. The first cut had Fighting 5-10 lower (it had swapped block for other lines on Seismic Toss, Iron Will,
   Circle Throw, Scrappy and Brace); with the block back, at 300: solo 89.3 -> 82.0, fighting+ice 71.3 -> 74.3,
   ground+fighting 73.3 -> 68.3, fighting+fire 72.7 -> 78.0. ~8,000 runs, ~2 h on 4 cores.
+- **Look-alikes taken out** (2026-10-27, the user: "why not just get rid of cards that are the same"): the rule reads
+  how many hits as a number (`lines(card, sameHits)`; 5 damage twice is Deal 10), and the 28 cards that made twins left
+  the pools with `noOffer` (`docs/card-twins.md`'s "Taken out of the pools"); `evolutionCardsFor()`, `typePool()` and the
+  Card index skip `noOffer`. `sigReport()` stays on the old reading until the signature cards get their pass (roadmap).
+  Bot check (human bot, the same sim both sides, 150 a cell, L0 win %): fire / grass / water / psychic / electric / ice /
+  fighting / ground / flying / dark 76.7 / 76.7 / 60.7 / 46.0 / 84.0 / 79.3 / 89.3 / 93.3 / 66.7 / 75.3 -> 78.0 / 64.0 /
+  63.3 / 47.3 / 78.7 / 77.3 / 85.3 / 89.3 / 68.0 / 83.3; Duo Runs (Safari days) grass+fire / electric+water /
+  ground+fighting / dark+flying 48.0 / 69.3 / 76.0 / 54.0 -> 52.7 / 63.3 / 77.3 / 52.0. Grass at 300: 67.0 -> 68.3, so
+  its 150-run gap was noise; every cell within noise.
 - **Kenmatta's dojo** was rebuilt on the new cards (the user's pick, 2026-10-26; `docs/reference/events.md`'s dojo
   notes): each trial keeps its idea, its decks and HP retuned and solved again.
