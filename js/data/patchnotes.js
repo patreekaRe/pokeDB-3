@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['battle', 'Your partner comes out of a cleaner Poké Ball, or the Apricorn ball you carry from Kurt\'s Workshop, in every battle, not just the Safari.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

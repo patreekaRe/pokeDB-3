@@ -3372,3 +3372,10 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Ball skins in every battle (2026-10-27, cloud, the user's ask: "clean up the default pokeball... customize the skin, not just for safari")
+The battle intro's Poké Ball was a CSS circle with a blue rim and stacked blue shadows; it's now the Poké Ball item
+sprite at 3x, crisp. The Apricorn skin carried from Kurt's Workshop (`ws.skin`) now dresses that ball in every battle as
+well as the Safari Ball (`sendSprite()`); the Workshop's words say so. Kurt slides in once a save on the next visit to
+the Clearing (`ballNews()`), naming the ball carried, or how to make one, then your partner walks to his door; a first
+meeting says it instead. Tests 390 pass; the clearing and gym within budget. Detail in `docs/reference/towns.md`.

@@ -965,13 +965,15 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
   z-index: 3;
   width: 0;
   height: 0;
-  font-size: 80px;   /* .pokeball is sized in em */
+  font-size: 80px;   /* the flash is sized in em */
   pointer-events: none;
 }
-.intro-ball .pokeball { position: absolute; translate: -50% -50%; animation: none; }
+/* the ball's item sprite (js/data/workshop.js's sendSprite(): a Poké Ball, or the Apricorn skin carried) at 3x its
+   own pixels, so a 30px and a 32px sprite both stay crisp */
+.intro-ball img { position: absolute; max-width: none; translate: -50% -50%; scale: 3; image-rendering: pixelated; }
 /* thrown in an arc, spinning, from off the window's bottom-left corner (--from-x/y are set by playIntro()) */
 .intro-ball.thrown { animation: ballArcX 0.7s linear both; }
-.intro-ball.thrown .pokeball { animation: ballArcY 0.7s both, ballSpin 0.7s linear both; }
+.intro-ball.thrown img { animation: ballArcY 0.7s both, ballSpin 0.7s linear both; }
 @keyframes ballArcX { from { transform: translateX(var(--from-x)); } }
 @keyframes ballArcY {
   from { top: var(--from-y); animation-timing-function: ease-out; }
@@ -979,7 +981,7 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
   to   { top: 0; }
 }
 @keyframes ballSpin { from { rotate: -900deg; } }
-.intro-ball.open .pokeball { animation: ballPop 0.3s ease-in both; }
+.intro-ball.open img { animation: ballPop 0.3s ease-in both; }
 @keyframes ballPop { to { transform: scale(1.5); opacity: 0; } }
 .intro-ball.open::after {
   content: "";
@@ -6179,7 +6181,7 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 /* their own ball, thrown from the right onto the boss's pad (leaderThrow() in js/battle.js), and the boss bursting out */
 .intro-ball.enemy-ball { position: fixed; z-index: 980; }
 .intro-ball.enemy-ball.thrown { animation: ballArcX 0.7s linear both; }
-.intro-ball.enemy-ball.thrown .pokeball { animation: ballArcY 0.7s both, ballSpinBack 0.7s linear both; }
+.intro-ball.enemy-ball.thrown img { animation: ballArcY 0.7s both, ballSpinBack 0.7s linear both; }
 @keyframes ballSpinBack { from { rotate: 900deg; } }
 .enemy-zone.ball-out .enemy-portrait { transform-origin: 50% 85%; animation: enemyBallOut 0.6s ease-out; }
 .enemy-zone.ball-out #enemy-img { animation: enemyBallGlow 0.6s ease-out; }

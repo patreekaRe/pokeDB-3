@@ -19,7 +19,7 @@ import { finishedBy } from './data/ranger.js';
 import { timeOfDay } from './daytime.js';
 import { leaderFor, gymWins, friendWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch, giftMeetDue, meetKey } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch, giftMeetDue, meetKey, withTold } from './data/workshop.js';
 import { HELD_BY_ID, setOut, canHold, holdFromPouch, nextBerryReady } from './data/held.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
@@ -2423,7 +2423,7 @@ function homeRoom(b, onward = null) {
         const chime = questStep(town, townState(getSave(), 'clearing'))?.id === 'cl-chime';
         const lines = chime ? [...home.meet.slice(0, 2), home.meetChime, ...home.meet.slice(2)] : home.meet;
         await gymTalk({ id: 'kurt', name: 'KURT', talk: 'assets/trainers/kurt.png' }, lines, { lit: true, title: 'APRICORN SMITH ' });
-        updateSave(d => { d.workshop = { ...workshopOf(d), met: true }; });
+        updateSave(d => { d.workshop = withTold({ ...workshopOf(d), met: true }, 'ball-look'); });   // his hello says what ballNews() would
       } finally { kurtMeeting = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
     }, 900);
   }

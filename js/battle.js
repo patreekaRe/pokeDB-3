@@ -41,7 +41,7 @@ import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
 import { randIndex, pickOne, random } from './rng.js';
-import { safariSprite, workshopOf } from './data/workshop.js';
+import { safariSprite, sendSprite, workshopOf } from './data/workshop.js';
 import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows, safariBallsLeft } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 import { flyTrail, burnAway } from './cardfx.js';
@@ -474,6 +474,7 @@ async function playIntro() {
   }
 
   if (motion) {
+    ball.querySelector('img').src = `assets/items/${sendSprite(workshopOf(getSave()))}.png`;
     ball.hidden = false;
     // start off the left edge near the bottom; starting below the window would make the page scrollable for a moment
     const at = ball.getBoundingClientRect();
@@ -541,7 +542,10 @@ async function leaderThrow(still) {
   const at = $('enemy-portrait-box').getBoundingClientRect();
   const ball = el('div', 'intro-ball enemy-ball');
   ball.setAttribute('aria-hidden', 'true');
-  ball.append(el('span', 'pokeball'));
+  const img = el('img');
+  img.src = 'assets/items/poke-ball.png';
+  img.alt = '';
+  ball.append(img);
   const x = at.left + at.width / 2, y = at.top + at.height * 0.62;
   ball.style.left = `${x}px`;
   ball.style.top = `${y}px`;

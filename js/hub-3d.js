@@ -48,7 +48,8 @@ import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, friendWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { asking, favourOf } from './data/favours.js';
-import { workshopOf, heartsOf } from './data/workshop.js';
+import { workshopOf, heartsOf, SKINS, SKIN_BY_ID } from './data/workshop.js';
+import { toldHeld, tellHeld } from './held-tips.js';
 import { unclaimed, friendMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -2216,11 +2217,13 @@ async function homeNews() {
   const save = getSave(), st = townState(save, 'clearing');
   const greet = !st.quest && !st.called && nietosHome(friendWins(save, 'nietos')) && !clearingLit(save);
   const mend = !!st.quest?.lit && !st.quest.welcomed;
-  if (!greet && !mend) return;
+  const balls = !greet && !mend && workshopOpen(save) && (workshopOf(save).met || satchelFlag()) && !toldHeld('ball-look');
+  if (!greet && !mend && !balls) return;
   homeNewsBusy = true;
   try {
     await new Promise(r => setTimeout(r, calm ? 200 : 900));
     if (!running || held) return;
+    if (balls) return await ballNews();
     playSound('gate-hum');
     if (greet) {   // only a pointer to their notice (the user's ask, 2026-10-14): the board starts the questline
       const { gymTalk } = await import('./gym.js');
@@ -2257,6 +2260,18 @@ async function homeNews() {
     await awakenTalk([[GYM_BY_ID.nietos, QUESTS.clearing.awaken.nietos]], glow);
     playSound('stat-up');
   } finally { homeNewsBusy = false; cutscene = false; questMarks(); }
+}
+
+/** Kurt slides in, once a save (2026-10-27, the user's ask): an Apricorn ball carried is now the one your partner comes
+    out of in every battle, not just the Safari Ball's look. Then your partner walks you to his door. */
+async function ballNews() {
+  const ws = workshopOf(getSave()), on = SKIN_BY_ID[ws.skin], t = CLEARING.homes.workshop.ballTalk;
+  tellHeld('ball-look');
+  const lines = [t.open, t.every, on ? t.carried.replace('{ball}', on.name) : SKINS.some(s => ws.made.includes(s.id)) ? t.made : t.none, t.close];
+  const { gymTalk } = await import('./gym.js');
+  await gymTalk({ id: 'kurt', name: 'KURT', talk: 'assets/trainers/kurt.png' }, lines, { lit: true, title: 'APRICORN SMITH ' });
+  const p = running && !held && !entering && places.find(q => q.id === 'workshop');
+  if (p) { arriving = false; goTo(p); }
 }
 
 /** Where the quest board stands: `locked` till Law, Britt or the Nietos are beaten, `new` with their notice to read, `on` (`ready` to

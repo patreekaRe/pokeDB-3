@@ -5,7 +5,8 @@
    - key    the questlines' Make steps (js/data/towns.js's QUESTS `craft`), into the Satchel's Key Items
    - piece  craft-only furniture from each town's shelf, into the Secret Base (js/data/furniture.js's 'craft' source)
    - gift   a present for a Gym Leader, handed over in their home; their favourite earns their signature piece
-   - skin   an Apricorn ball's look for the Safari Ball (looks only: the odds stay the Safari Ball's)
+   - skin   an Apricorn ball's look for your ball: the one your partner comes out of in every battle, and the Safari
+            Ball (since 2026-10-27, the user's ask; looks only: the odds stay the Safari Ball's)
    - held   a held berry (js/data/held.js) and
    - kit    a Bag item (js/data/items.js), both from backyard berries and the towns' finds (2026-10-15, the user's ask):
             made again and again, counted in `save.workshop.kit`; a Berry Pouch of up to POUCH held berries (packPouch())
@@ -262,6 +263,8 @@ export const needsLine = (recipe, sat) => Object.entries(recipe.needs)
 
 /** The Safari Ball's sprite: its own, or the Apricorn skin carried. */
 export const safariSprite = (ws) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : 'safari-ball');
+/** The ball your partner comes out of at a battle's start: a Poké Ball, or the Apricorn skin carried. */
+export const sendSprite = (ws) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : 'poke-ball');
 
 /** Each friend teaches Kurt their secret recipe (SECRETS, their own Safari Ball look) at SECRET_AT hearts, between their
     second and third signature pieces; nothing saved, so an old save that far along knows them on load. */

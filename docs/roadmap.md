@@ -1344,6 +1344,12 @@ then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict bef
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **Ball skins in every battle** (2026-10-27, branch `claude/pokeball-appearance-customization-4ww68i`, on `main` too;
+  archive): the send-out Poké Ball is now the clean item sprite (no blue rim), and the Apricorn ball carried from Kurt's
+  Workshop (Apricorns shelf, Carry it) is the one your partner comes out of in every battle. Kurt slides in once in the
+  Clearing to say so. Check a battle's intro ball, and Kurt on the next visit home. ▶ Run in: PLAYTEST ON THE LIVE SITE.
+  Ideas from it, not agreed: a quicker place to swap the ball too (the Bag or the Trainer Card), and Apricorn balls you
+  could buy at the Outfitter for players far from the towns.
 - **The Nietos' mansion** (2026-10-20, branch `claude/nieto-house-extravagant-mansion-sf3f5m`, on `main` too; archive):
   the cottage is now a white château (turrets, portico, golden Kangaskhan at the gate) and inside a marble-and-gilt hall
   with chandeliers and a family portrait. Walk up to it in the Clearing (south-east), and go in with `?nietos&gymwins=1`
