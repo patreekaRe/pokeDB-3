@@ -1,0 +1,721 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Knuckle Deck</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one arcade column. HP bars, arena, a 3-step timeline (enemy / result / you), then your hand. */
+:root{
+  color-scheme: dark;
+  --bg:#15131f; --panel:#1f1c2d; --panel-2:#282339; --floor:#2f2944; --line:#3b3654;
+  --fg:#f3eee6; --muted:#a9a3be;
+  --you:#3fe0c0; --foe:#ff5d52;
+  --atk:#ffb627; --blk:#62b4ff; --thr:#bb8dff;
+  --atk-soft:rgba(255,182,39,.14); --blk-soft:rgba(98,180,255,.14); --thr-soft:rgba(187,141,255,.16);
+  --good:#7be38a; --bad:#ff6b61;
+  --display:"Bungee", Impact, "Arial Black", sans-serif;
+  --body:"Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+html,body{background:var(--bg); color:var(--fg)}
+body{font-family:var(--body); font-size:16px; line-height:1.35}
+*{box-sizing:border-box}
+button{font:inherit; color:inherit}
+.wrap{max-width:880px; margin:0 auto; padding-block:14px 48px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex; flex-direction:column; gap:14px}
+
+.top{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap}
+.brand{font-family:var(--display); font-size:22px; letter-spacing:.02em}
+.brand small{font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-left:8px; vertical-align:middle}
+.meta{font-family:var(--mono); font-size:12px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase}
+
+/* HP */
+.hprow{display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:end}
+.hp{display:flex; flex-direction:column; gap:4px; min-width:0}
+.hp.foe{align-items:flex-end; text-align:right}
+.hp-name{font-weight:700; font-size:17px; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%}
+.hp.you .hp-name{color:var(--you)} .hp.foe .hp-name{color:var(--foe)}
+.bar{position:relative; width:100%; height:14px; background:var(--panel); border:1px solid var(--line); border-radius:3px; overflow:hidden}
+.bar i{position:absolute; top:0; bottom:0; left:0; width:100%}
+.bar .ghost{background:#fff; opacity:.55; transition:width .7s ease-in .25s}
+.bar .fill{transition:width .15s ease-out}
+.hp.you .fill{background:var(--you)} .hp.foe .fill{background:var(--foe)}
+.hp.foe .bar i{left:auto; right:0}
+.hp-num{font-family:var(--mono); font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.vs{font-family:var(--display); font-size:15px; color:var(--muted); padding-bottom:16px}
+
+/* Arena */
+.arena{position:relative; height:210px; border:1px solid var(--line); border-radius:10px; overflow:hidden;
+  background:linear-gradient(to bottom, var(--panel) 0%, var(--panel-2) 76%, var(--floor) 76%, var(--floor) 100%)}
+.arena::after{content:""; position:absolute; left:0; right:0; bottom:0; height:24%;
+  background:repeating-linear-gradient(90deg, transparent 0 46px, rgba(255,255,255,.04) 46px 48px)}
+.fighter{position:absolute; bottom:44px; width:60px; height:120px; z-index:2}
+.fighter.you{left:calc(50% - 98px); --c:var(--you)}
+.fighter.foe{right:calc(50% - 98px); --c:var(--foe); transform:scaleX(-1)}
+.rig{position:absolute; inset:0; transform-origin:50% 100%; transition:transform .15s ease-out}
+.part{position:absolute; background:var(--c); border-radius:5px; transition:transform .15s ease-out, top .15s ease-out, height .15s ease-out, opacity .1s, filter .1s}
+.head{left:17px; top:0; width:26px; height:26px; border-radius:8px}
+.head::after{content:""; position:absolute; right:3px; top:9px; width:10px; height:5px; border-radius:2px; background:var(--bg)}
+.torso{left:15px; top:30px; width:30px; height:90px; border-radius:7px 7px 3px 3px}
+.arm{left:28px; top:38px; width:52px; height:11px; transform-origin:5px 50%; transform:rotate(78deg)}
+.leg{left:28px; top:84px; width:58px; height:13px; transform-origin:6px 50%; transform:rotate(88deg); opacity:0}
+.shield{left:52px; top:24px; width:9px; height:60px; background:var(--blk); opacity:0; box-shadow:0 0 16px var(--blk)}
+
+.pose-high .rig{transform:translateX(18px)} .pose-high .arm{transform:rotate(0deg); top:33px}
+.pose-low .rig{transform:translateX(16px)} .pose-low .leg{opacity:1; transform:rotate(12deg); top:94px}
+.pose-over .rig{transform:translate(14px,-16px)} .pose-over .leg{opacity:1; transform:rotate(-58deg); top:72px}
+.pose-sblock .shield{opacity:.95} .pose-sblock .arm{transform:rotate(-72deg); top:46px}
+.pose-cblock .torso{top:58px; height:62px} .pose-cblock .head{top:28px}
+.pose-cblock .shield{opacity:.95; top:52px; height:62px} .pose-cblock .arm{top:70px; transform:rotate(-72deg)}
+.pose-throw .rig{transform:translateX(28px)} .pose-throw .arm{transform:rotate(0deg); top:58px}
+.pose-hurt .rig{transform:translateX(-16px) rotate(-10deg)} .pose-hurt .part{filter:brightness(1.9) saturate(.6)}
+.pose-reel .rig{animation:reel .5s ease-in-out infinite alternate}
+.pose-air .rig{transform:translateY(-74px) rotate(-28deg)}
+.pose-down .rig,.pose-ko .rig{transform:translateX(-10px) rotate(-90deg)}
+.pose-ko .part{filter:grayscale(.7) brightness(.8)}
+@keyframes reel{from{transform:translateX(-4px) rotate(-4deg)} to{transform:translateX(-10px) rotate(-9deg)}}
+
+/* Sprites (sprites/README.md): a fighter whose idle image loads swaps the block rig for its pictures. */
+.spr{position:absolute; bottom:0; left:50%; height:var(--spr-h,132px); width:auto; max-width:none; display:none;
+  transform:translateX(-50%); transform-origin:50% 100%; image-rendering:pixelated; transition:transform .15s ease-out, filter .1s}
+.fighter.has-spr .rig{display:none} .fighter.has-spr .spr{display:block}
+.has-spr.pose-high .spr,.has-spr.pose-low .spr,.has-spr.pose-over .spr{transform:translateX(calc(-50% + 16px))}
+.has-spr.pose-throw .spr{transform:translateX(calc(-50% + 26px))}
+.has-spr.pose-hurt .spr{transform:translateX(calc(-50% - 16px)); filter:brightness(1.9) saturate(.6)}
+.has-spr.pose-reel .spr{animation:sprReel .5s ease-in-out infinite alternate}
+.has-spr.pose-air .spr{transform:translate(-50%,-74px)}
+.has-spr.pose-ko .spr{filter:grayscale(.7) brightness(.8)}
+@keyframes sprReel{from{transform:translateX(calc(-50% - 4px))} to{transform:translateX(calc(-50% - 10px))}}
+
+.banner{position:absolute; top:12px; left:0; right:0; text-align:center; font-family:var(--display); font-size:clamp(22px,6vw,34px);
+  letter-spacing:.03em; z-index:3; pointer-events:none; opacity:0; text-shadow:0 3px 0 rgba(0,0,0,.45)}
+.banner.show{animation:bannerIn 1s ease-out forwards}
+@keyframes bannerIn{0%{opacity:0; transform:scale(1.6)} 12%{opacity:1; transform:scale(1)} 75%{opacity:1} 100%{opacity:0}}
+.tone-good{color:var(--good)} .tone-bad{color:var(--bad)} .tone-neutral{color:var(--fg)}
+.dmg{position:absolute; top:40px; font-family:var(--display); font-size:30px; color:#fff; z-index:4; pointer-events:none;
+  text-shadow:0 2px 0 var(--bg), 0 0 12px rgba(255,255,255,.4); animation:floatUp .95s ease-out forwards}
+@keyframes floatUp{0%{transform:translate(-50%,10px) scale(1.4); opacity:0} 15%{opacity:1; transform:translate(-50%,0) scale(1)} 100%{transform:translate(-50%,-46px); opacity:0}}
+.arena.shake{animation:shake .22s linear}
+.arena.shake-sm{animation:shakeSm .16s linear}
+@keyframes shake{0%,100%{transform:translate(0,0)} 20%{transform:translate(-6px,2px)} 40%{transform:translate(5px,-3px)} 60%{transform:translate(-4px,1px)} 80%{transform:translate(3px,-1px)}}
+@keyframes shakeSm{0%,100%{transform:translate(0,0)} 33%{transform:translate(-2px,0)} 66%{transform:translate(2px,0)}}
+
+.scout{font-size:15px; color:var(--muted); border-left:2px solid var(--foe); padding:2px 0 2px 10px}
+.scout b{color:var(--fg); font-weight:600}
+
+/* Timeline */
+.timeline{display:grid; grid-template-columns:auto repeat(3, minmax(0,1fr)); gap:6px 8px; align-items:stretch}
+.th{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); text-align:center}
+.tl-label{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; align-self:center}
+.tl-label.foe{color:var(--foe)} .tl-label.you{color:var(--you)}
+.slot{position:relative; min-height:68px; border:1px dashed var(--line); border-radius:8px; display:flex; align-items:center; justify-content:center;
+  background:transparent; padding:3px; transition:border-color .15s, background .15s}
+button.slot{cursor:pointer} button.slot:disabled{cursor:default}
+button.slot:not(:disabled):hover{border-color:var(--fg)}
+.slot:focus-visible,.card:focus-visible,.btn:focus-visible{outline:2px solid var(--fg); outline-offset:2px}
+.slot.filled{border-style:solid; border-color:transparent}
+.slot.active,.res.active{background:rgba(255,255,255,.05)}
+.slot.active{border-color:var(--fg)}
+.slot .q{font-family:var(--display); font-size:24px; color:var(--line)}
+.slot .ph{font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase}
+.slot.lost .mini{opacity:.3}
+.slot.lost::after{content:"Staggered"; position:absolute; inset:auto 0 auto 0; text-align:center; font-family:var(--display); font-size:13px; color:var(--bad); transform:rotate(-8deg)}
+.tellbox{width:100%; height:100%; border:1px dashed var(--foe); border-radius:6px; display:flex; flex-direction:column; justify-content:center; padding:4px 6px; gap:2px; background:rgba(255,93,82,.07)}
+.tellbox .t-label{font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--foe)}
+.tellbox .t-text{font-weight:700; font-size:15px; line-height:1.1}
+.res{min-height:46px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:1px; border-radius:6px; padding:2px 3px}
+.r-banner{font-family:var(--display); font-size:13px; letter-spacing:.02em; line-height:1.1}
+.r-note{font-size:12.5px; color:var(--muted); line-height:1.15}
+.r-dmg{font-family:var(--mono); font-size:11px; font-variant-numeric:tabular-nums}
+.r-dmg .d{color:var(--good)} .r-dmg .t{color:var(--bad)}
+
+.mini{width:100%; border-radius:6px; background:var(--panel); border:1px solid var(--k); display:flex; flex-direction:column; overflow:hidden; text-align:left}
+.mini .m-kind{font-family:var(--mono); font-size:9.5px; padding:3px 6px; background:var(--k-soft); color:var(--k); letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.mini .m-name{font-weight:700; font-size:15px; padding:3px 6px 0; line-height:1.1}
+.mini .m-stats{font-family:var(--mono); font-size:10.5px; color:var(--muted); padding:1px 6px 5px; white-space:nowrap}
+
+/* Controls + hand */
+.controls{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
+.pile{font-family:var(--mono); font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.btns{display:flex; gap:8px}
+.btn{appearance:none; border:1px solid var(--line); background:transparent; border-radius:8px; padding:9px 14px; cursor:pointer; font-weight:600; font-size:16px; letter-spacing:.02em}
+.btn:hover:not(:disabled){border-color:var(--fg)}
+.btn.primary{background:var(--atk); color:#1b1408; border-color:var(--atk); font-family:var(--display); font-weight:400; font-size:17px; padding:9px 20px}
+.btn:disabled{opacity:.4; cursor:default}
+.hand{display:grid; grid-template-columns:repeat(auto-fill, minmax(118px,1fr)); gap:8px}
+.hand.locked .card{opacity:.45; pointer-events:none}
+.card{appearance:none; text-align:left; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:0; overflow:hidden;
+  display:flex; flex-direction:column; cursor:pointer; transition:transform .12s, border-color .12s}
+.card:hover{transform:translateY(-3px); border-color:var(--k)}
+.c-kind{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; padding:5px 8px; background:var(--k-soft); color:var(--k)}
+.c-body{padding:7px 8px 9px; display:flex; flex-direction:column; gap:4px}
+.c-name{font-weight:700; font-size:19px; line-height:1.05}
+.c-stats{font-family:var(--mono); font-size:12px; display:flex; gap:10px; font-variant-numeric:tabular-nums}
+.c-stats b{color:var(--muted); font-weight:500}
+.c-tags{font-size:13px; color:var(--k); font-weight:600}
+.c-text{font-size:14px; color:var(--muted); line-height:1.22}
+.k-atk{--k:var(--atk); --k-soft:var(--atk-soft)}
+.k-block{--k:var(--blk); --k-soft:var(--blk-soft)}
+.k-throw{--k:var(--thr); --k-soft:var(--thr-soft)}
+
+/* Log + rules */
+.panel{border:1px solid var(--line); border-radius:10px; padding:12px 14px}
+.panel h2,.rules summary{font-family:var(--display); font-size:14px; letter-spacing:.04em; font-weight:400; margin:0}
+.log ol{list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:5px}
+.log li{font-size:15px; color:var(--muted); line-height:1.3}
+.log li b{color:var(--fg); font-weight:600}
+.log .empty{color:var(--muted); font-size:15px; margin:6px 0 0}
+.rules summary{cursor:pointer}
+.rules ul{margin:10px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:6px; max-width:68ch}
+.rules li{font-size:15.5px}
+.tri{display:flex; flex-wrap:wrap; gap:6px 14px; margin:12px 0 0; font-family:var(--mono); font-size:12px}
+.tri span{white-space:nowrap}
+.tri .a{color:var(--atk)} .tri .b{color:var(--blk)} .tri .t{color:var(--thr)}
+
+/* Modal */
+.modal{position:fixed; inset:0; z-index:20; background:rgba(10,8,16,.78); display:flex; align-items:center; justify-content:center;
+  padding:max(16px, env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) max(16px, env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px)); overflow-y:auto}
+.modal-box{background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:20px; width:100%; max-width:560px; display:flex; flex-direction:column; gap:12px}
+.modal-box h2{font-family:var(--display); font-weight:400; font-size:26px; margin:0; text-wrap:balance}
+.modal-box p{margin:0; color:var(--muted); font-size:16px}
+.choices{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px}
+.modal-actions{display:flex; gap:8px; justify-content:flex-end}
+
+@media (prefers-reduced-motion: reduce){
+  .arena.shake,.arena.shake-sm{animation:none}
+  .rig,.part,.bar .ghost,.bar .fill,.card{transition:none}
+  .pose-reel .rig{animation:none; transform:rotate(-6deg)}
+  .spr{transition:none} .has-spr.pose-reel .spr{animation:none; transform:translateX(calc(-50% - 6px))}
+}
+@media (max-width:520px){
+  .arena{height:190px}
+  .fighter.you{left:calc(50% - 86px)} .fighter.foe{right:calc(50% - 86px)}
+  .r-note{font-size:11.5px}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Knuckle Deck<small>prototype</small></div>
+    <div class="meta" id="meta">Floor 1 of 3 · Turn 1</div>
+  </header>
+
+  <div class="hprow">
+    <div class="hp you"><div class="hp-name">You</div><div class="bar"><i class="ghost" id="ghostYou"></i><i class="fill" id="hpYou"></i></div><div class="hp-num" id="hpYouN">30 / 30</div></div>
+    <div class="vs">VS</div>
+    <div class="hp foe"><div class="hp-name" id="foeName">Enemy</div><div class="bar"><i class="ghost" id="ghostFoe"></i><i class="fill" id="hpFoe"></i></div><div class="hp-num" id="hpFoeN">0 / 0</div></div>
+  </div>
+
+  <div class="arena" id="arena" aria-hidden="true">
+    <div class="banner" id="banner"></div>
+    <div class="fighter you pose-idle" id="fYou"><img class="spr" alt=""><div class="rig"><div class="part torso"></div><div class="part leg"></div><div class="part arm"></div><div class="part head"></div><div class="part shield"></div></div></div>
+    <div class="fighter foe pose-idle" id="fFoe"><img class="spr" alt=""><div class="rig"><div class="part torso"></div><div class="part leg"></div><div class="part arm"></div><div class="part head"></div><div class="part shield"></div></div></div>
+  </div>
+
+  <div class="scout"><b>Scouting report:</b> <span id="scout"></span></div>
+
+  <section class="timeline" aria-label="Turn timeline">
+    <div></div><div class="th">Step 1</div><div class="th">Step 2</div><div class="th">Step 3</div>
+    <div class="tl-label foe">Enemy</div>
+    <div class="slot" id="fs0"></div><div class="slot" id="fs1"></div><div class="slot" id="fs2"></div>
+    <div></div>
+    <div class="res" id="rs0"></div><div class="res" id="rs1"></div><div class="res" id="rs2"></div>
+    <div class="tl-label you">You</div>
+    <button class="slot" id="ys0" data-i="0" aria-label="Step 1"></button><button class="slot" id="ys1" data-i="1" aria-label="Step 2"></button><button class="slot" id="ys2" data-i="2" aria-label="Step 3"></button>
+  </section>
+
+  <div class="controls">
+    <div class="pile" id="pile">Draw 0 · Discard 0</div>
+    <div class="btns">
+      <button class="btn" id="clearBtn">Clear</button>
+      <button class="btn primary" id="fightBtn">Fight!</button>
+    </div>
+  </div>
+
+  <div class="hand" id="hand" aria-label="Your hand"></div>
+
+  <section class="panel log">
+    <h2>Last turn</h2>
+    <div id="log"></div>
+  </section>
+
+  <details class="panel rules" open>
+    <summary>How to play</summary>
+    <ul>
+      <li>Tap three cards to queue them, then hit <b>Fight!</b> Both queues play out one step at a time.</li>
+      <li>Attack against attack: the higher <b>SPD</b> hits. Same speed means both hit (a trade).</li>
+      <li><b>Stand Block</b> stops High and Overhead. <b>Crouch Block</b> stops High and Low.</li>
+      <li>Landing a hit <b>staggers</b> the opponent for the next step. Their card for that step is lost and your next attack lands for free. That's a combo.</li>
+      <li><b>Link</b>: +2 damage in a combo. <b>Ender</b>: +2 for every earlier hit in the combo, then knocks down. <b>Launcher</b>: knocks the foe airborne, and only <b>Air</b> moves need that.</li>
+      <li><b>Unsafe</b> attacks leave you staggered next step if they're blocked or whiff.</li>
+      <li>Each turn the enemy shows one <b>tell</b>. Learn each enemy's habits from the scouting report.</li>
+      <li>Stagger and combos reset between turns. Unused cards stay in your hand.</li>
+    </ul>
+    <div class="tri"><span><span class="a">Attack</span> beats <span class="t">Throw</span></span><span><span class="t">Throw</span> beats <span class="b">Block</span></span><span><span class="b">Block</span> beats <span class="a">Attack</span> (right height)</span></div>
+  </details>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h2 id="mTitle"></h2>
+    <p id="mText"></p>
+    <div class="choices" id="mChoices"></div>
+    <div class="modal-actions" id="mActions"></div>
+  </div>
+</div>
+
+<script>
+const HEIGHT = {high:'High', low:'Low', over:'Overhead'};
+const HSHORT = {high:'High', low:'Low', over:'Over'};
+const TAGNAME = {starter:'Starter', link:'Link', launch:'Launcher', ender:'Ender', air:'Air'};
+
+const CARDS = {
+  jab:       {name:'Jab',          kind:'atk', h:'high', spd:3, dmg:2, tags:['starter'], safe:true,  text:'Quick poke. Good combo starter.'},
+  lowkick:   {name:'Low Kick',     kind:'atk', h:'low',  spd:3, dmg:2, tags:['starter'], safe:true,  text:'Quick. Gets under Stand Block.'},
+  straight:  {name:'Straight',     kind:'atk', h:'high', spd:2, dmg:3, tags:['link'],    safe:true,  text:'+2 damage in a combo.'},
+  uppercut:  {name:'Uppercut',     kind:'atk', h:'high', spd:2, dmg:3, tags:['launch'],  safe:false, text:'Knocks the foe airborne.'},
+  roundhouse:{name:'Roundhouse',   kind:'atk', h:'high', spd:1, dmg:4, tags:['ender'],   safe:false, text:'+2 per earlier hit in the combo.'},
+  sblock:    {name:'Stand Block',  kind:'block', covers:['high','over'], text:'Stops High and Overhead.'},
+  cblock:    {name:'Crouch Block', kind:'block', covers:['high','low'],  text:'Stops High and Low.'},
+  throw:     {name:'Throw',        kind:'throw', dmg:4, text:'Beats blocks. Loses to any attack.'},
+  // rewards
+  airkick:   {name:'Air Kick',     kind:'atk', h:'high', spd:2, dmg:5, tags:['air','ender'], safe:false, text:'Only hits an airborne foe.'},
+  sweep:     {name:'Sweep',        kind:'atk', h:'low',  spd:1, dmg:3, tags:['ender'],  safe:false, text:'Low Ender. Slow.'},
+  axe:       {name:'Axe Kick',     kind:'atk', h:'over', spd:1, dmg:5, tags:[],         safe:false, text:'Overhead. Gets past Crouch Block.'},
+  dp:        {name:'Rising Dragon',kind:'atk', h:'high', spd:4, dmg:4, tags:['launch'], safe:false, text:'Fastest move in the game.'},
+  elbow:     {name:'Elbow',        kind:'atk', h:'high', spd:3, dmg:2, tags:['link'],   safe:true,  text:'Fast Link.'},
+  parry:     {name:'Parry',        kind:'block', covers:['high','low','over'], parry:true, text:'Stops every height and staggers the attacker.'},
+  grab:      {name:'Suplex',       kind:'throw', dmg:7, text:'A huge throw.'},
+  // enemy only
+  haymaker:  {name:'Haymaker',     kind:'atk', h:'high', spd:1, dmg:5, tags:['ender'],  safe:false, text:'Slow, heavy Ender.'},
+};
+for (const k in CARDS) CARDS[k].tags = CARDS[k].tags || [];
+
+const STARTER = ['jab','jab','lowkick','lowkick','straight','uppercut','roundhouse','sblock','sblock','cblock','cblock','throw'];
+const REWARDS = ['airkick','sweep','axe','dp','elbow','parry','grab','straight','uppercut','roundhouse'];
+
+const rand = n => Math.floor(Math.random() * n);
+const chance = p => Math.random() < p;
+function weighted(o){ let t = 0; for (const k in o) t += o[k]; let r = Math.random() * t; for (const k in o){ r -= o[k]; if (r < 0) return k; } return Object.keys(o)[0]; }
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const $ = s => document.querySelector(s);
+
+const ENEMIES = [
+  { name:'Dock Brawler', short:'Brawler', sprite:'brawler', hp:24, tell:'full',
+    scout:'Swings big and slow. Opens most turns with a High attack, and you always see that first swing coming.',
+    plan(){
+      const s = [chance(.75) ? weighted({haymaker:3, straight:2}) : weighted({jab:1, sblock:1})];
+      while (s.length < 3){
+        const prev = s[s.length - 1];
+        s.push(prev === 'jab' ? weighted({straight:2, haymaker:2}) : weighted({haymaker:3, jab:2, straight:2, sblock:2, throw:1}));
+      }
+      return s;
+    }},
+  { name:'Iron Monk', short:'Monk', sprite:'monk', hp:28, tell:'kind',
+    scout:'Patient. Almost always opens with a block, sometimes a Parry, then punishes with Low kicks. No block can stop a throw.',
+    plan(){
+      return [
+        chance(.8) ? weighted({sblock:2, cblock:2, parry:1}) : 'lowkick',
+        weighted({lowkick:3, sblock:2, cblock:2, sweep:1, parry:1}),
+        weighted({sweep:3, lowkick:2, cblock:2, straight:1}),
+      ];
+    }},
+  { name:'Alley Ninja', short:'Ninja', sprite:'ninja', hp:26, tell:'type',
+    scout:'Fast and tricky. Loves a Throw on step 2 and mixes Low kicks with Overheads. Its tell only shows the move type.',
+    plan(){
+      return [
+        weighted({jab:2, lowkick:3, cblock:2, axe:1}),
+        chance(.55) ? 'throw' : weighted({lowkick:2, axe:2, dp:1, jab:1}),
+        weighted({axe:2, dp:2, lowkick:2, throw:1, sblock:1}),
+      ];
+    }},
+];
+
+let S, uid = 0;
+const inst = id => ({uid: ++uid, id});
+const freshCombat = () => ({you:{stun:false, air:false, combo:0}, foe:{stun:false, air:false, combo:0}});
+
+function newRun(){
+  S = { floor:0, you:{hp:30, max:30}, foe:{hp:1, max:1}, deck:STARTER.map(inst),
+        draw:[], discard:[], hand:[], queue:[null,null,null], foePlan:[], tellIdx:0,
+        revealed:[], results:[], lost:{you:[], foe:[]}, cs:freshCombat(), busy:false, turn:0, log:[], active:-1 };
+  startFloor(0);
+}
+
+function startFloor(f){
+  S.floor = f;
+  const E = ENEMIES[f];
+  S.foe = {hp:E.hp, max:E.hp};
+  loadSprites('hero'); loadSprites(E.sprite);
+  S.draw = shuffle(S.deck.slice()); S.discard = []; S.hand = []; S.queue = [null,null,null];
+  S.turn = 0; S.log = [];
+  drawUp(); newTurn();
+  setPose('you','idle'); setPose('foe','idle');
+  render();
+}
+
+function drawUp(){
+  while (S.hand.length < 5){
+    if (!S.draw.length){ S.draw = shuffle(S.discard); S.discard = []; }
+    if (!S.draw.length) break;
+    S.hand.push(S.draw.pop());
+  }
+}
+
+function newTurn(){
+  const E = ENEMIES[S.floor];
+  S.turn++;
+  S.foePlan = E.plan();
+  S.tellIdx = E.tell === 'full' ? 0 : rand(3);
+  S.revealed = [false,false,false]; S.results = [null,null,null];
+  S.lost = {you:[false,false,false], foe:[false,false,false]};
+  S.cs = freshCombat(); S.active = -1;
+}
+
+/* ---------- Rules ---------- */
+function poseFor(c){
+  if (c.kind === 'atk') return c.h;
+  if (c.kind === 'throw') return 'throw';
+  return c.covers.includes('low') && !c.covers.includes('over') ? 'cblock' : 'sblock';
+}
+
+function resolveStep(pc, ec){
+  const cs = S.cs, nm = {you:'You', foe:ENEMIES[S.floor].short};
+  const card = {you:pc, foe:ec};
+  const opp = w => w === 'you' ? 'foe' : 'you';
+  const nextStun = {you:false, foe:false}, nextAir = {you:false, foe:false};
+  const act = {you: pc ? poseFor(pc) : (cs.you.air ? 'air' : 'reel'), foe: ec ? poseFor(ec) : (cs.foe.air ? 'air' : 'reel')};
+  const out = {act, pose:{...act}, hits:[], banner:'', note:'', blocked:null};
+  const airWhiff = (c, def) => c.kind === 'atk' && c.tags.includes('air') && !cs[def].air;
+
+  function land(att, c){
+    const def = opp(att), inCombo = cs[def].stun;
+    let dmg = c.dmg;
+    if (inCombo && c.tags.includes('link')) dmg += 2;
+    if (inCombo && c.tags.includes('ender')) dmg += 2 * cs[att].combo;
+    cs[att].combo = inCombo ? cs[att].combo + 1 : 1;
+    let fx = 'stagger';
+    if (c.kind === 'throw' || c.tags.includes('ender')) fx = 'down';
+    else if (c.tags.includes('launch')) fx = 'launch';
+    if (fx !== 'down') nextStun[def] = true;
+    if (fx === 'launch') nextAir[def] = true;
+    out.hits.push({target:def, dmg});
+    out.pose[def] = fx === 'launch' ? 'air' : fx === 'down' ? 'down' : 'hurt';
+    return cs[att].combo;
+  }
+
+  function blockCase(att){
+    const def = opp(att), ac = card[att], dc = card[def];
+    if (airWhiff(ac, def)){ out.banner = 'WHIFF'; out.note = `${ac.name} needs an airborne foe`; if (!ac.safe) nextStun[att] = true; return; }
+    if (dc.covers.includes(ac.h)){
+      out.blocked = def;
+      if (dc.parry){ nextStun[att] = true; out.banner = 'PARRY'; out.note = `${nm[att]} staggered next step`; }
+      else if (!ac.safe){ nextStun[att] = true; out.banner = 'BLOCKED'; out.note = `${ac.name} is unsafe, ${nm[att]} open next`; }
+      else { out.banner = 'BLOCKED'; out.note = `${dc.name} covers ${HEIGHT[ac.h]}`; }
+    } else {
+      const combo = land(att, ac);
+      out.banner = combo >= 2 ? `${combo} HIT COMBO` : 'HIT';
+      out.note = `${dc.name} can't stop ${HEIGHT[ac.h]}`;
+    }
+  }
+
+  if (!pc || !ec){
+    const att = pc ? 'you' : 'foe', c = pc || ec, def = opp(att);
+    if (c.kind === 'atk'){
+      if (airWhiff(c, def)){ out.banner = 'WHIFF'; out.note = `${c.name} needs an airborne foe`; if (!c.safe) nextStun[att] = true; }
+      else { const combo = land(att, c); out.banner = combo >= 2 ? `${combo} HIT COMBO` : 'FREE HIT'; out.note = `${nm[def]} staggered, free hit`; }
+    } else if (c.kind === 'throw'){ out.banner = 'WHIFF'; out.note = `Can't throw a staggered fighter`; }
+    else { out.banner = 'RECOVER'; out.note = 'Nothing to block'; }
+  } else if (pc.kind === 'atk' && ec.kind === 'atk'){
+    const pw = airWhiff(pc, 'foe'), ew = airWhiff(ec, 'you');
+    if (pw && ew){ out.banner = 'WHIFF'; out.note = 'Both swing at air'; }
+    else if (pw || ew){
+      const w = pw ? 'foe' : 'you';
+      land(w, card[w]); out.banner = 'WHIFF PUNISH'; out.note = `${card[opp(w)].name} whiffed`;
+    } else if (pc.spd !== ec.spd){
+      const w = pc.spd > ec.spd ? 'you' : 'foe', wc = card[w], lc = card[opp(w)];
+      const combo = land(w, wc);
+      out.banner = combo >= 2 ? `${combo} HIT COMBO` : 'FASTER';
+      out.note = `${wc.name} beats ${lc.name} (SPD ${wc.spd} vs ${lc.spd})`;
+    } else {
+      out.hits.push({target:'foe', dmg:pc.dmg}, {target:'you', dmg:ec.dmg});
+      out.pose.you = 'hurt'; out.pose.foe = 'hurt';
+      out.banner = 'TRADE'; out.note = 'Same speed, both hit';
+    }
+  } else if (pc.kind === 'atk' && ec.kind === 'block') blockCase('you');
+  else if (ec.kind === 'atk' && pc.kind === 'block') blockCase('foe');
+  else if (pc.kind === 'atk' && ec.kind === 'throw'){
+    if (airWhiff(pc, 'foe')){ land('foe', ec); out.banner = 'THROW'; out.note = `${pc.name} whiffed`; }
+    else { land('you', pc); out.banner = 'STUFFED'; out.note = 'Attack beats throw'; }
+  } else if (ec.kind === 'atk' && pc.kind === 'throw'){
+    if (airWhiff(ec, 'you')){ land('you', pc); out.banner = 'THROW'; out.note = `${ec.name} whiffed`; }
+    else { land('foe', ec); out.banner = 'STUFFED'; out.note = 'Attack beats throw'; }
+  } else if (pc.kind === 'throw' && ec.kind === 'block'){ land('you', pc); out.banner = 'THROW'; out.note = 'Throw beats block'; }
+  else if (ec.kind === 'throw' && pc.kind === 'block'){ land('foe', ec); out.banner = 'THROW'; out.note = 'Throw beats block'; }
+  else if (pc.kind === 'throw' && ec.kind === 'throw'){ out.banner = 'TECH'; out.note = 'Throws cancel out'; }
+  else { out.banner = 'WAIT'; out.note = 'Both block'; }
+
+  for (const w of ['you','foe']){ cs[w].stun = nextStun[w]; cs[w].air = nextAir[w]; }
+  if (!cs.foe.stun) cs.you.combo = 0;
+  if (!cs.you.stun) cs.foe.combo = 0;
+
+  out.dealt = out.hits.filter(h => h.target === 'foe').reduce((a, h) => a + h.dmg, 0);
+  out.taken = out.hits.filter(h => h.target === 'you').reduce((a, h) => a + h.dmg, 0);
+  const score = out.dealt - out.taken + (cs.foe.stun ? 1 : 0) - (cs.you.stun ? 1 : 0) + (out.blocked === 'you' ? .5 : out.blocked === 'foe' ? -.5 : 0);
+  out.tone = score > 0 ? 'good' : score < 0 ? 'bad' : 'neutral';
+  return out;
+}
+
+/* ---------- Animation ---------- */
+const fighterEl = w => w === 'you' ? $('#fYou') : $('#fFoe');
+const POSES = ['idle','high','low','over','sblock','cblock','throw','hurt','reel','air','down','ko'];
+const STAND_IN = {high:'idle', low:'high', over:'high', throw:'high', sblock:'cblock', cblock:'sblock', hurt:'reel', reel:'hurt', air:'hurt', down:'ko', ko:'down'};
+const SPR = {}, shown = {you:'idle', foe:'idle'};
+const spriteOf = w => w === 'you' ? 'hero' : ENEMIES[S.floor].sprite;
+function loadSprites(name){
+  if (SPR[name]) return SPR[name];
+  const set = SPR[name] = {};
+  for (const pose of POSES){
+    const img = new Image(), exts = ['png','gif'];
+    img.onload = () => { set[pose] = img.src; for (const w of ['you','foe']) if (spriteOf(w) === name) setPose(w, shown[w]); };
+    img.onerror = () => { if (exts.length) img.src = `sprites/${name}/${pose}.${exts.shift()}`; };
+    img.onerror();
+  }
+  return set;
+}
+function spriteFor(set, pose){
+  for (let p = pose, n = 0; p && n < 4; p = STAND_IN[p], n++) if (set[p]) return set[p];
+  return set.idle;
+}
+function setPose(w, pose){
+  shown[w] = pose;
+  const el = fighterEl(w), set = SPR[spriteOf(w)] || {};
+  el.className = `fighter ${w} pose-${pose}` + (set.idle ? ' has-spr' : '');
+  if (set.idle){ const src = spriteFor(set, pose); if (el.firstChild.src !== src) el.firstChild.src = src; }
+}
+function restPose(w){
+  if (S[w].hp <= 0) return setPose(w, 'ko');
+  setPose(w, S.cs[w].air ? 'air' : S.cs[w].stun ? 'reel' : 'idle');
+}
+function shake(big){
+  const a = $('#arena'); a.classList.remove('shake','shake-sm'); void a.offsetWidth; a.classList.add(big ? 'shake' : 'shake-sm');
+}
+function showBanner(text, tone){
+  const b = $('#banner'); b.className = 'banner'; b.textContent = text; void b.offsetWidth; b.className = `banner show tone-${tone}`;
+}
+function floatDmg(w, dmg){
+  const a = $('#arena'), f = fighterEl(w), d = document.createElement('div');
+  d.className = 'dmg'; d.textContent = dmg;
+  d.style.left = (f.offsetLeft + f.offsetWidth / 2) + 'px';
+  a.appendChild(d); setTimeout(() => d.remove(), 1000);
+}
+
+async function playStep(i){
+  const youLost = S.cs.you.stun, foeLost = S.cs.foe.stun;
+  const pc = youLost ? null : CARDS[S.queue[i].id];
+  const ec = foeLost ? null : CARDS[S.foePlan[i]];
+  S.active = i; S.revealed[i] = true; S.lost.you[i] = youLost; S.lost.foe[i] = foeLost;
+  renderTimeline();
+  await sleep(450);
+
+  const r = resolveStep(pc, ec);
+  setPose('you', r.act.you); setPose('foe', r.act.foe);
+  await sleep(170);
+  if (r.hits.length || r.blocked){ shake(r.hits.length > 0); await sleep(90); } // hit-stop
+  setPose('you', r.pose.you); setPose('foe', r.pose.foe);
+  for (const h of r.hits){ S[h.target].hp = Math.max(0, S[h.target].hp - h.dmg); floatDmg(h.target, h.dmg); }
+  showBanner(r.banner, r.tone);
+  S.results[i] = {banner:r.banner, note:r.note, dealt:r.dealt, taken:r.taken, tone:r.tone};
+  S.log.push({step:i + 1, you: pc ? pc.name : 'staggered', foe: ec ? ec.name : 'staggered', ...S.results[i]});
+  renderHP(); renderTimeline();
+  await sleep(950);
+  restPose('you'); restPose('foe');
+  await sleep(220);
+}
+
+async function fight(){
+  if (S.busy || S.queue.some(q => !q)) return;
+  S.busy = true; S.log = [];
+  render();
+  for (let i = 0; i < 3; i++){
+    await playStep(i);
+    if (S.foe.hp <= 0 || S.you.hp <= 0) break;
+  }
+  S.active = -1;
+  renderLog();
+  if (S.foe.hp <= 0){
+    setPose('foe','ko'); setPose('you','idle'); showBanner('K.O.','good');
+    await sleep(1200); S.busy = false; floorWon(); return;
+  }
+  if (S.you.hp <= 0){
+    setPose('you','ko'); showBanner('K.O.','bad');
+    await sleep(1200); S.busy = false; showDefeat(); return;
+  }
+  await sleep(350);
+  S.discard.push(...S.queue); S.queue = [null,null,null];
+  drawUp(); newTurn();
+  setPose('you','idle'); setPose('foe','idle');
+  S.busy = false;
+  render();
+}
+
+/* ---------- Rendering ---------- */
+function kindLabel(c){
+  if (c.kind === 'atk') return `Attack · ${HEIGHT[c.h]}`;
+  if (c.kind === 'throw') return 'Throw';
+  return `Block · ${c.covers.map(h => HSHORT[h]).join('/')}`;
+}
+function tagLine(c){
+  if (c.kind === 'atk') return [...c.tags.map(t => TAGNAME[t]), c.safe ? 'Safe' : 'Unsafe'].join(' · ');
+  return c.parry ? 'Parry' : '';
+}
+function statsHTML(c){
+  if (c.kind === 'atk') return `<span><b>SPD</b> ${c.spd}</span><span><b>DMG</b> ${c.dmg}</span>`;
+  if (c.kind === 'throw') return `<span><b>DMG</b> ${c.dmg}</span>`;
+  return `<span><b>DEF</b> ${c.covers.length === 3 ? 'All' : c.covers.length}</span>`;
+}
+function cardHTML(id, u){
+  const c = CARDS[id], tags = tagLine(c);
+  return `<button class="card k-${c.kind}" data-uid="${u ?? ''}" data-id="${id}">
+    <span class="c-kind">${kindLabel(c)}</span>
+    <span class="c-body">
+      <span class="c-name">${c.name}</span>
+      <span class="c-stats">${statsHTML(c)}</span>
+      ${tags ? `<span class="c-tags">${tags}</span>` : ''}
+      <span class="c-text">${c.text}</span>
+    </span></button>`;
+}
+function miniHTML(id){
+  const c = CARDS[id];
+  const stats = c.kind === 'atk' ? `SPD ${c.spd} · DMG ${c.dmg}` : c.kind === 'throw' ? `DMG ${c.dmg}` : c.covers.map(h => HSHORT[h]).join('/');
+  const kind = c.kind === 'atk' ? HSHORT[c.h] : c.kind === 'throw' ? 'Throw' : 'Block';
+  return `<div class="mini k-${c.kind}"><span class="m-kind">${kind}</span><span class="m-name">${c.name}</span><span class="m-stats">${stats}</span></div>`;
+}
+function tellHTML(c, mode){
+  let text;
+  if (mode === 'full') text = c.name;
+  else if (mode === 'kind') text = c.kind === 'atk' ? `${HEIGHT[c.h]} attack` : c.kind === 'throw' ? 'Throw' : 'Block';
+  else text = c.kind === 'atk' ? 'Attack' : c.kind === 'throw' ? 'Throw' : 'Block';
+  return `<div class="tellbox"><span class="t-label">Tell</span><span class="t-text">${text}</span></div>`;
+}
+
+function renderHP(){
+  for (const w of ['you','foe']){
+    const pct = (S[w].hp / S[w].max * 100) + '%', cap = w === 'you' ? 'You' : 'Foe';
+    $('#hp' + cap).style.width = pct; $('#ghost' + cap).style.width = pct;
+    $('#hp' + cap + 'N').textContent = `${S[w].hp} / ${S[w].max}`;
+  }
+}
+
+function renderTimeline(){
+  const E = ENEMIES[S.floor];
+  for (let i = 0; i < 3; i++){
+    const fs = $('#fs' + i), ys = $('#ys' + i), rs = $('#rs' + i);
+    for (const el of [fs, ys, rs]) el.classList.toggle('active', S.active === i);
+    const showTell = !S.revealed[i] && i === S.tellIdx;
+    fs.innerHTML = S.revealed[i] ? miniHTML(S.foePlan[i]) : showTell ? tellHTML(CARDS[S.foePlan[i]], E.tell) : '<span class="q">?</span>';
+    fs.classList.toggle('filled', S.revealed[i] || showTell);
+    fs.classList.toggle('lost', !!S.lost.foe[i]);
+    const q = S.queue[i];
+    ys.innerHTML = q ? miniHTML(q.id) : `<span class="ph">Step ${i + 1}</span>`;
+    ys.classList.toggle('filled', !!q);
+    ys.classList.toggle('lost', !!S.lost.you[i]);
+    ys.disabled = !q || S.busy;
+    ys.title = q && !S.busy ? 'Tap to take back' : '';
+    const r = S.results[i];
+    let dmg = '';
+    if (r && (r.dealt || r.taken)) dmg = `<span class="r-dmg">${r.dealt ? `<span class="d">+${r.dealt}</span>` : ''}${r.dealt && r.taken ? ' ' : ''}${r.taken ? `<span class="t">−${r.taken}</span>` : ''}</span>`;
+    rs.innerHTML = r ? `<span class="r-banner tone-${r.tone}">${r.banner}</span><span class="r-note">${r.note}</span>${dmg}` : '';
+  }
+}
+
+function renderLog(){
+  const el = $('#log');
+  if (!S.log.length){ el.innerHTML = '<p class="empty">Queue three moves and hit Fight! to see the breakdown here.</p>'; return; }
+  const nm = ENEMIES[S.floor].short;
+  el.innerHTML = '<ol>' + S.log.map(l => {
+    const dmg = [l.dealt ? `you deal ${l.dealt}` : '', l.taken ? `you take ${l.taken}` : ''].filter(Boolean).join(', ');
+    return `<li><b>Step ${l.step}:</b> ${l.you} vs ${nm}'s ${l.foe}. <b class="tone-${l.tone}">${l.banner}</b>, ${l.note.charAt(0).toLowerCase() + l.note.slice(1)}${dmg ? `. ${dmg.charAt(0).toUpperCase() + dmg.slice(1)}` : ''}.</li>`;
+  }).join('') + '</ol>';
+}
+
+function render(){
+  const E = ENEMIES[S.floor];
+  $('#meta').textContent = `Floor ${S.floor + 1} of ${ENEMIES.length} · Turn ${S.turn}`;
+  $('#foeName').textContent = E.name;
+  $('#scout').textContent = E.scout;
+  renderHP(); renderTimeline(); renderLog();
+  $('#hand').innerHTML = S.hand.map(c => cardHTML(c.id, c.uid)).join('');
+  $('#hand').classList.toggle('locked', S.busy);
+  $('#pile').textContent = `Draw ${S.draw.length} · Discard ${S.discard.length} · Deck ${S.deck.length}`;
+  const full = S.queue.every(Boolean);
+  $('#fightBtn').disabled = !full || S.busy;
+  $('#fightBtn').textContent = S.busy ? 'Fighting…' : full ? 'Fight!' : `Queue ${S.queue.filter(q => !q).length} more`;
+  $('#clearBtn').disabled = S.busy || !S.queue.some(Boolean);
+}
+
+/* ---------- Modals ---------- */
+function openModal(title, text, choicesHTML, actions){
+  $('#mTitle').textContent = title; $('#mText').textContent = text;
+  $('#mChoices').innerHTML = choicesHTML || '';
+  $('#mChoices').hidden = !choicesHTML;
+  const act = $('#mActions'); act.innerHTML = '';
+  for (const a of actions){
+    const b = document.createElement('button');
+    b.className = 'btn' + (a.primary ? ' primary' : ''); b.textContent = a.label; b.onclick = a.run;
+    act.appendChild(b);
+  }
+  $('#modal').hidden = false;
+}
+const closeModal = () => { $('#modal').hidden = true; };
+
+function floorWon(){
+  if (S.floor === ENEMIES.length - 1){
+    openModal('Dungeon cleared!', `You beat all ${ENEMIES.length} fighters with ${S.you.hp} HP left and a ${S.deck.length}-card deck.`, '',
+      [{label:'Play again', primary:true, run:() => { closeModal(); newRun(); }}]);
+    return;
+  }
+  const healed = Math.min(S.you.max, S.you.hp + 8) - S.you.hp;
+  S.you.hp += healed;
+  renderHP();
+  const picks = shuffle(REWARDS.slice()).slice(0, 3);
+  openModal(`${ENEMIES[S.floor].name} is down`, `You recover ${healed} HP. Pick a new move for your deck, then head to floor ${S.floor + 2}: ${ENEMIES[S.floor + 1].name}.`,
+    picks.map(id => cardHTML(id)).join(''),
+    [{label:'Skip', run:() => { closeModal(); startFloor(S.floor + 1); }}]);
+}
+function showDefeat(){
+  openModal('Knocked out', `${ENEMIES[S.floor].name} beat you on floor ${S.floor + 1}. Read the scouting report and try a different plan.`, '',
+    [{label:'Try again', primary:true, run:() => { closeModal(); newRun(); }}]);
+}
+
+/* ---------- Input ---------- */
+$('#hand').addEventListener('click', e => {
+  const b = e.target.closest('.card'); if (!b || S.busy) return;
+  const slot = S.queue.indexOf(null); if (slot < 0) return;
+  const idx = S.hand.findIndex(c => c.uid === +b.dataset.uid); if (idx < 0) return;
+  S.queue[slot] = S.hand.splice(idx, 1)[0];
+  render();
+});
+for (let i = 0; i < 3; i++) $('#ys' + i).addEventListener('click', () => {
+  if (S.busy || !S.queue[i]) return;
+  S.hand.push(S.queue[i]); S.queue[i] = null; render();
+});
+$('#clearBtn').addEventListener('click', () => {
+  if (S.busy) return;
+  for (let i = 0; i < 3; i++) if (S.queue[i]){ S.hand.push(S.queue[i]); S.queue[i] = null; }
+  render();
+});
+$('#fightBtn').addEventListener('click', fight);
+$('#mChoices').addEventListener('click', e => {
+  const b = e.target.closest('.card'); if (!b) return;
+  S.deck.push(inst(b.dataset.id));
+  closeModal(); startFloor(S.floor + 1);
+});
+
+newRun();
+</script>
+
+</body></html>

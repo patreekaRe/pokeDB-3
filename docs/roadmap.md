@@ -1344,6 +1344,12 @@ then today's road ▲ / ▼ and A = Start Duo. Waiting on the user's verdict bef
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **Knuckle Deck sprites** (2026-10-27, branch `claude/ai-sprites-pixel-lab-q5su4q` only, not `main`: a separate
+  fighting-deck prototype the user made with chat, kept in `prototypes/knuckle-deck/`). It now takes sprites, one image
+  per fighter and pose in `sprites/<fighter>/<pose>.png`, and shows the block figures until they're there. The cloud
+  can't reach PixelLab or Ludo (network policy), so the user makes the images from the prompts in
+  `prototypes/knuckle-deck/sprites/README.md` and uploads them, or adds `api.pixellab.ai` to the environment's allowed
+  domains and gives a PixelLab key. Open: whether it stays its own game or becomes part of Poké Deckbound.
 - **The Nietos' mansion** (2026-10-20, branch `claude/nieto-house-extravagant-mansion-sf3f5m`, on `main` too; archive):
   the cottage is now a white château (turrets, portico, golden Kangaskhan at the gate) and inside a marble-and-gilt hall
   with chandeliers and a family portrait. Walk up to it in the Clearing (south-east), and go in with `?nietos&gymwins=1`
