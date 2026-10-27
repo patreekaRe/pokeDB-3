@@ -413,7 +413,7 @@ function welcome(code, done) {
 /* ---------- the TRAINER LINK pop-up: each note not answered yet, once you're somewhere calm ---------- */
 
 const RUN_SCREENS = ['map-screen', 'battle-screen', 'reward-screen'];
-const calmNow = () => !noticeOpen() && !document.querySelector('dialog[open], .pc-screen') && !RUN_SCREENS.includes(document.body.dataset.screen)
+const calmNow = () => !noticeOpen() && !document.querySelector('dialog[open], .pc-screen, .gym-scene') && !RUN_SCREENS.includes(document.body.dataset.screen)
   && $('collection-screen')?.hidden !== false;
 
 function whenCalm(fn, tries = 0) {
