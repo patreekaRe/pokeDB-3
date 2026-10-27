@@ -1214,7 +1214,17 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 **Twins, what the 2026-10-26 pass left**: (1) the Safari signature cards: done 2026-10-27 (the user went with Claude's
 recommendation; all of the twin rule, not only the 170 first counted, see the archive); (2) each type's plain **Strike
 and Defend** stay plain (Claude's recommendation, 2026-10-27: a Duo Run's partners draw from their own decks, so two
-types' Strikes never share a hand); (3) Kenmatta's dojo was rebuilt on the new cards, done 2026-10-26.
+types' Strikes never share a hand); (3) Kenmatta's dojo was rebuilt on the new cards, done 2026-10-26. (4) **The pass
+cheated in places** (the user, 2026-10-27, on Fire Fang and "10 damage became 5 damage twice": "isn't that just the same"):
+the rule compares wording, so ~35 of the 197 got past it with a reword rather than a new card. Kinds: one hit split into
+several (Whirlpool, Petal Dance, Submission, Thousand Arrows, Plasma Fists, Crabhammer, Ransack, Quick Attack; only
+different with flat per-hit bonuses such as Strength, Muscle Band, Black Sludge, Frostbite), a line moved behind a
+condition (Fire Fang, Stun Spore, Darkest Lariat), a bare keyword added (Apple Acid +Retain, Gigavolt Havoc +Exhaust,
+Psycho Boost, Frenzy Plant), or a small rider bolted on (Bubble Shield, Brinicle, Icicle Crash, Ion Barrier, Iceberg,
+Haboob, Windbreak, Snarl, Down Feathers, Dissonant Pulse, Kinetic Barrage, Mindstorm). Claude's recommendation, waiting
+on the user: tighten `tools/card-twins.mjs` so those four tricks still count as twins, then for each pair either give one
+card a real job in its archetype or take the weaker out of the pools (`noOffer`) instead of inventing a difference.
+▶ Run in: CLOUD, effort high, both repos (a bot check after).
 
 **Records and the jukebox, what's left** (live 2026-10-25, see the archive). Ideas not yet asked for: music fading with
 distance from the jukebox; the player piece animating while a record plays; a nudge to go home once a new player mends
