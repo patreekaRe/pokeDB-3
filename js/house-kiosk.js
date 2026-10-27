@@ -35,7 +35,17 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
   shut.setAttribute('aria-label', 'Close the catalogue');
   const line = el('p', 'hk-say'), row = el('div', 'hk-cards'), pickRow = el('div', 'hk-pick'), paints = el('div', 'hk-paints');
   line.setAttribute('aria-live', 'polite');
-  sheet.append(who, coins, shut, line, row, pickRow);
+  // a "more" pill over the row's right edge while houses sit past it (the user, 2026-10-27: players didn't know the
+  // row scrolled); a tap nudges the row along
+  const shelf = el('div', 'hk-shelf'), more = el('button', 'hk-more');
+  more.type = 'button';
+  more.setAttribute('aria-label', 'More houses');
+  more.append(el('span', 'hk-more-pill', 'MORE ›'));
+  more.addEventListener('click', () => row.scrollBy({ left: row.clientWidth * 0.8, behavior: 'smooth' }));
+  const hint = () => more.classList.toggle('gone', row.scrollLeft + row.clientWidth >= row.scrollWidth - 8);
+  row.addEventListener('scroll', hint, { passive: true });
+  shelf.append(row, more);
+  sheet.append(who, coins, shut, line, shelf, pickRow);
   parent.append(sheet);
   requestAnimationFrame(() => sheet?.classList.add('up'));
 
@@ -123,6 +133,7 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
       row.append(b);
     }
     row.scrollLeft = keep;
+    hint();
 
     // the picked house: its name, where it comes from, and its one key
     const key = el('button', 'room-ok hk-go');
@@ -214,4 +225,5 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
   // the picked card in the middle of its row, by hand: scrollIntoView can shove a whole page on an iPhone
   const on = row.querySelector('.hk-card.on');
   if (on) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
+  hint();
 }
