@@ -9,7 +9,8 @@ card a run can meet is its own thing. This file is that list: what each card rea
 `node tools/card-twins.mjs` lists them, and `tests/cards.test.mjs` fails on any. Two cards one run can meet are:
 
 - **twins** when they read the same once the numbers are taken out, **whatever they cost**: Bubble / Bubble Beam, Ember
-  (Deal 7) / Firestorm (Deal 36), Harden (0 PP, Gain 5 block) / every type's Defend.
+  (Deal 7) / Firestorm (Deal 36), Harden (0 PP, Gain 5 block) / every type's Defend. How many hits is a number too
+  (2026-10-27): Double Hit (5 damage twice) / Ember.
 - **near twins** when they cost the same and one is the other plus one line, sharing two or more lines: Whirlpool (Deal 5.
   Weak 2.) / Bubble (the same, and Tide 1).
 
@@ -295,6 +296,50 @@ Kept on purpose:
 | **Psycho Boost** rare | Hyper Beam | [2] Deal 30 damage. 1 less energy next turn. | [2] Deal 32 damage. Exhaust. |
 | **Dream World** rare | Psychic Fortress | [2] At the start of each turn, gain 3 block. Draw 1 more card each turn. | [2] At the start of each turn, heal 2 HP. Draw 1 more card each turn. |
 | **Mindstorm** evolution 2 | Mind Storm | [X] Deal 8 damage X times. | [X] Deal 6 damage X times. Apply 1 Weak X times. |
+
+## Taken out of the pools (2026-10-27)
+
+The user, on Fire Fang and the cards split into more hits ("10 damage" became "5 damage twice"): "isn't that just the
+same", and "why not just get rid of cards that are the same". The rule now reads **how many hits as a number**: 5 damage
+twice is Deal 10, and Burn 3 twice is Burn 6. Every pair that became a twin or near twin under it was settled by taking one
+card out of the pools (`noOffer: true`), not by rewording it again; its id stays, so a saved run holding one keeps it.
+`evolutionCardsFor()`, `typePool()` (Metronome's random card) and the Card index skip a `noOffer` card now. Exhaust,
+Retain and Innate still count as lines. The signature cards aren't held to the hits part yet (the roadmap's Ideas): 97
+would read like a run card or each other, and a Pokémon can't lose its signature move.
+
+| Out | Kept, the card it repeated |
+|---|---|
+| **Double Hit** (Neutral) | every type's Strike (Ember, Vine Whip, Water Gun...) |
+| **Fire Lash** | Fire Spin |
+| **Flamethrower** (evolution 2) | Fire Spin, Scorch, Lava Plume, Flame Blast |
+| **Flame Wheel** (evolution 1) | Flare Blitz, Inferno Charge |
+| **Fire Fang** (evolution 1) | Fire Spin: its Burn moved behind "if the enemy intends to attack", the user's example |
+| **Petal Storm** | Apple Acid, Seed Bomb, Grav Apple |
+| **Ivy Cudgel** | Power Whip |
+| **Petal Dance** | Clamp, Frost Nip (Duo Runs) |
+| **Razor Storm** (evolution 1) | Bitter Blade, Oblivion Wing (Duo Runs) |
+| **Whirlpool** | Bubble |
+| **Bouncy Bubble** | Surf, Bubble, Octazooka |
+| **Surging Strikes** | Snipe Shot, Brine, Scald |
+| **Crabhammer** | Water Pulse, Hydro Pump |
+| **Hydro Cannon** (evolution 2) | Hyper Beam, Frenzy Plant |
+| **Expanding Force** | Confusion |
+| **Dissonant Pulse** | Psystrike |
+| **Kinetic Barrage** | Tackle |
+| **Psyshock Wave** | Aura Sphere |
+| **Plasma Fists** | Spark, Thunder, Fusion Bolt, Stoked Sparksurfer |
+| **Icicle Spear** | Ice Shard |
+| **Icicle Crash** | Triple Axel |
+| **Submission** (evolution 1) | Close Combat |
+| **Dual Chop** | Rolling Kick |
+| **Thousand Arrows** (evolution 2) | Dig |
+| **Bonemerang** | Mud Bomb |
+| **Hurricane** | Aeroblast |
+| **Bleakwind Storm** (evolution 2) | Air Cutter |
+| **Ransack** | Covet |
+
+Fire's first evolution now offers Flame Charge and Incinerate every time (two of its four left); every other stage keeps
+three or four. The bot check is in `docs/reference/cards.md`'s twin pass notes.
 
 ## Safari signature cards (2026-10-27)
 

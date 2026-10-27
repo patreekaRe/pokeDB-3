@@ -2,7 +2,8 @@
 //   node tools/card-twins.mjs          every family, with each card's text
 // A card's text is cut into lines (an "If ...:" / "Surface:" / "Punish:" clause and what follows it is one line), its
 // numbers taken out, and its keywords (Exhaust, Retain, Power, Icicle...) each count as a line too. Two cards are:
-//   twins       the same lines, whatever their cost (Bubble 5 damage / Weak 2 / Tide 1, Bubble Beam 6 / 2 / 2)
+//   twins       the same lines, whatever their cost (Bubble 5 damage / Weak 2 / Tide 1, Bubble Beam 6 / 2 / 2); how many
+//               hits doesn't count (Double Hit, 5 damage twice, is Ember's Deal 7)
 //   near twins  the same cost, and one is the other plus one line, sharing two or more lines of text (Whirlpool: 5
 //               damage, Weak 2; Bubble: the same and Tide 1)
 // A run meets its type's pool, the Neutral pool, its starting deck and its evolution cards; a Duo Run both types'. Two
@@ -24,17 +25,21 @@ const DUO_ONLY = ['electric', 'ice', 'fighting', 'ground', 'flying', 'dark'];
 const KEYWORDS = ['exhaust', 'retain', 'power', 'innate', 'ethereal', 'unplayable', 'icicle', 'illusion'];
 const OWN_LINES = ['icicle', 'illusion', 'freeIn', 'growOnPlay', 'growOnRetain'];
 // "Add a Cinder to your hand" and "Add 3 Cinders to your hand" read alike, and Punish is the older "If the enemy intends to
-// attack" (docs/reference/cards.md's Dark), so those two read alike too
-const strip = (s) => s.replace(/If the enemy intends to attack:/g, 'Punish:').replace(/\b(?:\d+|an?) ([A-Z][^.]*?) (to|into) your/g, (m, name, w) => `# ${name.replace(/ cards?$/, '').replace(/s$/, '')} ${w} your`)
-  .replace(/\d+/g, '#').replace(/\b(card|time|turn)s\b/g, '$1');
+// attack" (docs/reference/cards.md's Dark), so those two read alike too. With sameHits, 5 damage twice reads as 10 damage and
+// Burn 3 twice as Burn 6 (the user, 2026-10-27: "isn't that just the same")
+const strip = (s, sameHits) => {
+  const out = s.replace(/If the enemy intends to attack:/g, 'Punish:').replace(/\b(?:\d+|an?) ([A-Z][^.]*?) (to|into) your/g, (m, name, w) => `# ${name.replace(/ cards?$/, '').replace(/s$/, '')} ${w} your`)
+    .replace(/\d+/g, '#').replace(/\b(card|time|turn)s\b/g, '$1');
+  return sameHits ? out.replace(/damage # time\b/g, 'damage').replace(/, twice\./g, '.') : out;
+};
 
 /** A card's lines, numbers out: each sentence, a clause from its "...:" to the end as one, then its keywords. */
-export function lines(card) {
+export function lines(card, sameHits = true) {
   const bare = { ...card };
   for (const k of OWN_LINES) delete bare[k];
   const out = [];
   let clause = null;
-  for (const s of strip(describe(bare)).split(/(?<=\.)\s+/).filter(Boolean)) {
+  for (const s of strip(describe(bare), sameHits).split(/(?<=\.)\s+/).filter(Boolean)) {
     if (clause !== null) clause += ` ${s}`;
     else if (/^[^.]*:/.test(s)) clause = s;
     else out.push(s);
@@ -93,7 +98,7 @@ export function sigReport() {
   for (const t of new Set([...Object.keys(STARTER), ...DUO_TYPES])) if (t !== 'psychic') for (const c of runCards(t).values()) field.set(c.id, c);   // Mewtwo never walks the Safari
   const sigs = Object.values(CARDS_BY_ID).filter(c => c.id.startsWith('sig-') && !c.upgraded);
   const seen = new Map();
-  const linesOf = (c) => seen.get(c) || seen.set(c, lines(c)).get(c);
+  const linesOf = (c) => seen.get(c) || seen.set(c, lines(c, false)).get(c);   // not yet held to "5 damage twice is 10" (roadmap)
   const out = [];
   for (const [i, a] of sigs.entries()) {
     for (const b of [...field.values(), ...sigs.slice(i + 1)]) {

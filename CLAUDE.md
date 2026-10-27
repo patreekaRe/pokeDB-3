@@ -129,7 +129,8 @@ These used to be buried in the notes. Each one has its detail in the reference f
 
 - **Never remove a card id.** A saved run holding it would be thrown away. Count copies with `baseId()`. (`cards.md`)
 - **No two cards one run can meet may read alike**: the same lines with other numbers (whatever they cost), or one plus a
-  line at the same cost (`node tools/card-twins.mjs`; the user's call, 2026-10-26, `docs/card-twins.md`). Only each type's
+  line at the same cost, and "5 damage twice" is "Deal 10" (`node tools/card-twins.mjs`; the user's call, 2026-10-26 / 27,
+  `docs/card-twins.md`). Never reword a card just to pass: a look-alike with no real idea of its own leaves the pools. Only each type's
   plain Strike and Defend may match. `noOffer: true` keeps a card out of the pools. (`cards.md`)
 - A new card gets an `ART` line in `js/card-art.js`. A new mechanic gets a `describe()` line and a `cardTerms()` line.
   A battle rule change is mirrored in pokeDB-sim's `sim/engine.js`. (`cards.md`)

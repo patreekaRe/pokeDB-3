@@ -78,7 +78,7 @@ test('Ice: a full starting deck, its evolution cards, its Ability, and Icicle on
   assert.equal(evolutionCardsFor('ice', 2).length, 4);
   assert.equal(ABILITIES.ice.id, 'snow-warning');
   const pool = typePool('ice');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 6
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [19, 31, 14]);   // StS's split, whole since session 6, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.swinub.skinOf, 'vanillite');
   assert.ok(CARDS_BY_ID.icicle.token && CARDS_BY_ID.icicle.icicle);
 });
@@ -89,11 +89,11 @@ test('Fighting: a full starting deck, its evolution cards, its Ability, and Sore
   const deck = STARTERS_BY_ID.timburr.deck.map(id => CARDS_BY_ID[id]);
   assert.equal(deck.length, 10);
   assert.ok(deck.every(c => c.type === 'fighting'));
-  assert.equal(evolutionCardsFor('fighting', 1).length, 4);
+  assert.equal(evolutionCardsFor('fighting', 1).length, 3);   // less the cards taken out of the pools as twins, 2026-10-27 (docs/card-twins.md)
   assert.equal(evolutionCardsFor('fighting', 2).length, 4);
   assert.equal(ABILITIES.fighting.id, 'guts');
   const pool = typePool('fighting');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 8
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 31, 14]);   // StS's split, whole since session 8, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.machop.skinOf, 'timburr');
   const sore = CARDS_BY_ID.sore;
   assert.ok(sore.status && sore.unplayable && sore.ethereal);
@@ -106,10 +106,10 @@ test('Ground: a full starting deck, its evolution cards, its Ability, and Dig ca
   assert.equal(deck.length, 10);
   assert.ok(deck.every(c => c.type === 'ground'));
   assert.equal(evolutionCardsFor('ground', 1).length, 4);
-  assert.equal(evolutionCardsFor('ground', 2).length, 4);
+  assert.equal(evolutionCardsFor('ground', 2).length, 3);   // less the cards taken out of the pools as twins, 2026-10-27 (docs/card-twins.md)
   assert.equal(ABILITIES.ground.id, 'sturdy');
   const pool = typePool('ground');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 10
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [19, 32, 14]);   // StS's split, whole since session 10, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.rhyhorn.skinOf, 'trapinch');
   // a Dig card's upgrade keeps a Surface part (an upgrade replaces `surface` whole)
   for (const c of [...pool, ...evolutionCardsFor('ground', 1), ...evolutionCardsFor('ground', 2)].filter(c => c.effects.surface)) {
@@ -124,10 +124,10 @@ test('Flying: a full starting deck, its evolution cards, its Ability, and the ne
   assert.equal(deck.length, 10);
   assert.ok(deck.every(c => c.type === 'flying'));
   assert.equal(evolutionCardsFor('flying', 1).length, 4);
-  assert.equal(evolutionCardsFor('flying', 2).length, 4);
+  assert.equal(evolutionCardsFor('flying', 2).length, 3);   // less the cards taken out of the pools as twins, 2026-10-27 (docs/card-twins.md)
   assert.equal(ABILITIES.flying.id, 'keen-eye');
   const pool = typePool('flying');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 12
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 31, 14]);   // StS's split, whole since session 12, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.pidgey.skinOf, 'starly');
   assert.equal(STARTERS_BY_ID.pidove.skinOf, 'starly');
   // answer 18: Flying owns Tailwind; the neutral card keeps its id under another name
@@ -145,7 +145,7 @@ test('Dark: a full starting deck, its evolution cards, its Ability, and the name
   assert.equal(evolutionCardsFor('dark', 2).length, 4);
   assert.equal(ABILITIES.dark.id, 'intimidate');
   const pool = typePool('dark');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 14
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 31, 14]);   // StS's split, whole since session 14, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.sandile.skinOf, 'deino');
   // Intimidate is Dark's Ability, so Fighting's card of that id goes by another name
   assert.notEqual(CARDS_BY_ID.intimidate.name, 'Intimidate');

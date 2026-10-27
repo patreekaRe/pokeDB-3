@@ -98,7 +98,7 @@ function moveList(type) {
   }
   const cards = ALL_CARDS.filter(c => c.type === type);
   const seen = new Set(getSave().seen.cards);
-  const body = RARITIES.flatMap(([rarity, label]) => moveGroup(label, cards.filter(c => !c.evoOnly && (c.rarity || 'common') === rarity), seen));
+  const body = RARITIES.flatMap(([rarity, label]) => moveGroup(label, cards.filter(c => !c.evoOnly && !c.noOffer && (c.rarity || 'common') === rarity), seen));
   body.push(...moveGroup('Evolution: 1st form', evolutionCardsFor(type, 1), seen, 'Offered when your starter first evolves.'),
     ...moveGroup('Evolution: final form', evolutionCardsFor(type, 2), seen, 'Offered when it reaches its final form.'));
   return body;
