@@ -344,8 +344,8 @@ and what it does now.
   `damageFor()` and the sim before any card used it.
 - **Names and ids**: every id stays (saved runs load as they were); Disable+ is named **Imprison** (a card named like
   an upgrade read as a second Disable).
-- **Safari signature cards** (514) are outside the rule: one per Pokémon, one copy a run. 170 still read like a card
-  their run can meet (200 before); `tests/safarimons.test.mjs` keeps them from reading exactly like one.
+- **Safari signature cards** (514) were outside the rule, then had their own pass on 2026-10-27: 424 got new lines,
+  0 pairs left, held by `sigReport()` / `tests/safarimons.test.mjs`. Human bot, Safari days (`safariCfg({ catch: true, catchAt: 0.3 })`), the same sim both sides, 150 a cell, win %: solo fire / grass / water 78.0 / 69.3 / 65.3 -> 80.7 / 65.3 / 61.3; Duo Runs grass+fire / electric+water / ground+fighting / dark+flying 51.3 / 62.0 / 82.0 / 59.3 -> 48.0 / 66.7 / 81.3 / 52.7 (mean 66.7 -> 65.1); every cell inside a cell's noise (about 8 points), about 8 Pokémon caught a run on both sides. Detail: `docs/card-twins.md`'s last sections.
 - **Bot check** (human bot; before = the commit before the pass, the same bot; 150 runs a cell, Fighting's at 300):
   fire / grass / water L0 81.3 / 66.0 / 62.0 -> 76.7 / 73.3 / 66.0, L3 54.7 / 48.7 / 46.0 -> 61.3 / 50.7 / 51.3; Mewtwo
   (L0) 42.7 -> 44.0; solo L0 electric / ice / ground / flying / dark 82.0 / 82.7 / 96.7 / 77.3 / 85.3 -> 79.3 / 87.3 /

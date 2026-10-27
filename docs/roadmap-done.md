@@ -3647,3 +3647,10 @@ Runs; 197 cards got moves of their own (`docs/card-twins.md`, before and now), e
 The test now fails on any twin. Kenmatta's trials were rebuilt on the new cards (the user's pick): Patience a new puzzle,
 seven HPs retuned, every trial solved and starred headless. Rule and bot check: `docs/reference/cards.md`'s "The twin
 pass". Open questions (signature cards, basics): roadmap Ideas.
+
+## Signature cards: no twins either (2026-10-27, the user's go; on `main`)
+
+The Safari's 514 signature cards held to the twin rule: counted fully (any run they can be caught in, Duo Runs and near
+twins too), 365 read like a run card and 491 like a run card or each other; 424 got new lines (`docs/card-twins.md`'s
+last sections, before and now), 0 pairs after. `tests/safarimons.test.mjs` runs `sigReport()` now. Safari bot check
+within noise (mean 66.7 -> 65.1). Each type's plain Strike and Defend stay plain (Claude's recommendation).

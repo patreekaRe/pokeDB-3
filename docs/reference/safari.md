@@ -51,8 +51,9 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 - In `js/data/cards.js`: `SIGNATURE_CARDS` (one per Safari Pokémon, `sig-<enemy id>`, built from its own best-known move
   with existing mechanics, `safari: true`, `maxCopies: 1`, `from`) and `SAFARI_ONLY_CARDS` (Bait, Rock). They're in
   `CARDS_BY_ID` (upgrades too) but never in `ALL_CARDS`, so never in the Card index or `poolForType()`. `SIGNATURE_FOR`
-  maps an enemy id to its card. A new Safari Pokémon needs one (the test checks every `SAFARI_ROSTER` id). Their texts
-  were checked against the run's pools for same cost + same text (the "No duplicates in one run" rule).
+  maps an enemy id to its card. A new Safari Pokémon needs one (the test checks every `SAFARI_ROSTER` id). The twin rule
+  holds them (the signature pass, 2026-10-27, `docs/card-twins.md`'s last section): 424 of the 514 got new lines so none
+  reads like a card a run meets or like another signature card.
 - **Bait** (0 PP, `bait: 1`): `enemy.bait`, a 🍓 badge; +50% catch multiplier each, its attacks +`BAIT.damage` (3) each
   (`attackDamage()`).
 - **Rock** (0 PP, 4 damage, Vulnerable 1, `rock: 1`): `enemy.rock`, a 🪨 badge. `runsOff()` at the start of the enemy's
@@ -265,8 +266,10 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   signature card's type. Battles use the real types (below).
 - A new Pokémon: its line, `assets/pokemon/<id>-front.gif` (PokeAPI's `versions/generation-v/black-white/animated/<dex>.gif`
   from raw.githubusercontent.com) and its `SPRITE_FIT` line (a PIL median bbox over all frames). `tests/safarimons.test.mjs`
-  checks them all, that it isn't a main-game Pokémon, and that no signature card has the same cost, text and keywords as
-  another card a Fire / Grass / Water run can meet (Mewtwo's Psychic cards are left out: it never walks the Safari).
+  checks them all, that it isn't a main-game Pokémon, and that no signature card reads like a card any run can meet or
+  another signature card, by the twin rule (`sigReport()` in `tools/card-twins.mjs`, `docs/card-twins.md`; since
+  2026-10-27, was the same cost and text against a Fire / Grass / Water run). A new one needs a line of its own:
+  `node tools/card-twins.mjs` names what it reads like. Mewtwo's Psychic cards are left out: it never walks the Safari.
 
 ## Real types (2026-10-19, the roadmap's "Six new types for the Safari's duo pool", session 2)
 

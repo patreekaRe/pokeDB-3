@@ -15,7 +15,10 @@ alike (`docs/card-twins.md` lists each: what it read like, before, now); `tools/
 `tests/cards.test.mjs` fails on them. Kenmatta's 20 trials were rebuilt on the new cards (the user's pick). Bot check
 (`docs/reference/cards.md`'s "The twin pass"): every type within noise of before, Fighting after giving its block back. On a phone: a few runs of each type and a Duo Run or two; say which new
 moves feel off or too strong, and whether "Imprison" (was Disable+) and the unplayable Splash read clearly. In the dojo
-(`?dojo&trials`): Patience is a new puzzle, and seven trials' HP changed.
+(`?dojo&trials`): Patience is a new puzzle, and seven trials' HP changed. **The Safari signature cards too, done 2026-10-27
+on `main`** (the user picked Claude's recommendation): 424 of the 514 got new lines so none reads like a card any run meets
+or like another signature card (`docs/card-twins.md`'s last section; `tests/safarimons.test.mjs` holds them to the twin
+rule now). In the Safari: catch a few Pokémon a run and say which new signature moves feel weak, too strong or unclear.
 
 **▶ PLAYTEST ON THE LIVE SITE. Mid-run reloads, round seven: done 2026-10-19, on `main`, waiting on the user's phone**
 (`docs/reference/walk-in-rooms.md`, "One side-wall painting"). The full `tools/budget-check.mjs` passed before the change;
@@ -1208,15 +1211,10 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**Twins, what the 2026-10-26 pass left** (asked of the user, not answered yet): (1) the 514 **Safari signature cards**, one
-per Safari Pokémon, are outside the twin rule (170 still read like a card their run can meet with other numbers; none
-exactly): redo them too, or leave them as each Pokémon's own flavour? (2) each type's plain **Strike and Defend** still
-match in a Duo Run (Ember / Thunder Shock both "Deal N damage."): give each type's basics a rider, or keep StS's plain
-basics? (3) Kenmatta's dojo: the user picked "rebuild around the new cards", done 2026-10-26. Claude's
-recommendation (2026-10-27, asked "what do you think"): (1) a targeted pass on the 170 signature cards that read like a
-card their run meets, not all 514, and `tests/safarimons.test.mjs` moved onto `tools/card-twins.mjs`'s rule so a new Safari
-Pokémon can't add one; (2) keep the basics plain: a Duo Run's partners draw from their own decks, so two types' Strikes
-never share a hand, and riders on every starting deck would move all ten types' balance for little.
+**Twins, what the 2026-10-26 pass left**: (1) the Safari signature cards: done 2026-10-27 (the user went with Claude's
+recommendation; all of the twin rule, not only the 170 first counted, see the archive); (2) each type's plain **Strike
+and Defend** stay plain (Claude's recommendation, 2026-10-27: a Duo Run's partners draw from their own decks, so two
+types' Strikes never share a hand); (3) Kenmatta's dojo was rebuilt on the new cards, done 2026-10-26.
 
 **Records and the jukebox, what's left** (live 2026-10-25, see the archive). Ideas not yet asked for: music fading with
 distance from the jukebox; the player piece animating while a record plays; a nudge to go home once a new player mends

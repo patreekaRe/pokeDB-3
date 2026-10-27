@@ -143,7 +143,7 @@ These used to be buried in the notes. Each one has its detail in the reference f
 - What a new thing needs:
   - **Starter**: front / back / shiny GIFs per stage, `SPRITE_FIT` and `BODY_X` lines, and a cry in `CRIES`. A
     legendary also needs `tools/legendary-aura.py`. (`starters.md`)
-  - **Safari Pokémon**: a signature card, its GIF and a `SPRITE_FIT` line. (`safari.md`)
+  - **Safari Pokémon**: a signature card that reads like no other (`sigReport()`), its GIF and a `SPRITE_FIT` line. (`safari.md`)
   - **Badge**: a `LOOK` line in `js/trainercard.js`. (`badges-and-trainer-card.md`)
   - **Augment**: an `ICONS` line, plus a mirror in the sim for a new fight key. (`sky-pillar.md`)
   - **Biome**: a crossroads `ARMS` line, and a `LANDS` kit for a pool biome. (`biomes-and-journeys.md`)

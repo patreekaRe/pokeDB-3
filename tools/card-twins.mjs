@@ -8,6 +8,9 @@
 // A run meets its type's pool, the Neutral pool, its starting deck and its evolution cards; a Duo Run both types'. Two
 // types' plain starting basics (only "Deal N damage." or "Gain N block.") may match: each type has its Strike and Defend.
 // tests/cards.test.mjs fails on any family.
+// Safari signature cards (one per Safari Pokémon, one copy a run) are caught in any Safari run, a Duo Run too, so each is
+// held to the same rule against every card any run can meet and against every other signature card (`sigReport()`,
+// tests/safarimons.test.mjs; the user's call, 2026-10-27).
 import { pathToFileURL } from 'node:url';
 
 globalThis.location ||= { search: '' };
@@ -84,9 +87,29 @@ export function twinReport() {
   return [...pairs.values()];
 }
 
+/** Every signature card that reads like a card a run can meet, or like another signature card: [{ a: sig, b, kind }]. */
+export function sigReport() {
+  const field = new Map();
+  for (const t of new Set([...Object.keys(STARTER), ...DUO_TYPES])) if (t !== 'psychic') for (const c of runCards(t).values()) field.set(c.id, c);   // Mewtwo never walks the Safari
+  const sigs = Object.values(CARDS_BY_ID).filter(c => c.id.startsWith('sig-') && !c.upgraded);
+  const seen = new Map();
+  const linesOf = (c) => seen.get(c) || seen.set(c, lines(c)).get(c);
+  const out = [];
+  for (const [i, a] of sigs.entries()) {
+    for (const b of [...field.values(), ...sigs.slice(i + 1)]) {
+      const kind = likeness(a, b, linesOf);
+      if (kind) out.push({ a, b, kind });
+    }
+  }
+  return out;
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const show = (c) => `${c.name} (${c.type}, ${c.cost}${c.evoOnly ? ', evolution' : starterIds.has(c.id) ? ', starting deck' : `, ${c.rarity || 'common'}`}): ${describe(c)}${KEYWORDS.filter(k => c[k] && k !== 'icicle' && k !== 'illusion').map(k => ` ${k[0].toUpperCase()}${k.slice(1)}.`).join('')}`;
   const report = twinReport();
+  const sigs = sigReport();
+  console.log(`Signature cards that read like a run's card or another signature card: ${sigs.length}`);
+  for (const p of sigs) console.log(`- ${show(p.a)}\n  ${show(p.b)}${p.kind === 'near' ? ' (near)' : ''}`);
   for (const kind of ['twin', 'near']) {
     const ps = report.filter(p => p.kind === kind);
     console.log(`\n${kind === 'twin' ? 'Twins' : 'Near twins'}: ${ps.length}`);
