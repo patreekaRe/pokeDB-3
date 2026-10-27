@@ -29,7 +29,7 @@ const [,, id, line] = process.argv;
     startBattle({ run, encounter: { def: trial.foe, kind: 'fight', maxHp: trial.foe.hp, strength: 0, dmgMult: 1, trial: trial.goal },
       onEnd: (r) => { window.__end = { ...r, missed: trialMissed(trial, r) }; } });
   }, id);
-  const names = await page.evaluate(async () => Object.fromEntries((await import('/js/data/cards.js')).ALL_CARDS.map(c => [c.id, c.name])));
+  const names = await page.evaluate(async () => Object.fromEntries(Object.values((await import('/js/data/cards.js')).CARDS_BY_ID).map(c => [c.id, c.name])));   // made cards too (a Cinder)
   const ready = async () => { for (let i = 0; i < 300; i++) { const s = await page.evaluate(() => ({ end: window.__end, busy: document.getElementById('end-turn-btn').disabled })); if (s.end || !s.busy) return s; await page.waitForTimeout(100); } throw new Error('stuck'); };
   const state = () => page.evaluate(() => [...document.querySelectorAll('#player-zone .hp-text, #enemy-zone .hp-text, [id$=hp-text]')].filter(n => n.textContent).map(n => `${n.id.replace('-hp-text', '')} ${n.textContent}`).join(' '));
   const turns = line.split('|');

@@ -14,6 +14,7 @@ import { TRAINERS, CODES, PLAZA, ADDS, PLAZA_SHOWN, rollCode, isCode, formatCode
   trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, hofDoc, readHof, FRIENDS_MAX, BASE_MAX, NEW_CARD_KEYS, NEWEST_CARD_KEYS } from './data/trainers.js';
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
+import { starClass, MAX_LEVEL } from './data/difficulty.js';
 import { pref } from './prefs.js';
 import { trainerName } from './leaderboard.js';
 import { partnerKey, buddyKey, cardTier, badgeArt, shinyTotal, pinnable, TIERS as CARD_TIERS } from './trainercard.js';
@@ -33,6 +34,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { shinyImage } from './data/shinies.js';
 import { isStarterUnlocked } from './progress.js';
 import { shelfApp, typed } from './bagdex.js';
+import { housesOpen, homeOf } from './data/houses.js';
 import { playCry, playSound } from './audio.js';
 import { $, el, fitText } from './ui.js';
 import { showTrainerNotices, showTrainerWelcome, noticeOpen } from './trainer-notice.js';
@@ -49,6 +51,9 @@ export function myCode(uid = null) {
   const c = readKept();
   return isCode(c.code) && (!uid || c.uid === uid) ? c.code : null;
 }
+
+/** A friend's stars, the ⭐ tinted by the top Level they have won (gold at 5, a rainbow at 10). */
+const starsOf = (c) => { const b = el('b', ''); b.append(el('span', starClass(c.top), '⭐'), `${c.stars}`); return b; };
 
 const TIER_INK = { green: ['#5ad08a', '#1e6a48'], bronze: ['#e09a5a', '#7a3a14'], silver: ['#b8c4d8', '#4a5670'], gold: ['#f0c840', '#7a5208'], violet: ['#b07af0', '#3e1a7a'] };
 
@@ -118,7 +123,7 @@ export function publishTrainer() {
       const s = await cloudSession();
       if (!s.user) return null;
       const code = await ensureCode(s), save = getSave(), b = buddyKey(save);
-      const doc = trainerDoc({ code, name: trainerName(), card: myCard(save), buddy: b, base: save.secretBase });
+      const doc = trainerDoc({ code, name: trainerName(), card: myCard(save), buddy: b, base: pageBase(save) });
       if (checkTrainer(doc)) return code;
       const page = s.F.doc(s.db, TRAINERS, s.user.uid);
       // rules published before the card's newer numbers refuse them: the page still goes up without, the newest off first
@@ -233,6 +238,10 @@ function hasYard(json) {
 let visitor = null;
 export const onVisit = (fn) => { visitor = fn; };
 
+/** The base a page carries: with houses on, the house lived in rides along as `lot` ({ id, paint }), for a friend's
+    front lawn (js/front-lawn.js); the rules check only the JSON's length, so no new key is needed on the page. */
+export const pageBase = (save) => (housesOpen() && save.secretBase && homeOf(save) ? { ...save.secretBase, lot: homeOf(save) } : save.secretBase);
+
 const atOf = (doc) => (typeof doc?.at?.toMillis === 'function' ? doc.at.toMillis() : +doc?.at || 0);
 const playTime = (min) => `${Math.floor(min / 60)}h ${min % 60}m`;
 const BADGES_SHOWN = 7;
@@ -252,7 +261,7 @@ function cardGrid(c, name) {
   box.append(
     cell('Wins', wins, `Runs ${name} has won, at any Trainer Level, in ${playTime(c.time)} of play.`),
     cell('Dex', el('b', '', `${c.dex}/${c.dexOf}`), `Pokémon ${name} has beaten, on every Pokédex page they have found.`),
-    cell('Stars', el('b', '', c.stars ? `⭐${c.stars}` : '-'), `${fame}A gold star for each starter ${name} has won a Level 5 run with.`),
+    cell('Stars', c.stars ? starsOf(c) : el('b', '', '-'), `${fame}A star for each starter ${name} has won a Level 5 run with, its colour the highest Level they have won: gold at 5, a rainbow at 10.`),
     cell('Top Lv', el('b', '', c.top >= 0 ? `Lv ${c.top}` : '-'), c.top >= 0 ? `The highest Trainer Level ${name} has won a run on.` : `The highest Trainer Level ${name} has won a run on. None yet.`),
     cell('Fave', fave ? monImg(`starter:${c.fave}`, 'trn-fave') : el('b', '', '-'), fave ? `${name}'s favourite: ${fave.name}, the starter they have won the most runs with.` : `The starter ${name} has won the most runs with. None yet.`),
     cell('Pillar', el('b', '', c.pillar ? `${c.pillar}F` : '-'), c.pillar ? `The highest Sky Pillar floor ${name} has reached.` : `The highest Sky Pillar floor ${name} has reached. Not climbed yet.`),
@@ -556,7 +565,7 @@ export function trainersApp() {
       visit.addEventListener('click', async () => {
         visit.disabled = true;
         playSound('confirm');
-        const went = await visitor({ name: doc.name, json: doc.base, start });
+        const went = await visitor({ name: doc.name, json: doc.base, start, buddy: doc.buddy });
         if (went !== false && went !== 'run') return;
         playSound('cancel');
         visit.textContent = went === 'run' ? 'Not mid-run' : 'Can\'t open it';
@@ -620,7 +629,8 @@ export function trainersApp() {
       lines(g, uid) {
         const doc = docs.get(uid), b = blurbOf(uid), keys = g.friend ? friendKeys(uid) : addKeys(uid, g.id === 'added');
         const walk = sprite(buddyOf(uid));
-        if (doc) return [cardGrid(doc.card, doc.name), ...[showcase(doc.card, doc.name)].filter(Boolean), badgeRow(doc.card, doc.name), typed('', `Walking with ${walk.name}.`), keys,
+        if (doc) return [...(doc.card.top >= MAX_LEVEL ? [typed('', `👑 POKéMON MASTER: ${doc.name} has won a run on Trainer Level ${MAX_LEVEL}.`)] : []),
+          cardGrid(doc.card, doc.name), ...[showcase(doc.card, doc.name)].filter(Boolean), badgeRow(doc.card, doc.name), typed('', `Walking with ${walk.name}.`), keys,
           ...(g.friend ? [typed('muted', doc.base ? 'Visit walks round their Secret Base as they last left it.' : 'No Secret Base to visit yet.')] : [])];
         if (b) return [typed('', g.id === 'added' ? `${b.name} added you ${lastSeen(b.at).replace(/^Seen |^Online /, '')}.` : `${b.name}. ${lastSeen(b.at)}.`), blurbFacts(b), typed('', `Walking with ${walk.name}.`), keys];
         return [typed('muted', 'They haven\'t been on since Trainers came in.'), typed('muted', 'They\'ll show up here once they play signed in.'), keys];
@@ -651,7 +661,7 @@ export function trainersApp() {
     remount();
     if (myCardSample()) {
       const save = getSave();
-      docs = new Map([[MY_CARD, readDoc({ ...trainerDoc({ code: 'AAAAAAAA', name: trainerName(), card: myCard(save), buddy: buddyKey(save), base: save.secretBase }), at: Date.now() })]]);
+      docs = new Map([[MY_CARD, readDoc({ ...trainerDoc({ code: 'AAAAAAAA', name: trainerName(), card: myCard(save), buddy: buddyKey(save), base: pageBase(save) }), at: Date.now() })]]);
       state = 'sample';
       remount();
       return;

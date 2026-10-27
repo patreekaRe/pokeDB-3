@@ -3,6 +3,7 @@
    switching screens, dialogs, and the card element.
    ============================================================ */
 
+import { takeOffFoil } from './foil.js';
 import { TYPES, CARDS_BY_ID, describe, keywords, termTips, cardTerms } from './data/cards.js';
 import { ITEM_FIT } from './data/item-fit.js';
 import { cardArt } from './card-art.js';
@@ -11,6 +12,8 @@ import { getSave, safariSparkle } from './storage.js';
 import { shinyImage } from './data/shinies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { playMusic, playSound } from './audio.js';
+import { typeText } from './type-badge.js';
+import { AURA, AURA_FRAMES, AURA_FPS, auraFlames, auraFront } from './aura-art.js';
 
 /** Shorthand for document.getElementById. */
 export const $ = (id) => document.getElementById(id);
@@ -133,6 +136,7 @@ export function showScreen(id) {
   SCREENS.forEach(s => { $(s).hidden = s !== id; });
   document.body.dataset.screen = id;
   const inRun = RUN_SCREENS.includes(id);
+  if (!inRun) takeOffFoil();   // a run's foil is its own
   $('bag-btn').hidden = !inRun;
   $('money-pill').hidden = !inRun;
   // in a run the Shop moves into the Pokédex's dock, leaving the top bar to the run's own ₽ and Bag
@@ -235,7 +239,8 @@ export function makeCard(card, options = {}) {
   // catch box's, before the catch is saved)
   const sparkle = card.safari && card.from ? options.sparkle ?? safariSparkle(card.from) : 0;
   const art = (sparkle && shinyArt(card.from)) || cardArt(card) || (card.sprite ? cardSprite(card) : el('div', 'card-art', card.art));
-  const tag = el('div', 'card-type', `${type.icon} ${type.label}${kind ? ` · ${kind[0].toUpperCase()}${kind.slice(1)}` : ''}`);
+  const tag = el('div', 'card-type');
+  tag.append(typeText(card.type, type.icon, `${type.label}${kind ? ` · ${kind[0].toUpperCase()}${kind.slice(1)}` : ''}`));
   const text = el('p', 'card-text');
   text.append(cardLine(card, options.stage || 0));
 
@@ -550,4 +555,33 @@ export function setMoney(amount) {
   $('money-value').textContent = String(amount);
   $('room-money').textContent = String(amount);
   $('run-money').textContent = String(amount);
+}
+
+/** The Super Saiyan aura in pixels, the walking buddy's frames (js/aura-art.js) stepped by CSS: `back` goes behind the
+    partner, `front` (the low licks, lightning and sparks from 9 up) over it, both stepped in time. `s`: the partner's height in CSS pixels;
+    each aura pixel is two. Still under Calm effects and reduced motion. */
+export function auraArt(level, { cls = 'tc-aura', s = 64 } = {}) {
+  const a = AURA[level], fw = Math.max(6, Math.round(a.wide * s * 0.88 / 2)), fh = Math.max(6, Math.round(a.tall * s / 2));
+  const strip = (canvas) => {
+    const box = el('span', `${cls} aura-lv${level}`);
+    box.style.cssText = `width:${fw * 2}px;height:${fh * 2}px`;
+    canvas.className = 'aura-strip';
+    canvas.style.cssText = `--n:${AURA_FRAMES};--ms:${Math.round(AURA_FRAMES * 1000 / AURA_FPS)}ms`;
+    box.append(canvas);
+    return box;
+  };
+  const back = strip(auraFlames(level, fw, fh)), front = a.front ? strip(auraFront(level, fw, fh)) : null;
+  return { back, front, w: fw * 2, h: fh * 2 };
+}
+
+/** The Champion's Crown in pixels (the Trainer Card's partner, the Level picker's preview) like the walking buddy's 3D one: gold, five points
+    tipped with the rainbow star's gems, a red cap and a white jewel. */
+export function crownArt(cls = 'tc-crown') {
+  const at = [0, 4, 8, 12, 16], gems = ['#ff5a5a', '#ffd84a', '#6ee86e', '#5ac8ff', '#b07af0'];
+  const px = (x, y, w, h, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+  const span = el('span', cls);
+  span.innerHTML = `<svg viewBox="0 0 19 13" shape-rendering="crispEdges" aria-hidden="true">${px(0, 4, 19, 2, '#b0102e')}${
+    at.map((x, i) => px(x, 2, 3, 5, '#f4c63c') + px(x, 0, 3, 2, gems[i])).join('')}${px(0, 6, 19, 7, '#f4c63c')}${px(0, 9, 19, 3, '#c8901c')}${
+    px(0, 12, 19, 1, '#7a4e00')}${px(8, 8, 3, 3, '#fff')}${px(3, 10, 1, 1, '#5ac8ff')}${px(15, 10, 1, 1, '#ff5a5a')}</svg>`;
+  return span;
 }

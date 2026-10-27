@@ -18,10 +18,11 @@ import { spriteUrl, stageName } from './data/starters.js';
 import { ARMS, roadInfo, wildTypes } from './crossroads.js';
 import { kioskArt } from './hub-3d.js';
 import { TYPES } from './data/cards.js';
-import { progressBar } from './pokedex.js';
+import { progressBar, isResearched } from './pokedex.js';
 import { getSave } from './storage.js';
 import { ALL_PAGES } from './data/pokedex.js';
 import { meowthTalk } from './meowth.js';
+import { typeText } from './type-badge.js';
 
 let THREE, renderer, post, view;
 
@@ -629,16 +630,23 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       const wilds = el('div', 'xr-wilds');
       for (const [type, n] of wildTypes(biome)) {
         const row = el('div', `xr-wild type-${type}`);
-        row.append(el('span', 'xr-wicon', TYPES[type]?.icon ?? ''), el('span', 'xr-wname', TYPES[type]?.label ?? type), el('span', 'xr-wn', `${n}`));
+        const icon = el('span', 'xr-wicon');
+        icon.append(typeText(type, TYPES[type]?.icon ?? '', ''));
+        row.append(icon, el('span', 'xr-wname', TYPES[type]?.label ?? type), el('span', 'xr-wn', `${n}`));
         wilds.append(row);
       }
       const body = el('div', 'xr-body');
       body.append(section('xr-sec-places', 'Places', places), section('xr-sec-bosses xr-sec-leaders', 'Gym Leaders', leaders), section('xr-sec-wilds', 'Wild Pokémon', wilds), section('xr-sec-bosses xr-sec-alphas', 'Alphas', alphas));
       if (page) {
-        const beaten = getSave().dex.defeated, n = page.ids.filter(id => beaten.includes(id)).length;
-        const dex = el('div', 'xr-dex');
-        dex.append(progressBar(n, page.ids.length), el('span', 'xr-dex-n', `${n}/${page.ids.length}`));
-        body.append(section('xr-sec-dex', 'Pokédex', dex));
+        const beaten = getSave().dex.defeated, of = page.ids.length;
+        const row = (cls, label, n) => {
+          const r = el('div', `xr-dex ${cls}`);
+          r.append(el('span', 'xr-dex-l', label), progressBar(n, of), el('span', 'xr-dex-n', `${n}/${of}`));
+          return r;
+        };
+        body.append(section('xr-sec-dex', 'Pokédex',
+          row('xr-dex-met', 'Defeated', page.ids.filter(id => beaten.includes(id)).length),
+          row('xr-dex-research', '★ Research', page.ids.filter(isResearched).length)));
       }
       if (ways && i === 1) {
         const swapBtn = el('button', 'xr-swap', '🧭 Another road');

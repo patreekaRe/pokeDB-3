@@ -70,7 +70,7 @@ function build() {
     title: n === 1 ? 'First victory' : `${n} wins`, text: `Win ${n === 1 ? 'a run' : `${n} runs`}, at any Trainer Level.`, count: (s) => st(s).runsWon || 0, pic: () => ({ emoji: '🏁' }) }));
   for (const type of ['fire', 'water', 'grass']) series('runs', `wins-${type}`, [[1, 150], [5, 400], [15, 900]], (n) => ({
     title: `${TYPE_NAME[type]} trainer${n > 1 ? ` ×${n}` : ''}`, text: `Win ${n === 1 ? 'a run' : `${n} runs`} with a ${TYPE_NAME[type]}-type starter.`, count: (s) => winsOfType(s, type), pic: () => ({ emoji: TYPE_ICON[type] }) }));
-  series('runs', 'level', [[1, 200], [2, 300], [3, 500], [4, 700], [5, 1000]], (n) => ({
+  series('runs', 'level', [[1, 200], [2, 300], [3, 500], [4, 700], [5, 1000], [10, 2000]], (n) => ({
     title: `Trainer Level ${n}`, text: `Unlock Trainer Level ${n} by winning on the Level before it.`, count: (s) => s.maxLevel || 0, pic: () => ({ emoji: '⭐' }) }));
   series('runs', 'level5', [[1, 800], [5, 1500], [15, 3000]], (n) => ({
     title: n === 1 ? 'Gold star' : `Gold stars ×${n}`, text: `Win ${n === 1 ? 'a run' : `${n} runs`} on Trainer Level 5.`, count: (s) => sum(st(s).level5WinsBy), pic: () => ({ emoji: '🌟' }) }));

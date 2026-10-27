@@ -78,7 +78,7 @@ export const RELICS = [
   // Any type.
   { id: 'casteliacone',     name: 'Casteliacone',     icon: '🥤', rarity: 'rare',     text: 'PP you don\'t spend is saved for your next turn.' },   // Ice Cream
   { id: 'magnet',           name: 'Quick Powder',     icon: '🧿', rarity: 'rare', sprite: 'quick-powder', text: 'Whenever your hand is empty on your turn, draw 1 card.' },   // Unceasing Top (was Magnet: Electric's held item took the name, 2026-10-19)
-  { id: 'lum-berry',        name: 'Lum Berry',        icon: '🫐', rarity: 'uncommon', text: 'Status cards can be played for 0 PP. They exhaust and draw you a card.' },   // Medical Kit
+  { id: 'lum-berry',        name: 'Lum Berry',        icon: '🫐', rarity: 'uncommon', text: 'Status cards can be played for 0 PP. They exhaust.' },   // Medical Kit (no draw since 2026-10-20: every status an enemy added cycled a thin deck)
   { id: 'strange-souvenir', name: 'Strange Souvenir', icon: '🧸', rarity: 'uncommon', text: 'At the start of each battle, add a random card of your type to your hand. It\'s free this turn.' },   // Toolbox
   { id: 'fist-plate',       name: 'Fist Plate',       icon: '🥊', rarity: 'uncommon', text: 'Every 3rd attack you play in a turn gives you 4 block.' },   // Ornamental Fan
   { id: 'dragon-fang',      name: 'Dragon Fang',      icon: '🦷', rarity: 'common',   text: 'Your first attack in each battle deals 10 more damage.' },   // Akabeko
@@ -138,7 +138,7 @@ export const RELICS = [
   { id: 'reveal-glass',  name: 'Reveal Glass',  icon: '🪞', rarity: 'common',   only: 'dark', text: 'Whenever you Disguise, gain 3 block.' },   // (Disguise's own, Pretty Wing's shape)
   { id: 'colbur-berry',  name: 'Colbur Berry',  icon: '🫐', rarity: 'uncommon', only: 'dark', text: 'Whenever a Punish happens, gain 3 block.' },   // (Punish's own, Coba Berry's shape)
   { id: 'razor-claw',    name: 'Razor Claw',    icon: '🦅', rarity: 'uncommon', only: 'dark', text: 'Each battle starts with the enemy Taunted: its first move is an attack.' },   // (Punish's own)
-  { id: 'dark-memory',   name: 'Dark Memory',   icon: '💾', rarity: 'rare',     only: 'dark', text: 'Whenever you Steal, steal 1 more.' },   // (Steal's own)
+  { id: 'dark-memory',   name: 'Dark Memory',   icon: '💾', rarity: 'rare',     only: 'dark', text: 'Whenever a card Steals, it steals 1 more.' },   // (Steal's own; not Magician's since 2026-10-20)
   // a Duo Run's (docs/duo-design.md section 1): `duo` keeps it out of every other run
   { id: 'shed-shell',     name: 'Shed Shell',     icon: '🐚', rarity: 'uncommon', duo: true, text: 'Your first switch each turn is free.' },   // (the duo's own: StS has no switching)
   { id: 'sacred-ash',     name: 'Sacred Ash',     icon: '🕯️', rarity: 'rare',     text: 'Once this run, when you would faint, you come back with half your max HP.' },   // Lizard Tail

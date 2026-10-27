@@ -19,8 +19,8 @@ import { finishedBy } from './data/ranger.js';
 import { timeOfDay } from './daytime.js';
 import { leaderFor, gymWins, friendWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch, giftMeetDue, meetKey } from './data/workshop.js';
-import { HELD_BY_ID, setOut, canHold, holdFromPouch, nextBerryReady } from './data/held.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch, giftMeetDue, meetKey, withTold } from './data/workshop.js';
+import { HELD_BY_ID, POUCH, setOut, canHold, holdFromPouch, takeOff, nextBerryReady } from './data/held.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
@@ -32,12 +32,16 @@ import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, baseId, upgradeId, canUpgr
 import { realBeats } from './data/real-types.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
+import { recordsOpen } from './data/records.js';
 import { runTypes, outStarter, runPool, runItems, fitsRun, newDuo, restoreDuo, syncDecks, duoGains, duoStarters } from './data/duo.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, stashLostRun, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
+import { moveInFirst } from './safari-home.js';
 import { openSealed } from './data/exchange.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
-import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
+import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun, isChampion, bestWin, starName, isMaster, LEVEL_SHELLS, shellEarned } from './data/difficulty.js';
+import { lettersFor } from './data/level-letters.js';
+import { wearFoil } from './foil.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner, BASICS, tabletUps, bonfireGift, flipState, rivalWants } from './data/events.js';
@@ -76,7 +80,7 @@ import { renderTower, hideTower, guardianIntro, towerFall, barReady, setTowerGra
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
 import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
-import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
+import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, duoRoad, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
@@ -166,6 +170,8 @@ const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : isTo
 export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 200 };   // winBonus 50 until 2026-09-28, 100 until 2026-10-16 (the user's calls: runs the best way to earn)
 /** PokéCoins for the first Trainer Level 5 win with each type (Coin Finder adds to it). */
 export const LEVEL5_JACKPOT = 500;
+/** PokéCoins for the first win ever on each Trainer Level above 5 (the user's pick, 2026-10-22; Coin Finder adds to it). */
+export const LEVEL_JACKPOT = { 6: 600, 7: 700, 8: 800, 9: 900, 10: 2000 };
 
 /** A coin reward at the run's Trainer Level (COIN_LEVEL_BONUS a level), before the Coin Finder. */
 const levelCoins = (amount) => Math.round(amount * (1 + COIN_LEVEL_BONUS * run.level));
@@ -483,7 +489,7 @@ export function loadSavedRun() {
   const saved = loadRunData();
   if (!saved) return null;
   try { return restoreRun(saved); }
-  catch (err) { clearRunData(); return null; }
+  catch (err) { console.error('Saved run thrown away:', err); stashLostRun(saved, err); clearRunData(); return null; }
 }
 
 export const hasSavedRun = () => loadSavedRun() !== null;
@@ -520,7 +526,7 @@ export function continueRun(saved) {
 export function beginRun(starter, level = 0, peek = null, safari = null, tower = null, pack = null, duo = null) {
   dropNotes();
   const perks = !safari?.first && !tower;   // the Safari's first try of the day and every climb go without perks (fairTry())
-  const startHp = BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0);   // shop passive: Max HP Boost
+  const startHp = Math.round((BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0)) * (runMods(starter, level, 0).maxHpMult ?? 1));   // shop passive: Max HP Boost; Level 7's Worn Out
 
   run = {
     starter,
@@ -615,6 +621,7 @@ export function beginSafari(daily = safariDaily(), pair = null) {
   // ?powerplant / ?icecave / ?dojomountain / ?quarry / ?windycliffs / ?nightalley: a Duo Run whose first area is the Power
   // Plant, the Ice Cave, Dojo Mountain, the Quarry, the Windy Cliffs or Night Alley, before its day (several: the first ones, in that order); a playtest,
   // and a Duo Run is never posted
+  if (duo) daily = { ...daily, areas: duoRoad(daily) };
   const lent = duo ? ['powerplant', 'icecave', 'dojomountain', 'quarry', 'windycliffs', 'nightalley'].filter(id => new URLSearchParams(location.search).has(id)) : [];
   if (lent.length) {
     daily = { ...daily, areas: [...lent.map(id => SAFARI_AREAS_BY_ID[id]), ...daily.areas.filter(a => !lent.includes(a.id))].slice(0, daily.areas.length) };
@@ -713,12 +720,14 @@ export function peekArena(starter, kind, biome = null, slot = null) {
 }
 
 /** A playtest run's kit from the URL (any throwaway run: ?arena=, ?biome=, ?gym=, ?bossfight=...): &relics=wide-lens,sticky-barb,
-    &cards=blazing-torque,ignite+ (added to the deck; a + is PP Upped) and &items=hyper-potion. Unknown ids are skipped. */
+    &cards=blazing-torque,ignite+ (added to the deck; a + is PP Upped), &items=hyper-potion and &berries=oran,lum (a Berry
+    Pouch, the first held). Unknown ids are skipped. */
 function playtestKit(r) {
   const list = (key) => (new URLSearchParams(location.search).get(key) || '').split(',').filter(Boolean);
   r.relics.push(...list('relics').filter(id => RELICS_BY_ID[id] && !r.relics.includes(id)));
   r.deck.push(...list('cards').filter(id => CARDS_BY_ID[id]));
   r.items.push(...list('items').filter(id => ITEMS_BY_ID[id]));
+  if (list('berries').length) Object.assign(r, setOut(list('berries').slice(0, POUCH)));
 }
 
 /** Playtest shortcut: ?gym=phil (any Gym Leader, js/data/gym.js; &n=2 their second boss, &starter=id, &hp=0.1 shrinks the
@@ -1119,6 +1128,7 @@ function showMap() {
   scoping = rubbing = false;
   showBadgeNews();
   setTheme(outStarter(run).type);
+  wearFoil(run);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
   warmPlaces();
 
@@ -1189,7 +1199,7 @@ function showMap() {
   document.querySelector('.map-trainer')?.scrollIntoView({ block: 'center' });   // the map scrolls inside the Pokédex's screen
   if (isTower()) showScene(null);   // the tower is its own picture (js/tower.js)
   else { hideTower(); showScene(biome.id, 'wild', journey(run.map, here)); }
-  playMusic(isTower() ? 'map4' : biome.music || `map${run.biome + 1}`);   // the climb has its own song (the user's call, 2026-10-09)
+  playMusic(isTower() ? 'map4' : run.safari ? 'safari' : biome.music || `map${run.biome + 1}`);   // the climb has its own song (the user's call, 2026-10-09), and every Safari area one (2026-10-24)
   berryNote();
   if (run.charm) return relicCharm();
   if (run.gift) return chanseyGift();
@@ -1604,7 +1614,8 @@ function renderItemList() {
 
 /** The Items pocket's first lines: the berry your Pokémon holds (js/data/held.js), eaten or not, then the Berry Pouch's,
     each with Hold: on the map only (never in battle or the rewards, which a checkpoint would split), a swap while the held
-    one's uneaten, and once one's eaten only from the next biome on (canHold()). */
+    one's uneaten, and once one's eaten only from the next biome on (canHold()). An uneaten held one can Take off, into the
+    pouch, to keep it for a fight ahead (the user's ask, 2026-10-25). */
 function heldRow(onMap) {
   const h = HELD_BY_ID[run.held?.id], pouch = run.pouch || [];
   if (!h && !pouch.length) return [];
@@ -1613,6 +1624,14 @@ function heldRow(onMap) {
     const row = el('div', `howto-li item-row held-row${run.held.used ? ' used' : ''}`), text = el('span', 'howto-li-text');
     text.append(el('b', '', `Held: ${h.name}${run.held.used ? ' (eaten)' : ''}`), el('small', '', run.held.used ? `${starterName()} ate it. A held berry goes off once.` : h.text));
     row.append(itemSprite(h, 'howto-node'), text);
+    if (!run.held.used) {
+      const acts = el('span', 'item-actions'), off = el('button', 'btn item-use', 'Take off');
+      off.type = 'button';
+      off.disabled = !onMap;
+      off.addEventListener('click', takeOffBerry);
+      acts.append(off);
+      row.append(acts);
+    }
     rows.push(row);
   }
   const ok = canHold(run);
@@ -1628,7 +1647,8 @@ function heldRow(onMap) {
     rows.push(row);
   });
   if (pouch.length) rows.push(el('p', 'drop-note pouch-note', !ok ? 'Your next berry can go on in the next biome.'
-    : !onMap ? 'A berry from the pouch goes on from the map.' : run.held && !run.held.used ? 'Hold swaps it for the one held.' : 'One held berry a biome.'));
+    : !onMap ? 'A berry from the pouch goes on from the map.' : run.held && !run.held.used ? 'Hold swaps it for the one held.'
+    : !run.held ? `${starterName()} isn't holding a berry. Hold one to put it on.` : 'One held berry a biome.'));
   return rows;
 }
 
@@ -1653,6 +1673,17 @@ function holdBerry(i) {
   Object.assign(run, out);
   playSound('confirm');
   tell(`${starterName()} is holding ${an(HELD_BY_ID[run.held.id].name)} now.`);
+  afterBagChange();
+}
+
+/** The uneaten held berry comes off into the pouch, saved at once like a Hold. */
+function takeOffBerry() {
+  const out = takeOff(run);
+  if (!out) return;
+  const name = HELD_BY_ID[run.held.id].name;
+  Object.assign(run, out);
+  playSound('confirm');
+  tell(`Took the ${name} off ${starterName()}. It's back in the Berry Pouch.`);
   afterBagChange();
 }
 
@@ -1798,7 +1829,11 @@ const rubbingReads = () => DEX_RUBBINGS[dexPerk('unown-rubbing')];
 const rubbingUsed = () => Object.values(run.map.byId).filter(n => n.read).length;   // saved with the map's nodes, like the Scope's
 
 /** Tracker's Eye's level and your type, for renderMap() (a peek at the map shows the marks too). */
-const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type });
+const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type, duoNew: isSafari() && !peeking ? duoNew : null });
+
+/** The new duo type a Safari wild would bring if caught (its line's look not in your pool yet), or null: the map marks its
+    room (the user's call, 2026-10-20). */
+const duoNew = (id) => Object.keys(duoGains([id], getSave().duoPool))[0] ?? null;
 
 function drawRubbing(nodes) {
   const total = rubbingReads(), left = total - rubbingUsed();
@@ -1875,7 +1910,7 @@ async function fight(node, { talked = false } = {}) {
   const last = !isTower() && run.biome === finalBiome(run.starter);   // a climb has no last boss
   if (node.type === 'boss' && !last && canEvolve()) preloadEvolution(run.starter, run.stage);
   if (node.type === 'boss' && last) {
-    preloadWinScene(run.starter, isMewtwoRun(run.starter) || run.level === MAX_LEVEL);
+    preloadWinScene(run.starter, isMewtwoRun(run.starter) || isChampion(run.level));
   }
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const intro = isTower() && node.type === 'boss' ? await guardianIntro({ def: ENEMY_DEFS[node.enemyId], floor: floorOf(run.tower.flight, node.floor) }) : null;
@@ -2172,7 +2207,7 @@ function homeRoom(b, onward = null) {
   const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
   const options = [];
   if (b.home === 'shop' && t.visit) {   // from home the trader sells the town's furniture instead (js/town-shop.js)
-    options.push(spotOption('Shop', `${town.trader.name}: Have a look! Furniture from round here, sold nowhere else.`, async () => {
+    options.push(spotOption('Shop', `${town.trader.name}: Have a look! Furniture${recordsOpen() ? ' and records' : ''} from round here, sold nowhere else.`, async () => {
       if (run !== thisRun) return;
       const { openTownShop } = await import('./town-shop.js');
       await openTownShop(town.id, town.trader.name);
@@ -2406,6 +2441,7 @@ function homeRoom(b, onward = null) {
     } },
     onFail: out,
   });
+  if (town.home && !home.dojo) playMusic(town.music);   // the Depths camp's own song: a visit from the hub carried the Clearing's in
   if (home.dojo) {
     playMusic('event-room');
     const word = t.trialSaid;   // back from a trial: his word on it, then any new belt
@@ -2423,7 +2459,7 @@ function homeRoom(b, onward = null) {
         const chime = questStep(town, townState(getSave(), 'clearing'))?.id === 'cl-chime';
         const lines = chime ? [...home.meet.slice(0, 2), home.meetChime, ...home.meet.slice(2)] : home.meet;
         await gymTalk({ id: 'kurt', name: 'KURT', talk: 'assets/trainers/kurt.png' }, lines, { lit: true, title: 'APRICORN SMITH ' });
-        updateSave(d => { d.workshop = { ...workshopOf(d), met: true }; });
+        updateSave(d => { d.workshop = withTold({ ...workshopOf(d), met: true }, 'ball-look'); });   // his hello says what ballNews() would
       } finally { kurtMeeting = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
     }, 900);
   }
@@ -2673,14 +2709,19 @@ function afterFight(node, result) {
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
     if (shinyCatch && !lentShiny) run.tally.shinies = (run.tally.shinies || 0) + 1;   // the leaderboard's ✨
-    if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+    if (!peeking && markSafari('caught', node.enemyId)) {
+      dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+      const home = moveInFirst(node.enemyId, result.shiny && !lentShiny);
+      if (home?.told) unlocked.push(home.told);
+      else if (home) dexNews.push(`🏠 ${home.name} moved into your Secret Base too!`);
+    }
     if (shinyCatch) dexNews.unshift(shinyLine(ENEMY_DEFS[node.enemyId].name, shinyCatch) + (lentShiny ? ' (A playtest: nothing is saved.)' : ''));
     if (opened.length) dexNews.splice(shinyCatch ? 1 : 0, 0, ...opened.map(g => `🔓 Sealed capsule opened! ${shinyLine(ENEMY_DEFS[node.enemyId].name, g).replace(/^✨ /, '')}`));
     // a Ranger task this catch finishes, said now (it's logged as the rewards are collected)
     if (!peeking && isSafari()) for (const t of finishedBy(getSave(), rangerInfo(node, result))) dexNews.push(`📋 Ranger task done: ${t.title}! Claim it on the board at the Safari Outfitter.`);
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
   }
-  if (isSafari() && !peeking) dexNews.push(...creditSafari());   // before unlock(): a full Safari Pokédex is Rayquaza's
+  if (isSafari() && !peeking) dexNews.push(...creditSafari(unlocked));   // before unlock(): a full Safari Pokédex is Rayquaza's
   if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
   const drop = gleaning() && !gleaned(gleanKey(node, 'drop')) ? fightDrop(mainBiome().id, node.type, random) : null;   // a material for the Satchel
   if (drop) dexNews.unshift(matLine(drop));   // first: the final boss's window drops a finished Pokédex page's last line
@@ -2833,6 +2874,7 @@ async function walkOn() {
     close = await travel({ from, to, starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), first, seed: run.tally.startedAt || run.starter.id });
     if (!peeking) updateSave(d => { d.travelSeen = { ...seenOf(d.travelSeen), [key]: true }; });
   }
+  event3dMod?.forgetBiome();   // under the film's dark, before the next town is built beside them
   run.biome += 1;
   run.atFork = false;
   const covered = () => { close?.(); fork?.close(); };
@@ -2951,7 +2993,7 @@ function offerCard(source, next, rerolled = false, picky = false) {
 /** Pays a Safari Pokédex page's reward once, the first won Safari fight after its last Pokémon is caught (any try: the
     coins don't touch the leaderboard; the rare boost waits for a replay, rareOdds()), and marks a full Safari Pokédex,
     Rayquaza's achievement. Returns the reward box's lines. */
-function creditSafari() {
+function creditSafari(windows) {
   const news = safariNews(getSave().safariDex);
   const lines = [];
   for (const area of news.areas) {
@@ -2965,19 +3007,28 @@ function creditSafari() {
     updateSave(d => { d.safariDex.complete = true; });
     lines.push('The Safari Pokédex is complete! Every Safari Pokémon is caught.');
   }
-  lines.push(...duoNews());
+  lines.push(...duoNews(windows));
   return lines;
 }
 
 /** A starter line's stage caught in the Safari adds its type to the duo pool, with that look (js/data/duo.js's
-    DUO_LINES). Catches already in the save count, so this also runs on opening the Duo app. */
-export function duoNews() {
+    DUO_LINES). Catches already in the save count. Given `windows`, each new starter gets the unlock window (the user's ask,
+    2026-10-20: a line in the catch box was easy to miss) instead of a line. */
+export function duoNews(windows) {
   const gains = duoGains(getSave().safariDex.caught, getSave().duoPool);
   const lines = [];
   for (const [type, looks] of Object.entries(gains)) {
     const fresh = !getSave().duoPool?.[type]?.length;
     updateSave(d => { d.duoPool = { ...d.duoPool, [type]: [...(d.duoPool?.[type] || []), ...looks] }; });
-    for (const look of looks) lines.push(`${STARTERS_BY_ID[look].line[0].name} joined your duo pool!${fresh ? ` ${type[0].toUpperCase()}${type.slice(1)} unlocked.` : ''}`);
+    const Type = `${type[0].toUpperCase()}${type.slice(1)}`;
+    looks.forEach((look, i) => {
+      const s = STARTERS_BY_ID[look], name = s.line[0].name, deck = STARTERS_BY_ID[s.skinOf]?.line[0].name;
+      if (!windows) return lines.push(`${name} joined your duo pool!${fresh && !i ? ` ${Type} unlocked.` : ''}`);
+      windows.push({ feat: true, kicker: '🔓 New duo starter!', name, sprite: spriteUrl(s, 'front', 0, false), cry: s.line[0].id,
+        text: fresh && !i ? `${name} joined your duo pool, and ${Type} is unlocked for Safari Duo Runs!`
+          : `${name} joined your duo pool: a new look for your ${Type} partner${deck ? `, playing ${deck}'s deck` : ''}.`,
+        hint: 'Pick it in the Safari lobby, in Duo Run.' });
+    });
   }
   return lines;
 }
@@ -5212,7 +5263,7 @@ function martStock() {
  * 'cards' (the top row), 'items' / 'relics' (rows of icons) or 'service' (forgetting a move).
  * Buying takes two taps: the first blows the tile up with a "Buy" button under it.
  */
-function ware(option, price, onBuy, { group, name }) {
+function ware(option, price, onBuy, { group, name, blocked }) {
   const node = el('div', 'mart-ware');
   const dear = price > run.money;
   node.append(option.node, el('span', `mart-price${dear ? ' too-dear' : ''}`, `💴 ${price}`));
@@ -5220,7 +5271,8 @@ function ware(option, price, onBuy, { group, name }) {
     node,
     zoom: option.zoom || option.node,
     group,
-    disabled: option.disabled || dear,
+    // broke or with a full Bag you can still tap it to read it, only Buy greyed (the user's ask, 2026-10-25)
+    blocked: blocked || (dear && `You can't afford that. You have ₽${run.money}.`),
     ask: `Buy ${name} for ₽${price}?`,
     note: option.note,
     confirm: `Buy ₽${price}`,
@@ -5232,6 +5284,13 @@ function ware(option, price, onBuy, { group, name }) {
 /* Purchases are only checkpointed when you leave for the map, so a refresh inside the Mart undoes them along with the money. */
 function martRoom() {
   const { stock } = run.map.byId[run.current];
+  // the shelves were stocked when the biome began: a relic picked up since then gives its slot to one you don't hold,
+  // so SOLD OUT only ever means bought here (rolled on the room's seed, and saved on the node like the rest)
+  for (const item of stock.relics) {
+    if (item.sold || !run.relics.includes(item.id)) continue;
+    const fresh = relicChoices(run).find(r => !stock.relics.some(s => s.id === r.id));
+    if (fresh) Object.assign(item, { id: fresh.id, price: jitter(MART_RELIC_PRICES[fresh.rarity]) });
+  }
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
 
   const cards = stock.cards.filter(item => !item.sold && copies(item.id) < MAX_COPIES).map(item => {
@@ -5258,12 +5317,12 @@ function martRoom() {
     const found = ITEMS_BY_ID[item.id];
     const option = itemOption(found);
     if (bagFull) option.node.append(el('span', 'item-full', dusk ? 'Dusk Stone' : 'Bag full'));
-    return ware({ ...option, disabled: bagFull }, martPrice(item.price), () => {
+    return ware(option, martPrice(item.price), () => {
       item.sold = true;
       run.items.push(found.id);
       tell(`Bought a ${found.name}.`);
       martRoom();
-    }, { group: 'items', name: `the ${found.name}` });
+    }, { group: 'items', name: `the ${found.name}`, blocked: bagFull && (dusk ? "Your Dusk Stone won't let you carry items." : 'Your Bag is full.') });
   });
 
   const relics = stock.relics.filter(item => !item.sold && !run.relics.includes(item.id)).map(item => {
@@ -5308,7 +5367,7 @@ function martRoom() {
     layout: 'mart-window',
   });
 
-  mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin });
+  mart3d({ cards, items, relics, removal, removalPrice, atMin });
   playMusic('mart');
 }
 
@@ -5316,7 +5375,7 @@ let brittTalk = 0;
 
 /** The walk-in 3D Mart (js/mart-3d.js) under the shop martRoom() just showed: every slot of the stock on its shelf, in
     order, each pointing at its choice (a sold one stays an empty slot). Without Three.js only the list of wares shows. */
-function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin }) {
+function mart3d({ cards, items, relics, removal, removalPrice, atMin }) {
   const { stock } = run.map.byId[run.current], box = $('reward-options'), thisRun = run;
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
   let at = 0;
@@ -5328,10 +5387,9 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
     { kind: 'pc', index: at, sign: stock.removed ? 'Sold out' : `Forget ₽${removalPrice}`, dear: removalPrice > run.money || atMin, sold: !!stock.removed },
   ];
   const options = [...cards, ...items, ...relics, removal];
-  // why a greyed choice can't be taken, said in the text box when it's tapped
+  // why the greyed PC can't be used, said in the text box when it's tapped (a greyed ware still opens, its `blocked` under it)
   const why = (o) => {
     if (o === removal) return stock.removed ? 'Only one move can be forgotten per Mart.' : atMin ? `Your deck is at the minimum (${MIN_DECK} cards).` : `Forgetting a move costs ₽${removalPrice}. You have ₽${run.money}.`;
-    if (items.includes(o) && bagFull) return dusk ? "Your Dusk Stone won't let you carry items." : 'Your Bag is full.';
     return `You can't afford that. You have ₽${run.money}.`;
   };
   // the welcome waits until you're inside (a purchase's news is said at once: the room is already up)
@@ -5447,7 +5505,7 @@ function strikeGate(won, atLastBoss) {
     if (scene && sealOn()) return { scene: { ...scene, kind: 'camp' } };
     return scene && getSave().stats.deepestBiome < 4 ? { scene: { ...scene, kind: 'open' } } : null;
   }
-  const hp = won ? Math.max(run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - GATE_HIT[run.level]) : before;
+  const hp = won ? Math.max(isChampion(run.level) ? 0 : GATE_SLIVER, before - GATE_HIT[Math.min(run.level, GATE_HIT.length - 1)]) : before;
   const first = !getSave().gateSeen;
   updateSave(d => { d.gateHp = hp; d.gateSeen = true; });
   const name = stageName(run.starter, run.stage);
@@ -5459,7 +5517,7 @@ function strikeGate(won, atLastBoss) {
   setGateBar(bar, hp);
   const li = el('li', 'gate-line', text);
   li.append(bar, el('span', 'gate-hp', `HP ${hp} / ${GATE_HP}`));
-  const kind = !won ? 'loss' : run.level === MAX_LEVEL ? 'ultimate' : 'win';
+  const kind = !won ? 'loss' : isChampion(run.level) ? 'ultimate' : 'win';
   return { li, scene: { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), before, after: hp, kind, level: run.level, first, land: gateLand() } };
 }
 
@@ -5471,13 +5529,22 @@ function level5Rewards() {
   const { id, type } = run.starter;
   const name = run.starter.line[0].name;
   const save = getSave();
-  const lines = [`⭐ ${name} earned a gold star for winning on Trainer Level 5!`];
+  const was = bestWin(save, id), lv = run.level;
+  const lines = [lv > was && lv === 5 ? `⭐ ${name} earned a gold star for winning on Trainer Level 5!`
+    : lv > was ? `⭐ ${name}'s star climbs to ${starName(lv)} for winning on Trainer Level ${lv}!`
+    : `⭐ ${name} won on Trainer Level ${lv}! Its star stays ${starName(was)}.`];
   const shiny = !save.shiny.owned.includes(id) && !run.starter.comingSoon;
   const jackpot = !save.stats.level5Jackpot[type];
+  const levelPrize = LEVEL_JACKPOT[lv] && !save.stats.levelJackpot?.[lv] ? LEVEL_JACKPOT[lv] : 0;
+  const master = lv >= MAX_LEVEL && !isMaster(save);   // read before recordWin() puts this win in the Record Book
+  const shells = LEVEL_SHELLS.filter(sh => lv >= sh.level && !shellEarned(save, sh));
+  const letters = mailOn() && !save.stats.levelLetters?.[lv] ? lettersFor(lv, LEVELS[lv]?.name) : [];
   updateSave(d => {
     d.stats.level5WinsBy[id] = (d.stats.level5WinsBy[id] || 0) + 1;
     if (shiny) { d.shiny.owned.push(id); if (!d.shiny.on.includes(id)) d.shiny.on.push(id); }
     if (jackpot) d.stats.level5Jackpot[type] = true;
+    if (levelPrize) d.stats.levelJackpot = { ...d.stats.levelJackpot, [lv]: true };
+    if (letters.length) d.stats.levelLetters = { ...d.stats.levelLetters, [lv]: true };
   });
   if (shiny) lines.push(`✨ Shiny ${name} unlocked, and switched on!`);
   if (jackpot) {
@@ -5486,6 +5553,15 @@ function level5Rewards() {
     refreshCoins();
     lines.push(`💰 Jackpot for your first Level 5 win with a ${kind} Pokémon! ${paid}`);
   }
+  if (levelPrize) {
+    const paid = post('league', `Level ${lv} Jackpot!`, `Your first win on Trainer Level ${lv}, ${LEVELS[lv].name}! The League rewards a true champion.`, levelPrize);
+    refreshCoins();
+    lines.push(`💰 Jackpot for your first win on Trainer Level ${lv}! ${paid}`);
+  }
+  if (master) lines.push('👑 You are a POKéMON MASTER! The title is on your Trainer Card.');
+  for (const sh of shells) lines.push(`🎨 The ${sh.name} Pokédex shell is yours: put it on in Settings, Device colour.`);
+  for (const l of letters) post(l.from, l.title, l.text, 0, lv >= MAX_LEVEL ? { level: lv, photo: true } : { level: lv });
+  if (letters.length) lines.push(`💌 ${letters.length > 1 ? `${letters.length} Gym Leaders wrote` : 'The Gym Leaders wrote'} to you! The letters are in your PC's mailbox.`);
   return lines;
 }
 
@@ -5572,7 +5648,7 @@ function endRun(won, atLastBoss = false, loss = null) {
     });
 
     if (streak) streak = streakLine(true);
-    if (!mewtwoRun && run.level === MAX_LEVEL) level5 = level5Rewards();
+    if (!mewtwoRun && isChampion(run.level)) level5 = level5Rewards();
     // every win goes in the Record Book, with its win scene; a Level 5 one also enters the Hall of Fame. The first of each
     // unlocks its card in the Collection (a ??? until then).
     const entry = record = recordWin(run, getSave().shiny.on.includes(run.starter.id));

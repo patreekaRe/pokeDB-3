@@ -8,7 +8,7 @@ import { playSound } from './audio.js';
 import { el, scrollCue } from './ui.js';
 import { calmFx } from './prefs.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID, matHints } from './data/satchel.js';
-import { RECIPES, TABS, FRIENDS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT, GIFT_TOLD } from './data/workshop.js';
+import { RECIPES, TABS, FRIENDS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT, GIFT_TOLD, ownsSkin } from './data/workshop.js';
 import { RING, townState, CLEARING } from './data/towns.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { GYM_BY_ID, friendWins } from './data/gym.js';
@@ -86,7 +86,7 @@ const ABOUT = {
   key: 'For the towns\' Waystones. Bring me materials from the roads and I\'ll make what they need.',
   piece: 'Furniture you can\'t buy anywhere. Made here, sent to your Secret Base.',
   gift: 'Every Gym Leader has a favourite. Give it to them at home and they\'ll give you something of theirs for your Secret Base.',
-  skin: 'Apricorns! A Safari Ball made from one throws just the same. It only looks better. Good friends teach me their secret ones.',
+  skin: 'Apricorns! Carry one and your partner comes out of it in every battle, and your Safari Balls wear it. It only looks better. Good friends teach me their secret ones.',
   held: 'Berries for your Pokémon to hold. Pack up to three in a Berry Pouch: it eats one by itself when it needs it, and another can go on each biome.',
   kit: 'Supplies for the road, from your berries and the towns\' finds. Pack one as you set out and it starts in your Bag.',
 };
@@ -95,8 +95,8 @@ const ABOUT = {
 function goesTo(r, ws) {
   if (r.kind === 'key') return 'Quest item · goes to your Satchel';
   if (r.kind === 'piece') return 'Furniture · sent to your Secret Base';
-  if (r.secret) return `Safari Ball look · ${gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'a friend')}'s secret recipe`;
-  if (r.kind === 'skin') return 'Safari Ball look · throws the same';
+  if (r.secret) return `Ball look · ${gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'a friend')}'s secret recipe`;
+  if (r.kind === 'skin') return 'Ball look · every battle and the Safari';
   if (r.kind === 'held') return 'Held berry · up to 3 in a run\'s Berry Pouch';
   if (r.kind === 'kit') return 'Run kit · pack one before a run, into your Bag';
   const who = gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'them');
@@ -195,7 +195,7 @@ export function openWorkshop() {
       box.append(el('p', 'craft-where-head', `${tip.icon} Where to find ${tip.name}`), ...whereOf(tip).map(t => el('p', 'craft-where-line', t)));
       mats.append(box);
     }
-    const madeSkin = r.kind === 'skin' && ws.made.includes(r.id);
+    const madeSkin = r.kind === 'skin' && ownsSkin(ws, r);
     const go = el('button', `craft-make ${st}`, madeSkin ? (ws.skin === r.makes ? 'Put away' : 'Carry it') : st === 'made' ? 'Made ✓' : st === 'ready' ? (keptOf(r, ws) ? 'Make another' : 'Make it!') : `Need ${missing(r, sat)} more`);
     go.type = 'button';
     go.disabled = !madeSkin && st !== 'ready';
@@ -203,7 +203,7 @@ export function openWorkshop() {
     card.replaceChildren(top, el('p', 'craft-label', st === 'made' || madeSkin ? 'Made from' : 'Materials'), mats, go);
   };
   const about = (r, ws, sat) => {
-    if (r.kind === 'skin' && isMade(r, ws, sat)) return `${r.name}. ${ws.skin === r.makes ? 'Your Safari Balls look like this now.' : 'Carry it and your Safari Balls will look like this.'}`;
+    if (r.kind === 'skin' && isMade(r, ws, sat)) return `${r.name}. ${ws.skin === r.makes ? 'Your partner comes out of this one now, and your Safari Balls match.' : 'Carry it: your partner comes out of it in every battle, and your Safari Balls match.'}`;
     if (isMade(r, ws, sat)) return r.kind === 'key' ? `The ${nameOf(r)}'s in your Satchel already.` : `The ${nameOf(r)}'s made. It's in your Secret Base.`;
     const short = shortOf(r, sat);
     const need = short.length ? ` I still need ${short.map(m => `${m.need - m.have} ${MATERIALS_BY_ID[m.id].name}`).join(' and ')}.` : ' I can make it now.';
@@ -217,11 +217,11 @@ export function openWorkshop() {
   const make = async (r) => {
     if (busy) return;
     const ws = workshopOf(getSave());
-    if (r.kind === 'skin' && ws.made.includes(r.id)) {
+    if (r.kind === 'skin' && ownsSkin(ws, r)) {
       const on = ws.skin !== r.makes;
       carrySkin(on ? r.makes : null);
       playSound(on ? 'confirm' : 'cancel');
-      line(on ? `There! Your Safari Balls are ${r.name}s now. They catch just the same.` : 'Back to plain Safari Balls. Good old things.');
+      line(on ? `There! Your partner rides in a ${r.name} now, and your Safari Balls match. They catch just the same.` : 'Back to a plain Poké Ball. Good old things.');
       return draw();
     }
     if (!craft(r)) { playSound('cancel'); return draw(); }

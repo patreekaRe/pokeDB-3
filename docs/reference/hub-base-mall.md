@@ -10,19 +10,29 @@ The first section began as the note on playtesting the live site and grew into t
   says the price and a second asks in a buy window with its picture, Buy / No (`ask()`, 2026-10-09, the user's ask; the shops' tilt-shift blur is gentler than the hall's, no click sound on walking, the shopkeeper's and Smeargle's speech text big, the second floor has no doormat, its way out the lift); a lift at the back right, its shaft running up to the top of the walls (`liftShaftArt()`; a booth looked odd, the user's call) (`LIFT` in `js/mall-furniture.js`, since 2026-10-09: the stair it replaced sank your partner into its treads, the user's call; its doors slide open with a ding, your partner steps in, they shut, the dial swings and it steps out on the other floor, `liftTap()` / `rideOn()` in `js/mall-3d.js`) roped off till `secretBase.upstairs` is bought for 1,000 rides to a second
   floor of 8 more, `furnitureStock(day, 2)`; one place is shown at a time, `goPlace()`, and rays only test it), the east
   one the Safari Outfitter since 2026-10-15 (see its section below; a new shop is a `FRONTS` line and its painting in `wallArt()`), a mezzanine with the upper floor's lit shops; tap to walk, a tap on a front goes in (no bottom pill since 2026-10-09), the doormat back out to its doorstep, `leftPlace()`), New game a Pokémon Go Pokéstop (`stopDiscArt()`, 70% size: a blue holo disc over a post, bobbing; a tap spins it three turns, a violet flash, then your partner walks out under the Whispering Clearing's gate and New game (or Continue) opens, `spinStop()` / `walkOut()`; back from the select it walks in again, `walkBackIn()`), the Whispering Clearing's gate across the front since 2026-10-09 (the user's ask: `GATE_AT`, `clearingGateArt()`, a torii-like log arch with a hanging WHISPERING CLEARING board and wind chimes lit at dusk, a fence and hedge either side closing the hub off; since 2026-10-09 the gate is scenery you walk under (`buildGateway()`, no place), New game's Pokéstop stands outside it right of the trail (`STOP_AT`) and a Scarlet / Violet-style route sign left (`SIGN_AT`, `routeSignArt()`), the user's ask; the ground runs four rows further down to it, walkable through `MEADOW`, and the camera stops the ground's front edge at the bar's top, not under it, `fitCamera()`), the side forests set back a tile, the Sealed Gate once broken right, no name tags since 2026-10-08: the bottom bar is the rooms' Pokédex bar (`placeBar()`, `.hub-bar`, the room bar's classes): the hinge's LCD names the place your partner walks near (`SEEN`; no gold pill since 2026-10-08, the user's call: a tap on the place does it), on the same line (2026-10-09, the user's layout) small Home and How to play keys that never change into anything else (Home wearing the yellow `.dex-news` "!"; `roundKey()` in `js/smooth-icons.js`), the PokéCoins alone on a mini LCD, the place's LCD on the right; under it a saved run's LCD (its Pokémon, `place` (biome or mode) and floor over a full-width HP bar, the Escape Rope, `smoothIcon('run')`, on the right) that folds down into the bar while there is no run, like an auto-hiding taskbar (`.hub-bar.no-run`, `.hbar-fold`); a saved run is continued where it was started (2026-10-08, the user's call: a Safari run at the Safari gate, a climb at the Sky Pillar, any other at the Pokéstop; `runAt()` in `makePlaces()`, `asks()`), and a tap on that place shows just Continue (the rooms' glowing gold pill, `.room-ok`) and New game on a small red Pokédex shell, no words (`.hub-card.ask`, `showCard()`); the card above it only says what a place is, notice boards by the Safari gate (a white roadside kiosk, `kioskArt()`) and the Sky Pillar (a red pin marker, `pinArt()`; both drawn smooth, not pixel, on `fine()` canvases, and since 2026-10-08 so are the Safari gate, the Sky Pillar and the Ancient Tree, each lit part painted on its own `shine()` map) opening their leaderboards, its light, fireflies and sounds by the hour, a legendary flying over now and then; the Ancient Tree's door walks into the base and its ✕ back out, your partner stepping out of the open door onto its doorstep (`liveLeaving()`, 2026-10-09) (bought once for 1500 PokéCoins, the save's `baseOwned`, `buyBase()`: till then the door is boarded up and a tap asks to buy; over the door a broken "Home" sign hangs off one nail by a frayed rope, swinging left and right, and buying swings it up level and mends it, `homeSignArt(fixed)` / `liveSign()`; 2026-10-08, the user's ask; `?base` still opens it straight away); shared HD-2D parts in `js/hd2d.js`); `?signs` shows the signs for that page load, Settings' Title screen (`titleHub`) for good, `?walk` turns it back on. `?lockdepths` hides the Depths' Pokédex tab again (forgets its Pokémon and `deepestBiome` 4), for a save an old playtest revealed it on. `?smooth` paints the Clearing in the pilot smooth style on that device for good (`js/smooth-clearing.js`, the Sky Pillar lobby's look: full resolution, gradients, glows; it draws in the pixel scene's own units over scene.js's layout and `life`, so sprites, pads and landmarks stay put; events in the Clearing and the Pokédex stills stay pixel); the hybrid (the default since 2026-10-08: Settings' Display has Scenery, Hybrid / Pixel, the save's `scenery`, `hybridScenery()` in `js/prefs.js`; `?hybrid` / `?pixel` set it too, and the title's light follows it) keeps every biome's pixels (the Clearing, Shrine, Wastes, Depths, Ruins, Thornwood, Savanna, the Safari's areas; not events' rooms) and lays smooth light over them instead (HD-2D, `js/hybrid-light.js` on `#scene-light`, a canvas screened over `#scene-bg`: sun / moon bloom, glowing fireflies and pollen, haze on the far hills, a dawn / dusk tint (half strength outside the Clearing, less under a roof), and a bloom read from the frame itself on every pixel in one of the look's `GLOWS` colours: lava, lanterns, crystals, runes, preludes included, so a new biome needs no light code; the Clearing's Deep Woods beams and prelude are `js/hybrid-clearing.js`), saved the same way; the two replace each other, and `?pixel` turns both off. `?time=dawn`, `day`, `dusk` or
-  `night` pins the day/night cycle for that page load (`js/daytime.js`); `?season=halloween` / `winter` / `none` pins the Clearing's seasonal dress (`season()` in `js/season.js`, October and December by the date; its look in `js/hub-season.js`; Halloween's yard since 2026-10-10, the user's ask: giant jack-o'-lanterns, a pumpkin patch and scarecrow, a candlelit graveyard, a cauldron (a real 3D model since 2026-10-10, the user's ask: `makeCauldron()` in `js/hub-cauldron.js`, its brew swirling and bubbling, a ladle stirring itself, its fire and brew lamps; a tap plays the next of `TRICKS` in order, cycling (the user's call, 2026-10-10): bubbles, a new brew colour, sparks, boiling over, a ghost rising out, smoke rings), hay, lanterns, a dead tree, glowing caps, each on its own blocked tile (`yardTiles` in `dressSeason()`), grouped since 2026-10-11 into a few spots, mirrored pairs framing the trail and the open ground left clear (the user's call: scattered everywhere it read as clutter), and `js/hub-spooky.js`: Gengar, Litwick, Duskull and Sableye standing about, one strolling at a time in turn, never stopping on or beside a doorstep (`byDoor`, 2026-10-13, the user's ask), a short line now and then in a little cream speech window over the speaker's head (`.spook-bubble`, placed each frame by `place()`; its pop-in class is `spook-in`, never `pop`: screens.css's global `.pop` is battle's damage number at opacity 0, which hid every bubble), a line or a story when tapped in the Furniture store's speech window (`.mall-line`, `.spook-foot` over the bar), and the first time the Clearing shows on a page load the next of the four in turn (`pokedb.spookGreeter`, per device; it was always Sableye, the nearest) walks up to your partner and greets you by nickname (`{name}` in a line is `trainerName()`, mixed through their lines too), their ~400 lines in `js/data/spooky-lines.js`, bats round the Ancient Tree). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?tower=25` starts a throwaway Sky Pillar climb at that floor (`&hp=0.1` shrinks every foe's HP; `&aug=echo,nova` hands it those augments; `peekTower()`). `?climb` plays the climb's opening film (Climb's, `js/climb-intro.js`) after PRESS START, then that throwaway climb from floor 1. `?biome=ruins` (any biome, `&starter=id`, `&level=0-5`, `&slot=1` / `2` for a pool biome at that fork) starts a throwaway run in that biome (`peekBiome()`). `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to: `?travel=ruins`, or `?travel=wastes&from=ruins` for the Ruins' road; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
+  `night` pins the day/night cycle for that page load (`js/daytime.js`); `?season=halloween` / `winter` / `none` pins the Clearing's seasonal dress (`season()` in `js/season.js`, October and December by the date; its look in `js/hub-season.js`; Halloween's yard since 2026-10-10, the user's ask: giant jack-o'-lanterns, a pumpkin patch and scarecrow, a candlelit graveyard, a cauldron (a real 3D model since 2026-10-10, the user's ask: `makeCauldron()` in `js/hub-cauldron.js`, its brew swirling and bubbling, a ladle stirring itself, its fire and brew lamps; a tap plays the next of `TRICKS` in order, cycling (the user's call, 2026-10-10): bubbles, a new brew colour, sparks, boiling over, a ghost rising out, smoke rings), hay, lanterns, a dead tree, glowing caps, each on its own blocked tile (`yardTiles` in `dressSeason()`), grouped since 2026-10-11 into a few spots, mirrored pairs framing the trail and the open ground left clear (the user's call: scattered everywhere it read as clutter), and `js/hub-spooky.js`: Gengar, Litwick, Duskull and Sableye standing about, one strolling at a time in turn, never stopping on or beside a doorstep (`byDoor`, 2026-10-13, the user's ask), a short line now and then in a little cream speech window over the speaker's head (`.spook-bubble`, placed each frame by `place()`; its pop-in class is `spook-in`, never `pop`: screens.css's global `.pop` is battle's damage number at opacity 0, which hid every bubble), a line or a story when tapped in the Furniture store's speech window (`.mall-line`, `.spook-foot` over the bar), and your nickname turns up among their lines (`{name}` is `trainerName()`; the walk-up greeting each visit was cut 2026-10-23, the user's call: it got annoying, only the random lines and tap talks stay), their ~400 lines in `js/data/spooky-lines.js`, bats round the Ancient Tree). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?tower=25` starts a throwaway Sky Pillar climb at that floor (`&hp=0.1` shrinks every foe's HP; `&aug=echo,nova` hands it those augments; `peekTower()`). `?climb` plays the climb's opening film (Climb's, `js/climb-intro.js`) after PRESS START, then that throwaway climb from floor 1. `?biome=ruins` (any biome, `&starter=id`, `&level=0-5`, `&slot=1` / `2` for a pool biome at that fork) starts a throwaway run in that biome (`peekBiome()`). `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to: `?travel=ruins`, or `?travel=wastes&from=ruins` for the Ruins' road; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
   `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area, or a main biome: `?area=depths` walks the Crystal Depths;
   `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`); each area opens with its intro film and each new place with its walk-on (`js/safari-intro.js`; `&intro=0` skips them); the boss's place then plays its boss prelude (a tap replays it, a tap on the label walks on). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
   break that frees Mewtwo) after PRESS START; `?gate=0&strike=0` the open gate throwing your Pokémon back. Neither is saved.
 
 - **The Clearing's PC** (2026-10-09, the user's ask; finished the same day): right of the plaza (`PC_AT`; a real 3D model since 2026-10-09, the user's ask, `pcModel()` in `js/hub-pc.js`, its screen's scan lines rolling, `livePc()`; was `pcArt()` in
   `js/hub-3d.js`, after Pokopia's Pokémon Center PC), a tap logs on to `js/pc.js`, full screen over the hub: Gen 3's menu,
-  the Mailbox (the big PokéCoin prizes, Pokédex / bonus / Safari pages, the whole Pokédex, a type's first Level 5 jackpot, feats' coins, are posted there as letters by `post()` in `js/mail.js`, `save.mail`, and claimed with a little moment: the envelope opens, the letter rises, the coins count up; an envelope bobs over the PC while one waits, `pcMail` in `js/hub-3d.js`; with the Signs title they're paid at once; `?mail` drops sample letters into an empty mailbox), Walking buddy and Base residents (straight off the menu since 2026-10-11, the user's ask; Bill's PC held them; both pickers say the buddy and the Pokédex partner differ), your PC (Rename, the same nickname as Settings'), Prof. Oak's PC (the Pokédex rating, a bar per page and a Next unlock card cycling hints, `rating()` / `hints()`), Decorations (your PC's: the base's furniture, in the room or in storage, Put away; every base owns one Storage PC, `FREE_PC` in `js/secret-base.js`, which tapped in the room opens it there, `logOn()` in `js/base-3d.js`), Sign in / Cloud save (the cloud save's window, `openCloud()`; the title corner's Sign in PC is hidden in hub mode since, `#title-account` in `css/hub.css`), the Hall of Fame / Record
+  the Mailbox (the big PokéCoin prizes, Pokédex / bonus / Safari pages, the whole Pokédex, a type's first Level 5 jackpot, feats' coins, are posted there as letters by `post()` in `js/mail.js`, `save.mail`, and claimed with a little moment: the envelope opens, the letter rises, the coins count up; an envelope bobs over the PC while one waits, `pcMail` in `js/hub-3d.js`; with the Signs title they're paid at once; `?mail` drops sample letters into an empty mailbox), Base residents (straight off the menu since 2026-10-11, the user's ask; Bill's PC held them; the Walking buddy page beside it moved out to the Buddy Projector on 2026-10-22, below), your PC (Rename, the same nickname as Settings'), Prof. Oak's PC (the Pokédex rating, a bar per page and a Next unlock card cycling hints, `rating()` / `hints()`), Decorations (your PC's: the base's furniture, in the room or in storage, Put away; every base owns one Storage PC, `FREE_PC` in `js/secret-base.js`, which tapped in the room opens it there, `logOn()` in `js/base-3d.js`), Sign in / Cloud save (the cloud save's window, `openCloud()`; the title corner's Sign in PC is hidden in hub mode since, `#title-account` in `css/hub.css`), the Hall of Fame / Record
   Book (the device's app, `onApp`) and Exit PC (was Log off) (`pc-on` / `pc-off`). **The walking buddy is not the Pokédex's partner**
   (the user's call): `buddy()` / `buddyChoices()` in `js/trainercard.js`, the save's `buddy`, only first forms of owned
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
   all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
-  Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`). A resident whose
+  **The PC's Secret Base side loads behind its boot screen** (2026-10-23, the user: the PC didn't open): `js/secret-base.js`
+  pulls in every furniture model (~170 modules), so `js/pc.js` imports it, the statues and the figures in `loadBaseKit()`
+  rather than up front, and the boot screen waits on it; `warmPC()` starts it as you head for the PC (`goTo()` in
+  `js/hub-3d.js`). Keep them out of `js/pc.js`'s static imports, or a tap on the PC waits on all of it again.
+  Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6 a room, shared with `js/base-3d.js`; since
+  2026-10-23 it picks for the main room, or from the base's Storage PC the room you're in, as Pokémon out in the yard below).
+  A new Safari player's first two catches (`FIRST_HOME`) move into the main room by themselves, the first with a
+  "🏠 A new housemate!" unlock window saying every catch can live there, 6 a room (`moveInFirst()` in `js/safari-home.js`,
+  called on a new Safari Pokédex catch in `js/run.js`, `save.safariHomeTold`; the user's call, 2026-10-23). Before the base
+  is bought that writes a `secretBase` of only `mons`, which `loadBase()` keeps, so "has a base" checks read
+  `baseOwned || secretBase?.v >= 2`. A resident whose
   Safari shiny is yours comes out shiny, named "Shiny X" in the pickers (`resident(id, mine)`; 2026-10-19), and twinkles
   in the base now and then (`liveGuest()`); a friend's base's stay plain.
 - **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins; balanced the same day, the
@@ -49,8 +59,10 @@ The first section began as the note on playtesting the live site and grew into t
   den, L-shaped, cross-shaped, great hall (`ROOM_KINDS` in `js/data/house.js`; `tests/house.test.mjs`). A new room joins only
   where it was built; a gold pip opens a doorway between two rooms already wall to wall (`joinPips()` / `buyDoor()`,
   `DOOR_PRICE` 100). Upstairs: on a floor's tab the floor below shows faint, green pips on its back walls build a room a
-  floor up (`lv`, `fitRoom(…, up)`), a link ending `'up'`, walked as a staircase (steps up into the back wall, the top of a
-  flight going down in the room above; `addDoor()` in `js/base-3d.js`), its title "Bedroom · 2F". A tapped room can be taken
+  floor up (`lv`, `fitRoom(…, up)`), a link ending `'up'`, walked as a staircase (since 2026-10-25 a flight of five steps up to a doorway high in the back
+  wall, a banister up each side, `flightUp()`; in the room above a stairwell cut into the floor before the back wall, four treads going down under it, darker the deeper,
+  a banister each side, your partner climbing or sinking with the steps: `stairwell()`, `cutWell()`, `stairY()` in
+  `js/base-3d.js`; the user's ask, a doorway with one step in it didn't read as stairs), its title "Bedroom · 2F". A tapped room can be taken
   down (`takeDown()` / `removeRoom()`: never the main room or one others are only reached through; its furniture is back in
   storage, which is what you own less what stands in rooms; no refund). The plan is
   `secretBase.house`. Each room is walked as its own diorama (the user's pick over one open dollhouse): doorways are a
@@ -88,10 +100,15 @@ The first section began as the note on playtesting the live site and grew into t
   and a held piece aims at the lawn as drawn (`groundHit()` in `aimFrom()`). Seats (bench, picnic bench, lounger) carry
   a shape `seat` for part c. The lamp post and string lights switch (`light`), the barbecue burns (`fire`).
 - **Pokémon out in the yard** (2026-10-14, part c): outdoors the sheet shows the Pokémon tab as well as Furniture
-  (`.base3d.outdoors .b3-tab`); there it lists the residents on show, a tap letting one out or calling it in
-  (`secretBase.out`, `letOut()` in `js/base-3d.js`; the indoor tab tags those out "Yard", and taking one off show drops
-  it from `out`). `livesOut()` / `homeHere()` / `present()`: a guest is drawn, lives, blocks tiles and takes taps only
-  in its own place (the yard, or whichever room indoors). `YARD_SEATS` / `YARD_SPOTS` say what each yard piece is for and
+  (`.base3d.outdoors .b3-tab`). **Residents room by room** (2026-10-23, the user's call, replacing the yard's list of
+  the six indoors and `secretBase.out`): every room's Pokémon tab, the yard's too, lists the whole Safari list, the
+  ones living in that room first, then those in another room tagged with it (`ROOM_KINDS`' `tag`, `roomTag()`), then
+  the rest; up to `residentCap()` a room, a Pokémon in one room at a time (`secretBase.at`, by id, none for the main
+  room; `placeMon()` / `monRoom()` / `monsIn()` in `js/secret-base.js`). A tap moves one in from wherever it was, or
+  sends one living here back to the box (a twinkle). A resident of a room that isn't there (a lent yard) is in none;
+  a room taken down (`takeDown()`) sends its residents back to the box; an old save's `out` becomes `at` 'yard'
+  (`movedOut()`). `syncGuests()` loads only the room you're in (a friend's, 12 a room at most), on every `showRoom()`;
+  `homeHere()` / `present()`: a guest is drawn, lives, blocks tiles and takes taps only in its own room. `YARD_SEATS` / `YARD_SPOTS` say what each yard piece is for and
   where on it a Pokémon goes (in the piece's frame, turned with it by `seatSpots()`): the swing set's two swings, the
   picnic bench's four places on its benches, two in the rock pond and the inflatable pool. `seatsFor()`: a Water type
   (`ENEMY_DEFS[id].type`) takes only the water where there is a pond or pool, the rest anything but; your partner sits
@@ -324,6 +341,10 @@ The mall's east front (`FRONTS` id `outfitter`, place `so`), so each shop is one
 `js/mall-outfitter.js` paints its hall front (`outfitterFront()`, `outfitterSign()`, `outfitterAwning()`; the 3D awning and
 ball crates are `dressFronts()`'s last branch in `js/mall-hall.js`) and builds its lodge (`buildOutfitter()`); `js/mall-3d.js`
 walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
+- **Today's Apricorn ball** (2026-10-27, the user's yes): a basket on a stump left of the Day Pass dais (`APRICORN`,
+  mirroring the Shiny Exchange's kiosk), one of Kurt's seven a UTC day (`apricornToday()` in `js/data/workshop.js`, never a
+  friend's secret one) for `APRICORN_PRICE` (350); `apricornWindow()`, `apricornTap()` buys and carries it
+  (`withBought()`, `workshop.bought`). The balls' skins are `js/ball-looks.js`'s, shared with the battle and the Center.
 - **Open** once the Safari Zone is (`safariOpen()`; `?ribbon` opens it for a page load), taped shut before that with
   Kangaskhan's note; its first opening has a ribbon to cut (`RIBBONS.outfitter`, saved as `outfitterRibbon`).
 - **The lodge** (made grand the same day, the user's ask: "way bigger", price cards they couldn't read, "more of a safari
@@ -441,7 +462,7 @@ ones, and `save.ranger.log` for the rest (`logCatch()` / `logDay()`, fed by `ran
 log only starts counting from 2026-10-16, so ball, night, first-turn and unhurt tasks count from then; Pokédex tasks
 count every catch ever made. Claimed ids are `save.ranger.claimed`.
 - **Rewards** (`rewardText()`): PokéCoins (`awardCoins()`), a ball pack (`save.balls`), room for one more Safari catch to
-  live in the Secret Base (`rangerSlots()`; `residentCap()` in `js/pc.js` is `RESIDENTS` plus it, read by the PC and
+  live in each room of the Secret Base (`rangerSlots()`; `residentCap()` in `js/pc.js` is `RESIDENTS` plus it, read by the PC and
   `js/base-3d.js`), or a piece of the **Safari set** (`RANGER_FURNITURE`, painted in `js/base-furniture-safari.js`, earned
   through `js/data/furniture.js`'s `ranger` source: pennant, lantern, acacia, ball rack, rug, expedition map table, tent,
   jeep). Nothing helps a first try score higher, so the leaderboard stays fair. Each claim counts toward the **Ranger
@@ -826,3 +847,271 @@ kept on screen): Smeargle's Garden catalogue only once the save has a backyard (
 Gardevoir's Grand catalogue always. Re-read on each walk in. The Garden pond
 (`pond`) is now `layer: 'rug'`, walked over like the Koi and Frozen ponds (the user couldn't tell what it was or why it
 blocked them).
+
+## The Buddy Projector (2026-10-22)
+
+The user's ask: a hologram of the walking buddy, on a device of its own just for changing it, not over the PC; then the
+PC's WALKING BUDDY page taken out. It stands at tile (11, 10), left of the quest board, where Halloween's dead tree
+stood (the user marked the spot and had the tree removed). `makeHolo()` in `js/hub-holo.js`: a white pedestal banded in
+red (merged, `stand`), a lens throwing an additive cyan cone up to the buddy's GIF frames repainted in light (cropped by
+`spriteFit()`, scan lines, a rolling band, a rare glitch slice, a flicker; still under `calmFx()`), turning gently over a
+painted ring of dashes; about seven draws. `swapBuddy()` / `refreshBuddy()` call `holo.show(mate)`, which scans the new
+one in from the feet up. Its light takes no tap. Tapped, the place card's Change buddy opens `openBuddyPicker()` in
+`js/holo-pick.js`: a narrow cyan panel (`.holo-pick` in `css/hub.css`), the `buddyChoices()` grid, and a Shiny switch
+that is always there (the user's ask): every buddy's shiny, greyed and locked till it's bought at the Game Corner.
+A pick saves `save.buddy`, cries and closes; the buddy hops out in place.
+
+**The Berry Booth** (2026-10-23, the user's idea): a digital kiosk (`boothArt()`, a teal body, a berry-pink canopy, a lit
+screen) at `BOOTH_AT` (13, 0). The same day, the user asked for it and New game's Pokéstop to stand closer to the road:
+both moved a row in front of the gate, right at the avenue's edges in line with its lamps (`STOP_AT` 17, 0; each pulled
+`ROADSIDE` 0.4 towards the road, their doorsteps on it at 14, 0 and 16, 0), and the route sign was taken out (the user's call: not needed
+now). Only once `workshopOpen()`; a yellow "!" (`boothMark`, `boothMarks()`) while
+held berries are kept and nothing's packed. A tap opens `openBerryBooth()` (js/berrybooth.js); docs/reference/towns.md's
+Packing says what's inside.
+
+## Secret Base houses, session 1 (2026-10-23, behind `HOUSES_LIVE`)
+
+**Live since 2026-10-23** (`HOUSES_LIVE` true, the user's go after the branch playtest): everything below behind the switch is
+now what every player sees; `?houses` is a no-op flag kept for old playtest links.
+
+The roadmap's "Secret Base houses" (mock-up `docs/mockups/secret-base-houses.html`). Built behind `HOUSES_LIVE` (false,
+`js/data/houses.js`) as the towns were: `?houses` shows it all for a page load, and a buy, move or repaint made with it
+is saved like any other. With it off the Clearing is exactly as before (the Ancient Tree, no stand).
+- **Rules** (`js/data/houses.js`, no DOM, `tests/houses.test.mjs`): `HOUSES` (Starter Cottage, Log Cabin 1,500, Seaside
+  Bungalow 1,500, the Ancient Tree never sold), each with three `paints`; `REPAINT_PRICE` 250. The save's `houses`
+  `{ owned, home, paint: { id: n } }`; `housesOf(save)` reads it, and a save without it reads as a base bought before
+  houses: the tree lived in, the cottage owned free (nothing is written until a buy, move or repaint). `buyHouse()` pays
+  and moves in, the paint picked coming with it; `moveIn()` is free; `repaint()` costs 250; `firstHouse()` is the base
+  itself bought with houses on (a cottage). `lotWord(save)` names the lot in lines ('the Ancient Tree', 'your Log
+  Cabin', 'the Starter Cottage'): the garden arch, the PC's yard and base lines, the Grand Catalogue's and the Safari
+  housemate's hints read it.
+- **The lot** (`buildLot()` / `lotNow()` in `js/hub-3d.js`): the tree is still `ancientArt()`, its crown's colours now a
+  paint (`L`, the first exactly the old greens), with its "Home" sign; any other house is `makeHouse()` in
+  `js/hub-houses.js`, a real model merged by `mergeStill()`: grey siding, shingles, logs, planks and stone painted once
+  (cached) with the paint's colour multiplied over them, so a repaint is a colour, not a picture. Only the door's hit box
+  takes a tap (the rest's raycast is off, as the tree's `doorOnly()`); its leaf swings out on a hinge as your partner
+  goes in or comes out (`open(on, snap)`, ticked each frame), a warm room behind it. Before the base is bought the
+  cottage stands boarded, planks over its door. The house group sits at `tileZ(TREE_AT.ty) - 0.1`, its door on the
+  tree's doorstep column; every house stays inside the fence, clear of the garden arch (half-width ≤ 2.25).
+- **Timburr & Co.'s stand** (`KIOSK_AT` 17,4, just outside the fence's left, its step on the ring road; place `kiosk`,
+  only with houses on): `makeKiosk()` (counter, orange-and-cream awning, the crew's name board, a FOR SALE panel before
+  the base is bought, HOUSES after, a hard hat and a cone) and Timburr behind the counter as a still board that hops now
+  and then (`kiosk.tick()`). Its card's Catalogue opens `js/house-kiosk.js`.
+- **The catalogue** (`openKiosk()` in `js/house-kiosk.js`, `.hk-*` in `css/hub.css`; restyled the same day, the user:
+  "doesn't look that great", it was a red Pokédex sheet with a list): a merchant's card in the shops' look (the garden
+  catalogue's `.gmerch`: cream, gold rim, white keyline), the crew's orange (`--ink`), low on the screen; Timburr's name
+  tag askew over its top edge, the coins and a round ✕ beside it; Timburr's line (`.hk-say`: what just happened, why a
+  key is greyed, else the picked house's `blurb`); a sideways row of house cards (`.hk-card`), each a still of its real
+  model in a spotlit box (`snap` = `houseStill()` in `js/hub-3d.js`: `makeHouse()` turned three-quarters on the shared
+  turntable, `js/turntable.js`, one at a time and cached for the page load; the tree its painting) with HOME / OWNED /
+  a coin price / LOCKED (its name only in its `aria-label`; made shorter the same day, the user: "so we can see the house
+  more", 359 -> 267 px on a phone); then one row: the picked house's name over its paints (round two-tone swatches and
+  the picked paint's name), the gold `room-ok` key beside them. Keys: Buy (a confirm, then built and moved in), Move in, Repaint · 250
+  (and moves in), or the base itself (Buy · 1,500) before there is one, other houses saying "Lot first". The hub's bar
+  and card hide (`.hub.browsing`) and the camera frames the lot in the room left above the card on any screen
+  (`browseAt()`: how far forward, and how near, `BROWSE_NEAR` 0.8 easing to 1 where the house wouldn't fit, as on an
+  iPad on its side). Every pick and paint is built on the lot as a try-on (`tryOn()` -> `rebuildLot()`, which disposes
+  only the lot's group and takes its lights out of `glowMats`); closing puts back the house lived in, or rebuilds the
+  places if anything was bought.
+  A "MORE ›" pill (`.hk-more`) sits over the row's right edge on a cream fade while houses lie past it, bobbing; a tap
+  scrolls the row 80% on, and it fades out at the row's end (the user, 2026-10-27: players didn't know there were more).
+- **The PC**: HOUSE UPGRADES shows a YOUR HOUSE row (the house and its paint) on every tab, its Go there logging off and
+  walking you to the stand (`onKiosk` in `openPC()`).
+- **Budgets**: `tools/budget-check.mjs` measures `clearing-houses` (`?houses`, a new save's boarded cottage) on its own
+  line: 275 draws, 119 MB against the Clearing's 257 / 124 (the tree's big painting outweighs a house's textures). By
+  the lot: tree 265, cottage 278, cabin 284, bungalow 280 draws.
+- **The patch note** waits in `HELD` in `js/data/patchnotes.js` and joins `NEXT` by itself when `HOUSES_LIVE` goes on.
+
+### Session A: the six coin houses and eight paints (2026-10-23, branch `houses-playtest`)
+
+- **The houses** (`js/hub-houses.js`, each a builder inside `makeHouse()`, door at x 0, inside |x| <= 2.25): the
+  **Mushroom Cottage** (Homestead, 2,000: a round stalk, a spotted cap with gills under its brim, round windows, a
+  stovepipe, a lit toadstool lamp, little mushrooms), the **Red Barn** (Homestead, 2,000: board walls under a gambrel
+  roof built as `gable()` is, big X-braced doors slid open either side of the door, a hayloft and hoist, a rooster
+  weathervane, a banded silo, hay bales), the **Machiya Townhouse** (Estate, 5,000: a lit timber lattice, a tiled pent
+  roof, a plaster upper storey with its slatted window, onigawara, a noren, paper lanterns, a potted pine), the
+  **Lighthouse Cottage** (Estate, 6,000: a clapboard cottage and a banded tower to its right, a gallery, a lamp room lit
+  after dark, an anchor), the **Glasshouse Villa** (Estate, 6,000: ashlar, quoins, a tiled hip roof, arched windows, a
+  balcony with an iron rail, a glass conservatory with a barrel vault, plants and a light inside, a cypress) and the
+  **Victorian Manor** (Estate, 8,000: two storeys, a fish-scale cross gable over a bay window, an octagonal turret and
+  spire, a porch on columns, a brick chimney). New paintings tinted by the paint as the others: `tileArt` (ribbed roof
+  tiles), `ashlarArt`, `scaleArt`. `win()` takes `arch` and `to` (a turned group, `turned()`), `many()` instances small
+  repeats (slats, rails, spindles), `tint()` darkens a paint colour.
+- **Eight paints a house** (the user's ask): the first three as they were; a house's `swatch` names the two colours its
+  catalogue swatch shows (roof and wall unless named: the mushroom's cap and spots, the machiya's noren and plaster, the
+  lighthouse's stripe and wall). The tree's five new ones are crown colours (Sakura, Golden, Crimson, Frost, Haunter).
+  `TIERS` gained Estate. `tests/houses.test.mjs` checks every paint names all its house's colours.
+- **The catalogue's paints**: the paint's name moved up beside the house's (`.hk-pick-title`), and the eight swatches
+  (24 px) share the row below in a strip that scrolls sideways only where a phone is too narrow (on a 402 px phone all
+  eight fit; at 320 they scroll, the picked one kept in view). The card stays 267 px on a phone.
+- **Checks**: `tools/house-check.mjs` (new) prints each house's draws, triangles, bounding box and a front, side and plan
+  view in text. Lived in on the lot (a fresh save, `tools/budget-check.mjs`'s counts): tree 279 draws / 124.9 MB, cottage
+  264, cabin 287, bungalow 285, mushroom 283, barn 286, machiya 285, lighthouse 283, glasshouse 285, victorian 282, every
+  house about 119.4 MB; `clearing` 268, `clearing-houses` 283, within budget.
+
+### Session B: the earned and seasonal houses (2026-10-23, branch `houses-playtest`)
+
+- **The houses**, each a builder in its own file from `makeHouse()`'s `kit` (its helpers, the paint, `kit.art.<name>(fine)`;
+  `BUILDERS` in `js/hub-houses.js`), eight paints each: `js/hub-houses-league.js` the **Gym Hall** (a columned hall on a
+  stepped plinth, a Poké Ball crest in its pediment, banners, fire bowls, a Rhydon statue each side) and the **Poké Ball
+  Dome** (two hemispheres, the button round the door, `mark` patches for the Great / Ultra / Luxury paints, an aerial);
+  `-lodges.js` the **Hot-Spring Ryokan** (irimoya roof, shoji, a ♨ noren, lanterns, a steaming pool) and the **Ranger
+  Lodge** (an A-frame, its front one lit window, a deck, a flag); `-legend.js` the **Sky Spire** (an eight-sided tapering
+  tower, battlements, a pennant, floating isles; 4.65 high, the tallest) and the **Crystal Palace** (crystal spires through
+  a white hall, glowing after dark); `-season.js` the **Haunted Chateau** (leaning, two witch-hat towers, windows lit in
+  the paint's `glow`, a Gastly, jack-o'-lanterns, bats) and the **Snow Chalet** (snow on the roof, icicles, a balcony, a
+  snowman). Lived in on the lot: 265 to 275 draws, 119 to 120 MB, inside `clearing-houses`' budget.
+- **Unlocks** (`js/data/houses.js`, pure, `tests/houses.test.mjs`): a house's `earn` names its check in `EARN` (gyms: every
+  Gym Leader beaten once; waystones: every RING town mended; safari: the Safari Pokédex complete; summit: the Sky Pillar's
+  floor 100; master / eternatus / clearing: the badge, or what it reads). `housesOf()` counts an earned house owned the
+  moment it's earned (with a base); `claimEarned()` stores it in `houses.owned` for good and returns the new ones, which
+  `houseMail()` in `js/mail.js` turns into a letter from TIMBURR & CO. (a `builders` sender) on coming home to the
+  Clearing and right after the base is bought. An old save's tree is no new house (no letter). The **Ancient Tree** was
+  earned by the Clearing Badge (session B); since 2026-10-23 every base comes with it (below). **Seasonal**: `season` is a month (the chateau 10,
+  the chalet 12), `onSale()` by the UTC month, `cantBuy()` says 'season' out of it; once bought it's kept. Tiers: Starter,
+  Homestead, Estate, Earned, Seasonal, Legendary (the Crystal Palace).
+- **The catalogue**: every house shows, the tree too. A house not yet earned (or out of season) is a greyed card tagged
+  LOCKED (or its month: OCT, DEC), its key "Locked" / "Oct only", and Timburr says what earns it with the count so far
+  where there is one (`earnProgress()`: gyms, Waystones, the Sky Pillar's floor). Earned before the lot is bought: EARNED.
+  **Long names** (the user, same day: "some houses have long names and get cut off"): the picked house's name has its
+  own line the card's whole width (`fitText()` down to 12px if even that is short), the paint's name over the swatches
+  below it, the key beside them; the card 280 px on a phone (was 267).
+- **Flags**: `?houses=all` lends every earned house and puts both seasonal ones on sale for the page load (nothing
+  stored for it; no letter). `?houses&livein=<id>` saves a base living in that house (for checks and a githack link).
+  `tools/kiosk-probe.mjs` prints the catalogue in text: each card's tag, key, Timburr's line, and any name cut off.
+- **Every base starts in the Ancient Tree** (the user's call, 2026-10-23: "why would they want to downgrade"): the tree
+  is a Starter house (price 0, no `earn`; the Clearing Badge earns nothing now), and `FREE` (`['tree', 'cottage']`) is
+  what every base owns, the first lived in. `firstHouse(d, n, id)` moves into either; before the base is bought the lot
+  shows the boarded tree, the stand's catalogue opens on it, and its key buys the lot moving into the tree or the cottage
+  (whichever is picked), the other owned free. Old saves were already the tree; one bought on the branch as a cottage
+  gets the tree owned on read (`housesOf()`), still living in the cottage.
+
+### Session C: the seven new houses (2026-10-23, branch `houses-playtest`)
+
+- **The houses**, each a builder from `makeHouse()`'s `kit` in its own file (`BUILDERS` in `js/hub-houses.js`), 8 paints
+  each: `js/hub-houses-country.js` the **Treehouse** (Homestead 2,000: a trunk on roots with the door at its foot, a plank
+  cabin on a braced deck the trunk grows through, a rope ladder, a lantern, a crown of leaves in two greens, `leaf` /
+  `leaf2` / `bark` keys) and the **Windmill Farmhouse** (Homestead 1,800: a farmhouse with a door hood and a tapering
+  octagonal tower to its right, a gallery, a boat cap, four lattice sails crossed at 45°, `sail`; sunflowers, a cart
+  wheel); `-towns.js` the **Desert Riad** (Estate 6,500, Sunwell Bazaar's: adobe, a stepped parapet, a tiled horseshoe
+  arch, carved screens, a balcony, a domed tower, brass lanterns, a palm; `dome`, `tile`) and the **Lantern Pagoda**
+  (Estate 7,000, Lantern Village's: three storeys under hip roofs with upturned spurs, lit shoji, lanterns at every eave
+  corner in `lantern`, a gilt spire of rings, stone lanterns); `-feats.js` the **Champion's Keep** (earned, `champion`:
+  any type's `maxLevelWinByType` at `MAX_LEVEL`; a keep with battlements, two round towers, a gatehouse with a
+  portcullis, a crowned banner, torches, a carpet) and the **Stargazer Observatory** (earned, `pokedex`: `dex.complete`
+  or the Pokédex Badge; a stone drum under a ribbed metal dome, an open slit with the telescope out of it, a gold `star`,
+  an entrance hall, a scope on a tripod); `-season.js` the **Cherry Blossom Teahouse** (seasonal, April, 3,000: raised on
+  posts over a veranda, shoji, a tiled hip, stepping stones, a cherry tree in `blossom` dropping petals, a stone lantern).
+- **Counts** (`tools/house-check.mjs`, lived in on the lot): 13 to 17 draws a model, 1.5k to 4.7k triangles, every box
+  inside |x| <= 2.25; on the Clearing 268 to 274 draws, 119 to 120.3 MB (the tree 279). Tiers now: Starter 2, Homestead
+  6, Estate 6, Earned 7, Seasonal 3, Legendary 1 (25 houses; the catalogue 280 px, 25 cards).
+
+### Front lawn: a friend's visit starts outside (2026-10-23, branch `houses-playtest`, for the user's playtest)
+
+- **The lawn** (`openLawn()` in `js/front-lawn.js`, `.lawn3d` / `.lawn-*` in `css/hub.css`): with houses on, the
+  Trainers app's Visit (the house, not the yard) stands you outside their house on a little lawn: a hedge on three sides,
+  the Clearing's trees behind, flowerbeds, stepping stones up to the door, a red mailbox with their name on a plate,
+  their buddy beside it (a tap: its cry and a hop) and your partner at the foot of the path, under the Clearing's light
+  for the hour. A cream card says whose house and its paint, with Go in (or tap the house); your partner walks up, the
+  door swings open (the tree's painting swaps to its open one), the curtain drops and their base opens as before.
+  Leave goes home. Its own renderer, made each visit and `dropGL()`ed on the way out; in the headless probe it runs
+  faster than the Clearing (19 textures to its 81).
+- **Their house** rides in their page's base JSON as `lot` ({ id, paint }; `pageBase()` in `js/trainers.js`, only with
+  houses on), so `firestore.rules` needs no change; `lotOfBase()` reads it against `HOUSES_BY_ID`, and a page written
+  before houses (every friend's until houses go live) shows the Ancient Tree. Visit hands over `buddy` (their page's
+  key, read through `trainerMon()`, a masked one left out).
+- **Playtest**: `?base&asfriend&houses` is your own base as a friend arrives (lawn first); `&livein=<id>` another house.
+
+
+## Records and the jukebox (2026-10-25, the user's idea; live the same day)
+
+Songs for the Secret Base, bought from a gateway town's trader once its Waystone is mended, and heard by friends who
+visit. **Live since 2026-10-25** (`RECORDS_LIVE` in `js/data/records.js`, the user's call; `?records` opened it before);
+`?records=all` lends every record (never saved as bought). The user's calls: a record is **only** sold by a mended
+town's trader (the shop you reach from home through its Waystone, `t.visit` in `homeRoom()`, js/run.js), each town
+selling its own song plus more, so mending every Waystone and going back pays. The jukebox pieces stay sold as before.
+- `RECORDS` (js/data/records.js): one line a record: `id`, `town` (a TOWNS id with a trader), `track` (a js/audio.js
+  TRACKS key, which needs loop points), `name`, `price`, `ink` (its label's colour). A new mp3 = a TRACKS line, its loop
+  points (tools/loop.html) and a TRACK_GAIN, then a RECORDS line. `tests/records.test.mjs` checks each.
+- **Buying**: `openTownShop()` (js/town-shop.js) gets Furniture / Records tabs. Records are never dealt by the day: all a
+  town's are on its shelf till bought. Bought ids are `save.records`. **The Records tab is a crate to flip through**
+  (2026-10-25, the user's ask: "animated like you're sifting through different records"): `recordCrate()` in
+  js/jukebox.js, sleeves in the record's ink with its game on a tag, the front one facing you, five leaning behind with
+  their tops showing, two flipped past lying forward over a wooden lip. A drag (sideways or down, 34 px a record), the
+  wheel, the arrow keys or ◀ ▶ flip, each with the `sleeve` synth (a brush of card, `sleeveFlip()` in js/audio.js); a
+  flip is only the CSS transition between script-set transforms, and sleeves past the eight drawn are hidden. The front
+  record is the one Buy takes; a tap on it plays it (its disc slides out of the sleeve and spins; the town's music back on
+  a tab switch or close). Flipping never changes the music, so scrubbing never decodes song after song. The jukebox at
+  home keeps its list (the user's call: the crate is for buying).
+- **Playing**: `PLAYERS` (the `fam`s jukebox, dnrjukebox, recordplayer, gramophone, antqgramo). With records open a tap
+  on one in your base opens `openJukebox()` (js/jukebox.js, `.jukebox`) instead of its synth tune;
+  the pick is the base's `song` (none = its own song). `baseSong(b, mine)` is what `openBase3d()` / `reopen()` play:
+  the record while a player stands anywhere in the base and (your own base) the record is still held, else
+  `secret-base`. The song rides to the Trainers page inside the base (`pageBase()`), and `readGuestBase()` drops an
+  unknown one (RECORDS_BY_ID has no prototype). On a visit a tap on their jukebox says what's playing.
+- Not done yet: storing the last player mid-visit doesn't stop the record till you next come in.
+- **The user's town themes** (2026-10-25): 41 more records, `rec-<town>-<game>` tracks, from a JUKEBOX folder of Gen 1-4
+  town songs; 55 records in all (Lantern Village 11, Cinder Springs 11, Driftwood Landing 13, Highbough 12, Sunwell
+  Bazaar 8), 500 coins each, each town selling the songs that suit it (old Johto towns at the shrine, mining and volcano
+  towns at the springs, harbours at the landing, small green towns at Highbough, big cities at the bazaar). A name
+  carries its game, `(R/B)` / `(G/S/C)` / `(FR/LG)` / `(R/S/E)` / `(D/P)`, as a town can come from several. The 192 kbps
+  files were folded to mono at 96 kbps (the game plays them mono anyway, `mono()` in js/audio.js; 65 MB down to 46 MB);
+  the 64 kbps ones are kept as given. Loops from tools/loop.html run headless (12 s shortest loop); where a longer
+  repeat matched about as well as the top pick, the longer one (Violet, Vermilion G/S/C, Goldenrod, Saffron). The
+  Diamond/Pearl files are one pass with a short fade, which the finder can't match (it weighs level), so each joins
+  where the song comes round to its start just before the fade (chroma alone, then the waveform). Gains set the loop
+  to about -30 LUFS played, level with the towns' songs and `secret-base` measured the same way (K-weighted, mono fold).
+  The town shop's grid scrolls past 4 rows (`.town-shop .tshop-grid`).
+- **The jukebox window** (2026-10-25, the user's ask: "more immersive", "like we're actually selecting through our
+  catalogue", its own look apart from the trader's): a cabinet under a neon arch with chasing bulbs, a deck (the playing
+  record spinning on a platter, a tonearm that lifts while a record is swapped, a green NOW PLAYING screen whose title
+  scrolls when long, EQ bars), and the records as sleeves in a wooden crate, flicked through coverflow-style (scroll-snap,
+  `layout()` tilting each by its distance from the middle, reads before writes), with crate dividers a town (and Gifts).
+  A sleeve is the record's `ink` with its town's pattern (`.t-<town>`, `t-gift`, `t-home`), the name and the game on a
+  sticker; the one in front has its vinyl peeking out. Tap it (or Put it on) and the vinyl slides up out of the crate to
+  the deck. Calm effects (`calmFx()`) stop every animation.
+- **Smeargle brings the jukebox** (2026-10-25, the user's ask; a slide-in since the same day, the user's call, after the
+  walking visit found no tiles in a full room): once, Smeargle slides in on the yard's talk window (`jukeboxIntro()` in
+  js/base-3d.js, `gymTalk()`, `JUKEBOX_HELLO`), no Smeargle in the room. It says what a jukebox does and that the record
+  left on is the base's song friends hear, has you pick one of the five `PLAYER_KINDS` (`pickPlayer()`, back if shut
+  unpicked; the tapped one turns on the Furniture store's turntable over the five, `turner()` in js/turntable.js with
+  `piecePreview()`, the first up to begin with: the user's ask, 2026-10-25), sets it down near your partner (`setDown()`; storage if nothing fits) with the gift record `clearing` (the
+  Clearing's `clearing-hub`, `gift: true`, never sold) on, then (`jukeboxBye()`) says more records are at the towns'
+  trading posts once their Waystone is mended. Who (`smeargleDue()` in js/jukebox.js): once (`save.recordsIntro`), after
+  the housewarming, in any room indoors; a player from before records (`save.recordsOld`, stamped by `stampRecords()` on
+  the first load with records open: true if the base was already housewarmed) the first time home; a newer player the
+  first time home with a Waystone mended (the Clearing's first). `?smeargle` (with `?records`) brings it again, even
+  before the housewarming (`replaySmeargle()`); its gifts are kept.
+
+## Game Corner regulars keep clear of the games (2026-10-27, the user's ask)
+
+Kangaskhan stood on High-Low's step, hiding the table and catching the tap meant for it. Now, in `js/corner-crowd.js`:
+the four floor tables (Blackjack, High-Low, Voltorb Flip, Who's That Pokémon?) are played from a seat at either end
+(`stations[].at`, `face`), not the step in front; nobody stops in the two rows in front of a table or on any game's step
+(`lane`, `steps`, `inLane()`: `spotAround()`, the counter, the greeting), and one standing there or on the tile you're
+walking to steps aside. A tap on a regular passing in front of a table goes to the table (`inFront()`, `onTap()` in
+`js/mall-3d.js`).
+
+## Wallpapers and floors: 156 of them, and how players find them (2026-10-27)
+
+The user's ask: players didn't know they had wallpaper and floors (the Decorate tray's roller and floor keys are icons
+only), and wanted a lot more. The list moved out of `js/secret-base.js` into **`js/base-papers.js`**: 86 wallpapers and
+70 floors (the first 4 + 4 free), each with a `theme` (`WALL_THEMES`: Classic, Patterns, Nature, Pokémon, Fancy, Fun;
+`FLOOR_THEMES`: Wood, Tile, Carpet, Stone, Nature, Fun), priced on `shopPrice()` (175-260). The first 29 looks still
+paint in `paintWall()` / `paintFloor()`; every look since is a painter in `LOOKS` (one 8x8 cell at a time, working on a
+wall or a floor, motifs as letter-grid `PICS`), called after the old ones, so a new paper is a data line and, if it needs
+a new pattern, one `LOOKS` entry. The `ball` look takes `h` (its shine). Players find them four ways:
+- **A "!"** on the Decorate key and the Wallpaper / Floor tabs while any for sale is unseen (`freshPapers()`,
+  `b.paperSeen`; a base from before it has seen none, so everyone is shown them once), on each new tile and theme chip
+  till it's tapped (`unseenPapers` in `js/base-3d.js`). Opening a tab marks it seen (`seePapers()`).
+- **A day's sale**: one wallpaper and one floor you don't own at half price (`paperSale()`, dealt once a day from
+  `streamOf('papers', ...)` and kept as `b.sale`, so buying it deals no other), first after yours in the tray with a red
+  price tag, and a "!" on its tab each day (`saleNews()`, `b.saleSeen`). `paperPrice()` is what everything charges.
+- **A one-time line** over the room (`paperNews()` in `js/base-3d.js`, `b.paperTip`) the first time the base opens
+  with unseen ones, never while a new player's present is unopened.
+- **Smeargle's catalogue** (`js/paper-shop.js`): Smeargle's tap in the Furniture store now always opens it (the tag
+  reads "Wallpaper & floors", or "Walls, floors & garden" with a backyard), Wallpaper / Floors tabs with theme chips, the
+  sale first; a tap picks, a second buys (`buyPaper(b, field, s, false)`: owned, not put up). With a backyard a
+  **Garden ›** tab closes it and opens the garden catalogue, which replaced the old "its tap only chats" without one.
+The Decorate tray's Wallpaper / Floor tabs got theme chips (`paperFilters()`), as the Furniture tab's kinds.
+

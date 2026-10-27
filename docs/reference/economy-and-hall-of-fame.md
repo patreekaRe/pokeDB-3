@@ -24,6 +24,74 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   `js/data/sprite-fit.js` lends a shiny its normal sprite's entry. In battle a shiny comes out of its ball in a
   burst of ✨ (`shinySparkle()` in `js/battle.js`). Safari wilds have shinies of their own, caught not bought (2026-10-18; `docs/reference/safari.md`'s
   "Wild shinies and Sparkle").
+- **Trainer Levels 6-10** (2026-10-22): `CHAMPION_LEVEL` (5) and `isChampion()` in `js/data/difficulty.js` stand for
+  "a Level 5 win" everywhere (rewards, Hall of Fame `fame`, the gate's last blow and `GATE_HIT`, badges): a win on any Level
+  from 5 up counts. `MAX_LEVEL` (10) is only the cap. New mods: `healMult` (every heal in battle, rounded) and `maxHpMult`
+  (starting max HP), mirrored in pokeDB-sim. Rewards (the user's picks, 2026-10-22): the star climbs (`bestWin()`,
+  `starClass()` / `.star-lvN` in css/menus.css: gold 5, ruby, emerald, sapphire, amethyst, a rainbow-rimmed 10; on the
+  select screen, the Trainer Card, a friend's Trainers page from their `top`, the Record Book and the Box), and
+  `LEVEL_JACKPOT` in `js/run.js` (600 / 700 / 800 / 900 / 2000, once ever per Level, `stats.levelJackpot`), paid in
+  `level5Rewards()`. Trophies and Master Badges are open on the roadmap.
+- **Foil decks, Gilded / Clear shells, the Gym Leaders' letters** (2026-10-23, the roadmap's Level 6-10 rewards 6, 7 and
+  10; archive). Foil: `js/foil.js` (`wearFoil(run)` at each map and battle, `takeOffFoil()` off a run's screens from
+  `showScreen()`), `data-foil` 6-10 on `<html>`, css/cards.css's foil block: the face's transparent border shows a gem
+  gradient (6 ruby, 7 emerald, 8 sapphire, 9 amethyst), 10 a rainbow edge and a `::before` holo, both angled by
+  `--foil-x` / `--foil-y` (pointer, or the tilt; Settings' Foil cards asks an iPhone for the tilt as it's turned on).
+  Never in the Safari; the holo stands still under `calmFx()`; `?foil=N` lends it. Shells: `LEVEL_SHELLS` /
+  `shellEarned()` in `js/data/difficulty.js` (`wonOn(save, level)` reads the Record Book), said in the result window.
+  Letters: `js/data/level-letters.js` (`LEVEL_LETTERS`: three friends for each of 6-9, the Nietos at 10), posted by
+  `level5Rewards()` once per Level (`stats.levelLetters`; with the Signs title there is no PC, so they wait for a later win on that Level
+  ), a `level` (and Level 10's `photo`) on the letter: the PC shows its star or the photo, nothing to claim.
+  The photo is `leaderphoto` (`js/base-furniture-gym.js`), from furniture's `level` source (a Record Book win on 10).
+- **A Pokémon Master** (2026-10-22, the roadmap's Level 6-10 reward 3): `isMaster(save)` in `js/data/difficulty.js` is a
+  Record Book win at `MAX_LEVEL` (Mewtwo's and summits aside), so an old save proves it; `?master` lends it for a page
+  load. It earns **the title**, a TITLE line under NAME on the Trainer Card (`.tc-master`: gold on a dark chip, a rainbow
+  underline) and a 👑 line atop a friend's Trainers page (`top` >= 10), and **the crystal pedestal**, `isMasterWin()` in
+  `js/halloffame.js` (`.hof-scene.master`: ice bands, a rainbow band and facets, a prism spotlight, the title "Pokémon
+  Master" and "is a POKéMON MASTER!"; the Collection's `.hofx.master`). `level5Rewards()` says the first one. No cape and
+  no outfits (the user's call, 2026-10-22: a Champion's Cape for the walking buddy was built, then taken out; seen again
+  2026-10-23 at `e3f047fc`, "looks retarded", so a crown instead). `isMaster()` caches its Record Book read (the buddy asks
+  every frame).
+- **The Champion's Crown** (2026-10-23, the user's ask: "a really sick pokemon champion crown"): `wearsCrown(save)`, from
+  the first Level 10 win until the Trainer Card's Crown key takes it off (`save.crown` false). `buddy()` in
+  `js/trainercard.js` gives the mate `crown: crownOn`; `monBoard()` keeps it as `crowned` and `drawMon()` in `js/hd2d.js`
+  calls `wearCrown()`: a low-poly 3D crown (`crownModel()`: gold band, rim and orb, red cap, five leaning points tipped
+  with the rainbow star's gems, unlit so the bloom glows them, a white front jewel; six draws) built on first wear, turning
+  and bobbing over the head along the board's lean, scaled by the sprite's height (about 21px wide on a phone over
+  Charmander). So the Clearing, the Secret Base and the mall show it; towns and runs walk your run's starter, uncrowned,
+  and friends' buddies in the Plaza don't wear one yet (their name tag sits there). The Trainer Card's partner wears a
+  pixel one (`crownArt()` in `js/ui.js`, `.tc-crown`, bobbing, still under reduced motion). **Previews** (2026-10-23):
+  until you're a Master, the Trainer Card shows a greyed crown, "Win Lv 10" (`.tc-crown-locked`), and the Level picker
+  from Level 5 up a line with the crown and how to earn it (`#level-crown`, `renderLevel()` in `js/select.js`). `?master` skips the new-player setup and How to play (`start()` in `js/title.js`), so an empty playtest save lands on the crowned buddy.
+- **The Super Saiyan aura** (2026-10-23, the user's ask: "something aesthetic each time for 6-10? like a super saiyan
+  aura ... and a crazier one at level 10?"): `auraBest(save)` in `js/data/difficulty.js` is the highest Level won from 6 up
+  (Record Book, Mewtwo's and summits aside, read once per new win), every Level below it earned (`aurasEarned()`: each had
+  to be won to open the next); `auraWorn()` is the Trainer Card's pick (`save.aura`: a Level, 0 for off; no field: the
+  best, so a higher win puts its aura on by itself). In the star's colour (`starName()`), growing each Level (`AURA` in
+  `js/aura-art.js`): 6 a low ruby glow at the feet, 7 emerald flames up the sides, 8 sapphire to the head, 9 amethyst
+  with low licks and lightning in front of the sprite, 10 a towering rainbow-gold blaze with sparks rising, under the
+  crown. `buddy()` gives the mate `aura: auraOn`; `drawMon()` calls `wearAura()` in `js/hd2d.js`: billboards on the
+  sprite's own board (so they lean with it) with unlit, additive sheets painted once on canvases by `js/aura-art.js`
+  (value noise looping up the frame, three stepped shades; at most 576 x 80 a sheet), a frame being a step of the
+  texture's offset (no re-upload), plus a glow on the ground. Their depth is the sprite's upright one (`feetDepth(m,
+  bias)`), a hair behind it for the back flames and in front for the front sheet. **Three draws at most** (2026-10-23,
+  the user found 10 "laggy af" on their phone): the front licks, lightning and sparks are one sheet (`auraFront()`), so
+  6-8 are the flames and the ground glow, 9-10 one more (each `forceSinglePass`: three.js otherwise draws a two-sided
+  see-through material twice); 12 frames at 14 fps, a texture offset set only when the frame changes, and `calmFx()`
+  read once a second, not a `matchMedia()` each frame. Timed headless with the buddy on screen (tap the title away
+  first: behind the title the Clearing hides the buddy, so a probe of `/` alone, `tools/budget-check.mjs`'s included,
+  measures it without one), `?aura=10` adds three draws and no GPU time beyond the noise. **Smaller and under the
+  crown** (2026-10-23, the user: "the crown is hard to see now it's like behind the aura and maybe tone down the size"):
+  every Level's `tall` / `wide` cut, 10's from 2 x the sprite's height to 1.4; the crown's meshes draw in the
+  transparent pass after the aura (`renderOrder` 10, still writing depth), so no flame adds onto it (only the bloom's
+  glow reaches it), and `.tc-crown` sits over the card's front sheet.
+  Under `calmFx()` it holds `CALM_FRAME` (no lightning in it) and the glow doesn't pulse. The Trainer Card's partner wears the same frames stepped
+  by CSS (`auraArt()` in `js/ui.js`, `.tc-aura`, `.aura-strip`; still under Calm effects and reduced motion), and an
+  Aura key next to Crown steps through the earned auras, then off (`.tc-aura-key`, in the Level's colour); before any
+  is earned a greyed preview, "Win Lv 6". The Level picker shows each Level's aura from 6 up and whether it's yours
+  (`#level-aura`, `renderLevel()`). `?aura=6..10` lends one for a page load (10 lends the crown too, as a real Level 10
+  win has it) and skips the setup like `?master`. Friends' buddies in the Plaza don't wear one yet. Tests:
+  `tests/aura.test.mjs`.
 - **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
   `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
   `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character

@@ -33,7 +33,7 @@ export const NEW_CARD_KEYS = CARD_KEYS.slice(CARD_KEYS.indexOf('shinies'));
 /** Keys newer still: tried off first, so rules from before only these keep the rest of NEW_CARD_KEYS. */
 export const NEWEST_CARD_KEYS = ['shell'];
 /** Every Pokédex shell (Settings > Device colour): the free ones, Grand Champion's gold and the Grand Catalogue's. */
-export const SHELLS = ['red', 'blue', 'yellow', 'green', 'pink', 'black', 'gold', 'silver', 'crystal', 'teal', 'orange', 'purple', 'white'];
+export const SHELLS = ['red', 'blue', 'yellow', 'green', 'pink', 'black', 'gold', 'silver', 'crystal', 'teal', 'orange', 'purple', 'white', 'gilded', 'clear'];
 /** The newest Hall of Fame win rides along as JSON: { s starter, g stage, sh shiny, f its Hall of Fame number, d date, k deck }. */
 export const HOF_LEN = 1500;
 const TIERS = ['green', 'bronze', 'silver', 'gold', 'violet'];

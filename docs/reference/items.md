@@ -80,7 +80,7 @@ runs: L0 69 / 78 / 71, L3 60 / 62 / 64, L5 37 / 32 / 38).
 ## Held berries (2026-10-15, the user's ask)
 
 Like the games' held items: your Pokémon holds at most one at a time, `run.held = { id, used }`, packed from Kurt's
-Workshop before the run (docs/reference/towns.md's Kurt's Workshop: the Held berries shelf and Pack); a Run kit item packed
+Workshop before the run (docs/reference/towns.md's Kurt's Workshop: the Held berries shelf and Packing, at the Berry Booth since 2026-10-23); a Run kit item packed
 the same way is just an item in `run.items` from the start. `HELD` in `js/data/held.js` (pure, `tests/held.test.mjs`): each
 goes off by itself once, in battle, and is then eaten (`heldFires()` says when, `heldGoes()` in `js/battle.js` does it):
 - **Oran Berry**: the first time your HP is below half after losing some, heal 10.
@@ -103,7 +103,7 @@ up to `POUCH` (3) packed, the first held as the run sets out (`setOut()`, so a o
 only, never in battle or on a reward screen: while the held one is uneaten, Hold swaps them (it goes back in that berry's
 place); once one's eaten, `heldGoes()` sets `run.heldAte` to `run.biome` (through `battle.ate()`), and `canHold()` keeps the
 next off till `run.biome` is past it, the buttons greyed under "Your next berry can go on in the next biome". A Hold is
-saved at once (`afterBagChange()`, Toss's way). `pouch` and `heldAte` are saved with the run; missing reads as empty / none. **First-time tips** (2026-10-16, the user's ask), each once a save, flagged in
+saved at once (`afterBagChange()`, Toss's way). **Take off** (2026-10-25, the user's ask: save a berry for a fight ahead): the Held line's button, on the map only, while it's uneaten; `takeOff()` puts it at the front of the pouch and `run.held` goes null (the note says nothing's held). It wasn't eaten, so `heldAte` is untouched and one can go back on the same biome. Playtest: `&berries=oran,lum` on any throwaway run (`playtestKit()`). `pouch` and `heldAte` are saved with the run; missing reads as empty / none. **First-time tips** (2026-10-16, the user's ask), each once a save, flagged in
 `save.workshop.told` as it shows (`toldHeld()` / `tellHeld()` in `js/held-tips.js`; under `?satchel` once a page load, never
 saved): `held`, Kurt slides in (`gymTalk()`, APRICORN SMITH) after the forge of your first held berry with
 `CLEARING.homes.workshop.heldTalk` in `js/data/towns.js` (the bench closes while he talks and comes back as it was); `kit`, the same

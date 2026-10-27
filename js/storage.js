@@ -23,6 +23,7 @@ import { SAFARI_ROSTER } from './data/safari.js';
 
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
+const LOST_KEY = 'pokedb.run.lost';
 
 /** The two localStorage keys, for the cloud save (js/cloud.js), which copies them as they are. */
 export const SAVE_KEYS = { save: KEY, run: RUN_KEY };
@@ -121,6 +122,8 @@ const freshSave = () => ({
     biomesSeen: [],           // every biome a run has walked into, by id (the crossroads' other roads too; the Explorer Badge's)
     level5WinsBy: {},         // Trainer Level 5 wins per starter (a gold star on its portrait); counted from the rewards' release, not seeded
     level5Jackpot: {},        // { fire: true }: the type's first Level 5 win paid LEVEL5_JACKPOT
+    levelJackpot: {},         // { 7: true }: the first win on Trainer Level 6-10 paid LEVEL_JACKPOT
+    levelLetters: {},         // { 7: true }: the Gym Leaders wrote for the first win on Trainer Level 6-10 (js/data/level-letters.js)
     playMs: 0,                // play time while the page is visible, counted from the Trainer Card's release (initPlayTime())
   },
 });
@@ -354,7 +357,7 @@ export function countDex(id) {
 
 // Settings' choices (and the deck view's sort) belong to the player, not the progress: a reset keeps them
 const PREF_KEYS = ['muted', 'volume', 'musicVolume', 'sfxVolume', 'cryVolume', 'battleSpeed', 'battleFx', 'endTurnWarn', 'textSpeed', 'textAuto',
-  'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName', 'setupDone'];
+  'clock', 'calmFx', 'vibration', 'shell', 'foil', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName', 'setupDone'];
 
 export function resetSave() {
   const kept = Object.fromEntries(PREF_KEYS.filter(k => k in data).map(k => [k, data[k]]));
@@ -384,4 +387,19 @@ export function clearRunData() {
   try { localStorage.removeItem(RUN_KEY); }
   catch (err) { /* blocked: nothing to clear */ }
   wrote();
+}
+
+/* A run that wouldn't load used to vanish without a trace (2026-10-23: the user lost a run with berries packed and
+   nothing showed why). The last one is kept here with its error, and ?runback puts it back to try again. */
+export function stashLostRun(saved, err) {
+  try { localStorage.setItem(LOST_KEY, JSON.stringify({ at: Date.now(), why: String(err?.stack || err), saved })); }
+  catch (e) { /* storage full or blocked */ }
+}
+
+export function restoreLostRun() {
+  try {
+    const lost = JSON.parse(localStorage.getItem(LOST_KEY));
+    if (lost?.saved) saveRunData(lost.saved);
+    return lost;
+  } catch (err) { return null; }
 }

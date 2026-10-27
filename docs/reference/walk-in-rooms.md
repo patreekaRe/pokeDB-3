@@ -44,7 +44,10 @@ canvas should read `sharpness().cap`.
 The Center, Mart and event rooms keep their renderer awake under the map (to warm the next rooms), and kept the room
 walked out of uploaded with it. `unmount()` now calls `putAway(view, scene)` (`js/hd2d.js`): a second after, if the map
 is up, the scene is `unload()`ed (re-uploaded on the next visit); headless, ~65-80MB down to ~47MB, which is the
-renderer's own post targets. Swapping rooms (a town and its houses) unloads the one left; leaving a town disposes it
+renderer's own post targets. Since 2026-10-24 the Center and the Mart pass their renderer too (`putAway(view, scene,
+renderer)`), which then sleeps: the map warms nothing into them, so their post targets sat awake beside the warmed arena
+(headless, the map 85 -> 52 MB after a Center, 100 -> 58 after a Mart). The ? rooms' doesn't: the map warms rooms into it.
+Swapping rooms (a town and its houses) unloads the one left; leaving a town disposes it
 (`forgetTowns()`); a partner board replaced is disposed; `dispose()`/`unload()` free every material map but `envMap`;
 the Mart keeps at most `CARD_TEX_MAX` (24) card faces.
 
@@ -59,7 +62,10 @@ from this note if needed. Sludge Pit and Team Rocket have no Leave: walk out by 
 **Two rooms kept** (2026-10-18, round six of the iPhone reloads): `KEEP_ROOMS` 2, down from 3, and the newest town is
 never one `forgetRooms()` lets go (`forgetTowns()` does, on the way out), so a town keeps itself and its last home. The map
 warms only that many of the next step's rooms (`warmEvent3d()` in `js/run.js`, the gym last so it's kept); a third ? room
-reachable is built when it's walked into.
+reachable is built when it's walked into. **Walking on to the next biome lets go of every room** (2026-10-25, the user's
+phone reloaded at Biome 1's crossroads): `forgetBiome()` in `js/event-3d.js`, called by `walkOn()` in `js/run.js` under
+the journey film's dark, before the next town is built. Till then the biome's last two rooms (its gym's hand-over and a ?
+room, ~17 MB of paintings) stayed kept beside the new town, since a town never counts against `KEEP_ROOMS`.
 
 **One side-wall painting** (2026-10-19, the user's ask: the tab still reloading mid-run). `shell()` paints a room's side
 wall once and both walls share its material, unless the painter takes `left` (only `careSide` does); a side wall's glow

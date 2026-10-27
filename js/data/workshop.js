@@ -5,7 +5,8 @@
    - key    the questlines' Make steps (js/data/towns.js's QUESTS `craft`), into the Satchel's Key Items
    - piece  craft-only furniture from each town's shelf, into the Secret Base (js/data/furniture.js's 'craft' source)
    - gift   a present for a Gym Leader, handed over in their home; their favourite earns their signature piece
-   - skin   an Apricorn ball's look for the Safari Ball (looks only: the odds stay the Safari Ball's)
+   - skin   an Apricorn ball's look for your ball: the one your partner comes out of in every battle, and the Safari
+            Ball (since 2026-10-27, the user's ask; looks only: the odds stay the Safari Ball's)
    - held   a held berry (js/data/held.js) and
    - kit    a Bag item (js/data/items.js), both from backyard berries and the towns' finds (2026-10-15, the user's ask):
             made again and again, counted in `save.workshop.kit`; a Berry Pouch of up to POUCH held berries (packPouch())
@@ -138,7 +139,7 @@ export function shortOf(recipe, sat) {
 export function isMade(recipe, ws, sat) {
   if (recipe.kind === 'key') return sat.keys.includes(recipe.makes);
   if (recipe.kind === 'gift' || repeats(recipe)) return false;
-  return ws.made.includes(recipe.id);
+  return recipe.kind === 'skin' ? ownsSkin(ws, recipe) : ws.made.includes(recipe.id);
 }
 
 /** Whether the Workshop shows a recipe (see the top of this file). `towns` is the save's per-town states
@@ -195,6 +196,30 @@ export function packPouch(ws, ids) {
     berries.push(r.makes);
   }
   return { ws: { ...ws, kit }, berries };
+}
+
+/** The Berry Booth's saved loadout (`save.loadout`, js/berrybooth.js) held to what's still kept: { berries: held berry
+    recipe ids, up to POUCH, the first held as the run sets out; item: a run kit recipe id or null }. */
+export function fitLoadout(lo, ws) {
+  const room = { ...ws.kit };
+  const berries = (lo?.berries || []).slice(0, POUCH).filter(id => RECIPES_BY_ID[id]?.kind === 'held' && room[id]-- > 0);
+  const item = RECIPES_BY_ID[lo?.item]?.kind === 'kit' && ws.kit?.[lo.item] > 0 ? lo.item : null;
+  return { berries, item };
+}
+
+/** Whether the Berry Booth beckons (a "!" over the Clearing's kiosk): held berries kept and nothing packed. */
+export function boothBeckons(lo, ws) {
+  const now = fitLoadout(lo, ws);
+  return !now.berries.length && !now.item && packable(ws).some(o => o.recipe.kind === 'held');
+}
+
+/** Prepare's one line on what a run sets out with (the user's pick, 2026-10-23: read-only, packed at the Berry Booth). */
+export function loadoutLine({ berries, item }) {
+  if (!berries.length && !item) return 'Nothing packed: visit the Berry Booth by the Clearing\'s gate.';
+  const short = (id) => HELD_BY_ID[RECIPES_BY_ID[id].makes].name.replace(/ Berry$/, '');
+  const parts = berries.map((id, i) => (i ? short(id) : `${short(id)} (held)`));
+  if (item) parts.push(`Kit: ${RECIPES_BY_ID[item].name}`);
+  return `Bringing: ${parts.join(' · ')}`;
 }
 
 /** A gift handed to `leader`: one fewer held, their liking up (two for their favourite), and their favourite the first
@@ -262,6 +287,24 @@ export const needsLine = (recipe, sat) => Object.entries(recipe.needs)
 
 /** The Safari Ball's sprite: its own, or the Apricorn skin carried. */
 export const safariSprite = (ws) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : 'safari-ball');
+/** The ball your partner comes out of at a battle's start: a Poké Ball, or the Apricorn skin carried. */
+export const sendSprite = (ws) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : 'poke-ball');
+
+/** Whether an Apricorn ball is yours: made at Kurt's, or bought at the Safari Outfitter (`bought`, kept apart from `made`:
+    anything made opens Kurt's Workshop, js/data/towns.js's workshopOpen()). */
+export const ownsSkin = (ws, r) => ws.made.includes(r.id) || !!ws.bought?.includes(r.id);
+/** The Apricorn balls you own, in the Workshop's order. */
+export const ownedSkins = (ws) => SKINS.filter(r => ownsSkin(ws, r));
+
+/** The Safari Outfitter's Apricorn ball (2026-10-27, the user's yes: for players who haven't reached the towns): one of
+    Kurt's seven a UTC day (`day` as 'YYYY-MM-DD'), never a friend's secret one, at APRICORN_PRICE PokéCoins. */
+export const APRICORN_PRICE = 350;
+export function apricornToday(day) {
+  const plain = SKINS.filter(s => !s.secret);
+  return plain[Math.floor(Date.parse(day) / 864e5) % plain.length];
+}
+/** The Workshop's save with an Apricorn ball bought and carried at once. */
+export const withBought = (ws, r) => ({ ...ws, bought: [...new Set([...(ws.bought || []), r.id])], skin: r.makes });
 
 /** Each friend teaches Kurt their secret recipe (SECRETS, their own Safari Ball look) at SECRET_AT hearts, between their
     second and third signature pieces; nothing saved, so an old save that far along knows them on load. */
