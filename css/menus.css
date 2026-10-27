@@ -1281,8 +1281,13 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 }
 .cdev-cover-plate b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.75rem; font-weight: 400; letter-spacing: 1px; }
 .cdev-cover-plate small { font-size: 0.75rem; opacity: 0.9; }
-.cdev-cover-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
-.cdev-cover-badges img { width: 26px; height: 26px; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.35)); }
+.cdev-cover-badges { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; width: 100%; max-width: 300px; }
+.cdev-cover-slot {
+  display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.38)); box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.cdev-cover-slot.full { box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.45), 0 0 0 2px #ffd23a, 0 0 6px 1px rgba(255, 210, 58, 0.6); }
+.cdev-cover-slot img { width: 82%; height: 82%; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.35)); }
 /* once open, the lid's yellow light carries the LED on */
 .cdev.news.powered .pdx-light.yellow { animation: cdevLidLed 1s steps(1) infinite 0.9s; }
 @keyframes cdevLidLed { 50% { filter: brightness(0.45); } 0% { filter: brightness(1.4); box-shadow: 0 0 10px #ffd23a; } }
