@@ -3657,3 +3657,7 @@ within noise (mean 66.7 -> 65.1). Each type's plain Strike and Defend stay plain
 
 The house catalogue's "MORE ›" pill (2026-10-27, the user: players didn't know the row of homes scrolled): over the
 row's right edge while houses sit past it, a tap scrolls on, gone at the end (`.hk-more` in `js/house-kiosk.js`).
+
+The cover's Badge Case (2026-10-27, the user: the cover's pile of every badge kept growing; liked, on `main`): a fixed 6×2
+case, a slot per badge group holding its best or pinned badge, gold-rimmed when full, and a count line (`badgeCase()` in
+`js/collection.js`).
