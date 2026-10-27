@@ -3372,3 +3372,10 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Secret Base: 156 wallpapers and floors, and ways to find them (2026-10-27, cloud)
+The user: players didn't know they had wallpaper and floors, and wanted many more. 72 new wallpapers and 56 new floors
+(`js/base-papers.js`, themed, with chips in the tray), a "!" on unseen ones, a daily half-price wallpaper and floor, a
+one-time line in the base, and Smeargle's Wallpaper & floors catalogue at the Poké Mall (`js/paper-shop.js`). Branch
+`claude/flooring-wallpaper-inventory-lmgj0a`, also pushed to `main`. Detail in `docs/reference/hub-base-mall.md`.
+

@@ -1194,3 +1194,10 @@ img.shade, .sx-mon.unknown img { filter: brightness(0); opacity: 0.75; }
 .sx-got small { font: 700 12px var(--tech); color: var(--gold); }
 .shiny-ex.calm *, .shiny-ex.calm[open] { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { .shiny-ex *, .shiny-ex[open] { animation: none !important; transition: none !important; } }
+/* Smeargle's wallpaper and floor catalogue (js/paper-shop.js): each tile a corner of a room in it, the day's sale in red */
+.pcat-themes { margin-top: -4px; }
+.pcat-themes .gcat-tab { padding: 6px 10px 5px; }
+.gcat-pic.pcat-pic { width: 86%; height: auto; aspect-ratio: 4 / 3; image-rendering: pixelated; border-radius: 6px; box-shadow: 0 0 0 2px #0002; }
+.gcat-tile.pcat-sale { box-shadow: 0 0 0 2px #d83a3a, 0 3px 0 #a82828; }
+.gcat-tile.pcat-sale .gcat-price { color: #c02a2a; }
+.gcat-tile.pcat-picked { box-shadow: 0 0 0 3px #f8c830, 0 3px 0 #d8a20c; }

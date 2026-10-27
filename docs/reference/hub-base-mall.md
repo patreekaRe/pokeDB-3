@@ -826,3 +826,27 @@ kept on screen): Smeargle's Garden catalogue only once the save has a backyard (
 Gardevoir's Grand catalogue always. Re-read on each walk in. The Garden pond
 (`pond`) is now `layer: 'rug'`, walked over like the Koi and Frozen ponds (the user couldn't tell what it was or why it
 blocked them).
+
+## Wallpapers and floors: 156 of them, and how players find them (2026-10-27)
+
+The user's ask: players didn't know they had wallpaper and floors (the Decorate tray's roller and floor keys are icons
+only), and wanted a lot more. The list moved out of `js/secret-base.js` into **`js/base-papers.js`**: 86 wallpapers and
+70 floors (the first 4 + 4 free), each with a `theme` (`WALL_THEMES`: Classic, Patterns, Nature, Pokémon, Fancy, Fun;
+`FLOOR_THEMES`: Wood, Tile, Carpet, Stone, Nature, Fun), priced on `shopPrice()` (175-260). The first 29 looks still
+paint in `paintWall()` / `paintFloor()`; every look since is a painter in `LOOKS` (one 8x8 cell at a time, working on a
+wall or a floor, motifs as letter-grid `PICS`), called after the old ones, so a new paper is a data line and, if it needs
+a new pattern, one `LOOKS` entry. The `ball` look takes `h` (its shine). Players find them four ways:
+- **A "!"** on the Decorate key and the Wallpaper / Floor tabs while any for sale is unseen (`freshPapers()`,
+  `b.paperSeen`; a base from before it has seen none, so everyone is shown them once), on each new tile and theme chip
+  till it's tapped (`unseenPapers` in `js/base-3d.js`). Opening a tab marks it seen (`seePapers()`).
+- **A day's sale**: one wallpaper and one floor you don't own at half price (`paperSale()`, dealt once a day from
+  `streamOf('papers', ...)` and kept as `b.sale`, so buying it deals no other), first after yours in the tray with a red
+  price tag, and a "!" on its tab each day (`saleNews()`, `b.saleSeen`). `paperPrice()` is what everything charges.
+- **A one-time line** over the room (`paperNews()` in `js/base-3d.js`, `b.paperTip`) the first time the base opens
+  with unseen ones, never while a new player's present is unopened.
+- **Smeargle's catalogue** (`js/paper-shop.js`): Smeargle's tap in the Furniture store now always opens it (the tag
+  reads "Wallpaper & floors", or "Walls, floors & garden" with a backyard), Wallpaper / Floors tabs with theme chips, the
+  sale first; a tap picks, a second buys (`buyPaper(b, field, s, false)`: owned, not put up). With a backyard a
+  **Garden ›** tab closes it and opens the garden catalogue, which replaced the old "its tap only chats" without one.
+The Decorate tray's Wallpaper / Floor tabs got theme chips (`paperFilters()`), as the Furniture tab's kinds.
+

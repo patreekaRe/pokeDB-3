@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['base', 'Over 120 new wallpapers and floors, sorted by theme, with a "!" on new ones and one of each half price every day; Smeargle at the Poké Mall sells them too.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

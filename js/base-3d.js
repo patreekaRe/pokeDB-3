@@ -30,6 +30,7 @@ import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, 
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
   useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard, visitBase, readGuestBase, freshDesigns, seeDesign } from './secret-base.js';
 import { lendTrainerShows } from './base-furniture-trainer.js';
+import { paperPrice, onSale, freshPapers, saleNews, seePapers, themesOf } from './base-papers.js';
 import { loadStatues, statuesIn } from './base-furniture-statues.js';
 import { loadFigures } from './base-figures.js';
 import { spriteOf } from './data/gym.js';
@@ -1716,7 +1717,13 @@ function tray(which = tab) {
     b.title = label;
     b.addEventListener('click', pick);
     list.append(b);
+    return b;
   };
+  // a tab's wallpapers or floors are seen once it's open; their "!" stays on each tile till it's tapped or the room shuts
+  if ((tab === 'wall' || tab === 'floor') && !host) {
+    for (const s of freshPapers(base, tab)) unseenPapers.add(`${tab}:${s.id}`);
+    if (seePapers(base, tab)) save();
+  }
   const fresh = new Set(tab === 'furniture' ? freshDesigns(base) : []);
   filters(fresh);
   if (tab === 'colour') {
@@ -1735,9 +1742,15 @@ function tray(which = tab) {
     setTimeout(refresh, 1650);
     hold(id);
   }, spare(base, id) > 1 && spare(base, id) < Infinity ? `×${spare(base, id)}` : PIECES[id].layer === 'wall' ? 'Wall' : '', fresh.has(id));
-  // the ones you have first, then the ones for sale, cheapest first
-  const swatch = (all, field) => [...all.filter(s => ownsPaper(base, field, s)), ...all.filter(s => !ownsPaper(base, field, s)).sort((a, b) => a.price - b.price)]
-    .forEach(s => add(s.name, () => paperArt(field, s.id), base[field] === s.id, () => paperTap(field, s), ownsPaper(base, field, s) ? '' : s.price.toLocaleString()));
+  // the ones you have first, then the day's sale, then the rest for sale, cheapest first; the chip picks a theme
+  const swatch = (all, field) => {
+    const shown = all.filter(s => paperPick[field] === 'All' || s.theme === paperPick[field]), mine = (s) => ownsPaper(base, field, s);
+    [...shown.filter(mine), ...shown.filter(s => !mine(s)).sort((a, b) => onSale(base, field, b) - onSale(base, field, a) || a.price - b.price)].forEach(s => {
+      const b = add(s.name, () => paperArt(field, s.id), base[field] === s.id, () => { unseenPapers.delete(`${field}:${s.id}`); paperTap(field, s); },
+        mine(s) ? '' : paperPrice(base, field, s).toLocaleString(), unseenPapers.has(`${field}:${s.id}`));
+      if (!mine(s) && onSale(base, field, s)) b.classList.add('sale');
+    });
+  };
   if (tab === 'wall') swatch(WALLPAPERS, 'wall');
   if (tab === 'floor') swatch(FLOORS, 'floor');
   if (tab === 'mons' && outdoors()) {
@@ -1767,12 +1780,14 @@ function tray(which = tab) {
 }
 
 let kindPick = 'All';
+const paperPick = { wall: 'All', floor: 'All' }, unseenPapers = new Set();
 
 /** The filter chips over the Furniture tab: only kinds you have a piece of, so none ever opens empty. */
 function filters(fresh) {
   const row = root.querySelector('.b3-filters');
-  row.hidden = tab !== 'furniture';
+  row.hidden = tab !== 'furniture' && tab !== 'wall' && tab !== 'floor';
   if (row.hidden) return;
+  if (tab !== 'furniture') return paperFilters(row, tab);
   const have = DESIGNS.filter(id => fitsHere(id, base) && spare(base, id) > 0).map(id => PIECES[id]);
   const kinds = Object.keys(KINDS_OF).filter(k => k === 'All' || have.some(KINDS_OF[k]));
   if (!kinds.includes(kindPick)) kindPick = 'All';
@@ -1781,6 +1796,20 @@ function filters(fresh) {
     b.addEventListener('click', () => {
       if (k === kindPick) return;
       kindPick = k; playSound('select'); tray();
+      root.querySelector('.b3-strip').scrollLeft = 0;
+    });
+    return b;
+  }));
+}
+
+/** The theme chips over the Wallpaper and Floor tabs (2026-10-27: over 150 of them), a "!" on a theme with unseen ones. */
+function paperFilters(row, field) {
+  row.replaceChildren(...['All', ...themesOf(field)].map(k => {
+    const fresh = k !== 'All' && papers(field).some(s => s.theme === k && unseenPapers.has(`${field}:${s.id}`));
+    const b = Object.assign(document.createElement('button'), { type: 'button', className: 'b3-chip' + (k === paperPick[field] ? ' on' : '') + (fresh ? ' fresh' : ''), textContent: k });
+    b.addEventListener('click', () => {
+      if (k === paperPick[field]) return;
+      paperPick[field] = k; playSound('select'); tray();
       root.querySelector('.b3-strip').scrollLeft = 0;
     });
     return b;
@@ -1806,7 +1835,7 @@ function paperTap(field, s) {
     base[field] = was;
     if (!buyPaper(base, field, s)) {
       trying = { field, id: s.id, was }; base[field] = s.id;
-      playSound('cancel'); shopMsg = `You need ${(s.price - coins).toLocaleString()} more PokéCoins for ${s.name}.`;
+      playSound('cancel'); shopMsg = `You need ${(paperPrice(base, field, s) - coins).toLocaleString()} more PokéCoins for ${s.name}.`;
       return refresh();
     }
     playSound('buy'); shopMsg = `${s.name} is yours.`;
@@ -1820,6 +1849,12 @@ function paperTap(field, s) {
   base[field] = s.id;
   buildRoom(); playSound('select');
   tray(); refresh();
+}
+
+/** The hinge's line while a wallpaper or floor for sale is up on approval. */
+function tryLine() {
+  const s = papers(trying.field).find(s => s.id === trying.id), price = paperPrice(base, trying.field, s).toLocaleString();
+  return onSale(base, trying.field, s) ? `${s.name}: half price today, ${price} PokéCoins. Tap again to buy.` : `${s.name}: ${price} PokéCoins. Tap again to buy.`;
 }
 
 function refresh() {
@@ -1849,10 +1884,10 @@ function refresh() {
   hud.hint.textContent = host ? host.said || `${host.name}'s ${outdoors() ? 'backyard' : 'Secret Base'}, as they last left it. The doormat takes you home.`
     : tip ? 'A present! Tap it to open it.'
     : busy ? (named && performance.now() < named.until ? named.text : '')
-    : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
+    : trying ? tryLine()
     : (tab === 'wall' || tab === 'floor') && shopMsg ? shopMsg
-    : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
-    : tab === 'furniture' && outdoors() && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'No garden pieces in storage. Smeargle sells them at the Poké Mall: tap Smeargle for the garden catalogue.'
+    : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first. One of each is half price every day.'
+    : tab === 'furniture' && outdoors() && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'No garden pieces in storage. Smeargle sells them at the Poké Mall: tap Smeargle, then Garden.'
     : tab === 'furniture' && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
     : tab === 'mons' && outdoors() && mons.shown.length ? 'Tap one to let it out in the yard, or call it back in.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${onShowMax()} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
@@ -1871,8 +1906,10 @@ function refresh() {
   } else selBox.visible = false;
   if (tab === 'furniture' || tab === 'colour') tray();
   const anyNew = !host && freshDesigns(base).length > 0;
-  root.querySelector('.b3-decor').classList.toggle('fresh', anyNew);
+  const paperNew = (f) => !host && (freshPapers(base, f).length > 0 || saleNews(base, f));
+  root.querySelector('.b3-decor').classList.toggle('fresh', anyNew || (!host && (freshPapers(base, 'wall').length + freshPapers(base, 'floor').length > 0)));
   root.querySelector('.b3-tab[data-tab="furniture"]').classList.toggle('fresh', anyNew);
+  for (const f of ['wall', 'floor']) root.querySelector(`.b3-tab[data-tab="${f}"]`).classList.toggle('fresh', paperNew(f));
   root.querySelector('.b3-ok').textContent = holding ? 'Place' : 'Done';
 }
 
@@ -2201,10 +2238,25 @@ function liveNews() {
     if (g) sparkle(g);
   });
   if (changed) saveBase(base);
-  if (!lines.length) return;
+  if (!lines.length) return paperNews();
+  sayNews(lines.join(' '));
+}
+
+/** Once, while wallpapers or floors wait unseen: a line over the room saying where they are (2026-10-27, the user's ask:
+    players didn't know they had any). */
+function paperNews() {
+  if (host || outdoors() || giftBoard || base.paperTip) return;
+  const walls = freshPapers(base, 'wall').length, floors = freshPapers(base, 'floor').length;
+  if (!walls && !floors) return;
+  base.paperTip = true;
+  save();
+  sayNews(`${walls} wallpapers and ${floors} floors to try on! Tap Decorate, then the paint roller or the floor key. One of each is half price every day.`);
+}
+
+function sayNews(text) {
   playSound('achievement');
   const news = root.querySelector('.b3-news');
-  news.textContent = lines.join(' ');
+  news.textContent = text;
   news.hidden = false;
   news.classList.remove('in'); void news.offsetWidth; news.classList.add('in');
   clearTimeout(liveNews.t);

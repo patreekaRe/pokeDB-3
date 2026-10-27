@@ -1135,6 +1135,11 @@ furniture or Safari Pokémon (hardest: both sides must agree at once). All need 
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**More ways to meet wallpaper and floors** (2026-10-27, Claude's suggestions after the 156 papers and Smeargle's
+catalogue shipped; not asked for yet): earned papers (a Gym Leader's wallpaper with their badge, a Safari area's floor),
+a PC mission ("Put up a new wallpaper"), text labels under the Decorate tray's icon-only tabs, and a seasonal paper on
+sale with a holiday set (`js/data/holidays.js`).
+
 **A longer Safari run** (2026-10-20, the user: "I think we need to make our safari modes longer?"). Today a day is 3 areas
 x 10 floors and a boss, the main game's length. Claude's lean: a 4th area a day (more of the Safari's rosters met, more
 catching, ~33% longer) over more floors per area (more fights, not more Pokémon). It needs a bot check of the day's win rate
