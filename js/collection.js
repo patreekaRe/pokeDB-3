@@ -34,8 +34,8 @@ import { howtoApp } from './howto.js';
 import { statsApp } from './statsdex.js';
 import { recordsApp, bookEntries } from './halloffame.js';
 import { tipAt } from './tips.js';
-import { openTrainerCard, trainerTile, badgeNews, deviceNews, newFinds, partner, cardTier, badgeArt } from './trainercard.js';
-import { BADGES } from './data/badges.js';
+import { openTrainerCard, trainerTile, badgeNews, deviceNews, newFinds, partner, cardTier, badgeArt, coverBadge } from './trainercard.js';
+import { BADGES, BADGE_GROUPS } from './data/badges.js';
 import { trainerName } from './leaderboard.js';
 import { showName } from './settings.js';
 import { showMenuScene } from './scene.js';
@@ -101,16 +101,33 @@ export function coverArt() {
   win.append(img);
   const plate = el('span', 'cdev-cover-plate');
   plate.dataset.tier = cardTier(save).id;
-  const earned = BADGES.filter(b => !b.locked && (save.badges || []).includes(b.id));
-  const row = el('span', 'cdev-cover-badges');
-  row.append(...earned.map(b => {
-    const art = el('img');
-    art.src = badgeArt(b.id, true);
-    art.alt = '';
-    return art;
-  }));
-  plate.append(el('b', '', trainerName().toUpperCase()), earned.length ? row : el('small', '', 'NO BADGES YET'));
+  plate.append(el('b', '', trainerName().toUpperCase()), ...badgeCase(save));
   return [led, win, plate];
+}
+
+/** The cover's Badge Case: a slot per group, never more however many are earned, each holding that group's best badge
+    (the one pinned for friends, if it's there; else the last earned in the group's order) and gold-rimmed once the group's full. */
+function badgeCase(save) {
+  const have = new Set(save.badges || []);
+  let got = 0, all = 0;
+  const grid = el('span', 'cdev-cover-badges');
+  grid.append(...BADGE_GROUPS.map(g => {
+    const group = BADGES.filter(b => b.group === g.id && !b.locked);
+    const mine = group.filter(b => have.has(b.id));
+    got += mine.length;
+    all += group.length;
+    const best = coverBadge(g.id, save);
+    const slot = el('span', `cdev-cover-slot${!best ? ' empty' : mine.length === group.length ? ' full' : ''}`);
+    slot.title = `${g.name}: ${mine.length}/${group.length}`;
+    if (best) {
+      const art = el('img');
+      art.src = badgeArt(best.id, true);
+      art.alt = '';
+      slot.append(art);
+    }
+    return slot;
+  }));
+  return [grid, el('small', '', got ? `${got}/${all} BADGES` : 'NO BADGES YET')];
 }
 
 const trainerApp = (save) => {

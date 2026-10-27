@@ -28,6 +28,7 @@ import { sceneShot, placeShot, isPlace } from './scene.js';
 import { timeOfDay } from './daytime.js';
 import { tipAt } from './tips.js';
 import { smoothIcon } from './smooth-icons.js';
+import { typeText } from './type-badge.js';
 
 const ROLE_LABEL = { wild: 'Wild', elite: 'Alpha', boss: 'Boss' };
 const MOVE_KIND = { attack: ['⚔️', 'Attack'], drain: ['🩸', 'Drain'], defend: ['🛡️', 'Block'], buff: ['💪', 'Buff'], status: ['🗂️', 'Status'] };
@@ -143,8 +144,17 @@ function sprite(def, className) {
   return img;
 }
 
+/** A wild's weakness on its page: the type's badge and name. */
+function weakLine(weak, role) {
+  const line = el('span', '', weak ? 'Weak: ' : role === 'wild' ? 'No weakness' : 'Ignores types');
+  if (weak) line.append(typeText(weak, TYPES[weak].icon, TYPES[weak].label));
+  return line;
+}
+
 function typeChip(type) {
-  return el('span', `index-only type-${type}`, `${TYPES[type].icon} ${TYPES[type].label}`);
+  const chip = el('span', `index-only type-${type}`);
+  chip.append(typeText(type, TYPES[type].icon, TYPES[type].label));
+  return chip;
 }
 
 export function progressBar(n, of) {
@@ -533,7 +543,7 @@ function fillEntry(dir) {
     const facts = el('div', 'pdx-lcd pdx-facts');
     facts.append(
       el('span', '', `HP ${foe?.maxHp ?? '?'}`),
-      el('span', '', weak ? `Weak: ${TYPES[weak].icon} ${TYPES[weak].label}` : role === 'wild' ? 'No weakness' : 'Ignores types'),
+      weakLine(weak, role),
       el('small', '', p === DEPTHS_PAGE ? 'Numbers in the Depths' : 'Numbers at Level 0, before types'));
     lines.push(typed('', base.description), facts, moveList('Moves, in order', def.moves, foe?.strength ?? 0));
     if (def.phase2) lines.push(moveList(`Then it rises as ${def.phase2.name}`, def.phase2.moves, foe?.strength ?? 0));

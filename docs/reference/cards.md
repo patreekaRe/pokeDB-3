@@ -153,7 +153,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   **No duplicates in one run** (the user found Fire Lash = Double Hit, 2026-09-28): no two cards a run can meet (its type's
   pool, the neutral pool, its starting deck) may share cost and text. `noOffer: true` keeps a card out of `poolForType()`
   (Block: Grass's starting Defend, which offered doubled Water's Withdraw); Tackle is Pommel Strike (6 + draw 1) and Fire
-  Lash burns. Cross-type twins (Scorch / Seed Bomb, Firestorm / Solar Beam...) never meet in a run, so they stay.
+  Lash burns. **Since 2026-10-26 the rule is stricter** (the twin pass, below): not even the same card with other numbers.
 
 - **Electric** (2026-10-19, the Safari's duo pool; `docs/duo-design.md` section 5, `docs/reference/safari.md`'s duo
   section): `ELECTRIC_CARDS` / `ELECTRIC_EVO_*`, art in `js/card-art-electric.js`. New keys: `static`, `perStatic`,
@@ -299,3 +299,68 @@ late-run decks, ranked by how long they last and how hard they hit, with per-car
   Depths' `MEWTWO_MODE.mods[3]` is now bossDmg 4 / bossHp 1.2 / enemyDmg -3 (was 8 / 1.3 / 0): 66.7% (300).
 - **Sky Pillar** (`towerCfg`, 60 climbs of 4 flights a type), reaching floor 40 before -> after: fire 68 -> 70%, grass
   80 -> 78%, water 53 -> 58%: unchanged within noise. Its augments weren't retuned (stacking them is the mode's point).
+
+## The Sky Pillar F100 combo pass (2026-10-20)
+
+A friend's ~12-card Turtwig deck climbed the Sky Pillar to floor 100 (Leech Seed, Growth Spurt+, Overgrowth+, Lum Berry;
+roadmap entry of that name). Targeted fixes, not a blanket nerf, all mirrored in pokeDB-sim (variant `preF100` undoes them):
+- **Growth Spurt+** costs 0 and keeps Exhaust (was: no Exhaust). Here strength turns into block and healing too
+  (Overgrowth, Horn Leech, Hoard), and a thin deck doubled it every other turn: ~390 peak strength in the combo lab, ~22 after.
+- **Overgrowth+** costs 0 at x1 (was x2). **Ice Core** and **Electric Seed** give half the enemy's Frostbite / Static a
+  copy: `frostBlock` / `staticBlock` now count halves (`halfOf()` writes the text; two copies give it whole). Ice Core with
+  Cold Snap outlived the lab's dummy every time; its fuzzer lift fell 13.4 -> 3.8.
+- **Dark Memory** adds 1 only to a card's Steal (`steal(n, byCard)`): not Magician's every turn, Dread Plate's or the Dark
+  Gem's. Magician + Dark Memory lasted ~61 turns against the dummy, ~31 after.
+- **Lum Berry** no longer draws (StS's Medical Kit doesn't): every status an enemy added cycled a thin deck.
+- **Fire's and Fighting's lift** (the sweep's weakest late decks): **Flame Wall** and **Mat Block** 9 block, 12 upgraded
+  (were 8 / 11). Buffing their scaling pieces (Fire Pledge, Burning Bulwark, Fighting Spirit, Counterstance) or their
+  Abilities moved nothing; the starter's block card, in every deck, did.
+- Bot check (human bot, 150 a cell; Fire 300): fire L0 / L3 / L5 68 / 46 / 24 -> 79 / 55 / 32, grass 71 / 54 / 28 -> 68 /
+  54 / 27, water 65 / 45 / 25 -> 67 / 45 / 32; the 36 Safari pairs mean 65.8 -> 67.6 (fighting 67.8 -> 76.1, fire 63.3 ->
+  67.6, the rest within noise). Fire now leads at L0 by ~8 (level at L3 / L5, where it trailed). Sky Pillar (`towerCfg`,
+  10 flights, 60 climbs a type), reach floor 100: fire 27 -> 40%, grass 30 -> 23%, water 27 -> 30% (noisy at 60). Detail:
+  pokeDB-sim's README.
+
+## The twin pass (2026-10-26)
+
+The user found Bubble and Bubble Beam (Deal 5 / 6. Weak 2. Tide 1 / 2.) in one hand: "no cards that repeat ... very unique
+and distinct differences", all across the board. `docs/card-twins.md` lists every card that changed, what it read like
+and what it does now.
+- **The rule** (`tools/card-twins.mjs`, run by `tests/cards.test.mjs`): two cards one run can meet (its type's pool, the
+  Neutral pool, its starting deck, both evolutions' cards; a Duo Run both types') are **twins** if their lines match once
+  numbers are out, whatever they cost, and **near twins** if they cost the same and one is the other plus a line, sharing
+  two or more. A line is a sentence of `describe()`; an "If ...:" / "Punish:" / "Surface:" / "Unburden:" clause and what
+  follows it is one line; each keyword (Exhaust, Retain, Innate, Ethereal, Power, Icicle, Illusion) is a line. "If the
+  enemy intends to attack:" is Punish's older wording (`punishing()`), so the tool reads them as one; made cards read
+  alike whatever their count ("Add a Cinder" / "Add 3 Cinders"). Only each type's plain Strike and Defend (a starting
+  card that is just "Deal N damage." or "Gain N block.") may match another type's in a Duo Run.
+- **How each family was settled**: one card keeps a template, usually the starting-deck or common one, and the others
+  take a different line of their own type's mechanics. No pure generic card is left in a Duo type (a plain "Deal X.
+  Apply Weak." or "Bash" belongs to nobody), since every type meets every other in some Duo Run: each Bash in a starting
+  deck carries its type's rider (Scorch Burn 2, Seed Bomb Leech Seed 1, Wing Attack Unburden: draw; Spark, Snatch,
+  Bulldoze, Icy Wind already had one). Evolution cards that were a common with bigger numbers became signature moves;
+  the three Z-Moves (Gigavolt Havoc, Subzero Slammer, Black Hole Eclipse) exhaust. Power was kept card for card (StS's
+  numbers, x~1.2); no new mechanics, so pokeDB-sim's engine needed nothing. `perDiscard` (Flip Turn) was in
+  `damageFor()` and the sim before any card used it.
+- **Names and ids**: every id stays (saved runs load as they were); Disable+ is named **Imprison** (a card named like
+  an upgrade read as a second Disable).
+- **Safari signature cards** (514) were outside the rule, then had their own pass on 2026-10-27: 424 got new lines,
+  0 pairs left, held by `sigReport()` / `tests/safarimons.test.mjs`. Human bot, Safari days (`safariCfg({ catch: true, catchAt: 0.3 })`), the same sim both sides, 150 a cell, win %: solo fire / grass / water 78.0 / 69.3 / 65.3 -> 80.7 / 65.3 / 61.3; Duo Runs grass+fire / electric+water / ground+fighting / dark+flying 51.3 / 62.0 / 82.0 / 59.3 -> 48.0 / 66.7 / 81.3 / 52.7 (mean 66.7 -> 65.1); every cell inside a cell's noise (about 8 points), about 8 Pokémon caught a run on both sides. Detail: `docs/card-twins.md`'s last sections.
+- **Bot check** (human bot; before = the commit before the pass, the same bot; 150 runs a cell, Fighting's at 300):
+  fire / grass / water L0 81.3 / 66.0 / 62.0 -> 76.7 / 73.3 / 66.0, L3 54.7 / 48.7 / 46.0 -> 61.3 / 50.7 / 51.3; Mewtwo
+  (L0) 42.7 -> 44.0; solo L0 electric / ice / ground / flying / dark 82.0 / 82.7 / 96.7 / 77.3 / 85.3 -> 79.3 / 87.3 /
+  95.3 / 74.7 / 84.0; nine Duo pairs covering each type twice (Safari days, `safariCfg`) 67.3 -> 65.8 mean, every pair
+  within noise. The first cut had Fighting 5-10 lower (it had swapped block for other lines on Seismic Toss, Iron Will,
+  Circle Throw, Scrappy and Brace); with the block back, at 300: solo 89.3 -> 82.0, fighting+ice 71.3 -> 74.3,
+  ground+fighting 73.3 -> 68.3, fighting+fire 72.7 -> 78.0. ~8,000 runs, ~2 h on 4 cores.
+- **Look-alikes taken out** (2026-10-27, the user: "why not just get rid of cards that are the same"): the rule reads
+  how many hits as a number (`lines(card, sameHits)`; 5 damage twice is Deal 10), and the 28 cards that made twins left
+  the pools with `noOffer` (`docs/card-twins.md`'s "Taken out of the pools"); `evolutionCardsFor()`, `typePool()` and the
+  Card index skip `noOffer`. `sigReport()` stays on the old reading until the signature cards get their pass (roadmap).
+  Bot check (human bot, the same sim both sides, 150 a cell, L0 win %): fire / grass / water / psychic / electric / ice /
+  fighting / ground / flying / dark 76.7 / 76.7 / 60.7 / 46.0 / 84.0 / 79.3 / 89.3 / 93.3 / 66.7 / 75.3 -> 78.0 / 64.0 /
+  63.3 / 47.3 / 78.7 / 77.3 / 85.3 / 89.3 / 68.0 / 83.3; Duo Runs (Safari days) grass+fire / electric+water /
+  ground+fighting / dark+flying 48.0 / 69.3 / 76.0 / 54.0 -> 52.7 / 63.3 / 77.3 / 52.0. Grass at 300: 67.0 -> 68.3, so
+  its 150-run gap was noise; every cell within noise.
+- **Kenmatta's dojo** was rebuilt on the new cards (the user's pick, 2026-10-26; `docs/reference/events.md`'s dojo
+  notes): each trial keeps its idea, its decks and HP retuned and solved again.

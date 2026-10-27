@@ -130,5 +130,23 @@
   "growthHeapMB": 4,
   "growthNodes": 300,
   "growthListeners": 30
+ },
+ "safari-powerplant": {
+  "draws": 0,
+  "mb": 33.1,
+  "awake": 0,
+  "hidden": []
+ },
+ "safari-nightalley": {
+  "draws": 0,
+  "mb": 34.1,
+  "awake": 0,
+  "hidden": []
+ },
+ "clearing-houses": {
+  "draws": 275,
+  "mb": 119.5,
+  "awake": 1,
+  "hidden": []
  }
 }

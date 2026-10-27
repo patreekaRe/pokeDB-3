@@ -16,14 +16,14 @@
 import { STARTERS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES, CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
-import { LEVELS, MAX_LEVEL, MEWTWO_MODE, isMewtwoRun } from './data/difficulty.js';
-import { sealOn, shardsPlaced } from './data/towns.js';
+import { LEVELS, MAX_LEVEL, CHAMPION_LEVEL, MEWTWO_MODE, isMewtwoRun, bestWin, starClass, starName, isMaster, auraBest } from './data/difficulty.js';
+import { sealOn, shardsPlaced, workshopOpen } from './data/towns.js';
 import { strengthOf } from './data/camp.js';
 import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { ABILITIES } from './data/relics.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { getSave, updateSave, isShiny } from './storage.js';
-import { workshopOf, packable, RECIPES_BY_ID } from './data/workshop.js';
+import { workshopOf, packable, fitLoadout, loadoutLine } from './data/workshop.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { aimCorner } from './shop.js';
 import { openDeviceApp } from './collection.js';
@@ -31,8 +31,8 @@ import { playCry, playSound } from './audio.js';
 import { showMenuScene } from './scene.js';
 import { selectSky } from './select-sky.js';
 import { smoothIcon } from './smooth-icons.js';
-import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
-import { HELD_BY_ID, POUCH } from './data/held.js';
+import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck, crownArt, auraArt } from './ui.js';
+import { typeText } from './type-badge.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
 // Mewtwo (secret) has no portrait here: it is reached by its own doors, the open gate and the Depths camp, straight to
@@ -46,8 +46,6 @@ let tab = 'starters';
 let handlers = null;      // { onChoose(starter), onBack() }
 let preparing = null;     // after Choose: { onBegin(level), onBack() }, else null
 let level = 0;            // the Trainer Level picked for the run
-let pouch = [];           // the Berry Pouch to set out with: held berry recipe ids (js/data/workshop.js), the first held
-let pack = null;          // the run kit item to set out with (a recipe id), or none
 
 /** Called once at startup. */
 export function initSelect(on) {
@@ -61,16 +59,6 @@ export function initSelect(on) {
   });
   $('level-down').addEventListener('click', () => setLevel(level - 1));
   $('level-up').addEventListener('click', () => setLevel(level + 1));
-  $('pack-down').addEventListener('click', () => stepPack(-1));
-  $('pack-up').addEventListener('click', () => stepPack(1));
-  $('pack-peek').addEventListener('click', () => {
-    const info = $('sel-info'), top = $('prep-pack').getBoundingClientRect().top - info.getBoundingClientRect().top;
-    info.scrollTo({ top: info.scrollTop + top - 8, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    playSound('stick');
-  });
-  $('sel-info').addEventListener('scroll', updatePeek, { passive: true });
-  $('sel-prep').addEventListener('animationend', updatePeek);
-  addEventListener('resize', updatePeek);
   $('sel-shiny').addEventListener('click', () => {
     const id = picked.id;
     updateSave(d => { d.shiny.on = isShiny(id) ? d.shiny.on.filter(x => x !== id) : [...d.shiny.on, id]; });
@@ -123,6 +111,8 @@ export const pickedStarter = () => picked;
 const inTab = () => listed(tab);
 const usable = (s) => isStarterUnlocked(s) && !s.comingSoon;
 const level5Wins = (s) => getSave().stats.level5WinsBy[s.id] || 0;
+/** A champion's star, tinted by the best Level won with the starter. */
+const starTitle = (s, wins = 0) => { const lv = bestWin(getSave(), s.id); return `${starName(lv)} star: won on Trainer Level ${lv}${wins > 1 ? `, ${wins} wins from Level 5 up` : ''}`; };
 const winsOf = (s) => getSave().stats.winsBy[s.id] || 0;
 
 function pick(starter, quiet = false) {
@@ -162,7 +152,7 @@ function renderStrip() {
     fitThumb(img);
     btn.append(img);
     if (!unlocked) btn.append(el('span', 'sel-lock', '🔒'));
-    if (unlocked && level5Wins(starter)) btn.append(Object.assign(el('span', 'sel-star', '⭐'), { title: 'Won on Trainer Level 5' }));
+    if (unlocked && bestWin(getSave(), starter.id) >= 5) btn.append(Object.assign(el('span', `sel-star ${starClass(bestWin(getSave(), starter.id))}`, '⭐'), { title: starTitle(starter) }));
     if (unlocked && winsOf(starter)) btn.append(Object.assign(el('span', 'sel-thumb-wins', `🏆${winsOf(starter)}`),
       { title: `${winsOf(starter)} run${winsOf(starter) > 1 ? 's' : ''} won` }));
     if (unlocked && getSave().shiny.owned.includes(starter.id)) btn.append(el('span', `sel-sparkle${isShiny(starter.id) ? ' on' : ''}`, '✨'));
@@ -185,11 +175,11 @@ function show(starter) {
 
   $('sel-name').textContent = unlocked ? starter.line[0].name : '???';
   const wins = unlocked ? level5Wins(starter) : 0;
-  if (wins) $('sel-name').append(Object.assign(el('span', 'sel-name-star', '⭐'),
-    { title: `Won on Trainer Level 5${wins > 1 ? ` ${wins} times` : ''}` }));
+  if (unlocked && bestWin(getSave(), starter.id) >= 5) $('sel-name').append(Object.assign(el('span', `sel-name-star ${starClass(bestWin(getSave(), starter.id))}`, '⭐'),
+    { title: starTitle(starter, wins) }));
   const hp = BASE_HP + (getSave().passives.hpBoost || 0) * 5;
   $('sel-hp').textContent = `❤️ ${hp}/${hp}`;
-  $('sel-type').textContent = [type.icon, type.label].filter(Boolean).join(' ');
+  $('sel-type').replaceChildren(typeText(hiddenType ? '' : starter.type, type.icon, type.label));
   $('sel-type').className = `chip sel-type${hiddenType ? '' : ` type-${starter.type}`}`;
   const won = winsOf(starter);
   $('sel-wins').hidden = !unlocked;
@@ -233,87 +223,18 @@ export function prepare(starter, on) {
   renderDeck(starter);
   level = isMewtwoRun(starter) ? 0 : getSave().maxLevel;   // start on your highest unlocked level
   renderLevel();
-  pack = null;
-  pouch = [];
-  renderPack();
+  renderBring();
   setPreparing(on);
 }
 
-/* Pack (2026-10-15, the user's asks): what Kurt's Workshop has made you to keep (`save.workshop.kit`), shown only when
-   something's kept: a Berry Pouch of up to POUCH held berries (tap a kept one to add it, a slot to take it out; the first is
-   held as you set out, the rest go on one a biome from the Bag) and one run kit item for the Bag (◀ ▶). They're taken
-   from the counts as the run begins (js/run.js's beginRun()). */
-const keptOf = (kind) => packable(workshopOf(getSave())).filter(o => o.recipe.kind === kind);
-const leftOf = (o) => o.n - pouch.filter(id => id === o.recipe.id).length;
-const packed = () => ({ berries: [...pouch], item: keptOf('kit').some(o => o.recipe.id === pack) ? pack : null });
-function stepPack(step) {
-  const list = [null, ...keptOf('kit').map(o => o.recipe.id)];
-  pack = list[(list.indexOf(pack) + step + list.length) % list.length];
-  playSound('stick', 'confirm');
-  renderPack();
-}
-function pouchAdd(id) {
-  if (pouch.length >= POUCH) return;
-  pouch.push(id);
-  playSound('stick', 'confirm');
-  renderPack();
-}
-function pouchTake(i) {
-  pouch.splice(i, 1);
-  playSound('cancel');
-  renderPack();
-}
-function renderPack() {
-  const berries = keptOf('held'), kits = keptOf('kit');
-  $('prep-pack').hidden = !berries.length && !kits.length;
-  $('pack-pouch').hidden = !berries.length;
-  $('pack-kit').hidden = !kits.length;
-  const room = Object.fromEntries(berries.map(o => [o.recipe.id, o.n]));
-  pouch = pouch.filter(id => room[id]-- > 0);
-  $('pouch-slots').replaceChildren(...Array.from({ length: POUCH }, (_, i) => {
-    const h = HELD_BY_ID[RECIPES_BY_ID[pouch[i]]?.makes];
-    const slot = el('button', `pouch-slot${h ? ' full' : ''}${i === 0 ? ' first' : ''}`);
-    slot.type = 'button';
-    slot.disabled = !h;
-    slot.setAttribute('aria-label', h ? `Biome ${i + 1}: take the ${h.name} out` : `Biome ${i + 1}: empty`);
-    if (h) { slot.append(itemSprite(h, 'pack-ico')); slot.addEventListener('click', () => pouchTake(i)); }
-    const cell = el('div', 'pouch-cell');
-    cell.append(slot, el('small', '', `Biome ${i + 1}`));
-    return cell;
-  }));
-  $('pouch-kept').replaceChildren(...berries.map(o => {
-    const h = HELD_BY_ID[o.recipe.makes], left = leftOf(o);
-    const chip = el('button', 'pouch-chip');
-    chip.type = 'button';
-    chip.disabled = !left || pouch.length >= POUCH;
-    chip.setAttribute('aria-label', `Pack ${h.name} (${left} left)`);
-    chip.append(itemSprite(h, 'pack-ico'), el('span', '', `×${left}`));
-    chip.addEventListener('click', () => pouchAdd(o.recipe.id));
-    return chip;
-  }));
-  $('pouch-rule').textContent = pouch.length ? 'One berry a biome, eaten by itself when it\'s needed. Tap a slot to take it out.'
-    : 'Tap a berry to pack it, one for each biome.';
-
-  if (!kits.some(o => o.recipe.id === pack)) pack = null;
-  const o = kits.find(k => k.recipe.id === pack), pick = $('pack-pick');
-  if (!o) {
-    pick.replaceChildren(el('span', 'pack-none', 'Nothing'));
-    $('pack-rule').textContent = 'Pick one item from Kurt\'s Workshop to start the run in your Bag.';
-    return;
-  }
-  const r = o.recipe;
-  pick.replaceChildren(itemSprite({ id: r.sprite, icon: '' }, 'pack-ico'), el('span', 'pack-name', r.name));
-  $('pack-rule').textContent = `Takes 1 of your ${o.n}. Starts in your Bag: ${r.text}`;
-}
-
-/* The pack sits under the Trainer Level, below the panel's fold on a phone with no scrollbar to hint at it (the user's
-   worry, 2026-10-16), so a tab pinned to the panel's foot names it until it's scrolled into view. */
-function updatePeek() {
-  const peek = $('pack-peek'), box = $('prep-pack');
-  const below = !!preparing && !box.hidden
-    && box.getBoundingClientRect().top + 72 > $('sel-info').getBoundingClientRect().bottom;
-  peek.hidden = !below;
-  if (below) peek.textContent = `▼ ${[!$('pack-pouch').hidden && 'Berry Pouch', !$('pack-kit').hidden && 'Run kit'].filter(Boolean).join(' · ')}`;
+/* What the run sets out with: the Berry Pouch and run kit packed at the Berry Booth (js/berrybooth.js, `save.loadout`),
+   held to what Kurt's Workshop still keeps, on one read-only line (the user's pick, 2026-10-23: the booth is the one place
+   to pack). They're taken from the counts as the run begins (js/run.js's beginRun()). */
+const packed = () => fitLoadout(getSave().loadout, workshopOf(getSave()));
+function renderBring() {
+  const save = getSave(), lo = packed(), line = $('prep-bring');
+  line.hidden = !workshopOpen(save) || (!lo.berries.length && !lo.item && !packable(workshopOf(save)).length);
+  line.textContent = loadoutLine(lo);
 }
 
 function setPreparing(on) {
@@ -328,7 +249,7 @@ function setPreparing(on) {
   else renderTabs();
   for (const key of document.querySelectorAll('.sel-tabs .mdex-btn')) key.disabled = !!on;
   $('sel-info').scrollTop = 0;
-  requestAnimationFrame(() => { sizeSprite(); updatePeek(); });   // the stage changes height with the panel
+  requestAnimationFrame(sizeSprite);   // the stage changes height with the panel
 }
 
 /** The three forms in a row, each with its HP and when it evolves. */
@@ -381,6 +302,8 @@ function renderLevel() {
       ? ` There its Sealed Weakness holds it to ${strengthOf(shardsPlaced(getSave()))}% of its damage: every town Waystone mended gives some back.`
       : ' Every town Waystone is lit: it goes down at full strength.'}`;
     $('level-coins').hidden = true;
+    $('level-crown').hidden = true;
+    $('level-aura').hidden = true;
     $('level-rules').closest('details').hidden = true;
     return;
   }
@@ -393,6 +316,18 @@ function renderLevel() {
     : `${LEVELS[level].text}${level > 1 ? ` Plus the rules of Levels 1-${level - 1}.` : ''}`;
   $('level-coins').textContent = level ? `💰 Coins +${Math.round(level * COIN_LEVEL_BONUS * 100)}%` : '';
   $('level-coins').hidden = !level;
+  // from the champion's Levels up, the crown a Level 10 win earns, until it's yours (the user's pick, 2026-10-23)
+  const tease = level >= CHAMPION_LEVEL && !isMaster(getSave());
+  $('level-crown').hidden = !tease;
+  if (tease) $('level-crown').replaceChildren(crownArt('prep-crown-art'), level >= MAX_LEVEL ? 'Win this Level to wear the Champion\'s Crown.' : `Win on Level ${MAX_LEVEL} to wear the Champion's Crown.`);
+  // from Level 6 up, the Super Saiyan aura a win there earns, growing each Level (the user's go, 2026-10-23)
+  const aura = level > CHAMPION_LEVEL;
+  $('level-aura').hidden = !aura;
+  if (aura) {
+    const mine = auraBest(getSave()) >= level, art = auraArt(level, { cls: 'prep-aura-art', s: 14 }).back;
+    $('level-aura').replaceChildren(art, mine ? `The ${starName(level)} aura is yours: pick it on the Trainer Card.`
+      : `Win this Level and your buddy wears the ${starName(level)} aura${level >= MAX_LEVEL ? ', a Super Saiyan blaze' : ''}.`);
+  }
   const rules = Array.from({ length: level }, (_, i) => el('li', '', `${i + 1}. ${LEVELS[i + 1].text}`));
   if (max < MAX_LEVEL) rules.push(el('li', 'level-locked', `🔒 Win on Level ${max} to unlock Level ${max + 1}.`));
   $('level-rules').replaceChildren(...rules);

@@ -22,6 +22,8 @@ import { DOJO_REWARDS, DOJO_REWARD, dojoEarned, dojoHow } from './dojo.js';
 import { BERRIES, BERRY, picked } from './berries.js';
 import { RANGER_FURNITURE, TASKS_BY_ID } from './ranger.js';
 import { JOURNAL_FURNITURE, JOURNAL_BY_ID } from './journal.js';
+import { MAX_LEVEL, wonOn } from './difficulty.js';
+import { PHOTO_KIND } from './level-letters.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
 const SOURCES = {
@@ -44,6 +46,8 @@ const SOURCES = {
   ranger: { owned: (save, id) => (save.ranger?.claimed || []).includes(id), item: (id) => TASKS_BY_ID[id] },
   // the Trainer's Journal at the PC (js/data/journal.js): a milestone's piece, once it's claimed
   journal: { owned: (save, id) => (save.journal?.claimed || []).includes(id), item: (id) => JOURNAL_BY_ID[id] },
+  // a win on Trainer Level `id` (the Record Book's, so an old save proves it): the Gym Leaders' signed photo at 10
+  level: { owned: (save, id) => wonOn(save, id), item: (id) => ({ level: id }) },
   // the Golden set: a piece for every achievement earned, so the nth comes with the nth, whichever it is
   golden: { owned: (save, n) => achievementsOf(save) >= n, item: (n) => n >= 1 && n <= ACHIEVEMENTS.length && { n } },
 };
@@ -123,6 +127,7 @@ export const FURNITURE = [
   ...JOURNAL_FURNITURE.map(f => ({ kind: f.kind, from: ['journal', f.task] })),
   // the Golden set
   ...GOLDEN.map((kind, i) => ({ kind, from: ['golden', i + 1] })),
+  { kind: PHOTO_KIND, from: ['level', MAX_LEVEL] },
   { kind: 'goldbed', from: ['badge', 'gold'] },
   { kind: 'goldchest', from: ['badge', 'roster'] },
   { kind: 'goldvase', from: ['badge', 'shiny-hunter'] },
@@ -164,6 +169,7 @@ export function howToEarn(piece, save) {
     const n = piece.from[1];
     return `Earn ${n === ACHIEVEMENTS.length ? 'every' : n} achievement${n > 1 ? 's' : ''} (${Math.min(achievementsOf(save), n)}/${n})`;
   }
+  if (kind === 'level') return `Win a run on Trainer Level ${src.level}: the Gym Leaders send it`;
   if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }

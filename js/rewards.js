@@ -124,7 +124,8 @@ export function relicChoices(run, { boss = false, source = 'normal' } = {}) {
  *             With `ask` (the question, read out to screen readers) the pick takes two taps, like a card in
  *             battle: the first blows the tile up with a `confirm` button under it (openFocus). Taking it
  *             plays the confirm sound, or `confirmSound` (a Mart purchase's own). A `note` is a line over the
- *             confirm button (deckNote(): how many copies you already have).
+ *             confirm button (deckNote(): how many copies you already have). `blocked`, a line saying why it can't
+ *             be taken, still opens it to read, with that line under it and the confirm greyed.
  *   onSkip    runs when the player skips (the skip button is hidden if not given)
  *   coins     after a fight, { foe, coins, money }: an icon row, and (on the first screen only) the text box's first lines
  *   layout    extra class for the options box ('mart-window'); options may carry a `group` and a `zoom` tile
@@ -190,6 +191,8 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     btn.type = 'button';
     btn.append(option.node);
     btn.disabled = !!option.disabled;
+    // `blocked` (why it can't be taken: too dear, a full Bag) still blows up when tapped, to read it, its confirm greyed
+    if (option.blocked) { btn.disabled = false; btn.classList.add('locked'); btn.setAttribute('aria-disabled', 'true'); }
     if (option.info) btn.classList.add('info');   // only says something: Leave needn't ask about it
     if (option.bare) btn.classList.add('bare');   // no floating sign in a 3D room: a tap on its prop is enough (a town's quest board)
     const take = once(option.ask ? () => { playSound(option.confirmSound || 'confirm'); option.onPick(); } : option.onPick);
@@ -328,7 +331,7 @@ let focus = null;   // { layer, btn, onKey }
 function openFocus(option, btn, takeIt) {
   closeFocus();
   // however it's taken (the key, the big card, Enter), the gold key goes down and stays down
-  const take = () => {
+  const take = option.blocked ? () => playSound('cancel') : () => {
     if (focus?.inRoom) pressConfirm($('room-ok'));
     if (focus?.deckPick) pressConfirm($('reward-ok'));
     if (option.gold) pressConfirm(yes);
@@ -344,6 +347,7 @@ function openFocus(option, btn, takeIt) {
   const yes = el('button', option.gold ? 'room-ok focus-confirm' : 'ds-btn ds-go focus-confirm');
   yes.append(el('span', option.gold ? '' : 'pp-pill', option.gold ? oneWord(option.confirm || 'Choose') : option.confirm || 'Choose'));
   yes.type = 'button';
+  yes.disabled = !!option.blocked;
   const layer = el('div', 'card-focus reward-focus');
   let shown = withTips(big);
   // `before`: the card as it is now, small on the left of an arrow, so a PP Up shows what it was and what it becomes
@@ -354,13 +358,13 @@ function openFocus(option, btn, takeIt) {
     if (shown === big) shown = pair; else shown.replaceChild(pair, big);
     pair.append(was, el('span', 'up-arrow', '▶'), big);
   }
-  layer.append(shown, ...(option.note ? [el('p', 'focus-note', option.note)] : []), yes);
+  layer.append(shown, ...[option.note, option.blocked].filter(Boolean).map(line => el('p', 'focus-note', line)), yes);
   // over a room's bar, the confirm is its A key instead, and the bar stays lit above the dimmed screen
   const inRoom = $('reward-screen').classList.contains('in-room') && !$('reward-screen').hidden;
   if (inRoom) {
     yes.hidden = true;
     layer.classList.add('over-room');
-    roomConfirm(option.confirm || 'Choose', take);
+    roomConfirm(option.confirm || 'Choose', option.blocked ? undefined : take);
   }
   // over a deck picker, the dim stops above the text box so its button row stays lit and takes the confirm
   const deckPick = $('reward-screen').classList.contains('deck-picking') && !$('reward-screen').hidden;
@@ -368,7 +372,7 @@ function openFocus(option, btn, takeIt) {
     yes.hidden = true;
     layer.classList.add('over-pick');
     layer.style.bottom = `${Math.max(0, innerHeight - $('reward-screen').querySelector('.reward-bottom').getBoundingClientRect().top + 6)}px`;
-    armDeckOk(take);
+    armDeckOk(option.blocked ? null : take);
   }
   layer.addEventListener('click', (e) => {
     if (e.target.closest('.card-tips, .up-before, .up-arrow')) return;

@@ -60,7 +60,19 @@ export function makeCrowd(H) {
   const CAP = H.walkers ?? (H.oneWalker ? 1 : 0);   // 0: any number walk at once
   const shown = H.drawn ?? ((v) => v);
   const SEED = H.seed ?? 'crowd', SWAPS = H.swap ?? SWAP, WANTS = H.wants ?? ['slots', 'slots', 'arcade', 'cards'];
-  const stations = H.stations ?? H.spots.map(s => ({ spot: s, kind: kindOf(s) })).filter(s => s.kind);
+  /* A card or touchscreen table is played from one of its ends, beside it, and nobody stands about in the two rows in
+     front of one: a Pokémon there hid the table and caught the tap meant for it (2026-10-27, the user's ask: Kangaskhan
+     in front of High-Low). `at` is where a station's player stands. */
+  const tables = H.stations ? [] : H.spots.filter(s => s.kind === 'game' && s.game?.w);
+  const stations = H.stations?.map(s => ({ ...s, at: s.spot.step })) ?? H.spots.flatMap(s => {
+    const kind = kindOf(s);
+    if (!kind) return [];
+    if (!s.game?.w) return [{ spot: s, kind, at: s.step }];
+    const { x, y } = s.game.at;
+    return [{ spot: s, kind, at: { x: x - 1, y }, face: true }, { spot: s, kind, at: { x: x + s.game.w, y }, face: false }];
+  });
+  const lane = new Set(tables.flatMap(s => [1, 2].flatMap(dy => Array.from({ length: s.game.w }, (_, k) => `${s.game.at.x + k},${s.game.at.y + dy}`))));
+  const steps = new Set(H.stations ? [] : H.spots.filter(s => s.kind === 'game').map(s => `${s.step.x},${s.step.y}`));   // where you stand to play: nobody idles there
   const counter = H.spots.find(s => s.kind === 'keeper')?.step;
   const dealing = () => { const d = new Date(); return `${d.toISOString().slice(0, 10)}${H.castHours ? `:${Math.floor(d.getUTCHours() / H.castHours)}` : ''}`; };
   let deal = dealing(), cast = dealt(LIST, seeded(`${SEED}:${deal}`), H.castSize ?? CAST);
@@ -80,6 +92,7 @@ export function makeCrowd(H) {
   const taken = (t, but) => held.has(key(t)) || here.some(p => p !== but && !p.leaving && ((p.goal && key(p.goal) === key(t)) || (!p.w.path.length && key(p.w.tile) === key(t))));
   const yours = (t) => { const me = H.partner(); return key(me.tile) === key(t) || (me.path.length && key(me.path.at(-1)) === key(t)); };
   const open = (t) => H.free(t) && !taken(t) && !yours(t);
+  const inLane = (t) => lane.has(key(t)) || steps.has(key(t));
   const byDoor = (t) => CAP && Math.abs(t.x - H.door.x) <= 1 && Math.abs(t.y - H.door.y) <= 1;
   const walking = (but) => here.filter(o => o !== but && ((o.state === 'walk' && o.w.path.length) || o.resume?.state === 'walk')).length;
   /** Whether `p` may set off now: always, unless walkers are capped and that many are walking (or one just was). */
@@ -126,7 +139,7 @@ export function makeCrowd(H) {
     const rnd = seeded(`${SEED}:${deal}:${hour}`), who = dealt(cast, rnd, SIZE);
     who.forEach(async (def, i) => {
       const want = WANTS[i] ?? null;
-      const st = want && free(def, want), at = st ? st.spot.step : spotAround();
+      const st = want && free(def, want), at = st ? st.at : spotAround();
       held.add(key(at));
       const p = await arrive(def, at);
       held.delete(key(at));
@@ -145,14 +158,14 @@ export function makeCrowd(H) {
   /** A free station of `kind` (or of what it likes), nearest first for a bit of sense. */
   function free(def, kind) {
     const kinds = kind ? [kind] : def.likes;
-    const list = stations.filter(s => kinds.includes(s.kind) && open(s.spot.step));
+    const list = stations.filter(s => kinds.includes(s.kind) && open(s.at));
     return list.length ? pickOne(list) : null;
   }
 
   function spotAround() {
     for (let i = 0; i < 40; i++) {
       const t = { x: 1 + Math.floor(Math.random() * (H.cols - 2)), y: 3 + Math.floor(Math.random() * (H.rows - 4)) };
-      if (open(t) && !byDoor(t)) return t;
+      if (open(t) && !byDoor(t) && !inLane(t)) return t;
     }
     return { ...H.door };
   }
@@ -167,23 +180,24 @@ export function makeCrowd(H) {
     const now = performance.now();
     if (!byDoor(p.w.tile) && !mayWalk(p, now)) { p.until = now + 500 + Math.random() * 1500; return; }
     const r = Math.random() + (p.roam ? 0.45 : 0);   // a wanderer mostly wanders
-    if (r < 0.62) { const st = free(p.def) || free(p.def, pickOne([...new Set(stations.map(s => s.kind))])); if (st) return go(p, st.spot.step, 'play', st); }
+    if (r < 0.62) { const st = free(p.def) || free(p.def, pickOne([...new Set(stations.map(s => s.kind))])); if (st) return go(p, st.at, 'play', st); }
     if (r < 0.78 && counter && !here.some(o => o !== p && o.then === 'counter')) {
       const t = [counter, { x: counter.x - 1, y: counter.y }, { x: counter.x + 1, y: counter.y }].find(open);
-      if (t) return go(p, t, 'counter');
+      if (t && !inLane(t)) return go(p, t, 'counter');
     }
     go(p, spotAround(), 'ponder');
   }
 
   function sit(p, st, ms) {
-    p.state = 'play'; p.station = st; p.goal = st.spot.step; p.until = performance.now() + ms;
-    p.w.tile = { ...st.spot.step }; p.w.x = H.tileX(p.w.tile.x); p.w.z = H.tileZ(p.w.tile.y);
+    p.state = 'play'; p.station = st; p.goal = st.at; p.until = performance.now() + ms;
+    p.w.tile = { ...st.at }; p.w.x = H.tileX(p.w.tile.x); p.w.z = H.tileZ(p.w.tile.y);
     faceStation(p);
   }
 
   function faceStation(p) {
     const s = p.station?.spot;
     if (!s) return;
+    if (p.station.face !== undefined) { p.w.flip = p.station.face; return; }
     if (s.step.x === 1 && s.id.startsWith('slotmachine')) p.w.flip = false;
     else if (s.step.x === H.cols - 2 && s.id.startsWith('slotmachine')) p.w.flip = true;
   }
@@ -342,7 +356,8 @@ export function makeCrowd(H) {
             if (!bubble && Math.random() < 0.5) blurt(p, pickOne(['Oh! Go ahead.', 'All yours!', 'Have a turn!', 'I was done anyway.']));
             go(p, spotAround(), 'ponder');
           } else if (now > p.until) { p.station = null; p.goal = null; p.state = 'ponder'; p.until = now + between(PONDER); }
-        } else if ((p.state === 'ponder' || p.state === 'counter') && now > p.until) decide(p);
+        } else if (p.state === 'ponder' && (yours(w.tile) || inLane(w.tile))) go(p, spotAround(), 'ponder');   // out of your way, and off a table's front
+        else if ((p.state === 'ponder' || p.state === 'counter') && now > p.until) decide(p);
         const t = now / 1000 + p.phase, moving = w.path.length > 0 && p.state === 'walk', mv = p.def.move;
         let y = 0;
         if (!calm) {
@@ -377,7 +392,7 @@ export function makeCrowd(H) {
       if (!greeted && now > greetAt && !bubble && !chat && mayWalk(null, now)) {
         greeted = true;
         const p = shuffled(here.filter(o => !o.leaving && (o.state === 'ponder' || o.state === 'play')))[0];
-        const spot = p && [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ x: me.tile.x + dx, y: me.tile.y + dy })).find(t => open(t) && !byDoor(t));
+        const spot = p && [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ x: me.tile.x + dx, y: me.tile.y + dy })).find(t => open(t) && !byDoor(t) && !inLane(t));
         if (spot && !me.path.length) go(p, spot, 'greet');
       }
 
@@ -386,6 +401,9 @@ export function makeCrowd(H) {
       if (bubble) place();
       if (!bubble && !chat && now > nextTalk) idleTalk(now);
     },
+
+    /** Whether a tapped regular stands in front of a game: the tap is for the game behind it. */
+    inFront: (obj) => { const p = obj?.userData?.who; return !!p && lane.has(key(p.w.tile)); },
 
     hide: () => { hush(); chat = null; },
 

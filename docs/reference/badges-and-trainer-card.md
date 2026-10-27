@@ -49,3 +49,17 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   (`docs/reference/towns.md`'s Friendship badges paragraph). 176 badges in all.
 - **Ranger badges** (2026-10-16): one per Ranger Rank past Rookie, `ranger-2` (Scout) to `ranger-7` (Master Ranger), in the Safari group, tested by `rankOf()` from `js/data/ranger.js`; the card's RANGER line shows the rank. Detail: `docs/reference/hub-base-mall.md`, the Ranger Task Board.
 - **Journal badges** (2026-10-16): one per Trainer's Journal rank past Beginner, `journal-2` (Novice) to `journal-7` (Grand Champion), in the Collector group, tested by `journalClaims()` from `js/data/journal-ranks.js`; the card's JOURNAL line shows the rank. Two ranks were renamed (Pro Trainer, Grand Champion) so no two badges share a name (`tests/journal.test.mjs` checks).
+- **The cover's Badge Case** (2026-10-27, the user's ask: the cover's badge pile kept growing up into the partner window,
+  229 badges in all): `badgeCase()` in `js/collection.js` draws a fixed 6×2 grid, a slot per `BADGE_GROUPS` entry, holding
+  that group's pinned badge (`save.pinBadge`) if it's there, else the last earned in the group's list order; a full group's
+  slot is gold-rimmed, an empty one a dark socket, and a line under it counts every badge. A new group adds a slot (13 would
+  wrap to a third row: change the grid's columns).
+- **Choosing the cover's badges, and the pin made easy to find** (2026-10-27, the user: the "Pinned" tab looked hidden, and
+  could the cover's 12 be set?): the Badge Case label is a flex row (`.tc-case-label`, keys in `.tc-case-keys`). A **Cover**
+  key opens `coverPicker()` in `js/trainercard.js`: a row per group with any earned, AUTO first, a tap saving
+  `save.coverBadges[group]` (AUTO deletes it); `coverBadge(groupId, save)` is the slot's badge (the set one, else the pin
+  if it's in the group, else the last earned) and `badgeCase()` in `js/collection.js` reads it. The pin key is a gold-ringed
+  plate in the card's dark ink with the badge in a cream disc (`.tc-pin-btn`, `.tc-pin-art`), a shine sweeping it while
+  nothing is pinned (not under `calmFx()` or reduced motion), and the same badge sits as a tilted pin on the partner's
+  portrait's corner (`.tc-tack`, "+" when empty), both opening `pinPicker()`. Both appear only when friends can see your
+  page (`myCode()` or `?mycard`); Cover always.

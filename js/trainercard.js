@@ -21,12 +21,14 @@ import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { ALL_CARDS } from './data/cards.js';
 import { getSave, updateSave, addPlayTime, isShiny } from './storage.js';
+import { bestWin, starClass, starName, isMaster, wearsCrown, auraBest, aurasEarned, auraWorn } from './data/difficulty.js';
 import { safariDexCount } from './safaridex.js';
 import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { tipAt } from './tips.js';
+import { calmFx } from './prefs.js';
 import { playSound } from './audio.js';
-import { $, el, openDialog } from './ui.js';
+import { $, el, openDialog, crownArt, auraArt } from './ui.js';
 import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
@@ -306,6 +308,14 @@ export const TIERS = [
 const earnedIds = (save) => new Set((save.badges || []).filter(id => EARNABLE.some(b => b.id === id)));
 /** A badge the card may pin for friends to see (`save.pinBadge`): earned, and never one of the Depths' secret ones. */
 export const pinnable = (id, save = getSave()) => !!id && earnedIds(save).has(id) && !BADGES.find(b => b.id === id)?.secret;
+/** The badge in a group's slot on the Pokédex cover: the one set for it (`save.coverBadges`), else the pinned one if it's
+    in the group, else the last earned in the group's list order. */
+export function coverBadge(groupId, save = getSave()) {
+  const have = earnedIds(save);
+  const mine = EARNABLE.filter(b => b.group === groupId && have.has(b.id));
+  const pin = pinnable(save.pinBadge, save) ? save.pinBadge : null;
+  return mine.find(b => b.id === save.coverBadges?.[groupId]) ?? mine.find(b => b.id === pin) ?? mine.at(-1) ?? null;
+}
 /** The card's colour from the badges earned; violet once Eternatus is beaten. */
 export function cardTier(save = getSave()) {
   const earned = earnedIds(save);
@@ -335,6 +345,16 @@ const playTime = (ms = 0) => {
 };
 
 /* ---------- the window ---------- */
+
+/** STARS: up to three stars, the starters' best first, each tinted by its best Level won (gold at 5, a rainbow at 10). */
+function starRow(save) {
+  const best = Object.keys(save.stats.level5WinsBy || {}).concat((save.hallOfFame || []).map(w => w.starter))
+    .filter((id, i, all) => id !== 'mewtwo' && all.indexOf(id) === i).map(id => bestWin(save, id)).filter(lv => lv >= 5).sort((a, b) => b - a);
+  const dd = el('dd', '');
+  for (const lv of best.slice(0, 3)) dd.append(el('span', starClass(lv), '⭐'));
+  if (best.length > 3) dd.append(`×${best.length}`);
+  return dd;
+}
 
 /** The starter it picks by itself: the one with the most wins (a Level 5 win counts big), else Charmander. */
 function autoPartner(save) {
@@ -409,12 +429,19 @@ export function buddyChoices(save = getSave()) {
 export function buddy(save = getSave()) {
   const all = buddyChoices(save);
   const chosen = save.buddy && all.find(m => m.key === save.buddy);
-  if (chosen) return chosen;
+  if (chosen) return { ...chosen, crown: crownOn, aura: auraOn };
   const s = save.stats, score = (id) => (s.winsBy?.[id] || 0) + 10 * (s.level5WinsBy?.[id] || 0);
   const plain = all.filter(m => !m.shiny), best = [...plain].sort((a, b) => score(b.id) - score(a.id))[0] ?? plain[0];
   const st = STARTERS_BY_ID[best?.id ?? 'charmander'], shiny = isShiny(st.id) && (save.shiny?.owned || []).includes(st.id);
-  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny };
+  return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny, crown: crownOn, aura: auraOn };
 }
+
+/** Whether the walking buddy wears the Champion's Crown right now: js/hd2d.js's drawMon() asks each frame, so the Trainer
+    Card's Crown key shows at once. */
+const crownOn = () => wearsCrown(getSave());
+/** The Level of the Super Saiyan aura it wears (0: none), asked each frame the same way. */
+const auraOn = () => auraWorn(getSave());
+
 
 /** The walking buddy as a `save.buddy` key, picked or not. */
 export const buddyKey = (save = getSave()) => { const b = buddy(save); return b.key ?? `starter:${b.id}${b.shiny ? ':shiny' : ''}`; };
@@ -500,6 +527,58 @@ function pinPicker(body, done) {
   }));
   const note = el('p', 'tc-pick-note', 'Your pinned badge shows on your page in other trainers\' Trainers app, beside your partner.');
   body.replaceChildren(head, note, none, ...(grid.children.length ? [grid] : [el('p', 'tc-pick-note', 'Earn a badge first!')]));
+  head.querySelector('h2').tabIndex = -1;
+  body.scrollTop = 0;
+}
+
+/** The cover picker over the card's body (the user's ask, 2026-10-27: choose the cover's 12 badges): a row per badge
+    group with any earned, Auto first; a tap sets that group's slot and the picker stays open for the next. */
+function coverPicker(body, done) {
+  const save = getSave();
+  const head = el('div', 'tc-head');
+  head.append(el('h2', 'tc-title', 'YOUR COVER'));
+  const back = el('button', 'tc-pick-back', 'Back');
+  back.type = 'button';
+  back.addEventListener('click', done);
+  head.append(back);
+  const earned = earnedIds(save);
+  const groups = BADGE_GROUPS.map(g => {
+    const mine = EARNABLE.filter(b => b.group === g.id && earned.has(b.id));
+    if (!mine.length) return null;
+    const set = mine.some(b => b.id === save.coverBadges?.[g.id]) ? save.coverBadges[g.id] : null;
+    const grid = el('div', 'tc-pick-grid');
+    const pick = (id, btn) => {
+      updateSave(d => {
+        d.coverBadges = { ...d.coverBadges };
+        if (id) d.coverBadges[g.id] = id; else delete d.coverBadges[g.id];
+      });
+      playSound('confirm');
+      grid.querySelectorAll('.tc-pick.on').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+    };
+    const auto = el('button', `tc-pick tc-pick-word${set ? '' : ' on'}`, 'AUTO');
+    auto.type = 'button';
+    auto.title = 'Auto: your pinned badge if it\'s in this group, else the newest';
+    auto.addEventListener('click', () => pick(null, auto));
+    grid.append(auto, ...mine.map(b => {
+      const btn = el('button', `tc-pick${b.id === set ? ' on' : ''}`);
+      btn.type = 'button';
+      btn.title = b.name;
+      btn.setAttribute('aria-label', `Show ${b.name} on the cover`);
+      const img = el('img', '');
+      img.src = badgeArt(b.id, true);
+      img.alt = '';
+      img.draggable = false;
+      btn.append(img);
+      btn.addEventListener('click', () => pick(b.id, btn));
+      return btn;
+    }));
+    const box = el('div', 'tc-pick-group');
+    box.append(el('span', 'tc-case-label', `${g.name.toUpperCase()} · ${mine.length}`), grid);
+    return box;
+  }).filter(Boolean);
+  const note = el('p', 'tc-pick-note', 'Your Pokédex cover has a slot for each badge group. Choose the badge each one shows.');
+  body.replaceChildren(head, note, ...(groups.length ? groups : [el('p', 'tc-pick-note', 'Earn a badge first!')]));
   head.querySelector('h2').tabIndex = -1;
   body.scrollTop = 0;
 }
@@ -597,13 +676,14 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   // each line says what it counts when tapped (js/tips.js reads the title): STARS and TIME weren't clear on their own
   const lines = [
     ['NAME', trainerName().toUpperCase(), 'Your nickname, shown on the leaderboards. Tap Edit to change it.'],
+    ...(isMaster(save) ? [['TITLE', 'POKéMON MASTER', 'Your title, for winning a run on Trainer Level 10, the top Level.']] : []),
     ['WINS', String(s.runsWon), 'Runs you have won, at any Trainer Level.'],
     ['POKéDEX', `${dex.n}/${dex.total}`, dex.all ? 'Pokémon beaten on every Pokédex page you have found.' : 'Pokémon beaten in the three biomes. Beat them all to open the Safari Zone.'],
     ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---', safari ? 'Pokémon caught in the Safari Zone.' : 'Pokémon caught in the Safari Zone, once it opens.'],
     ['SHINIES', safari ? `${shinyTotal(save)}/${SAFARI_ROSTER.length}` : '---', 'Safari Pokémon whose shiny is yours, caught in the wild or pulled at the Shiny Exchange.'],
     ['JOURNAL', journalRank(save).rank.name.toUpperCase(), 'Your rank in the Trainer\'s Journal, from tasks claimed at the Clearing\'s PC.'],
     ['RANGER', safari ? rankOf(save).rank.name.toUpperCase() : '---', 'Your Ranger Rank, from tasks claimed on the Safari Outfitter\'s Ranger Task Board.'],
-    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A gold star for each starter you have won a Level 5 run with.'],
+    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A star for each starter you have won a Level 5 run with: gold at Level 5, a new colour each Level up, a rainbow at 10.'],
     ['TIME', playTime(s.playMs), 'Play time, in hours and minutes.'],
     ...(myCode() ? [['CODE', formatCode(myCode()), 'Your trainer code. A friend types it in the Trainers app to add you.']] : []),
   ];
@@ -611,7 +691,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const list = el('dl', 'tc-lines');
   const redraw = () => openTrainerCard(into, { reopen: true });
   for (const [k, v, tip] of lines) {
-    const dt = el('dt', '', k), dd = k === 'NAME' ? nameField(redraw) : el('dd', '', v);
+    const dt = el('dt', '', k), dd = k === 'NAME' ? nameField(redraw) : k === 'STARS' && stars ? starRow(save) : el('dd', k === 'TITLE' ? 'tc-master' : '', v);
     dt.title = tip;
     if (k !== 'NAME') dd.title = tip;
     list.append(dt, dd);
@@ -624,7 +704,16 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const img = el('img', 'pixel');
   img.src = mate.src;
   img.alt = '';
-  pic.append(img, el('span', 'tc-partner-edit', 'Change'));
+  if (wearsCrown(save)) pic.append(crownArt());
+  const aura = auraWorn(save) ? auraArt(auraWorn(save)) : null;
+  if (aura) {
+    // its feet on the partner's: the picture is 96px tall under the button's 6px padding
+    for (const box of [aura.back, aura.front].filter(Boolean)) box.style.top = `${104 - aura.h}px`;
+    pic.append(aura.back);
+  }
+  pic.append(img);
+  if (aura?.front) pic.append(aura.front);
+  pic.append(el('span', 'tc-partner-edit', 'Change'));
   pic.addEventListener('click', () => {
     playSound('confirm');
     partnerPicker(body, () => openTrainerCard(into, { reopen: true }));
@@ -643,6 +732,46 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
       openTrainerCard(into, { reopen: true });
     });
     frame.append(flip);
+  }
+  if (isMaster(save)) {
+    const on = wearsCrown(save), key = el('button', `tc-shiny tc-crown-key${on ? ' on' : ''}`, on ? '👑 Crown' : 'Crown');
+    key.type = 'button';
+    key.title = on ? 'The Champion\'s Crown is on: tap to take it off' : 'Tap to wear the Champion\'s Crown';
+    key.setAttribute('aria-pressed', String(on));
+    key.setAttribute('aria-label', 'Champion\'s Crown');
+    key.addEventListener('click', () => {
+      updateSave(d => { d.crown = !on; });
+      playSound('confirm');
+      openTrainerCard(into, { reopen: true });
+    });
+    frame.append(key);
+  } else {
+    // a preview of the crown for everyone not yet a Master, greyed, saying how it's earned (the user's pick, 2026-10-23)
+    const lock = el('span', 'tc-shiny tc-crown-locked');
+    lock.append(crownArt('tc-crown-mini'), ' Win Lv 10');
+    lock.title = 'The Champion\'s Crown: win a run on Trainer Level 10 and it floats over your partner.';
+    frame.append(lock);
+  }
+  const earnedAuras = aurasEarned(save);
+  if (earnedAuras.length) {
+    // the Aura key steps through every aura earned, then off (the user's go, 2026-10-23); the best one isn't saved as a
+    // pick, so a higher Level won later puts its aura on by itself
+    const on = auraWorn(save), best = auraBest(save), cycle = [...earnedAuras, 0], next = cycle[(cycle.indexOf(on) + 1) % cycle.length];
+    const key = el('button', `tc-shiny tc-aura-key${on ? ` on aura-key-lv${on}` : ''}`, on ? `🔥 Lv ${on}` : 'Aura');
+    key.type = 'button';
+    key.title = `${on ? `The ${starName(on)} aura, for a Level ${on} win, is on` : 'Your aura is off'}: tap for ${next ? `the ${starName(next)} aura` : 'none'}`;
+    key.setAttribute('aria-label', `Super Saiyan aura: ${on ? starName(on) : 'off'}`);
+    key.addEventListener('click', () => {
+      updateSave(d => { if (next === best) delete d.aura; else d.aura = next; });
+      playSound('confirm');
+      openTrainerCard(into, { reopen: true });
+    });
+    frame.append(key);
+  } else {
+    const lock = el('span', 'tc-shiny tc-crown-locked tc-aura-locked');
+    lock.append(auraArt(6, { cls: 'tc-aura-mini', s: 16 }).back, ' Win Lv 6');
+    lock.title = 'A Super Saiyan aura: win a run on Trainer Level 6 and your partner glows ruby, bigger each Level up to 10.';
+    frame.append(lock);
   }
   info.append(list, frame);
 
@@ -663,17 +792,35 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   head.querySelector('h2').tabIndex = -1;
   const foot = el('p', 'tc-foot', `${earned.size}/${EARNABLE.length} badges${tier.next ? ` · ${tier.next}` : ''}`);
   const body = into ?? $('trainer-body');
-  const label = el('span', 'tc-case-label', 'BADGE CASE');
+  const label = el('div', 'tc-case-label');
+  label.append(el('span', '', 'BADGE CASE'));
+  const cover = el('button', 'tc-pin-btn tc-cover-btn', 'Cover');
+  cover.type = 'button';
+  cover.title = 'Choose the badges on your Pokédex cover';
+  cover.addEventListener('click', () => { playSound('confirm'); coverPicker(body, redraw); });
+  const keys = el('span', 'tc-case-keys');
+  keys.append(cover);
+  label.append(keys);
   if (myCode() || new URLSearchParams(location.search).has('mycard')) {
-    // signed in, friends see your page: pin one badge for it (the Trainers app shows it by your partner)
+    // signed in, friends see your page: pin one badge for it (the Trainers app shows it by your partner). The user found
+    // a faint "Pinned" tab easy to miss (2026-10-27): it's a gold plate now, and the badge sits pinned on the partner too
     const pinned = pinnable(save.pinBadge, save) ? save.pinBadge : null;
-    const pin = el('button', 'tc-pin-btn');
+    const openPin = () => { playSound('confirm'); pinPicker(body, redraw); };
+    const pin = el('button', `tc-pin-btn${pinned ? '' : ' empty'}${pinned || calmFx() ? '' : ' shine'}`);
     pin.type = 'button';
     pin.title = pinned ? 'Your pinned badge, on your Trainers page. Tap to change it' : 'Pin a badge to your Trainers page';
-    if (pinned) { const art = el('img', ''); art.src = badgeArt(pinned, true); art.alt = ''; pin.append(art); }
-    pin.append(el('span', '', pinned ? 'Pinned' : 'Pin a badge'));
-    pin.addEventListener('click', () => { playSound('confirm'); pinPicker(body, redraw); });
-    label.append(pin);
+    const art = el('span', 'tc-pin-art');
+    if (pinned) { const im = el('img', ''); im.src = badgeArt(pinned, true); im.alt = ''; art.append(im); }
+    pin.append(art, el('span', '', pinned ? 'Pinned badge' : 'Pin a badge'));
+    pin.addEventListener('click', openPin);
+    keys.append(pin);
+    const tack = el('button', `tc-tack${pinned ? '' : ' empty'}`);
+    tack.type = 'button';
+    tack.title = pin.title;
+    tack.setAttribute('aria-label', pinned ? `Pinned badge: ${BADGES.find(b => b.id === pinned).name}. Change it` : 'Pin a badge');
+    if (pinned) { const im = el('img', ''); im.src = badgeArt(pinned, true); im.alt = ''; tack.append(im); } else tack.textContent = '+';
+    tack.addEventListener('click', openPin);
+    frame.append(tack);
   }
   if (fresh.length > 1) {
     const all = el('button', 'tc-seen-all', 'Clear all !');
@@ -685,7 +832,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
       all.remove();
       markSeen(fresh);
     });
-    label.append(all);
+    keys.append(all);
   }
   body.replaceChildren(head, info, label, caseBox, foot);
   if (!into && !reopen) openDialog('trainer-dialog');

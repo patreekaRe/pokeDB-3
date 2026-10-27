@@ -84,7 +84,7 @@ const TOPICS = [
     tip('sparkle', 'Shinies', 'New colours for a starter you own.'),
   ] },
   { id: 'more', name: 'Going Further', sub: 'What a win opens up', b1: '#4ac0c8', b2: '#1a5a6a', tips: [
-    tip('star', 'Trainer Levels', 'Win to unlock the next Level. Each one adds a twist, up to Level 5.'),
+    tip('star', 'Trainer Levels', 'Win to unlock the next Level. Each one adds a twist, up to Level 10.'),
     tip('dex', 'Pokédex', 'Beat Pokémon to fill its pages. A full page earns a perk.'),
     tip('trophy', 'Achievements', 'Goals that unlock new starters, legendaries among them.'),
     tip('fame', 'Badges', 'Earned along the way. They fill the Badge Case on your Trainer Card.'),

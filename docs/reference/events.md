@@ -352,8 +352,8 @@ real, like walking in); `?trials` opens every trial in the window for the page l
   first, and a goal (`turns`, `noDamage`, `burn` last blow, `full` HP). **Trials 9-14** (2026-10-15) are harder, each a
   combo across turns: Mienfoo (hold Water Pulse while the Tide builds, Sparkling Aria before Swift Swim), Hitmontop
   (Detect soaks turn 3's hits, so Burn it, with Inferno Charge's banked PP), Breloom (Squirtle with lent Grass moves:
-  Tidal Wall, Leech Seed healing to full, then Hydro Pump), Machamp (Solar Blade held two turns, Rototiller before
-  Growth Spurt), Hariyama (Endure its 60 hit, then Blaze at 1 HP) and Kenmatta again (Riptide and Hydration on his
+  Tidal Wall, Leech Seed healing to full, then Hydro Pump), Machamp (Solar Blade held two turns, a heal before it
+  swings), Hariyama (Endure its 60 hit, then Blaze at 1 HP) and Kenmatta again (Riptide and Hydration on his
   FORTIFY turn, Aqua Veil keeping the block, Razor Shell, no damage). **Trials 15-20** (2026-10-15) finish the ladder:
   Scrafty (draw the deck dry for Last Resort, one draw too many reshuffles; Burn Up's HP turns Blaze on), Conkeldurr
   (a `charge` turn, then Quick Guard its 99; Tsunami counts the Tide Hydro Pump spent), Toxicroak (Chlorophyll at full
@@ -368,7 +368,15 @@ real, like walking in); `?trials` opens every trial in the window for the page l
   Trial-only, so `sim/engine.js` needs nothing. Every trial was played through headless with its intended line
   (2026-10-15); a new one needs the same: `tools/dojo-solve.mjs` lists every line that clears a trial (a light copy of
   the battle rules, which throws on an effect it doesn't know; each of 9-20 has only its intended idea, and every card of it is needed), and `tools/dojo-play.cjs`
-  plays a line on the real battle screen in headless Chromium and says if it earns the star.
+  plays a line on the real battle screen in headless Chromium and says if it earns the star. **Rebuilt on the
+  twin pass's cards** (2026-10-26, the user's pick over keeping the old ones): 18 trials dealt changed cards. Harden is
+  the cheap block where Splash was (t2, t14, t19), Fire Lash the small burning hit where Flare was (t3, t8, t10), Tackle
+  and Agility the draws in Empty the Tank, and Patience is a new puzzle (Solar Blade triples Strength only on a turn
+  you've healed: Bulbasaur starts on 34/40, no Power Whip or Growth Spurt). HP retuned so 9-20 keep one idea each:
+  Machop 33, Hitmontop 136, Machamp 74, Hariyama 56, Scrafty 100, Toxicroak 58 (Poison Jab 18), Medicham 90, Kenmatta's
+  final 128. `tools/dojo-solve.mjs` now knows Ethereal (exhausted at the turn's end, as in battle), made cards (a Cinder)
+  and Harden's damage cut; `tools/dojo-play.cjs` finds made cards in hand. Every trial earns its star on the real battle
+  screen with its line.
 - **The dojo set** (`DOJO_REWARDS`, `js/base-furniture-dojo.js`, the `dojo` source in `js/data/furniture.js`; one
   colour each, group Dojo): Kenmatta's poster (1 star), Dojo mat (yellow), Wooden dummy (green), Dragonite medallion (6
   stars), Kenmatta's sandbag (blue), Dojo gong (brown), Black belt trophy (black). The window lists them, greyed till

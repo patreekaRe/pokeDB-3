@@ -20,8 +20,9 @@ import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { CARDS_BY_ID, TYPES } from './data/cards.js';
 import { RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID } from './data/items.js';
-import { MAX_LEVEL, LEVELS } from './data/difficulty.js';
+import { LEVELS, MAX_LEVEL, isChampion, starClass } from './data/difficulty.js';
 import { paintSummit } from './tower-art.js';
+import { typeText } from './type-badge.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const CRY_WAIT_MAX = 1500;
@@ -85,7 +86,7 @@ export function draftWin(run, shiny) {
   const mewtwo = run.starter.id === 'mewtwo';
   return {
     no: wins.length + 1,
-    fame: !mewtwo && run.level === MAX_LEVEL ? wins.filter(w => w.level === MAX_LEVEL && w.starter !== 'mewtwo').length + 1 : null,
+    fame: !mewtwo && isChampion(run.level) ? wins.filter(w => isChampion(w.level) && w.starter !== 'mewtwo').length + 1 : null,
     champ: mewtwo ? wins.filter(isDepths).length + 1 : null,   // a Champion of the Depths' own number
     ...runRecord(run, shiny),
   };
@@ -133,10 +134,12 @@ const imgOf = (entry) => spriteUrl(starterOf(entry), 'front', entry.stage, entry
 const typeOf = (entry) => TYPES[entry.type] ?? { label: entry.type, icon: '' };
 const pad3 = (n) => String(n).padStart(3, '0');
 /** A Level 5 win's Hall of Fame number (entries saved before every win was recorded were all Level 5: `no`). */
-export const fameNo = (entry) => entry.starter !== 'mewtwo' && entry.level === MAX_LEVEL ? `No.${pad3(entry.fame ?? entry.no)}` : null;
+export const fameNo = (entry) => entry.starter !== 'mewtwo' && isChampion(entry.level) ? `No.${pad3(entry.fame ?? entry.no)}` : null;
 const winNo = (entry) => `Win ${pad3(entry.no)}`;
 /** A Mewtwo win: Eternatus beaten, the Champion of the Depths (v1.0's ending), gold-violet in both books. */
 export const isDepths = (entry) => entry.starter === 'mewtwo';
+/** A win on the top Trainer Level: a Pokémon Master's, on a crystal pedestal (the user's pick, 2026-10-22). */
+const isMasterWin = (entry) => Boolean(fameNo(entry)) && !entry.summit && entry.level >= MAX_LEVEL;
 /** Its number among them; entries from before part D are numbered by their place. */
 const champNo = (entry) => `Depths ${pad3(entry.champ ?? getSave().hallOfFame.filter(isDepths).indexOf(entry) + 1)}`;
 // the window shows either book: the Hall of Fame numbers its champions, the Record Book every win
@@ -147,7 +150,7 @@ export function dateOf(day) {
   const [y, m, d] = day.split('-').map(Number);
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
-const chip = (entry) => el('span', `index-only type-${entry.type}`, `${typeOf(entry).icon} ${typeOf(entry).label}`);
+const chip = (entry) => { const c = el('span', `index-only type-${entry.type}`); c.append(typeText(entry.type, typeOf(entry).icon, typeOf(entry).label)); return c; };
 
 /** The plate under the pedestal (and atop an entry in the Collection window): number, name, type, date. */
 function plate(entry) {
@@ -230,7 +233,7 @@ function replay(scene, cls) {
  */
 export async function winScene(entry) {
   const depths = isDepths(entry), summit = Boolean(entry.summit);
-  const fame = Boolean(fameNo(entry)) || depths || summit;
+  const fame = Boolean(fameNo(entry)) || depths || summit, master = isMasterWin(entry);
   book = fame ? 'fame' : 'record';
   const scene = $('hof-scene');
   const img = $('hof-mon');
@@ -240,11 +243,11 @@ export async function winScene(entry) {
   img.src = imgOf(entry);
   img.alt = name;
   const party = fame && !still();
-  setTitle(depths ? 'Champion of the Depths' : summit ? 'Sky Pillar Summit' : fame ? 'Hall of Fame' : 'Victory!', party);
+  setTitle(depths ? 'Champion of the Depths' : summit ? 'Sky Pillar Summit' : master ? 'Pokémon Master' : fame ? 'Hall of Fame' : 'Victory!', party);
   $('hof-plate-slot').replaceChildren(plate(entry));
   extra.replaceChildren(statsPanel(entry));
   $('hof-log').hidden = true;
-  scene.className = `hof-scene${fame ? ' fame' : ''}${depths ? ' depths' : ''}${summit ? ' summit' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
+  scene.className = `hof-scene${fame ? ' fame' : ''}${depths ? ' depths' : ''}${summit ? ' summit' : ''}${master ? ' master' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
   scene.hidden = false;
   const peak = $('hof-summit-bg');
   peak.hidden = !summit;
@@ -276,6 +279,7 @@ export async function winScene(entry) {
   await sceneSay('hof-scene', 'hof-log', depths
     ? ['The Crystal Depths fall quiet.', `${name} is the CHAMPION OF THE DEPTHS!`]
     : summit ? ['Rayquaza bows its head and soars off. Above the summit there is only sky.', `${name} climbed all ${entry.floor} floors of the SKY PILLAR!`]
+    : master ? ['Welcome to the HALL OF FAME!', `${name} won on Trainer Level ${entry.level}, the highest of all!`, `${name} is a POKéMON MASTER!`]
     : fame ? ['Welcome to the HALL OF FAME!', `${name} became a champion on Trainer Level ${entry.level}!`]
     : [`${name} conquered ${conquered(entry.route)} on Trainer Level ${entry.level}!`]);
 
@@ -313,7 +317,8 @@ const BOOKS = {
 export const bookEntries = (which) => getSave().hallOfFame.filter(BOOKS[which].has);
 
 const newestFirst = (list) => [...list].reverse();
-const LEVEL_COLOURS = [['#6ab04c', '#2a5a1c'], ['#4aa8a0', '#1a5050'], ['#5a8ef0', '#24448a'], ['#f0a040', '#8a4a10'], ['#e86a5a', '#8a2a22'], ['#e8b830', '#6a4a08']];
+const LEVEL_COLOURS = [['#6ab04c', '#2a5a1c'], ['#4aa8a0', '#1a5050'], ['#5a8ef0', '#24448a'], ['#f0a040', '#8a4a10'], ['#e86a5a', '#8a2a22'], ['#e8b830', '#6a4a08'],
+  ['#c05ae8', '#4a1a6a'], ['#5a6ae8', '#1a2260'], ['#e85a9a', '#6a1a40'], ['#40c8e8', '#0a4a5a'], ['#f0f0f0', '#4a4a5a']];
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 /** The Record Book's banners: one per Trainer Level, the Crystal Depths, then the lost runs. */
@@ -364,8 +369,9 @@ const recordBook = () => shelfApp({
   screenCls: (g, e) => (g.id === 'lost' ? 'lost' : isDepths(e) ? 'depths' : ''),
   screen(g, e) {
     const nodes = [el('span', 'pdx-pad'), monImg(e, 'pdx-mon bdx-art'), typeChip(e.type)];
-    const tag = g.id === 'lost' ? '💀 Lost' : fameNo(e) ? `⭐ ${fameNo(e)}` : isDepths(e) ? `💎 ${champNo(e)}` : null;
+    const tag = g.id === 'lost' ? '💀 Lost' : fameNo(e) ? ` ${fameNo(e)}` : isDepths(e) ? `💎 ${champNo(e)}` : null;
     if (tag) nodes.push(el('span', `pdx-role rbk-tag${g.id === 'lost' ? '' : ' gold'}`, tag));
+    if (fameNo(e) && g.id !== 'lost') nodes.at(-1).prepend(el('span', starClass(e.level), '⭐'));
     return nodes;
   },
   lines: (g, e) => [typed(g.id === 'lost' ? 'muted' : '', storyOf(e, g.id === 'lost')), quick(e)],
@@ -394,7 +400,7 @@ const hallOfFame = () => shelfApp({
   no: (g, e) => fameNo(e) || champNo(e),
   label: (g, e) => `${nameOf(e)}${e.shiny ? ' ✨' : ''}`,
   art: (g, e) => monImg(e, 'pdx-slot-mon'),
-  screenCls: (g, e) => `hofx${isDepths(e) ? ' depths' : ''}`,
+  screenCls: (g, e) => `hofx${isDepths(e) ? ' depths' : isMasterWin(e) ? ' master' : ''}`,
   screen: (g, e) => [el('span', 'hofx-light'), el('span', 'hofx-pedestal'), monImg(e, 'pdx-mon bdx-art'), typeChip(e.type),
     el('span', 'pdx-role rbk-tag gold', isDepths(e) ? '💎 Depths' : `Lv.${e.level}`)],
   lines(g, e) {
@@ -402,6 +408,7 @@ const hallOfFame = () => shelfApp({
     again.type = 'button';
     again.addEventListener('click', () => ceremony(e));
     return [typed('', isDepths(e) ? `Became the Champion of the Depths, ${dateOf(e.date)}.`
+      : isMasterWin(e) ? `Entered the Hall of Fame on ${dateOf(e.date)}, a Pokémon Master on Trainer Level ${e.level}.`
       : `Entered the Hall of Fame on ${dateOf(e.date)}, a champion on Trainer Level ${e.level}.`), quick(e), again];
   },
   tally: () => 'Champions',

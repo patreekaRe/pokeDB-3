@@ -1356,6 +1356,10 @@ function onTap(e) {
   const hits = ray.intersectObjects([P.group, mon.group], true);   // not scene.children: a hidden place still answers a ray
   const first = hits[0]?.object;
   walker.exit = false;
+  if (first?.userData.patron && P.crowd?.inFront(first)) {   // a regular passing in front of a game: the tap is for the game
+    const game = hits.find(h => { for (let o = h.object; o; o = o.parent) if (o.userData.front) return true; return false; });
+    for (let o = game?.object; o; o = o.parent) if (o.userData.front) return goTo(o.userData.front, true);
+  }
   if (first?.userData.patron && P.crowd?.tap(first)) return;
   if (first?.userData.exit) return headOut();
   if (first && first === mon.board) {

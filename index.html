@@ -161,6 +161,7 @@
           <div class="set-opt" data-opt="scenery"><span class="set-name">Scenery</span><small>Hybrid: pixel art in soft light</small></div>
           <div class="set-opt" data-opt="sharpness"><span class="set-name">Sharpness</span><small>Max is crispest, Soft runs lightest</small></div>
           <div class="set-opt" data-opt="titleHub"><span class="set-name">Title screen</span><small>Walk the Clearing, or the menu signs</small></div>
+          <div class="set-opt" data-opt="foil"><span class="set-name">Foil cards</span><small>A starter won on Level 6 and up wears foil cards</small></div>
           <div class="set-opt" data-opt="calmFx"><span class="set-name">Flashing &amp; shake</span><small>Reduced: no shaking, softer flashes</small></div>
         </section>
         <section class="set-group" data-tone="battle">
@@ -187,6 +188,8 @@
     </div>
     <!-- shown only on the map: the floor you stand on in this biome (showMap() in js/run.js) -->
     <div class="floor-tag" id="floor-tag"><span class="floor-stairs" aria-hidden="true"><i></i></span><b id="floor-num">F0</b></div>
+    <!-- shown only on a run's map, beside the floor: Abandon run, a Game & Watch runner ticking across its LCD (gameWatchRunner() in js/smooth-icons.js) -->
+    <button type="button" class="map-flee" id="map-flee" aria-label="Abandon run" title="Abandon run"></button>
     <!-- shown only on the reward screen (every room with choices: rewards, events, Center, Mart), from showChoice() -->
     <div class="hp-plate" id="choice-plate">
       <div class="gb-hp" id="choice-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
@@ -298,35 +301,15 @@
           </div>
           <p class="prep-lname" id="level-name"></p>
           <p class="prep-rule" id="level-rule"></p>
+          <p class="prep-crown" id="level-crown" hidden></p>
+          <p class="prep-crown prep-aura" id="level-aura" hidden></p>
           <div class="prep-foot">
             <span class="prep-coins" id="level-coins"></span>
             <details class="prep-all"><summary>All rules</summary><ul id="level-rules"></ul></details>
           </div>
-          <!-- a held berry or run kit item from Kurt's Workshop to set out with (renderPack() in js/select.js) -->
-          <div class="prep-pack" id="prep-pack" hidden>
-            <div class="pack-pouch" id="pack-pouch">
-              <div class="prep-level pouch-level">
-                <h4>Berry Pouch</h4>
-                <div class="pouch-slots" id="pouch-slots"></div>
-              </div>
-              <div class="pouch-kept" id="pouch-kept"></div>
-              <p class="prep-rule" id="pouch-rule"></p>
-            </div>
-            <div class="pack-kit" id="pack-kit">
-              <div class="prep-level">
-                <h4>Run kit</h4>
-                <div class="prep-pick">
-                  <button type="button" class="prep-step" id="pack-down" aria-label="Previous run kit item">◀</button>
-                  <span class="pack-pick" id="pack-pick"></span>
-                  <button type="button" class="prep-step" id="pack-up" aria-label="Next run kit item">▶</button>
-                </div>
-              </div>
-              <p class="prep-rule" id="pack-rule"></p>
-            </div>
-          </div>
+          <!-- what the Berry Booth packed (loadoutLine() in js/data/workshop.js), read-only (the user's pick, 2026-10-23) -->
+          <p class="prep-bring" id="prep-bring" hidden></p>
         </div>
-        <!-- pinned to the panel's foot while the pack is still below it (updatePeek() in js/select.js) -->
-        <div class="pack-peek-pin"><button type="button" class="pack-peek" id="pack-peek" hidden></button></div>
       </div></div>
       <div class="sel-tray">
         <div class="sel-thumbs" id="sel-thumbs" role="radiogroup" aria-label="Starter Pokémon"></div>
@@ -492,6 +475,10 @@
       <div class="arena" id="arena">
         <!-- Gen 5's ability pop-up ("Charmander's Blaze"), slid in by abilityBanner() in js/battle.js -->
         <div class="ability-banner" id="ability-banner" aria-hidden="true" hidden><span id="ability-banner-who"></span><strong id="ability-banner-name"></strong></div>
+        <!-- StS's turn banner ("Your Turn / Turn 2", "Enemy Turn"), by turnBanner() in js/battle.js -->
+        <div class="turn-banner" id="turn-banner" aria-hidden="true" hidden><strong id="turn-banner-title"></strong><b id="turn-banner-count"></b></div>
+        <!-- a relic's first use in a fight, in the turn banner's style (relicFlash() in js/battle.js) -->
+        <div class="turn-banner" id="relic-banner" data-side="relic" aria-hidden="true" hidden><strong id="relic-banner-title"></strong><span id="relic-banner-gain"></span></div>
 
         <div class="nameplate" id="enemy-plate">
           <div class="nameplate-title"><strong id="enemy-name"></strong><span id="enemy-shiny" class="shiny-tag" hidden>Shiny</span><span id="enemy-type" class="chip"></span></div>
@@ -510,10 +497,11 @@
         <div class="player-zone" id="player-zone">
           <img id="player-sprite" class="pixel" alt="Your Pokémon">
           <div class="intro-ball" id="intro-ball" hidden><img src="assets/items/poke-ball.png" alt=""></div>
+          <div class="swap-hint" id="swap-hint" aria-hidden="true" hidden><span>hold to swap</span></div>
         </div>
 
         <div class="nameplate" id="player-plate">
-          <div class="nameplate-title"><strong id="player-name"></strong><button type="button" id="player-bench" class="bench-chip" hidden></button><span id="player-type" class="chip"></span></div>
+          <div class="nameplate-title"><strong id="player-name"></strong><span id="player-type" class="chip"></span></div>
           <button type="button" id="switch-go" class="switch-go" hidden></button>
           <div class="gb-hp" id="player-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
@@ -868,6 +856,8 @@
       <canvas id="sp-sky" class="sp-sky" aria-hidden="true"></canvas>
       <img id="sp-gate-mon" class="sp-gate-mon pixel" alt="">
       <button type="button" class="mdex-btn sp-duo-key" id="sp-duo"><span class="mdex-ico" data-icon="duo"></span><span class="mdex-label">Duo</span></button>
+      <img id="sp-gate-mon2" class="sp-gate-mon sp-gate-second pixel" alt="" hidden>
+      <p id="sp-gate-note" class="sp-gate-note" hidden></p>
     </div>
     <div class="tdev-glass sp-glass" id="sp-glass"><div class="tower-base sp-base" id="sp-base">
       <div class="sp-today" id="sp-today"></div>
@@ -892,6 +882,30 @@
       <div class="tdev-ab">
         <span class="tdev-key b"><button type="button" class="cdev-btn" id="sp-close" aria-label="Back">B</button>Back</span>
         <span class="tdev-key a"><button type="button" class="cdev-btn" id="sp-start" aria-labelledby="sp-start-label">A</button><span id="sp-start-label">Start</span></span>
+      </div>
+    </div>
+  </div></dialog>
+
+  <!-- the Berry Booth by the Clearing's gate (js/berrybooth.js): the run's Berry Pouch and kit, the Safari lobby's device -->
+  <dialog id="booth-dialog" data-smooth-icons class="booth-dialog tower-lobby" aria-labelledby="bb-title"><div class="tower-page" id="bb-page">
+    <div class="tdev-lid">
+      <span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+      <div class="cdev-lcd"><h2 id="bb-title" class="tower-title" tabindex="-1" autofocus>Berry Booth</h2><p class="tower-week" id="bb-sub">Pack for your next run</p></div>
+    </div>
+    <div class="tower-window bb-window" id="bb-top">
+      <div class="bb-load" id="bb-load"></div>
+      <p class="bb-caption" id="bb-caption"></p>
+    </div>
+    <div class="tdev-glass" id="bb-glass"><div class="tower-base bb-base" id="bb-base"></div></div>
+    <div class="tdev-pad">
+      <div class="tdev-keys bb-keys">
+        <button type="button" class="mdex-btn" id="bb-pouch"><span class="mdex-ico" data-icon="satchel"></span><span class="mdex-label">Pouch</span></button>
+        <button type="button" class="mdex-btn" id="bb-kit"><span class="mdex-ico" data-icon="items"></span><span class="mdex-label">Kit</span></button>
+        <button type="button" class="mdex-btn" id="bb-guide"><span class="mdex-ico" data-icon="help"></span><span class="mdex-label">Guide</span></button>
+      </div>
+      <div class="tdev-ab">
+        <span class="tdev-key b"><button type="button" class="cdev-btn" id="bb-close" aria-label="Back">B</button>Back</span>
+        <span class="tdev-key a"><button type="button" class="cdev-btn" id="bb-done" aria-labelledby="bb-done-label">A</button><span id="bb-done-label">Done</span></span>
       </div>
     </div>
   </div></dialog>

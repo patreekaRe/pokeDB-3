@@ -117,7 +117,7 @@ s = await B(() => { const b = window.__battle(); return { w: b.weather, fb: b.en
 check(s.w?.turns === pre.turns, `Endless Winter: Hail doesn't run out (${pre.turns} -> ${s.w?.turns})`);
 check(s.fb === 4 + 2 - 1, `Ice Scales: the attack adds Frostbite 2, then it thaws 1 (${s.fb})`);
 check(s.hand.filter(id => id === 'icicle').length === 2 && s.hand.includes('ice-shard'), `Icefall's and Ice Crown's Icicles, and Cold Storage kept Ice Shard (${s.hand.join(' ')})`);
-check(s.block >= 5, `Ice Core: block equal to its Frostbite at the turn's start (${s.block})`);
+check(s.block >= 2, `Ice Core: block equal to half its Frostbite at the turn's start (${s.block})`);
 
 // a Duo Run: Snow Warning the first time Vanillite comes out, never again that fight
 await page.goto(`http://localhost:${port}/?arena=fight&starter=charmander`);

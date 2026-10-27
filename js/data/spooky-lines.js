@@ -1,20 +1,12 @@
 /* spooky-lines.js  -  what the Clearing's Halloween ghosts say (js/hub-spooky.js walks them about).
    {name} in any line is the player's nickname (js/leaderboard.js's trainerName()).
-   Each one: `greets`, one of which it says walking up to you the first time the Clearing shows on a page load; `named`,
-   lines with your name mixed in among the rest; `quips`, short lines floated over its head now and then; `lines`, said when tapped; `stories`, a few lines
+   Each one: `named`, lines with your name mixed in among the rest; `quips`, short lines floated over its head now and then; `lines`, said when tapped; `stories`, a few lines
    tapped through in turn. A tap deals the next of its lines and stories, shuffled, none again till all are told.
    A new ghost is an entry here (its front GIF in assets/pokemon/). */
 
 export const SPOOKS = [
   {
     id: 'gengar', name: 'Gengar', tag: ['#9a78d8', '#3a2060'], move: 'walk', speed: 1.6,
-    greets: [
-      "Kekeke! Look who's back! {name}! I've been keeping your shadow warm for you.",
-      "Boo! ...Oh, it's only {name}. Hi, {name}! Missed you. Not in a creepy way. In a very creepy way.",
-      "{name}! Finally! The Clearing was so boring without someone to sneak up on.",
-      "Well, well, well. If it isn't {name}. Happy Halloween! Got candy? No? Kekeke, I'll be watching.",
-      "Hey, {name}! I turned all the pumpkins to face you this morning. You're welcome.",
-    ],
     named: [
       "Kekeke, {name}, your shadow looked lonely, so I moved in. Rent free.",
       "Psst, {name}. Don't turn around. ...Okay, you can turn around. Kekeke, nothing there. Or was there?",
@@ -123,13 +115,6 @@ export const SPOOKS = [
   },
   {
     id: 'litwick', name: 'Litwick', tag: ['#f0d8f8', '#6a3a8a'], move: 'hop', speed: 1.1,
-    greets: [
-      "Oh! {name}, you're here! My flame just got twice as bright. Can you see?",
-      "Hello, {name}! I kept a candle lit for you all night, so you'd find your way back.",
-      "{name}! Welcome home! Mind the pumpkins, they're very big this year.",
-      "Hee hee! It's {name}! I was hoping you'd come! Happy Halloween!",
-      "Flicker flicker! That means \"hello, {name}\" in candle.",
-    ],
     named: [
       "{name}, you're my favourite Trainer. Don't tell the others. I tell all of them that. But I mean it with you.",
       "If you ever get lost out there, {name}, just look for a little purple light. I'll come find you.",
@@ -231,13 +216,6 @@ export const SPOOKS = [
   },
   {
     id: 'duskull', name: 'Duskull', tag: ['#d8d0c8', '#4a4040'], move: 'float', speed: 0.9,
-    greets: [
-      "Ah... {name}. You have returned. The Clearing was quiet without your footsteps.",
-      "Good evening, {name}. The stones whispered you would come tonight. They are rarely wrong.",
-      "{name}. Welcome back. Sit a while. The night has stories to tell, and so do I.",
-      "I saw your shadow at the gate before I saw you, {name}. It is good to see you both.",
-      "Hello, {name}. The moon asked after you. I told it you would be along.",
-    ],
     named: [
       "You walk with purpose, {name}. The ghosts have noticed. They approve.",
       "I keep a list of every Trainer who passes, {name}. Your name is written in the good column. In the margin, a small star.",
@@ -345,13 +323,6 @@ export const SPOOKS = [
   },
   {
     id: 'sableye', name: 'Sableye', tag: ['#a8e8f0', '#2a4a6a'], move: 'walk', speed: 2,
-    greets: [
-      "Sableye! {name}! You're back! Did you bring shiny? Even a little shiny?",
-      "{name}! {name}! Hehehe, I was hiding behind the hay bale waiting for you!",
-      "Ooh, {name} came! Your eyes look sparkly today. Not gem sparkly. But close!",
-      "Hehehe! Hello, {name}! I found a button. It's yours. No wait, it's mine. Hello!",
-      "Shiny greetings, {name}! That's a Sableye hello. Very fancy. Very rare.",
-    ],
     named: [
       "{name}, if you find any gems on your run, think of me. Then bring them to me. Mostly the second part.",
       "I named a pebble {name}. It's my favourite pebble. Very round. Very brave.",
