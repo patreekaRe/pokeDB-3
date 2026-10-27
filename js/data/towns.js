@@ -2251,7 +2251,7 @@ export const CLEARING = {
         'Hm? A customer! Come in, come in. Mind Slowpoke, he\'s been asleep there since Tuesday.',
         'I\'m Kurt. Fifty years I made Poké Balls out of Apricorns in Azalea Town. Then the Waystones went dark, and I came where I\'m needed.',
         'That\'s how it works here. You bring what you find out on the roads, I make things from it. What the towns need, furniture, gifts for your friends...',
-        '...and Apricorn balls. Carry one and your partner comes out of it in every battle, your Safari Balls too. Looks only, mind. A ball\'s a ball. Have a look at the bench.',
+        '...and Apricorn balls. Carry one and your partner comes out of it in every battle, every ball you throw too. Looks only, mind. A ball\'s a ball. Have a look at the bench.',
       ],
       // his word in the Clearing, once a save (js/hub-3d.js's ballNews(), 2026-10-27, the user's ask): a carried Apricorn
       // ball is the one your partner comes out of in every battle now, not just the Safari Ball's look

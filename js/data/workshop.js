@@ -285,8 +285,8 @@ export function baseFriends(at) {
 export const needsLine = (recipe, sat) => Object.entries(recipe.needs)
   .map(([id, n]) => `${MATERIALS_BY_ID[id].icon} ${Math.min(sat.mats[id] || 0, n)}/${n}`).join(' · ');
 
-/** The Safari Ball's sprite: its own, or the Apricorn skin carried. */
-export const safariSprite = (ws) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : 'safari-ball');
+/** A thrown ball's sprite: the Apricorn skin carried, or the ball's own. */
+export const thrownSprite = (ws, own) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : own);
 /** The ball your partner comes out of at a battle's start: a Poké Ball, or the Apricorn skin carried. */
 export const sendSprite = (ws) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : 'poke-ball');
 

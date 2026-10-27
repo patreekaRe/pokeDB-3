@@ -3687,3 +3687,8 @@ not a WebGL context, on the battle screen). The Trainer Card's Ball key (`ballPi
 Outfitter's Apricorn stand sells one of Kurt's seven a UTC day for 350 (`apricornToday()`), kept in `workshop.bought`
 apart from `made` so a purchase doesn't open the Workshop early. Tests 428 pass; Clearing, Outfitter, Center and gym
 within budget.
+
+### Apricorn ball skins dress every thrown ball (2026-10-27, cloud)
+The user's call: the skin carried now shows on every ball thrown (Great, Ultra, Master...), not only the Safari Ball
+(`looks()` in `js/battle.js`, `thrownSprite()` in `js/data/workshop.js`), as it already did on the ball sent out. The
+ball picker keeps each ball's own sprite to tell them apart; odds unchanged.

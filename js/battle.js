@@ -42,7 +42,7 @@ import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
 import { randIndex, pickOne, random } from './rng.js';
-import { safariSprite, sendSprite, workshopOf } from './data/workshop.js';
+import { thrownSprite, sendSprite, workshopOf } from './data/workshop.js';
 import { ball3d, setBall3d } from './ball-looks.js';
 import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows, safariBallsLeft } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
@@ -2082,8 +2082,9 @@ function whyNotThrow() {
   return null;
 }
 
-/** A ball as it looks: the Safari Ball wears the Apricorn skin carried from Kurt's Workshop (looks only). */
-const looks = (ball) => (ball.id === 'safari' ? { ...ball, sprite: safariSprite(workshopOf(getSave())) } : ball);
+/** A ball as it flies: every ball wears the Apricorn skin carried from Kurt's Workshop (looks only). The picker keeps
+    each ball's own sprite, so they can be told apart. */
+const looks = (ball) => ({ ...ball, sprite: thrownSprite(workshopOf(getSave()), ball.sprite) });
 
 /** The odds a ball catches right now, 0-1. */
 function catchOdds(ball) {
@@ -2112,7 +2113,7 @@ function toggleBallPicker() {
     const row = el('button', 'ball-row');
     row.type = 'button';
     const odds = Math.round(catchOdds(ball.id) * 100);
-    row.append(itemSprite(looks(ball), 'ball-icon'), el('span', 'ball-name', ball.name),
+    row.append(itemSprite(ball, 'ball-icon'), el('span', 'ball-name', ball.name),
       el('span', 'ball-left', left === Infinity ? '' : `×${left}`), el('b', 'ball-odds', `${odds}%`));
     row.title = ball.text;
     row.setAttribute('aria-label', `${ball.name}${left === Infinity ? '' : `, ${left} left`}: ${odds}% to catch`);

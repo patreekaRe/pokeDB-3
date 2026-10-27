@@ -58,7 +58,7 @@ export const NEXT = [
   ['battle', 'No two cards in a run are the same card with other numbers any more: 197 cards and 424 signature moves got new moves, and 28 look-alikes left the rewards.'],
   ['base', 'Timburr & Co.\'s catalogue shows a MORE pill while more houses sit off to the right; tap it or swipe the row.'],
   ['base', 'Over 120 new wallpapers and floors, sorted by theme, with a "!" on new ones and one of each half price every day; Smeargle at the Poké Mall sells them too.'],
-  ['battle', 'Every ball you throw is a 3D ball like the Pokémon Center\'s, and your partner comes out of the Apricorn ball you carry, chosen on your Trainer Card.'],
+  ['battle', 'Every ball you throw is a 3D ball like the Pokémon Center\'s, wearing the Apricorn skin you carry (chosen on your Trainer Card), as does the ball your partner comes out of.'],
   ['mall', 'The Safari Outfitter sells one of Kurt\'s Apricorn balls a day, left of the Day Pass booth.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
