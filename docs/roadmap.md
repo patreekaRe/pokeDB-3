@@ -1635,6 +1635,11 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **The cover's Badge Case** (2026-10-27, branch `badge-case-cover`, commit dbe0779, not on `main` yet; the user's ask:
+  the cover's badge pile kept growing): a fixed 6×2 case, a slot per badge group with its best (or pinned) badge, gold rim
+  once a group is full, and a count line. Look at it on the branch link with `?levels`; if it's liked, merge it to `main`.
+  Ideas if it's not enough: a picker to choose the 12 shown, or the newest few instead of one per group. ▶ Run in: PLAYTEST
+  (branch link).
 - **The Safari's song** (2026-10-24, the user's MP3, on `main`; `docs/reference/music.md`): plays in the Safari lobby and on
   every area's map, Daily and Duo Runs, looped over 17.25-48.34 s. Listen for the loop's join (~48 s in) and the level
   against the Clearing's song. ▶ Run in: PLAYTEST ON THE LIVE SITE.
