@@ -909,6 +909,8 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   iPad on its side). Every pick and paint is built on the lot as a try-on (`tryOn()` -> `rebuildLot()`, which disposes
   only the lot's group and takes its lights out of `glowMats`); closing puts back the house lived in, or rebuilds the
   places if anything was bought.
+  A "MORE ›" pill (`.hk-more`) sits over the row's right edge on a cream fade while houses lie past it, bobbing; a tap
+  scrolls the row 80% on, and it fades out at the row's end (the user, 2026-10-27: players didn't know there were more).
 - **The PC**: HOUSE UPGRADES shows a YOUR HOUSE row (the house and its paint) on every tab, its Go there logging off and
   walking you to the stand (`onKiosk` in `openPC()`).
 - **Budgets**: `tools/budget-check.mjs` measures `clearing-houses` (`?houses`, a new save's boarded cottage) on its own

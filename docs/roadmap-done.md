@@ -3654,3 +3654,6 @@ The Safari's 514 signature cards held to the twin rule: counted fully (any run t
 twins too), 365 read like a run card and 491 like a run card or each other; 424 got new lines (`docs/card-twins.md`'s
 last sections, before and now), 0 pairs after. `tests/safarimons.test.mjs` runs `sigReport()` now. Safari bot check
 within noise (mean 66.7 -> 65.1). Each type's plain Strike and Defend stay plain (Claude's recommendation).
+
+The house catalogue's "MORE ›" pill (2026-10-27, the user: players didn't know the row of homes scrolled): over the
+row's right edge while houses sit past it, a tap scrolls on, gone at the end (`.hk-more` in `js/house-kiosk.js`).
