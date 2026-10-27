@@ -1423,8 +1423,14 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 /* the ball your partner comes out of (ballPicker() in js/trainercard.js): a 3D ball (js/ball-looks.js) by its name */
 .tc-ball-key { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .tc-ball-key .ball3d { --b: 18px; flex: none; }
-.tc-ball .ball3d { --b: 44px; position: absolute; inset: 0; margin: auto; }
+.tc-ball-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+.tc-ball { aspect-ratio: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 2px 6px; overflow: visible; }
+.tc-ball .ball3d { --b: 40px; flex: none; }
+.tc-ball-name { font: 0.75rem/1 var(--pixel-font); color: var(--win-ink); white-space: nowrap; }
 .tc-ball.locked .ball3d { filter: grayscale(1) brightness(0.55); opacity: 0.45; }
+.tc-ball.locked .tc-ball-name { opacity: 0.5; }
+.tc-ball-now { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tc-ball-away[hidden] { display: none; }
 /* The Champion's Crown (js/data/difficulty.js's wearsCrown(), a Level 10 win) floating over the partner, bobbing like the
    walking buddy's. */
 .tc-crown { position: absolute; z-index: 2; left: 50%; top: -6px; width: 36px; translate: -50% 0; pointer-events: none;

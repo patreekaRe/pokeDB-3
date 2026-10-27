@@ -68,3 +68,8 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
 and its name opens `ballPicker()`: the Poké Ball, every Apricorn ball owned (made at Kurt's or bought at the Safari
 Outfitter), then Kurt's seven not yet owned, greyed, saying where they come from. A tap carries it (`workshop.skin`):
 the ball your partner comes out of in every battle, and the Safari Balls' look.
+
+**The ball picker (2026-10-27, the user's ask):** `ballPicker()` in `js/trainercard.js` names each ball under it (the
+plain Poké Ball "Plain") and puts a Put away button on the Carrying line while an Apricorn skin is carried. A `ball3d()`
+sheet is an absolute URL (`setBall3d()` in `js/ball-looks.js`): a relative `url()` in a custom property resolves against
+the stylesheet that uses it, `css/`.

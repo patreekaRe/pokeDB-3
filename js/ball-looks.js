@@ -148,5 +148,6 @@ export function ball3d(sprite, cls = '') {
   return b;
 }
 export function setBall3d(node, sprite) {
-  node.style.setProperty('--sheet', `url("assets/balls/${LOOKS[sprite] ? sprite : 'poke-ball'}.webp")`);
+  // absolute: a url() in a custom property resolves against the stylesheet that uses it (css/), not the page
+  node.style.setProperty('--sheet', `url("${new URL(`assets/balls/${LOOKS[sprite] ? sprite : 'poke-ball'}.webp`, document.baseURI).href}")`);
 }

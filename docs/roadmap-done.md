@@ -3699,3 +3699,9 @@ in `js/ui.js` puts `.more` on a scroll box while anything's hidden under its bot
 `css/screens.css` draws a bobbing ▼ MORE tag stuck to that edge (no room taken, taps pass through; an inner box's tag
 hides while its window's own shows). On the Workshop, Berry Garden and dojo windows and their lists; any other long
 window can call it too.
+
+### Trainer Card ball picker: balls drawn, names, Put away (2026-10-27, cloud)
+The user's phone screenshots: the card's ball key and the YOUR BALL tiles were blank, and nothing said how to put a skin
+away. `setBall3d()` (`js/ball-looks.js`) set `--sheet` to a relative `url()`, which resolved against `css/` (a 404), so
+every `ball3d()` was blank, the battle send-out included; it now sets an absolute URL. Each tile is named under its ball
+(the first "Plain"), and the Carrying line has a Put away button while a skin is carried.

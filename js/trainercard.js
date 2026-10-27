@@ -584,8 +584,9 @@ function coverPicker(body, done) {
   body.scrollTop = 0;
 }
 
-/** The ball picker over the card's body (2026-10-27, the user's yes: a quicker place than Kurt's bench): the Poké Ball,
-    every Apricorn ball you own, then Kurt's seven still to get, greyed; a tap carries it and the picker stays open. */
+/** The ball picker over the card's body (2026-10-27, the user's yes: a quicker place than Kurt's bench): the plain Poké
+    Ball, every Apricorn ball you own, then Kurt's seven still to get, greyed, each named under it; a tap carries it and
+    the picker stays open. Put away (the user's ask, 2026-10-27) goes back to the plain ball. */
 function ballPicker(body, done) {
   const ws = workshopOf(getSave());
   const head = el('div', 'tc-head');
@@ -594,23 +595,31 @@ function ballPicker(body, done) {
   back.type = 'button';
   back.addEventListener('click', done);
   head.append(back);
-  const now = el('p', 'tc-pick-note tc-ball-now');
-  const say = (skin) => { now.textContent = `Carrying: ${SKIN_BY_ID[skin]?.name ?? 'Poké Ball'}.`; };
+  const now = el('div', 'tc-pick-note tc-ball-now'), line = el('span', '');
+  const away = el('button', 'tc-pick-back tc-ball-away', 'Put away');
+  away.type = 'button';
+  away.title = 'Back to the plain Poké Ball';
+  now.append(line, away);
+  const say = (skin) => { line.textContent = `Carrying: ${SKIN_BY_ID[skin]?.name ?? 'Poké Ball'}.`; away.hidden = !skin; };
   say(ws.skin);
-  const grid = el('div', 'tc-pick-grid');
+  const grid = el('div', 'tc-pick-grid tc-ball-grid');
+  const carry = (skin) => {
+    updateSave(d => { d.workshop = { ...workshopOf(d), skin }; });
+    grid.querySelectorAll('.tc-pick').forEach(b => b.classList.toggle('on', (b.dataset.skin || null) === skin));
+    say(skin);
+  };
+  away.addEventListener('click', () => { playSound('cancel'); carry(null); });
   const tile = (skin, sprite, name, owned, hint) => {
     const btn = el('button', `tc-pick tc-ball${(ws.skin ?? null) === skin ? ' on' : ''}${owned ? '' : ' locked'}`);
     btn.type = 'button';
+    if (skin) btn.dataset.skin = skin;
     btn.title = owned ? name : `${name}: ${hint}`;
     btn.setAttribute('aria-label', owned ? `Carry the ${name}` : `${name}, not yours yet`);
-    btn.append(ball3d(sprite));
+    btn.append(ball3d(sprite), el('span', 'tc-ball-name', skin ? name.replace(/ Ball$/, '') : 'Plain'));
     btn.addEventListener('click', () => {
-      if (!owned) { playSound('no-pp'); now.textContent = `${name}: ${hint}`; return; }
-      updateSave(d => { d.workshop = { ...workshopOf(d), skin }; });
+      if (!owned) { playSound('no-pp'); line.textContent = `${name}: ${hint}`; return; }
       playSound('confirm');
-      grid.querySelectorAll('.tc-pick.on').forEach(b => b.classList.remove('on'));
-      btn.classList.add('on');
-      say(skin);
+      carry(skin);
     });
     return btn;
   };
