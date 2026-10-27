@@ -66,7 +66,7 @@ await B(() => window.__play('rock-smash'));
 let blk = await B(() => window.__battle().block);
 await B(() => window.__play('mat-block'));
 s = await B(() => window.__battle().block);
-check(s === blk + 8 + 3, `Fighting Spirit: a skill after an attack, +3 block (${blk} -> ${s})`);
+check(s === blk + 9 + 3, `Fighting Spirit: a skill after an attack, +3 block (${blk} -> ${s})`);
 const e0 = await B(() => { const b = window.__battle(); b.lastKind = null; return b.energy; });
 await B(() => window.__play('iron-fist'));
 await B(() => { window.__battle().lastKind = null; });

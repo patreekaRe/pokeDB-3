@@ -56,6 +56,13 @@ export function holdFromPouch(run, i) {
   return { held: holding(id), pouch: back ? pouch.map((p, j) => (j === i ? back : p)) : pouch.filter((_, j) => j !== i) };
 }
 
+/** The run once its uneaten held berry comes off, back to the front of the pouch, kept for a fight to come: { held, pouch },
+    or null. It wasn't eaten, so the next can still go on in this biome. */
+export function takeOff(run) {
+  if (!HELD_BY_ID[run.held?.id] || run.held.used) return null;
+  return { held: null, pouch: [run.held.id, ...(run.pouch || [])] };
+}
+
 /** Whether the next pouch berry is waiting to go on: the held one eaten, one left in the pouch, and a new biome reached. */
 export const nextBerryReady = (run) => !!run.held?.used && (run.pouch || []).length > 0 && canHold(run);
 

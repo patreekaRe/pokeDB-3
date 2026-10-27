@@ -539,3 +539,31 @@
 .card.edge-down .card-type { background: rgba(40, 40, 48, 0.62); color: #d4d4dc; }
 .card-edge { font-weight: 900; }
 .card.edge-up .card-edge { color: #eaffb0; }
+
+/* foil decks (js/foil.js; the roadmap's Level 6-10 reward 6, 2026-10-23): a run whose starter was won on Trainer Level
+   6-9 wears every card with a foil edge in that star's colour, Level 10 a rainbow edge and a holo sheen that follows
+   --foil-x / --foil-y (the pointer or the tilt). The edge is a transparent border showing a second background, so the
+   padding gives back its width; the rarity still shows on its gem. */
+:root[data-foil] .card:not(.status) { --edge: transparent; }
+:root[data-foil] .card:not(.status) .card-face {
+  border: 1.4cqw solid transparent;
+  padding: 3.1cqw 3.6cqw 3.6cqw;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--c1) 60%, #fff) 0%, var(--c1) 38%, var(--c2) 100%) padding-box,
+    linear-gradient(calc(100deg + var(--foil-x, 0.5) * 70deg), var(--f1) 0%, var(--f2) 22%, var(--f3) 38%, var(--f2) 52%, var(--f1) 70%, var(--f3) 86%, var(--f2) 100%) border-box;
+}
+:root[data-foil] .card.small:not(.status) .card-face { padding: 3.6cqw 3.6cqw 4.6cqw; }
+:root[data-foil="6"] { --f1: #6a0a1c; --f2: #e0284a; --f3: #ffd0d8; }
+:root[data-foil="7"] { --f1: #084a26; --f2: #22b860; --f3: #d0ffe0; }
+:root[data-foil="8"] { --f1: #0a2470; --f2: #2a6ae0; --f3: #d4e4ff; }
+:root[data-foil="9"] { --f1: #401268; --f2: #9a48e0; --f3: #f0d8ff; }
+:root[data-foil="10"] .card:not(.status) .card-face {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--c1) 60%, #fff) 0%, var(--c1) 38%, var(--c2) 100%) padding-box,
+    linear-gradient(calc(100deg + var(--foil-x, 0.5) * 120deg), #ff5a7a, #ffb84a, #fff27a, #6ee8a0, #5ac8ff, #a87aff, #ff7ad8, #ff5a7a) border-box;
+}
+:root[data-foil="10"] .card:not(.status) .card-face::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(115deg, transparent 18%, rgba(255, 90, 140, 0.16) 30%, rgba(255, 230, 90, 0.16) 40%, rgba(110, 232, 160, 0.16) 50%,
+    rgba(90, 200, 255, 0.16) 60%, rgba(170, 120, 255, 0.16) 70%, transparent 82%) no-repeat;
+  background-size: 260% 260%;
+  background-position: calc(var(--foil-x, 0.5) * 100%) calc(var(--foil-y, 0.5) * 100%);
+}

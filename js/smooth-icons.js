@@ -486,6 +486,26 @@ export function smoothIcon(name, className = '') {
   return svg;
 }
 
+// the map's Abandon run: Mr. Game & Watch running off an LCD (the user's ask, 2026-10-23), three segments printed on the
+// glass, a stride, a passing step, a stride, each lit in turn while the unlit ones stay as faint ghosts, as on the real
+// handhelds (css/screens.css .map-flee)
+const GW_STRIDE = `<circle cx="7.2" cy="2.6" r="2.3"/><circle cx="9.4" cy="3" r="0.9"/>
+    <ellipse cx="6" cy="7.4" rx="2" ry="2.9" transform="rotate(14 6 7.4)"/>
+    <path d="M7.2 5.8l3.4 1.8M5 6L1.8 4.4M7 10l2.2 2.4.9 3M5 10l-1.6 3.2-2.6.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+const GW_PASS = `<circle cx="6.8" cy="2.2" r="2.3"/><circle cx="9" cy="2.6" r="0.9"/>
+    <ellipse cx="6" cy="7" rx="2" ry="2.9" transform="rotate(8 6 7)"/>
+    <path d="M6.8 5.6l2.4 1.6-.6 2.2M5.2 5.8l-2 2.4M6.4 9.8l2.2 2-1.4 2.8M5.4 9.8l-1 2.6-2.4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+export function gameWatchRunner() {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 36 16');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'gw-runner');
+  svg.innerHTML = [GW_STRIDE, GW_PASS, GW_STRIDE]
+    .map((pose, i) => `<g class="gw-seg" fill="currentColor" transform="translate(${i * 12} 0)">${pose}</g>`).join('');
+  return svg;
+}
+
 // the round keys' glyphs, white line art on the shell's colour (the room bar's Leave, Skip and confirm match Home; the
 // Clearing's bar adds Continue, New game and the Escape Rope)
 const KEY_GLYPHS = {

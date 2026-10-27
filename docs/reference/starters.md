@@ -13,6 +13,9 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   (play.pokemonshowdown.com is blocked in cloud sessions: PokeAPI's `cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3
   at -13 LUFS integrated (ffmpeg `ebur128`, padded with 0.4 s of silence for short cries; see the archive's
   "Cry loudness pass").
+- **A duo look's `aura`** (2026-10-20): a stage may carry `aura: 'awakened' | 'ascendant'`, and `spriteUrl()` then
+  gives `<id>[-shiny]-<aura>-<kind>.gif`. Two-stage duo lines end on their second form, Awakened; Hitmonlee and Hitmonchan
+  run plain, Awakened, Ascendant. `docs/duo-design.md` section 3.
 - **Legendaries** don't evolve into a different species. Their `line` array
   reuses the same sprite id for stages 0–1 and points stage 2 at a `-shiny` id (only read for its cry, which drops the
   suffix). They never change colours: they power up, Super Saiyan style (the user's calls, 2026-09-28), in their normal

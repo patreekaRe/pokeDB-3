@@ -17,27 +17,27 @@ export const BIG_YARD_PRICE = 1000;   // PokéCoins: the backyard made bigger (p
 // first (saved links name pips by their place in the list), then one on every other tile of every edge, so a doorway
 // can go anywhere along a wall (the user's call: the big room's three fixed doors were too few and too fixed).
 export const ROOM_KINDS = {
-  main: { name: 'Main room', w: 11, h: 8, rects: [[0, 0, 11, 8]], pips: [] },
-  bigmain: { name: 'Main room', w: 14, h: 10, rects: [[0, 0, 14, 10]], pips: [['n', 7], ['w', 5], ['e', 5]] },
-  closet: { name: 'Closet', blurb: 'A snug little nook. Just right for storage or a reading corner.',
+  main: { name: 'Main room', tag: 'Main', w: 11, h: 8, rects: [[0, 0, 11, 8]], pips: [] },
+  bigmain: { name: 'Main room', tag: 'Main', w: 14, h: 10, rects: [[0, 0, 14, 10]], pips: [['n', 7], ['w', 5], ['e', 5]] },
+  closet: { name: 'Closet', tag: 'Closet', blurb: 'A snug little nook. Just right for storage or a reading corner.',
     w: 5, h: 4, rects: [[0, 0, 5, 4]], pips: [['s', 2]] },
-  hall: { name: 'Hallway', blurb: 'A long, narrow hall, to reach more rooms.',
+  hall: { name: 'Hallway', tag: 'Hall', blurb: 'A long, narrow hall, to reach more rooms.',
     w: 3, h: 8, rects: [[0, 0, 3, 8]], pips: [['s', 1], ['n', 1], ['w', 4], ['e', 4]] },
-  bedroom: { name: 'Bedroom', blurb: 'A cosy room for a bed and a wardrobe.',
+  bedroom: { name: 'Bedroom', tag: 'Bed', blurb: 'A cosy room for a bed and a wardrobe.',
     w: 8, h: 7, rects: [[0, 0, 8, 7]], pips: [['s', 4], ['w', 3], ['e', 3]] },
-  den: { name: 'Den', blurb: 'A roomy square den.',
+  den: { name: 'Den', tag: 'Den', blurb: 'A roomy square den.',
     w: 10, h: 8, rects: [[0, 0, 10, 8]], pips: [['s', 5], ['n', 5], ['w', 4], ['e', 4]] },
-  lroom: { name: 'L-shaped room', blurb: 'A room that turns a corner, with two nooks to fill.',
+  lroom: { name: 'L-shaped room', tag: 'L room', blurb: 'A room that turns a corner, with two nooks to fill.',
     w: 10, h: 9, rects: [[0, 0, 5, 9], [5, 4, 5, 5]], pips: [['s', 2], ['n', 2], ['s', 7], ['e', 6], ['w', 4]] },
-  cross: { name: 'Cross-shaped room', blurb: 'Four wings round a middle.',
+  cross: { name: 'Cross-shaped room', tag: 'Cross', blurb: 'Four wings round a middle.',
     w: 11, h: 11, rects: [[3, 0, 5, 11], [0, 3, 3, 5], [8, 3, 3, 5]], pips: [['s', 5], ['n', 5], ['w', 5], ['e', 5]] },
-  great: { name: 'Great hall', blurb: 'As big as the main room made bigger. Room for everything.',
+  great: { name: 'Great hall', tag: 'Great', blurb: 'As big as the main room made bigger. Room for everything.',
     w: 14, h: 10, rects: [[0, 0, 14, 10]], pips: [['s', 7], ['n', 7], ['w', 5], ['e', 5]] },
   // the backyard: a lawn behind the Ancient Tree, through a garden arch in the Clearing, walked like a room; never built onto
-  yard: { name: 'Backyard', blurb: 'A lawn of your own behind the Ancient Tree, through the garden arch beside it.',
+  yard: { name: 'Backyard', tag: 'Yard', blurb: 'A lawn of your own behind the Ancient Tree, through the garden arch beside it.',
     w: 12, h: 8, rects: [[0, 0, 12, 8]], pips: [], outdoor: true },
   // the same lawn made bigger on the blueprint (`house.yard.size` 2): wider both ways and deeper back from the door
-  bigyard: { name: 'Backyard', blurb: 'A lawn of your own behind the Ancient Tree, through the garden arch beside it.',
+  bigyard: { name: 'Backyard', tag: 'Yard', blurb: 'A lawn of your own behind the Ancient Tree, through the garden arch beside it.',
     w: 16, h: 11, rects: [[0, 0, 16, 11]], pips: [], outdoor: true },
 };
 export const BUILDABLE = ['closet', 'hall', 'bedroom', 'den', 'lroom', 'cross', 'great'];
@@ -99,6 +99,8 @@ export const yardKind = (house) => house?.yard?.size > 1 ? 'bigyard' : 'yard';
 export const yardOf = (house) => house?.yard ? { id: 'yard', kind: yardKind(house), rot: 0, gx: 0, gy: 0, lv: 0, shape: shapeOf(yardKind(house)) } : null;
 export const roomById = (house, id) => id === 'yard' ? yardOf(house) : houseRooms(house).find(r => r.id === id);
 export const roomName = (house, id) => ROOM_KINDS[roomById(house, id)?.kind]?.name ?? 'Room';
+/** A room's name short enough for the tag on a Pokémon's tile in the pickers (where it lives). */
+export const roomTag = (house, id) => ROOM_KINDS[roomById(house, id)?.kind ?? (id === 'yard' ? 'yard' : '')]?.tag ?? 'Room';
 /** A floor's name: 1F for the ground, 2F up the stairs... */
 export const floorName = (lv) => `${(lv || 0) + 1}F`;
 export const topFloor = (house) => Math.max(0, ...houseRooms(house).map(r => r.lv));
