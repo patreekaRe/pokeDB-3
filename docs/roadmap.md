@@ -1212,7 +1212,11 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 per Safari Pokémon, are outside the twin rule (170 still read like a card their run can meet with other numbers; none
 exactly): redo them too, or leave them as each Pokémon's own flavour? (2) each type's plain **Strike and Defend** still
 match in a Duo Run (Ember / Thunder Shock both "Deal N damage."): give each type's basics a rider, or keep StS's plain
-basics? (3) Kenmatta's dojo: the user picked "rebuild around the new cards", done 2026-10-26.
+basics? (3) Kenmatta's dojo: the user picked "rebuild around the new cards", done 2026-10-26. Claude's
+recommendation (2026-10-27, asked "what do you think"): (1) a targeted pass on the 170 signature cards that read like a
+card their run meets, not all 514, and `tests/safarimons.test.mjs` moved onto `tools/card-twins.mjs`'s rule so a new Safari
+Pokémon can't add one; (2) keep the basics plain: a Duo Run's partners draw from their own decks, so two types' Strikes
+never share a hand, and riders on every starting deck would move all ten types' balance for little.
 
 **Records and the jukebox, what's left** (live 2026-10-25, see the archive). Ideas not yet asked for: music fading with
 distance from the jukebox; the player piece animating while a record plays; a nudge to go home once a new player mends
