@@ -123,6 +123,18 @@ test('rare spawns are rolled on the seed, from the area\'s own list', () => {
   assert.ok(rare.every(r => SAFARI_AREAS[0].rares.includes(r.enemyId)));
 });
 
+test('a map repeats no rare spawn until each of its area\'s rares has come up', () => {
+  for (const area of SAFARI_AREAS.filter(a => a.rares.length)) {
+    const kinds = new Set(area.rares).size;
+    useStream(safariSeed('2026-10-28'), `biome:${area.id}`);
+    const rooms = Array.from({ length: 300 }, (_, i) => ({ id: `n${i}` }));
+    markRares(rooms, area);
+    useStream(null);
+    const ids = rooms.filter(r => r.rare).map(r => r.enemyId);
+    for (let i = 0; i + kinds <= ids.length; i += kinds) assert.equal(new Set(ids.slice(i, i + kinds)).size, kinds, area.id);
+  }
+});
+
 test('every Safari Pokémon has a signature card, never offered outside the Safari', () => {
   for (const id of SAFARI_ROSTER) {
     assert.ok(ENEMY_DEFS[id], id);

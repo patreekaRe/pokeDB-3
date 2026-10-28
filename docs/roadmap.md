@@ -1211,8 +1211,6 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**No repeat rare spawns on one map** (2026-10-28, the user caught a Jolteon in the Meadow and met another a few rooms on). Today `markRares()` in `js/data/safari.js` picks each rare room's Pokémon on its own (`pickOne(area.rares)`), so two rare rooms share one 1 time in 7-10; the wilds already avoid repeats (`dealEnemies()`'s deck). Claude's lean: deal the rares from a shuffled deck of the area's `rares` (no repeat until each has come up), on the same seed and the same number of rolls so the day stays the same for everyone and no later roll shifts; optionally, on replays only (never the fair first try), lean toward rares not caught yet, like `RARE_BOOST`. Waiting on the user's go.
-
 - **Grass is built on healing**: in-fight healing x0.75 takes Grass 62 -> 42 (L3 47 -> 23), x0.5 to 33, none to 6, while
   Fire only drops 76 -> 64 and Water 60 -> 43-53. A blanket heal cut would break Grass long before it touched the others.
 - Single cards move nothing: Apple Acid+ at 10 + Vulnerable 1 (70.7, noise) or Synthesis with Exhaust (61.3).

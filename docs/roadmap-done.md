@@ -3749,3 +3749,9 @@ The user's ask: the alternating "hold to drag" / "swipe up to play" pills looked
 The user's call from a phone screenshot (a rare Jolteon's grass tuft read as a Grass type): the tuft by the name and the
 💨 badge are gone; a RARE pill under the HP bar shows the Run key's running figure and the turns left, red on the last
 (`fleePill()` in `js/battle.js`). The map keeps its rustling grass.
+
+### No repeat rare spawns on one Safari map (2026-10-28, cloud; on `main`)
+The user caught a Jolteon in the Meadow and met another a few rooms on. `markRares()` now deals from a deck of the area's
+`rares` (none repeats until each has come up), one roll a pick as `pickOne()` took, so the day stays seeded the same.
+Test in `tests/catch.test.mjs`. Leaning toward uncaught rares on replays was weighed and left out (Claude's call, the user
+said "you decide"): a rare stays a lucky find.

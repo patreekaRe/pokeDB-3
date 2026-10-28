@@ -14,7 +14,7 @@
    run off after a few turns unless caught or knocked out.
    ============================================================ */
 
-import { makeRng, hashString, shuffled, pickOne, random } from '../rng.js';
+import { makeRng, hashString, shuffled, pickOne, random, randIndex } from '../rng.js';
 import { STARTERS } from './starters.js';
 import { RARE } from './balls.js';
 import { SAFARI_MONS } from './safari-mons.js';
@@ -113,12 +113,16 @@ export function duoRoad(daily = safariDaily()) {
 export const SAFARI_ROSTER = [...new Set(SAFARI_AREAS.flatMap(a => [...a.normals, ...a.rares]))];
 
 /** Turn some of a biome's wild rooms into rare spawns (rolled on the biome's seed, js/rng.js, so it's the same day for
-    everyone): `rare` on the room, and its Pokémon from the area's `rares`. */
+    everyone): `rare` on the room, and its Pokémon from the area's `rares`, dealt from a deck so a map repeats none until
+    each has come up (2026-10-28: a second Jolteon right after catching one). One roll a pick, as pickOne() took, so no
+    later roll on the seed shifts. */
 export function markRares(rooms, area, odds = RARE.odds) {
+  let deck = [];
   for (const room of rooms) {
     if (random() >= odds) continue;
+    if (!deck.length) deck = [...new Set(area.rares)];
     room.rare = true;
-    room.enemyId = pickOne(area.rares);
+    room.enemyId = deck.splice(randIndex(deck.length), 1)[0];
   }
 }
 
