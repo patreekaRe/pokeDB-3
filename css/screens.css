@@ -1221,17 +1221,14 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 /* a rare spawn's rim is grass green, so it isn't mistaken for a shiny's gold (2026-10-20) */
 #enemy-plate.rare { box-shadow: 0 0 0 2px #58c040, 0 0 14px rgba(88, 192, 64, 0.6); }
 #enemy-plate.rare #enemy-name { color: #2a7a20; }
-/* its RARE pill under the HP bar, a figure running on the spot and the turns left before it runs off (2026-10-28);
-   red on its last turn. The figure moves by transform, which the compositor runs, not the padding the title's Run key
-   steps (a repaint every frame of a fight) */
-.rare-flee { flex: none; display: inline-flex; align-items: center; gap: 4px; margin-right: auto; padding: 1px 8px;
-  font-size: 0.75rem; line-height: 18px; cursor: help; border: 1px solid #62d474; background: #1c5a2c; color: #b8f0c0; }
-.rare-flee-run { width: 18px; height: 18px; flex: none; }
-.rare-flee-n { min-width: 1ch; font-size: 0.85rem; color: #fff; }
-.rare-flee.last { border-color: #ff8070; background: #7a1c14; color: #ffd8d0; }
+/* its run-off count, first in the status row under the plate: a figure running on the spot and the turns left (moved out
+   of the plate 2026-10-28), red on its last turn. The figure moves by transform, which the compositor runs */
+.nameplate .badge.flee b { color: #7ee08a; }
+.nameplate .badge.flee.bad b { color: #ff7a6a; }
+.badge .flee-run { width: 18px; height: 18px; flex: none; }   /* over .smooth-icon's 1em */
 @media (prefers-reduced-motion: no-preference) {
-  .rare-flee-run { animation: fleeRun 0.4s steps(1) infinite; }
-  .rare-flee.last .rare-flee-run { animation-duration: 0.24s; }
+  .flee-run { animation: fleeRun 0.4s steps(1) infinite; }
+  .badge.flee.bad .flee-run { animation-duration: 0.24s; }
 }
 @keyframes fleeRun { 0% { transform: translateX(-1px); } 50% { transform: translateX(2px) translateY(-1px); } }
 
@@ -1917,7 +1914,7 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 /* a Safari rare spawn: rustling grass (rareMark() in js/ui.js) in a gold-rimmed badge on its room's top-right corner, like a
    material's (2026-10-20, the user's ask: the gold ✦ floating above read as a shiny and hung between rooms). It shakes like
    the games' rustling grass instead of twinkling. .inline is the same badge in the Safari's rules, the Duo Run's areas and a
-   rare's nameplate in battle until 2026-10-28 (now a RARE pill, .rare-flee) */
+   rare's nameplate in battle until 2026-10-28 (now a running figure in its status row, .badge.flee) */
 .rare-mark { display: inline-grid; place-items: center; width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%;
   border: 2px solid #f8d030; background: radial-gradient(circle, #fffbe0 0 50%, #e8f0b0 100%); box-shadow: 0 0 0 1px #303038;
   vertical-align: middle; }
