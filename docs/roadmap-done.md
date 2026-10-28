@@ -3828,6 +3828,10 @@ Timburr's card crossed with Meowth's prize screen) opens at a mannequin, the mir
 (`tryLook()` in `js/data/looks.js`). Buying is the tailor's only; the Trainer Card's Trainer key opens the same window,
 Wear only. A grand-opening ribbon (`tailorRibbon`), Oak / Sonia once in the Clearing (`toldHeld('tailor')`),
 `?mall=tailor`. Headless: the tailor 239 draws a frame and 129 MB (the hall 322, budget 332).
+Swapped the same day (the user wasn't sure about the mannequins and picked, of four ideas, fitting rooms): six curtained
+booths across the floor, step in and the curtain draws, each look tried on behind a swish, step out in what you wear;
+rails and tables baked into one mesh a material (158 draws). The mall's shopkeepers stand as their battle GIFs again
+(`gif: true` in `monBoard()`).
 
 
 ### Your buddy roams free in your Secret Base, and pets show an emote (2026-10-28, cloud; on `main`)

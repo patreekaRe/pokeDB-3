@@ -1222,17 +1222,12 @@ across (`homeSize()` in `js/event-3d.js`), the Base's 8, so everything there is 
 **Pet emotes beyond the Secret Base** (an idea, 2026-10-28): the Base's pet emote (`emote()` in `js/base-3d.js`) could
 show on a tap of your buddy in the Clearing, towns and rooms too. Not asked for yet.
 
-**The Trainer Tailor** was built 2026-10-28 (cloud, on `main`; archive). **Next: the user playtests it** ▶ PLAYTEST ON
-THE LIVE SITE: `?mall&coins=2000` (the hall's four fronts, the tailor's ribbon with Kecleon), then in: walk up to a
-mannequin, browse with ◀ / ▶ (you try each on), buy one; the Trainer Card's Trainer key (Wear only); Oak (or Sonia at
-night) once in the Clearing. No PC `NEWS` line (the tailor isn't a PC page; Oak tells it). The mall's
-shopkeepers (Meowth, Kecleon, Kangaskhan, Smeargle, Minccino, Gardevoir) stand as their battle GIFs again, not their
-overworld sprites (`gif: true` on the keeper, the user's call: "they're merchants").
-**The user isn't sure about the mannequins** (2026-10-28): offered instead, not picked yet: (1) shoppers wearing the
-outfits browsing the shop (the towns' walking crowd), tap one to try its outfit; (2) a row of curtained fitting rooms,
-walk into one and the window opens, step out wearing it, the floor only racks and decor (recommended); (3) a photo wall,
-a framed portrait of each outfit, tap a frame; (4) Kecleon's catwalk, step on and strut each look as you browse.
-▶ CLOUD · effort: medium once they pick (swap the mannequin block in `buildTailor()`, `js/mall-tailor.js`).
+**The Trainer Tailor** was built 2026-10-28 (cloud, on `main`; archive), its mannequins swapped the same day for a row
+of fitting rooms (the user's pick of four ideas; the others: shoppers wearing the outfits, a photo wall, Kecleon's
+catwalk). The mall's shopkeepers stand as their battle GIFs (`gif: true`, the user's call: "they're merchants").
+**Next: the user playtests it** ▶ PLAYTEST ON THE LIVE SITE: `?mall=tailor&coins=2000`: walk into a fitting room, browse
+with ◀ / ▶ (the curtain swishes, you come back in each look), buy one, close and step out; the Trainer Card's Trainer key
+(Wear only); Oak (or Sonia at night) once in the Clearing; the hall's four fronts and the tailor's ribbon (`?mall`).
 
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking

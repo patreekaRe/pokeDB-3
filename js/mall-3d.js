@@ -33,9 +33,9 @@ import { turner } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { buildArcade } from './mall-arcade.js';
 import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow, apricornWindow } from './mall-outfitter.js';
-import { buildTailor, tailorFront, TAILOR_KEEPER } from './mall-tailor.js';
+import { buildTailor, tailorFront, TAILOR_KEEPER, CURTAIN_OPEN } from './mall-tailor.js';
 import { lookWindow } from './look-window.js';
-import { tryLook, ownsLook, LOOK_PRICE } from './data/looks.js';
+import { tryLook } from './data/looks.js';
 import { APRICORN_PRICE, apricornToday, workshopOf, ownsSkin, withBought } from './data/workshop.js';
 import { safariOpen } from './data/pokedex.js';
 import { safariDaily, safariDay } from './data/safari.js';
@@ -891,7 +891,7 @@ function setPlace(p, at, facing = 'back') {
   PC = P.cols ?? COLS; PR = P.rows ?? ROWS;
   pick(null);
   closeAsk(false);
-  closeLooks();
+  closeLooks(true);
   walker.path = []; aim = null; here = null; riding = null;
   post.final.uniforms.uBlur.value = 0;   // no tilt-shift blur anywhere in the mall (the user's call, 2026-10-12)
   walker.tile = { ...at }; walker.x = tileX(at.x); walker.z = tileZ(at.y);
@@ -1059,47 +1059,74 @@ async function apricornTap(spot) {
 /* ---------- the Trainer Tailor ---------- */
 
 let looksWin = null;   // the trainer window (js/look-window.js), open at the Trainer Tailor
+let booth = null;      // the fitting room you're in: its spot, from walking in till you step out
+let swishT = 0;
+
+/** A fitting room's curtain drawn shut, `then()` done behind it, and drawn open again. */
+function swish(room, then) {
+  clearTimeout(swishT);
+  room.curtain.want = 1;
+  playSound('select');
+  swishT = setTimeout(() => {
+    then();
+    swishT = setTimeout(() => { room.curtain.want = CURTAIN_OPEN; }, calm ? 0 : 420);
+  }, calm ? 0 : 320);
+}
 
 /** Kecleon's trainer window over the boutique, on `start` (a look's id; null the one worn): the one shown is tried on as
-    you browse, your trainer and buddy walking in it, and the mannequin wearing it is ringed. Closing takes the try-on off. */
-function openLooks(start) {
+    you browse, in `room`'s booth behind a swish of its curtain, or where you stand (the mirror, the counter). */
+function openLooks(start, room = null) {
   closeLooks();
   clearTimeout(say.t);
   lineEl.classList.remove('on');
-  const spotOf = (id) => P.spots.find(s => s.kind === 'look' && s.look === id) ?? null;
   const w = lookWindow({
     shop: true, start,
-    onTry: (id) => { tryLook(id); pick(spotOf(id)); },
+    onTry: (id) => (room ? swish(room, () => tryLook(id)) : tryLook(id)),
     onChange: () => {
       walker.hopUntil = performance.now() + 500;
       if (P.keeper) P.keeper.hopUntil = performance.now() + 600;
       P.refresh?.();
       showCoins();
     },
-    onClose: closeLooks,
+    onClose: () => closeLooks(),
   });
   looksWin = w;
   root.querySelector('.b3-stage').append(w.node);
   requestAnimationFrame(() => w.node.classList.add('up'));
-  tryLook(w.look);
-  pick(spotOf(w.look));
+  if (room) swish(room, () => tryLook(w.look)); else tryLook(w.look);
 }
 
-function closeLooks() {
-  const w = looksWin;
-  if (!w) return;
+/** Shuts the window, the try-on off; from a fitting room the curtain swishes and you step out in what you wear.
+    `away`: the place is being left, so nothing waits on a curtain. */
+function closeLooks(away = false) {
+  const w = looksWin, room = booth;
   looksWin = null;
-  w.close();
-  tryLook(null);
-  pick(null);
-  w.node.classList.remove('up');
-  setTimeout(() => w.node.remove(), 350);
+  if (w) {
+    w.close();
+    w.node.classList.remove('up');
+    setTimeout(() => w.node.remove(), 350);
+  }
+  if (!room || away) {
+    clearTimeout(swishT);
+    if (room) room.curtain.want = CURTAIN_OPEN;
+    booth = null;
+    tryLook(null);
+    return;
+  }
+  swish(room, () => {
+    tryLook(null);
+    setTimeout(() => { if (booth !== room) return; booth = null; walker.path = [{ ...room.step }]; }, calm ? 0 : 300);
+  });
 }
 
-/** A mannequin, walked up to: its outfit on you, and the window open on it. */
-function lookTap(spot) {
-  playSound('select');
-  openLooks(spot.look);
+/** Into a fitting room from the tile before it, turning to face out, and the window opens as its curtain draws. */
+function boothTap(spot) {
+  if (booth) return;
+  booth = spot;
+  pick(null);
+  walker.path = [{ ...spot.booth }, { x: spot.booth.x, y: spot.booth.y + 0.12 }];
+  walker.exit = () => { if (booth === spot && P.spots.includes(spot)) openLooks(null, spot); };
+  aim = null; here = null;
 }
 
 /** After a buy: the till, two happy hops, the tags repainted and the keeper's thanks. */
@@ -1368,7 +1395,7 @@ function say(fr, ms = 2600) {
     : fr.kind === 'apricorn' ? `Today's Apricorn ball, the ${fr.name}: ${ownsSkin(workshopOf(getSave()), apricornToday(safariDay())) ? 'yours already.' : `${APRICORN_PRICE} PokéCoins.`}`
     : fr.kind === 'pass' ? `The Day Pass machine: ${passState() === 'pass' ? 'yours for today.' : `${DAY_PASS} PokéCoins.`}`
     : fr.kind === 'lift' ? (floorOf() > 1 || loadBase().upstairs ? 'The lift. Tap it to pick a floor.' : 'The lift upstairs is roped off.')
-    : fr.kind === 'look' ? `A mannequin: ${ownsLook(getSave(), fr.look) ? 'an outfit you own.' : `${LOOK_PRICE} PokéCoins.`} Tap it to try it on.`
+    : fr.kind === 'booth' ? 'A fitting room. Step in to try outfits on.'
     : fr.kind === 'mirror' ? 'The mirror. Tap it to see what you\'re wearing.'
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
     : fr.id === 'furniture' && !fr.open ? shopLine()
@@ -1396,7 +1423,7 @@ function enterFront(fr) {
   if (fr.kind === 'ware') return wareTap(fr);
   if (fr.kind === 'pass') return passTap(fr);
   if (fr.kind === 'apricorn') return apricornTap(fr);
-  if (fr.kind === 'look') return lookTap(fr);
+  if (fr.kind === 'booth') return boothTap(fr);
   if (fr.kind === 'mirror') { pick(fr); return openLooks(null); }
   if (fr.kind === 'door') return throughDoor(fr);
   if (!fr.open) { playSound('cancel'); return say(fr); }
@@ -1436,6 +1463,7 @@ function onTap(e) {
   if (drags?.swallowed()) return;
   if (answer) return closeAsk(false);
   if (looksWin) { playSound('cancel'); return closeLooks(); }
+  if (booth) return;   // stepping into or out of a fitting room
   if (riding || ribbons.some(r => r.cutAt && !r.done)) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
@@ -1643,7 +1671,7 @@ function forgetShops() {
 }
 
 export async function leave() {
-  closeLooks();
+  closeLooks(true);
   const shop = document.getElementById('shop-dialog');
   if (shop?.open) shop.close();
   playSound('door');
@@ -1750,7 +1778,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   drags?.off();
   drags = dragWalk({
     target: view,
-    can: () => !answer && !looksWin && !riding && !ribbons.some(r => r.cutAt && !r.done),
+    can: () => !answer && !looksWin && !booth && !riding && !ribbons.some(r => r.cutAt && !r.done),
     tile: floorTile,
     go: (t) => { walker.exit = false; aim = null; here = null; pick(null); walker.path = reroute(walker, route, t); },
     done: () => { if (!walker.path.length) arrived(); },

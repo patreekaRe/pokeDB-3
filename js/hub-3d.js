@@ -2298,7 +2298,7 @@ async function tailorNews() {
   tellHeld('tailor');
   const who = profNow(), worn = !!wornLook(getSave());
   const lines = who.night
-    ? [`Oh, hi! ${worn ? 'Love the outfit, by the way!' : 'Your partner looks happy out here.'}`, 'Did you hear? Kecleon opened the Trainer Tailor in the Poké Mall. There\'s a mannequin for every outfit, and you can try any of them on!', 'Buy one and you walk out wearing it. Switch back any time on your Trainer Card.']
+    ? [`Oh, hi! ${worn ? 'Love the outfit, by the way!' : 'Your partner looks happy out here.'}`, 'Did you hear? Kecleon opened the Trainer Tailor in the Poké Mall. Step into a fitting room and you can try any outfit on!', 'Buy one and you walk out wearing it. Switch back any time on your Trainer Card.']
     : [`Ah, there you are! ${worn ? 'A fine trainer you make, with your partner right behind you.' : 'Your partner seems to be enjoying the walk.'}`, 'Now, a new shop has opened in the Poké Mall: the Trainer Tailor, run by Kecleon. Every outfit there is for sale, and you can try them on first!', 'Buy one and you walk out wearing it. You can switch outfits any time on your Trainer Card.'];
   profGreeted = true;
   const { gymTalk } = await import('./gym.js');

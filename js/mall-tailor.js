@@ -1,16 +1,15 @@
 /* mall-tailor.js  -  the Poké Mall's Trainer Tailor (2026-10-28, the user's pick of a shop for the trainers you walk as),
    kept by Kecleon. A fourth front in the hall, between the Game Corner and the Safari Outfitter, and its boutique: plum
-   damask over wainscoting, a herringbone floor, rails of clothes and a fitting room along the back wall either side of
-   Kecleon's counter, a tall gilt mirror, and a mannequin for every look (its walking sheet's front frame on a runway,
-   a plaque in front saying WORN, OWNED or the price; no names, the user's call). Walk up to one to try it on: the trainer
-   window (js/look-window.js) opens on it and you wear it while it's open. Buying a look is the tailor's only.
-   js/mall-3d.js walks it and opens the window. Painted smooth like the hall (fine()). */
+   damask over wainscoting, a herringbone floor, rails of clothes and a shelf along the back wall either side of
+   Kecleon's counter, a tall gilt mirror, and a row of curtained fitting rooms across the floor (the user's pick over
+   mannequins, the same day). Walk into one: its curtain draws, the trainer window (js/look-window.js) opens, and you
+   stand in the booth wearing each look as you browse, the curtain swishing between them; close it and you step out in
+   what you wear. Buying a look is the tailor's only. js/mall-3d.js walks it and opens the window. Painted smooth like the
+   hall (fine()). */
 
-import { LOOKS, LOOK_PRICE, lookSheet, ownsLook } from './data/looks.js';
-import { getSave } from './storage.js';
-import { fine, texOf, words, star } from './hub-3d.js';
+import { fine, texOf, words, star, mergeStatic } from './hub-3d.js';
 import { hallKit } from './mall-hall.js';
-import { WALKER_PX } from './hd2d.js';
+import { calmFx } from './prefs.js';
 
 const T = {
   plum: '#7a3478', plumDark: '#4e1e4c', plumLite: '#a85aa4', cream: '#fbf1e2', gold: '#e2b648', goldDark: '#a8801e',
@@ -19,22 +18,19 @@ const T = {
 export const TAILOR_COLOUR = T.plum;
 
 /* The boutique: `x, y` a thing's tile, y 0 the back wall; the aisle runs up the middle from the door to the counter. The
-   mannequins stand on runways in three rows three tiles apart, so a row's heads never hide the feet of the one behind
-   (the Outfitter's rule), each walked up to from the tile in front. */
+   fitting rooms stand in a row across the middle, rails and tables nearer the door, all low enough to hide nothing. */
 const COLS = 17, ROWS = 13, AISLE = 8, DOOR = { x: AISLE, y: ROWS - 1 };
-const COUNTER = { x: 7, y: 2, w: 3 }, MIRROR = { x: 5, y: 0 }, FITTING = { x: 11, y: 0 };
+const COUNTER = { x: 7, y: 2, w: 3 }, MIRROR = { x: 5, y: 0 }, SHELF = { x: 11, y: 0 };
 const RACKS = [[1, 4], [12, 15]];
-const ROWS_AT = [
-  { y: 10, xs: [2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14] },
-  { y: 7, xs: [2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14] },
-  { y: 4, xs: [3, 4, 5, 6, 7, 9, 10, 11, 12, 13] },
-];
-const PLINTH = 0.16, CELL = 64, PITCH = 0.6;
+const BOOTHS = [2, 4, 6, 10, 12, 14], BOOTH_Y = 5;
+const FLOOR_RACKS = [[2, 4], [12, 14]], RACK_Y = 9, TABLES = [6, 10], TABLE_Y = 9;
+/** A fitting room's curtain open: gathered to a fifth of its width. */
+export const CURTAIN_OPEN = 0.18;
 
 export const TAILOR_KEEPER = { id: 'kecleon', name: 'Kecleon',
   src: 'assets/pokemon/kecleon-front.gif', gif: true,   // a merchant stands as its GIF, not its overworld sprite (the user's call)
-  hello: ['Welcome to the Trainer Tailor! Walk up to any mannequin to try it on.', 'Ooh, a new face! Or is it? I change mine all the time.', 'Every outfit on the floor, ready to try. The mirror is free too!'],
-  chat: ['Walk up to a mannequin and you\'re wearing it, just like that. Buy it and you walk out in it!', 'Bought outfits stay yours. Switch between them any time on your Trainer Card.',
+  hello: ['Welcome to the Trainer Tailor! Step into a fitting room to try things on.', 'Ooh, a new face! Or is it? I change mine all the time.', 'Every outfit on the floor, ready to try. The mirror is free too!'],
+  chat: ['Pop into any fitting room and try on as much as you like. Buy one and you walk out in it!', 'Bought outfits stay yours. Switch between them any time on your Trainer Card.',
     'Every outfit is the same price. Fashion should be fair!', 'I blend in with anything. You should too!', 'The mirror shows what you\'re wearing now. Have a twirl!',
     'Your partner loves a new look. Watch it follow you round the shop!'] };
 
@@ -209,19 +205,6 @@ function counterArt(w) {
   return f.c;
 }
 
-/** A mannequin's plaque: WORN in gold, OWNED in green, or the price by a coin. */
-function plaque(g, x, y, w, h, look, save) {
-  const worn = save.look === look.id, mine = ownsLook(save, look.id);
-  const [bg, ink, text] = worn ? ['#f8d040', '#5a3a00', 'WORN'] : mine ? ['#d4ecd8', '#24603a', 'OWNED'] : [T.cream, '#5a3a10', `${LOOK_PRICE}`];
-  g.fillStyle = T.goldDark; g.beginPath(); g.roundRect(x, y, w, h, 3); g.fill();
-  g.fillStyle = bg; g.beginPath(); g.roundRect(x + 1, y + 1, w - 2, h - 2, 2.4); g.fill();
-  if (!mine) {
-    g.fillStyle = '#f0b830'; g.beginPath(); g.arc(x + 9, y + h / 2, 4.4, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#ffe070'; g.beginPath(); g.arc(x + 9, y + h / 2, 3, 0, Math.PI * 2); g.fill();
-    words(g, text, x + w / 2 + 4, y + h / 2 + 0.3, 8, ink);
-  } else words(g, text, x + w / 2, y + h / 2 + 0.3, 7.5, ink);
-}
-
 /* ---------- the boutique ---------- */
 
 export function buildTailor(THREE, size) {
@@ -230,7 +213,7 @@ export function buildTailor(THREE, size) {
   const group = new THREE.Group(), blocked = new Set(), spots = [], redraws = [];
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
   const block = (x0, y0, x1 = x0, y1 = y0) => { for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) blocked.add(`${x},${y}`); };
-  const kit = hallKit(THREE);
+  const kit = hallKit(THREE), calm = calmFx();
   const put = (parent, geo, mat, x = 0, y = 0, z = 0, shadow = true) => {
     const m = new THREE.Mesh(geo, mat);
     m.position.set(x, y, z); m.castShadow = shadow; m.receiveShadow = true;
@@ -273,6 +256,7 @@ export function buildTailor(THREE, size) {
   const tones = ['#3a74e0', '#e84838', '#f8d040', '#58a848', '#e870b0', '#2c2c34', '#f4f4f4', '#ff9a30', '#8a5ad0'];
   const shirtMats = tones.map(color => std({ color, roughness: 0.9 }));
   const shirtGeo = new THREE.BoxGeometry(0.34, 0.5, 0.06), hanger = new THREE.TorusGeometry(0.07, 0.008, 6, 12, Math.PI);
+  const backRacks = [];
   RACKS.forEach(([x0, x1], r) => {
     const rack = new THREE.Group(), w = x1 - x0 + 0.7, cx = (tileX(x0) + tileX(x1)) / 2;
     rack.position.set(cx, 0, wallZ + 0.55);
@@ -291,6 +275,7 @@ export function buildTailor(THREE, size) {
     put(rack, new THREE.BoxGeometry(w, 0.05, 0.36), woodDark, 0, 0.3, 0);
     for (let i = 0; i < Math.floor(w / 0.42); i++) put(rack, new THREE.BoxGeometry(0.22, 0.1, 0.12), shirtMats[(i * 5 + r) % tones.length], -w / 2 + 0.3 + i * 0.42, 0.38, 0.04);
     group.add(rack);
+    backRacks.push(rack);
     block(x0, 0, x1, 0);
   });
 
@@ -310,119 +295,106 @@ export function buildTailor(THREE, size) {
     group.add(m);
   }
 
-  // the fitting room: a plum curtain on a brass rod between two wood screens, a gold star over it
+  // a shelf of folded clothes and hats on the back wall, right of the counter
   {
-    const fr = new THREE.Group();
-    fr.position.set(tileX(FITTING.x), 0, wallZ + 0.5);
-    for (const s of [-1, 1]) put(fr, new THREE.BoxGeometry(0.06, 2.2, 0.9), wood, s * 0.48, 1.1, 0);
-    put(fr, new THREE.CylinderGeometry(0.02, 0.02, 1.0, 8), brass, 0, 2.1, 0.42, false).rotation.z = Math.PI / 2;
-    const cur = put(fr, new THREE.PlaneGeometry(0.92, 2.0), std({ map: texOf(curtainArt()), side: THREE.DoubleSide, roughness: 1 }), 0, 1.07, 0.42);
-    cur.castShadow = true;
-    group.add(fr);
-    block(FITTING.x, 0);
+    const sh = new THREE.Group();
+    sh.position.set(tileX(SHELF.x), 0, wallZ + 0.3);
+    put(sh, new THREE.BoxGeometry(0.96, 2.1, 0.4), woodDark, 0, 1.05, 0);
+    for (const y of [0.45, 0.95, 1.45]) {
+      put(sh, new THREE.BoxGeometry(0.9, 0.04, 0.4), wood, 0, y, 0.03, false);
+      for (let i = 0; i < 3; i++) put(sh, new THREE.BoxGeometry(0.24, 0.1 + (i % 2) * 0.04, 0.3), shirtMats[(i * 3 + Math.round(y * 4)) % tones.length], -0.28 + i * 0.28, y + 0.08, 0.05);
+    }
+    put(sh, new THREE.CylinderGeometry(0.16, 0.18, 0.1, 14), std({ color: '#c83a2a', roughness: 0.8 }), -0.2, 2.15, 0.02);
+    put(sh, new THREE.CylinderGeometry(0.26, 0.26, 0.02, 18), std({ color: '#c83a2a', roughness: 0.8 }), -0.2, 2.11, 0.02, false);
+    put(sh, new THREE.SphereGeometry(0.14, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#f4f4f4', roughness: 0.8 }), 0.22, 2.1, 0.02);
+    group.add(sh);
+    backRacks.push(sh);
+    block(SHELF.x, 0);
   }
 
-  // potted plants in the back corners, and either side of the door
+  // potted plants in the back corners, and either side of the counter's rails
   for (const [x, y, s] of [[0, 0, 1], [cols - 1, 0, 2], [0, rows - 1, 3], [cols - 1, rows - 1, 4], [6, 0, 5], [10, 0, 6]]) { kit.topiary(group, tileX(x), tileZ(y), 0.26, s); block(x, y); }
 
-  // the mannequins: every look's front frame on a runway, three rows from the door back; their figures one mesh on one
-  // picture of them all, their plaques another, so 33 cost a few draws
-  const figs = [], at = [];
-  let n = 0;
-  for (const row of ROWS_AT) for (const x of row.xs) if (n < LOOKS.length) at.push({ look: LOOKS[n++], x, y: row.y });
-  const across = Math.ceil(Math.sqrt(at.length)), down = Math.ceil(at.length / across);
-  const atlas = document.createElement('canvas');
-  atlas.width = across * CELL; atlas.height = down * CELL;
-  const ag = atlas.getContext('2d');
-  const figMap = texOf(atlas);
-  const PW = 48, PH = 18, plaques = fine(across * PW, down * PH, 6), plaqueMap = texOf(plaques.c);
-  const paintPlaques = () => {
-    const save = getSave();
-    plaques.g.clearRect(0, 0, across * PW, down * PH);
-    at.forEach((m, i) => plaque(plaques.g, (i % across) * PW + 1, Math.floor(i / across) * PH + 1, PW - 2, PH - 2, m.look, save));
-    plaqueMap.needsUpdate = true;
-  };
-  paintPlaques();
-  redraws.push(paintPlaques);
-  // each sheet's first frame, its feet set on the cell's floor, as it loads
-  at.forEach((m, i) => {
-    const img = new Image();
-    img.onload = () => {
-      const tmp = document.createElement('canvas');
-      tmp.width = tmp.height = CELL;
-      const tg = tmp.getContext('2d', { willReadFrequently: true });
-      tg.drawImage(img, 0, 0, img.width / 4, img.height / 4, 0, 0, CELL, CELL);
-      const px = tg.getImageData(0, 0, CELL, CELL).data;
-      let foot = CELL - 1;
-      while (foot > 0 && ![...Array(CELL).keys()].some(x => px[(foot * CELL + x) * 4 + 3] > 0)) foot--;
-      ag.drawImage(tmp, (i % across) * CELL, Math.floor(i / across) * CELL + (CELL - 1 - foot));
-      figMap.needsUpdate = true;
-    };
-    img.src = lookSheet(m.look.id);
-  });
-  const quads = (list) => {   // tilted quads, each its own corner of a picture: [{ x, y, z, w, h, tilt, u0, v0, u1, v1 }]
-    const pos = [], nor = [], uv = [], idx = [];
-    list.forEach((q, k) => {
-      const c = Math.cos(q.tilt), s = Math.sin(q.tilt);
-      for (const [dx, dy, u, v] of [[-q.w / 2, 0, q.u0, q.v0], [q.w / 2, 0, q.u1, q.v0], [q.w / 2, q.h, q.u1, q.v1], [-q.w / 2, q.h, q.u0, q.v1]]) {
-        pos.push(q.x + dx, q.y + dy * c, q.z - dy * s); nor.push(0, s, c); uv.push(u, v);
-      }
-      idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3);
-    });
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
-    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-    geo.setIndex(idx);
-    return geo;
-  };
-  const size1 = CELL * WALKER_PX, hitMat = new THREE.MeshBasicMaterial({ visible: false });
-  const shadows = [], plaqueQuads = [];
-  at.forEach((m, i) => {
-    const cx = i % across, cy = Math.floor(i / across), x = tileX(m.x), z = tileZ(m.y);
-    figs.push({ x, y: PLINTH, z, w: size1, h: size1, tilt: PITCH, u0: cx / across, u1: (cx + 1) / across, v0: 1 - (cy + 1) / down, v1: 1 - cy / down });
-    plaqueQuads.push({ x, y: PLINTH + 0.02, z: z + 0.42, w: 0.62, h: 0.24, tilt: 0.9, u0: cx / across, u1: (cx + 1) / across, v0: 1 - (cy + 1) / down, v1: 1 - cy / down });
-    shadows.push(x, z);
-    const spot = { id: `look-${m.look.id}`, kind: 'look', look: m.look.id, name: m.look.name, open: true, step: { x: m.x, y: m.y + 1 }, at: { x, y: PLINTH + 0.01, z }, ring: 0.5 };
+  // the fitting rooms (the user's pick, 2026-10-28, over mannequins): a row of curtained booths across the floor, each
+  // walked into from the tile in front. Its curtain gathers to the left when open (CURTAIN_OPEN) and draws across shut
+  // (1); js/mall-3d.js sets `curtain.want` and tick() eases it there
+  const curtainMat = std({ map: texOf(curtainArt()), side: THREE.DoubleSide, roughness: 1 });
+  const panel = std({ color: T.plum, roughness: 0.7 }), mat = std({ color: T.plumDark, roughness: 0.9 });
+  const glassMat = new THREE.MeshStandardMaterial({ map: texOf(glassArt()), roughness: 0.08, metalness: 0.4, emissive: new THREE.Color('#40384a') });
+  const booths = new THREE.Group(), curtains = [], hitMat = new THREE.MeshBasicMaterial({ visible: false });
+  BOOTHS.forEach((x, i) => {
+    const y = BOOTH_Y, b = new THREE.Group();
+    b.position.set(tileX(x), 0, tileZ(y));
+    put(b, new THREE.BoxGeometry(0.98, 2.1, 0.06), panel, 0, 1.05, -0.45);
+    for (const s of [-1, 1]) {
+      put(b, new THREE.BoxGeometry(0.06, 2.1, 0.94), wood, s * 0.49, 1.05, 0);
+      put(b, new THREE.BoxGeometry(0.1, 0.06, 0.1), gold, s * 0.49, 2.16, 0.46, false);
+    }
+    put(b, new THREE.BoxGeometry(1.06, 0.12, 1.0), woodDark, 0, 2.16, 0);
+    put(b, new THREE.BoxGeometry(1.08, 0.03, 0.03), gold, 0, 2.1, 0.5, false);
+    put(b, new THREE.BoxGeometry(0.86, 0.02, 0.82), mat, 0, 0.01, 0, false);
+    put(b, new THREE.BoxGeometry(0.36, 0.7, 0.03), gold, 0.18, 1.3, -0.41, false);
+    put(b, new THREE.PlaneGeometry(0.3, 0.64), glassMat, 0.18, 1.3, -0.39, false);
+    put(b, new THREE.CylinderGeometry(0.15, 0.15, 0.3, 14), wood, -0.26, 0.15, -0.2);
+    put(b, new THREE.CylinderGeometry(0.16, 0.16, 0.05, 14), panel, -0.26, 0.32, -0.2, false);
+    put(b, new THREE.CylinderGeometry(0.012, 0.012, 0.98, 8), brass, 0, 2.03, 0.47, false).rotation.z = Math.PI / 2;
+    const geo = new THREE.PlaneGeometry(0.92, 1.95);
+    geo.translate(0.46, 0, 0);   // hung from its left end, so a squeeze gathers it there
+    const curtain = new THREE.Mesh(geo, curtainMat);
+    curtain.position.set(-0.46, 1.04, 0.47);
+    curtain.scale.x = CURTAIN_OPEN;
+    curtain.castShadow = true; curtain.raycast = () => {};
+    b.add(curtain);
+    booths.add(b);
+    const spot = { id: `booth-${i}`, kind: 'booth', name: 'Fitting room', open: true, step: { x, y: y + 1 }, booth: { x, y },
+      at: { x: tileX(x), y: 0.02, z: tileZ(y + 1) }, ring: 0.5, curtain: { mesh: curtain, want: CURTAIN_OPEN } };
+    curtains.push(spot.curtain);
     spots.push(spot);
-    const hit = new THREE.Mesh(new THREE.BoxGeometry(0.86, size1 * 0.8, 0.9), hitMat);
-    hit.position.set(x, size1 * 0.4, z + 0.1);
+    const hit = new THREE.Mesh(new THREE.BoxGeometry(1, 2.2, 1), hitMat);
+    hit.position.set(tileX(x), 1.1, tileZ(y));
     hit.userData.front = spot;
     group.add(hit);
-    block(m.x, m.y);
+    block(x, y);
   });
-  const noRay = (o) => { o.raycast = () => {}; return o; };
-  const figures = noRay(new THREE.Mesh(quads(figs), new THREE.MeshStandardMaterial({ map: figMap, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 })));
-  group.add(figures);
-  const tags = noRay(new THREE.Mesh(quads(plaqueQuads), new THREE.MeshBasicMaterial({ map: plaqueMap, transparent: true, toneMapped: false })));
-  group.add(tags);
-  {   // the figures' soft shadows, one mesh
-    const geos = [];
-    for (let i = 0; i < shadows.length; i += 2) {
-      const c = new THREE.CircleGeometry(0.3, 16);
-      c.rotateX(-Math.PI / 2); c.translate(shadows[i], PLINTH + 0.012, shadows[i + 1]);
-      geos.push(c.index ? c.toNonIndexed() : c);
+  booths.traverse(o => { if (o.isMesh && !curtains.some(c => c.mesh === o)) o.raycast = () => {}; });
+  mergeStatic(booths, (o) => curtains.some(c => c.mesh === o), true);
+  group.add(booths);
+
+  // freestanding rails nearer the door, either side of the aisle, and a table of folded clothes on each side
+  const clothes = new THREE.Group();   // every rail, shirt and table baked together by material (~100 draws otherwise)
+  for (const [x0, x1] of FLOOR_RACKS) {
+    const rack = new THREE.Group(), w = x1 - x0 + 0.6;
+    rack.position.set((tileX(x0) + tileX(x1)) / 2, 0, tileZ(RACK_Y));
+    put(rack, new THREE.CylinderGeometry(0.02, 0.02, w, 10), brass, 0, 1.45, 0).rotation.z = Math.PI / 2;
+    for (const s of [-1, 1]) {
+      put(rack, new THREE.CylinderGeometry(0.025, 0.025, 1.45, 10), brass, s * w / 2, 0.73, 0);
+      put(rack, new THREE.BoxGeometry(0.06, 0.04, 0.5), brass, s * w / 2, 0.03, 0);
     }
-    const pos = new Float32Array(geos.reduce((k, g) => k + g.attributes.position.array.length, 0));
-    let o = 0;
-    for (const g of geos) { pos.set(g.attributes.position.array, o); o += g.attributes.position.array.length; g.dispose(); }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    group.add(noRay(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.26, depthWrite: false }))));
-  }
-  // the runways, a run of plum-topped wood each side of the aisle per row, gold along their edges
-  {
-    const run = new THREE.Group(), top = std({ color: T.plum, roughness: 0.5 });
-    for (const row of ROWS_AT) for (const side of [row.xs.filter(x => x < AISLE), row.xs.filter(x => x > AISLE)]) {
-      if (!side.length) continue;
-      const x0 = Math.min(...side), x1 = Math.max(...side), w = x1 - x0 + 0.9, cx = (tileX(x0) + tileX(x1)) / 2, z = tileZ(row.y);
-      put(run, new THREE.BoxGeometry(w, PLINTH - 0.03, 0.8), wood, cx, (PLINTH - 0.03) / 2, z);
-      put(run, new THREE.BoxGeometry(w + 0.02, 0.03, 0.82), top, cx, PLINTH - 0.015, z);
-      put(run, new THREE.BoxGeometry(w + 0.04, 0.025, 0.025), gold, cx, PLINTH - 0.01, z + 0.41, false);
+    const n = Math.round(w / 0.22);
+    for (let i = 0; i < n; i++) {
+      const sx = -w / 2 + 0.16 + i * (w - 0.32) / (n - 1);
+      const sh = put(rack, shirtGeo, shirtMats[(i * 5 + x0) % tones.length], sx, 1.16, 0);
+      sh.rotation.y = Math.PI / 2 - 0.2 + (i % 3) * 0.1;
+      put(rack, hanger, brass, sx, 1.43, 0, false);
     }
-    run.traverse(o => { o.raycast = () => {}; });
-    group.add(run);
+    rack.traverse(o => { o.raycast = () => {}; });
+    clothes.add(rack);
+    block(x0, RACK_Y, x1, RACK_Y);
   }
+  for (const x of TABLES) {
+    const t = new THREE.Group();
+    t.position.set(tileX(x), 0, tileZ(TABLE_Y));
+    put(t, new THREE.BoxGeometry(0.9, 0.06, 0.7), wood, 0, 0.62, 0);
+    for (const [lx, lz] of [[-0.38, -0.28], [0.38, -0.28], [-0.38, 0.28], [0.38, 0.28]]) put(t, new THREE.BoxGeometry(0.05, 0.6, 0.05), woodDark, lx, 0.3, lz);
+    for (let i = 0; i < 4; i++) put(t, new THREE.BoxGeometry(0.3, 0.06, 0.24), shirtMats[(i * 2 + x) % tones.length], -0.2 + (i % 2) * 0.4, 0.68 + Math.floor(i / 2) * 0.065, (i % 2) * 0.05 - 0.05);
+    t.traverse(o => { o.raycast = () => {}; });
+    clothes.add(t);
+    block(x, TABLE_Y);
+  }
+  for (const r of backRacks) { r.removeFromParent(); clothes.add(r); }
+  clothes.traverse(o => { o.raycast = () => {}; });
+  mergeStatic(clothes, () => false, true);
+  group.add(clothes);
 
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.98, 1.08, 64), new THREE.MeshBasicMaterial({ color: '#f8d040', transparent: true, opacity: 0.9, depthWrite: false }));
   ring.rotation.x = -Math.PI / 2;
@@ -434,6 +406,11 @@ export function buildTailor(THREE, size) {
     group, blocked, spots, ring, top: 4, title: 'Trainer Tailor', cols, rows, door: DOOR,
     keeper: { ...TAILOR_KEEPER, x: tileX(AISLE), z: tileZ(COUNTER.y - 1) },
     refresh: () => redraws.forEach(r => r()),
-    tick() {},
+    tick(now, dt) {
+      for (const c of curtains) {
+        const x = c.mesh.scale.x;
+        c.mesh.scale.x = calm ? c.want : x + (c.want - x) * Math.min(1, dt / 90);
+      }
+    },
   };
 }

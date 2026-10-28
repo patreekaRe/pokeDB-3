@@ -344,14 +344,15 @@ either side of the middle, where the red carpet ends at the guide between the ve
 `js/mall-hall.js`). `js/mall-tailor.js` paints its front, sign and awning (`tailorFront()`, `tailorSign()`,
 `tailorAwning()`; its 3D awning and two dress forms are `dressFronts()`'s tailor branch) and builds the boutique
 (`buildTailor()`, place `tl`, 17 x 13): plum damask over a wood wainscot, herringbone, a plum runner to Kecleon's counter,
-clothes rails either side, a gilt mirror (`kind: 'mirror'`) and a fitting room. **The mannequins**: every look's front
-frame on runways in three rows three tiles apart (`ROWS_AT`; the Outfitter's rule, so heads never hide the row behind),
-a plaque each (WORN, OWNED or the price, repainted by `refresh()`); the figures, plaques and shadows are one mesh each on
-one picture (33 mannequins cost a few draws), and each has an invisible box for taps. Always open; a grand-opening ribbon
-(`RIBBONS.tailor`, `tailorRibbon`). **The window**: walking up to a mannequin, a tap on the mirror or on Kecleon opens
-`lookWindow()` (`js/look-window.js`) low on the screen (`openLooks()` in `js/mall-3d.js`); the one shown is tried on as you
-browse (`tryLook()`), its mannequin ringed, and closing (✕, Escape, a tap on the room) takes the try-on off. Buy asks
-`confirmDialog()` and wears it. `?mall=tailor` walks straight in. Headless (2026-10-28): 239 draws a frame and 129 MB.
+clothes rails and a shelf either side, a gilt mirror (`kind: 'mirror'`). **The fitting rooms** (the user's pick over
+mannequins, the same day; mannequins were built first and taken out): six curtained booths in a row across the floor
+(`BOOTHS`, `kind: 'booth'`), rails and tables of folded clothes nearer the door, all baked into one mesh a material
+(`mergeStatic`; 332 draws a frame before, 158 after). Always open; a grand-opening ribbon (`RIBBONS.tailor`,
+`tailorRibbon`). **The window**: a booth walked into (`boothTap()` in `js/mall-3d.js`: you step in and turn to face
+out) draws its curtain and opens `lookWindow()` (`js/look-window.js`) low on the screen (`openLooks()`); each look shown
+is tried on behind a swish of the curtain (`swish()`, `tryLook()`), and closing (✕, Escape, a tap on the room) swishes
+once more and you step out in what you wear (`closeLooks()`). The mirror and Kecleon open the window where you stand.
+Buy asks `confirmDialog()` and wears it. `?mall=tailor` walks straight in. Headless (2026-10-28): 158 draws a frame and 119 MB.
 
 ### The Safari Outfitter (2026-10-15)
 
