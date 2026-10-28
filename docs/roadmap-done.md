@@ -3846,3 +3846,11 @@ The user still looked big in Kurt's Workshop after the shrink: plain houses fram
 `HOME_ACROSS` (`js/event-3d.js`) is 8 now (`?across=N` to try others). Kurt and the people in rooms keep their size
 (`NPC_PX`, 1/34; `?npc=N` to try others): about a head and a half over the trainer read right, and the user didn't pick
 another.
+
+### The Clearing on set paths, side-on flyers (2026-10-28, cloud; on `main`)
+The user's asks: legendaries flying over showed their front; Halloween's ghosts flew over too; too many people moving,
+some overlapping. Now the flyover draws the overworld sheet's left / right row (the journey film's silhouette too), the
+ghosts left the flyers, and the Clearing's folk, ghosts and Trainer Plaza buddies keep posts (a spot, or a short set
+beat) and wait for each other and you (`js/ground-beats.js`; `docs/reference/hub-base-mall.md`, "Set paths, nobody
+overlapping"). Headless: no two closer than a tile over 75 s of walking. Earlier the same day the user had agreed the
+silhouettes could stay GIFs; they then asked for side-on everywhere, so the film's changed too.

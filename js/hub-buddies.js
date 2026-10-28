@@ -4,12 +4,15 @@
    strolling at a time like the Halloween ghosts (js/hub-spooky.js, whose speech window this borrows); a tap and it
    stops, hops, cries and says whose it is, when they last played and where their last run ended (their grave's on that
    map), and past the last line their Trainer Card opens in the Trainers app (the user's ask, 2026-10-18). Billboards
-   in the Clearing's own scene: no renderer or GL context of their own, their GIF frames on CPU canvases. */
+   in the Clearing's own scene: no renderer or GL context of their own, their GIF frames on CPU canvases. Each has its own
+   spot a tile from anyone else's and paces a short set beat from it, waiting for whoever's in the way (2026-10-28, the
+   user's ask: set paths as in the Pokémon games, nobody overlapping; js/ground-beats.js). */
 
 import { playCry, playSound } from './audio.js';
+import { same, nearAny, paceFrom, beatPath, headTo, stepBeat, holdsTile } from './ground-beats.js';
 
 const PAUSE = [2500, 6000];   // the quiet between one buddy's stroll and the next's (ms)
-const ROAM = 3;               // how far (tiles) a stroll goes at most
+const WAIT = 2500;            // blocked this long (ms), a buddy turns back
 const SPEED = 1.4;            // tiles a second
 const TIER = { green: ['#5ad08a', '#1e6a48'], bronze: ['#e09a5a', '#7a3a14'], silver: ['#b8c4d8', '#4a5670'], gold: ['#f0c840', '#7a5208'], violet: ['#b07af0', '#3e1a7a'] };
 const FONT = '"PokeDB Pixel", "Press Start 2P", monospace';
@@ -57,19 +60,25 @@ export function makeBuddies(H, friends) {
   const line = foot.firstChild;
   line.addEventListener('click', (e) => { e.stopPropagation(); if (talking) sayNext(); else fade(); });
 
-  const taken = (c, p) => pals.some(o => o !== p && o.w.tile.x === c.x && o.w.tile.y === c.y);
   const near = (c) => Math.hypot(c.x - H.centre.x, c.y - H.centre.y) <= H.reach;
-  const standable = (c, p) => near(c) && H.free(c) && !H.byDoor(c) && !taken(c, p) && !H.others?.(c);
-  function standAt(c, p) {
+  const spots = [];
+  const standable = (c) => near(c) && H.free(c) && !H.byDoor(c) && !H.claimed?.(c) && !nearAny(c, spots.flatMap(s => s.tiles)) && !H.others?.(c);
+  function standAt(c) {
     for (let r = 0; r < 6; r++)
       for (let dy = -r; dy <= r; dy++)
         for (let dx = -r; dx <= r; dx++) {
           const t = { x: c.x + dx, y: c.y + dy };
-          if (Math.max(Math.abs(dx), Math.abs(dy)) === r && standable(t, p)) return t;
+          if (Math.max(Math.abs(dx), Math.abs(dy)) === r && standable(t)) return t;
         }
     return c;
   }
 
+  // the spots and beats first, all at once, so none is dealt a tile another's beat crosses
+  for (const [i] of friends.entries()) {
+    const home = standAt(H.spawns[i % H.spawns.length]);
+    const beat = paceFrom(home, H.route, (t) => near(t) && H.free(t) && !H.byDoor(t) && !H.claimed?.(t) && !nearAny(t, spots.flatMap(s => s.tiles)));
+    spots.push({ home, beat, tiles: beat ?? [home] });
+  }
   friends.forEach(async (fr, i) => {
     const m = await H.monBoard({ src: fr.mon.src, name: fr.mon.name, cry: fr.mon.cry }, false);
     if (gone) return H.dispose(m.group);
@@ -79,8 +88,8 @@ export function makeBuddies(H, friends) {
     tag.rotation.x = -H.PITCH;
     tag.position.y = m.top + 0.4;
     m.group.add(tag);
-    const p = { fr, m, tag, phase: Math.random() * 6, w: { x: 0, z: 0, tile: null, path: [], facing: 'front', flip: Math.random() < 0.5, hop: 0 } };
-    p.w.tile = standAt(H.spawns[i % H.spawns.length], p);
+    const p = { fr, m, tag, beat: spots[i].beat, toEnd: false, phase: Math.random() * 6, w: { x: 0, z: 0, tile: null, path: [], facing: 'front', flip: Math.random() < 0.5, hop: 0 } };
+    p.w.tile = spots[i].home;
     p.w.x = H.tileX(p.w.tile.x); p.w.z = H.tileZ(p.w.tile.y);
     m.board.userData.who = { mon: m, w: p.w, buddy: p };
     H.scene.add(m.group);
@@ -119,33 +128,28 @@ export function makeBuddies(H, friends) {
     return true;
   }
 
-  function stroll(p, partner) {
-    const { tile } = p.w;
-    for (let tries = 0; tries < 16; tries++) {
-      const to = { x: tile.x + Math.round((Math.random() * 2 - 1) * ROAM), y: tile.y + Math.round((Math.random() * 2 - 1) * ROAM) };
-      if (!standable(to, p) || (to.x === partner.tile.x && to.y === partner.tile.y)) continue;
-      const path = H.route(tile, to);
-      const end = path.at(-1);
-      if (path.length > 1 && end.x === to.x && end.y === to.y && path.every(near)) { p.w.path = path; return true; }
-    }
-    return false;
+  /** The buddy whose turn it is sets off along its beat, to the far end or back. True if it has one. */
+  function stroll(p) {
+    if (!p.beat) return false;
+    p.toEnd = headTo(p.beat, p.w.tile, p.toEnd);
+    p.w.path = beatPath(p.beat, p.w.tile, p.toEnd);
+    return p.w.path.length > 0;
   }
 
   function step(p, dt, now) {
-    const w = p.w, next = w.path[0];
-    if (!next) return;
-    const tx = H.tileX(next.x), tz = H.tileZ(next.y), dx = tx - w.x, dz = tz - w.z, d = Math.hypot(dx, dz), move = dt / 1000 * SPEED;
-    if (Math.abs(dx) > 0.01) w.flip = dx > 0;
-    if (d <= move) { w.x = tx; w.z = tz; w.tile = next; w.path.shift(); if (!w.path.length) nextWalk = now + between(PAUSE); }
-    else { w.x += dx / d * move; w.z += dz / d * move; }
-    w.hop += dt;
+    const r = stepBeat(p.w, dt, SPEED, H.tileX, H.tileZ, (t) => H.busy ? H.busy(t, p) : holdsTile(pals, t, p));
+    if (r === 'blocked' && p.w.waited > WAIT) { p.w.path = []; p.w.waited = 0; }   // turns back on its next turn
+    if (!p.w.path.length) nextWalk = now + between(PAUSE);
   }
 
   return {
     boards: () => pals.map(p => p.m.board),
 
-    /** Tiles a buddy stands on or is walking to, for the others to keep off. */
-    holds: (c) => pals.some(p => (p.w.tile.x === c.x && p.w.tile.y === c.y) || p.w.path.some(t => t.x === c.x && t.y === c.y)),
+    /** Whether a buddy stands on `t` or is stepping onto it (`but` aside). */
+    holds: (t, but) => holdsTile(pals, t, but),
+
+    /** Whether `t` is a buddy's spot or on its beat, for others to keep a tile away from. */
+    claims: (t) => spots.some(s => s.tiles.some(o => same(o, t))),
 
     /** A tap on a buddy: it stops, faces your partner, cries and talks. True if the tap was its. */
     tap(hit, partner) {
@@ -153,7 +157,6 @@ export function makeBuddies(H, friends) {
       if (!p) return false;
       if (talking?.p === p) { sayNext(); return true; }
       talking = { p, i: -1 };
-      p.w.path = [];
       p.w.flip = partner.x > p.w.x;
       p.hopUntil = performance.now() + 500;
       if (!p.fr.mon.masked) playCry(p.fr.mon.cry);
@@ -168,7 +171,7 @@ export function makeBuddies(H, friends) {
         nextWalk = now + 1000;
         for (let k = 0; k < pals.length; k++) {
           const p = pals[turn++ % pals.length];
-          if (talking?.p !== p && stroll(p, partner)) break;
+          if (talking?.p !== p && stroll(p)) break;
         }
       }
       for (const p of pals) {

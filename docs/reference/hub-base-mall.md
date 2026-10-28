@@ -1140,3 +1140,22 @@ they are): six neighbours on Gen 4 walking sheets (Youngster, Lass, Picnicker, G
 `js/corner-crowd.js`): in and out through the north gate (the crowd's `enter`), standing at `FOLK_STANDS` (a spot taken
 by a place, its doorstep or the season's decorations dropped), two walking at most. A tap on one: its line in the
 crowd's bubble over its head (no `say` handed in). You walk as your trainer here too: `docs/reference/trainer-follow.md`.
+
+**Set paths, nobody overlapping** (2026-10-28, the user's ask: "make sure no sprites on the ground are ever overlapping
+each other, keep some stationary too ... individual set paths like on the Pokemon games"). The folk no longer come and go
+or roam: `posts` in `makeCrowd()` deals each a post for the hour, the first two a beat to pace out and back
+(`FOLK_BEATS`, a straight run of 4-5 tiles), the rest a spot to stand at, turning to look about (`FOLK_STANDS`). Every
+post is a tile clear of the next, a doorstep, the season's decorations, the ghosts' and the Trainer Plaza buddies' spots
+and beats (`groundClaimed()`), and the north avenue (`onAvenue()`: you walk in and out there while they stand still). The
+Halloween ghosts (`js/hub-spooky.js`) and the buddies (`js/hub-buddies.js`) do the same: a spot each, every other ghost
+and each buddy a 2-3 tile beat from it (`paceFrom()`), one strolling at a time as before. All three step through
+`stepBeat()` in `js/ground-beats.js`: a walker claims the tile it steps to and waits at its tile's middle while anyone
+(another walker, you, the tile you step to next, your buddy) holds it, turning back after 2.5 s (`groundBusy()` in
+`js/hub-3d.js`). You walk round them: your route goes round anyone standing (`route(from, to, npcAt)`), and a step about
+to land on one reroutes or stops short (`walk()`). Measured headless: over 75 s of you walking at random, no two closer
+than a tile. The towns, mall and Game Corner crowds still come and go as before (no `posts`).
+
+**The legendaries fly side-on** (2026-10-28, the user's ask): the flyover passes its position to `drawMon()`, so an
+overworld sheet draws its left or right row, not its front (`liveFlyer()`); the journey film's silhouette flaps the
+sheet's left row too (`sideOn()` in `js/travel.js`). Eternatus has no sheet and keeps its GIF. The Halloween ghosts no
+longer join the flyers (`SEASON_FLYERS`); winter's Delibird and Vanillite still do.

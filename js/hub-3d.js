@@ -25,6 +25,7 @@ import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { loadThree, tex, dispose, MON_PX, NPC_PX as TRAINER_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours } from './hd2d.js';
 import { leadFor } from './follow.js';
+import { same, nearAny } from './ground-beats.js';
 import { gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -3218,7 +3219,8 @@ function dressSeason() {
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
       // never on or beside a doorstep (the user's ask, 2026-10-13: a ghost stood in front of the Poké Mall's doors)
       byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
-      spawns: [{ x: 11, y: 8 }, { x: 17, y: 12 }, { x: 12, y: 16 }, { x: 26, y: 13 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) } });
+      spawns: [{ x: 11, y: 8 }, { x: 17, y: 12 }, { x: 12, y: 16 }, { x: 26, y: 13 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) },
+      claimed: groundClaimed, busy: groundBusy });
   }
   if (SEASON === 'winter') {
     const b = board(snowmanArt(), tileX(12) + 0.3, tileZ(16) - 0.2, { s: 1.2 });
@@ -3229,23 +3231,34 @@ function dressSeason() {
 }
 
 /** The Clearing's townspeople (2026-10-28, the user's ask: people in the Clearing, people only), on the towns' crowd code
-    (js/corner-crowd.js): four at a time of the day's six (js/data/clearing-folk.js), in and out through the north gate,
-    standing about the lawns, the plaza and the pond (a spot taken by a place, its doorstep or the season's decorations
-    left out), one or two walking at once. A tap on one: its line over its head. */
+    (js/corner-crowd.js): four at a time of the day's six (js/data/clearing-folk.js), each on a post of its own as in the
+    Pokémon games (2026-10-28, the user's ask: no more coming and going, fewer walking, nobody overlapping): two pace a
+    set beat out and back (FOLK_BEATS), the rest stand at a spot turning to look about (FOLK_STANDS), every post a tile
+    clear of the next, of a doorstep, the season's decorations, the ghosts' and buddies' spots and the avenue. A tap on
+    one: its line over its head. */
 const FOLK_STANDS = [[10, 12], [20, 13], [9, 7], [21, 7], [25, 10], [6, 13], [11, 19], [19, 20], [24, 19], [13, 4], [19, 6], [26, 15], [13, 21], [17, 21]];
+const FOLK_BEATS = [[[6, 13], [10, 13]], [[21, 7], [25, 7]], [[19, 20], [24, 20]], [[9, 7], [9, 11]], [[11, 19], [11, 22]], [[26, 11], [26, 15]]];
+let folkPosts = null;   // { posts, tiles }: where the folk stand and pace
 function clearingCrowd() {
   folk = new THREE.Group();
   scene.add(folk);
-  const byStep = (x, y) => places.some(p => Math.abs(p.step.x - x) <= 1 && Math.abs(p.step.y - y) <= 1);
-  const stands = FOLK_STANDS.filter(([x, y]) => free({ x, y }) && !byStep(x, y) && !yardTiles.has(key(x, y)));
+  const byStep = (t) => places.some(p => Math.abs(p.step.x - t.x) <= 1 && Math.abs(p.step.y - t.y) <= 1);
+  const tiles = [], posts = [];
+  const ok = (t) => free(t) && !byStep(t) && !yardTiles.has(key(t.x, t.y)) && !groundClaimed(t) && !nearAny(t, tiles);
+  for (const [[ax, ay], [bx, by]] of FOLK_BEATS) {
+    const a = { x: ax, y: ay }, path = [a, ...route(a, { x: bx, y: by })];
+    if (path.length < 3 || !same(path.at(-1), { x: bx, y: by }) || !path.every(ok)) continue;
+    tiles.push(...path); posts.push({ path });
+  }
+  for (const [x, y] of FOLK_STANDS) if (ok({ x, y })) { tiles.push({ x, y }); posts.push({ at: { x, y } }); }
+  folkPosts = { posts, tiles };
   return makeCrowd({
     THREE, group: folk, monBoard, drawMon, dispose, PITCH, spots: [], cols: COLS, rows: ROWS,
     door: { x: GATE_AT.tx, y: 0 }, enter: { x: GATE_AT.tx, y: GATE_AT.ty - 0.97 },
     route, free, tileX, tileZ, camera, view, stage: root, drawn: (v) => { v.y -= BEND.k.value * (v.z - BEND.z.value) ** 2; return v; },
     partner: () => walker, keeper: () => null, calm: () => calm,
     cast: CLEARING_FOLK, shared: CLEARING_SHARED, chats: CLEARING_CHATS, seed: 'clearing', size: 4, castSize: 6, castHours: 6,
-    stations: stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
-    wants: ['stand', 'stand', 'stand', null], swap: [40000, 80000], walkers: 2,
+    posts, walkers: 2, busy: groundBusy,
   });
 }
 
@@ -3301,8 +3314,9 @@ const inGrid = (c) => (c.x >= -WEST && c.y >= 0 && c.x < COLS && c.y < ROWS) || 
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
-/** Breadth-first over free tiles; if the tapped tile is taken, to the reachable one nearest it. */
-function route(from, to) {
+/** Breadth-first over free tiles; if the tapped tile is taken, to the reachable one nearest it. `avoid(t)`: tiles to go
+    round too (someone standing there). */
+function route(from, to, avoid = null) {
   const prev = new Map([[key(from.x, from.y), null]]), queue = [from];
   let best = from, bestD = Infinity;
   while (queue.length) {
@@ -3312,7 +3326,7 @@ function route(from, to) {
     if (!d) break;
     for (const [dx, dy] of STEPS) {
       const n = { x: c.x + dx, y: c.y + dy }, k = key(n.x, n.y);
-      if (!free(n) || prev.has(k)) continue;
+      if (!free(n) || prev.has(k) || avoid?.(n)) continue;
       prev.set(k, c); queue.push(n);
     }
   }
@@ -3321,9 +3335,32 @@ function route(from, to) {
   return path;
 }
 
+/* Who's on the Clearing's ground (2026-10-28, the user's ask: no two sprites ever on one tile). The folk, the ghosts and
+   friends' buddies each wait at their tile for the next to be clear (js/ground-beats.js): of each other, you, the tile
+   you're stepping to and your buddy a step behind. You walk round them. */
+const tileOf = (x, z) => ({ x: Math.floor(x + X0), y: Math.floor(z + Z0) });
+const npcAt = (t, who = null) => !!(crowd?.holds(t, who) || spooks?.holds(t, who) || buddies?.holds(t, who));
+const yoursAt = (t) => same(walker.tile, t) || same(walker.path[0], t) || (!!mon && same(tileOf(mon.group.position.x, mon.group.position.z), t));
+const groundBusy = (t, who) => yoursAt(t) || npcAt(t, who);
+// the north avenue you walk in and out on, kept clear of anyone's spot or beat (they stand still while you do)
+const onAvenue = (t) => Math.abs(t.x - GATE_AT.tx) <= 1 && t.y <= START.y - 3;
+/** Whether `t` is within a tile of a ghost's or a buddy's spot or beat, or on the avenue, for another to keep off. */
+const groundClaimed = (t) => onAvenue(t) || [-1, 0, 1].some(dx => [-1, 0, 1].some(dy => {
+  const n = { x: t.x + dx, y: t.y + dy };
+  return !!(spooks?.claims(n) || buddies?.claims(n) || folkPosts?.tiles.some(o => same(o, n)));
+}));
+
 function walk(dt) {
-  const w = walker, step = w.path[0];
+  const w = walker;
+  let step = w.path[0];
   if (!step) { w.hop = 0; return false; }
+  // about to step where someone stands: round them to the same end, or stop short
+  if (!arriving && !outbound && !returning && same(w.tile, tileOf(w.x, w.z)) && Math.hypot(w.x - tileX(w.tile.x), w.z - tileZ(w.tile.y)) < 0.01 && npcAt(step)) {
+    const end = w.path.at(-1);
+    w.path = npcAt(end) ? [] : route(w.tile, end, npcAt);
+    if (!w.path.length || !same(w.path.at(-1), end)) { w.path = []; w.hop = 0; return true; }
+    step = w.path[0];
+  }
   const tx = tileX(step.x), tz = tileZ(step.y), dx = tx - w.x, dz = tz - w.z;
   const d = Math.hypot(dx, dz), move = dt / 1000 * (arriving ? 5.2 : 4);
   if (Math.abs(dz) > Math.abs(dx)) w.facing = dz < 0 && mon.sheets.back ? 'back' : 'front';
@@ -3343,7 +3380,7 @@ function goTo(p, enter, i = null) {
   if (p.id === 'pc') import('./pc.js').then(m => m.warmPC(), () => {});
   if (p.id === 'kiosk') import('./house-kiosk.js').catch(() => {});
   if (walker.path.length === 0 && placeAt(walker.tile) === p) return enter ? open(p, i) : showCard(p);
-  walker.path = route(walker.tile, p.step);
+  walker.path = route(walker.tile, p.step, npcAt);
   aim = enter ? { p, i } : null;
   hideCard();
   if (!walker.path.length) open(p, i);
@@ -4301,7 +4338,7 @@ function groundTile(rays) {
 /** Off along a route to `to`, the ring marking where it ends; a step already under way is finished first. */
 function walkTo(to) {
   const next = walker.path[0];
-  walker.path = next ? [next, ...route(next, to)] : route(walker.tile, to);
+  walker.path = next ? [next, ...route(next, to, npcAt)] : route(walker.tile, to, npcAt);
   aim = null;
   hideCard();
   const end = walker.path.at(-1) ?? walker.tile;
@@ -4522,6 +4559,8 @@ function liveFlyer(now, dt) {
   f.m.group.position.y += Math.sin(k * Math.PI) * 0.4 + Math.sin(now / 260) * 0.06;
   f.m.group.quaternion.copy(camera.quaternion);
   f.m.board.scale.set(f.dir > 0 ? -FLY_SCALE : FLY_SCALE, FLY_SCALE, 1);
+  // where it is, so an overworld sheet flies side-on (its left or right row), not facing the camera (the user's ask, 2026-10-28)
+  f.w.x = f.m.group.position.x; f.w.z = f.m.group.position.z;
   drawMon(f.m, f.w, dt);
   // the shadow runs a little ahead, over the ground near you
   const sh = Math.min(1, k * 1.2 + 0.05), up = time !== 'night';
@@ -4868,7 +4907,7 @@ async function friendBuddies() {
   buddies = makeBuddies({ THREE, scene, camera, root, monBoard, drawMon, dispose, route, free, tileX, tileZ, PITCH,
     byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
     centre: START, reach: PLAZA_R + 0.6, spawns: [{ x: 13, y: 11 }, { x: 17, y: 13 }, { x: 13, y: 14 }, { x: 17, y: 10 }],
-    others: (c) => (c.x === walker.tile?.x && c.y === walker.tile?.y), onCard: (uid) => acts.onApp?.('trainers', uid) }, list);
+    others: (c) => (c.x === walker.tile?.x && c.y === walker.tile?.y), claimed: groundClaimed, busy: groundBusy, onCard: (uid) => acts.onApp?.('trainers', uid) }, list);
   buddies.key = key;
 }
 

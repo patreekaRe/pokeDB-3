@@ -23,6 +23,7 @@ import { isStarterUnlocked } from './progress.js';
 import { gateHp } from './gate.js';
 import { FLYERS } from './title.js';
 import { calmFx } from './prefs.js';
+import { overworldSrc, OW_ROW } from './overworld.js';
 
 const DUR = 7600;   // ms from the first step to dawn; the walk carries on while lines are still being read
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -587,7 +588,8 @@ export async function travel({ from, to, starter, stage = 0, shiny = false, firs
   layout();
   const fl = $('travel-flyer');
   fl.hidden = true;
-  if (guest && guest !== ETERNATUS) fl.src = `assets/pokemon/${guest}-front.gif`;
+  flaps = guest && guest !== ETERNATUS ? await sideOn(guest) : null;
+  if (guest && guest !== ETERNATUS) fl.src = flaps?.[0] ?? `assets/pokemon/${guest}-front.gif`;
   await Promise.all([loaded(mon), guest && guest !== ETERNATUS && loaded(fl)]);
   fit();
   addEventListener('resize', relayout);
@@ -760,6 +762,22 @@ function pickGuest(seed, forced) {
   return locked.length ? locked[Math.floor(roll(2) * locked.length)] : null;
 }
 
+/** The guest's overworld sheet's four steps facing left (the way it flies), as images, or null without a sheet: it flies
+    side-on, not facing you (the user's ask, 2026-10-28). */
+let flaps = null;
+async function sideOn(id) {
+  const src = overworldSrc(`assets/pokemon/${id}-front.gif`);
+  if (!src) return null;
+  try {
+    const img = new Image();
+    img.src = src;
+    await img.decode();
+    const size = img.naturalWidth / 4, c = document.createElement('canvas'), g = c.getContext('2d');
+    c.width = c.height = size;
+    return [0, 1, 2, 3].map(f => { g.clearRect(0, 0, size, size); g.drawImage(img, f * size, OW_ROW.left * size, size, size, 0, 0, size, size); return c.toDataURL(); });
+  } catch { return null; }
+}
+
 /** 0-1 through the flyover, or null outside it. */
 const flyK = (e) => { const k = (e.trip - route.fly) / FLY_LEN; return k > 0 && k < 1 && !still() ? k : null; };
 
@@ -768,6 +786,8 @@ function flyBy(e) {
   const fl = $('travel-flyer'), k = guest && guest !== ETERNATUS ? flyK(e) : null;
   fl.hidden = k === null;
   if (k === null) return;
+  const flap = flaps?.[Math.floor(performance.now() / 140) % 4];
+  if (flap && fl.getAttribute('src') !== flap) fl.src = flap;
   const s = Math.max(1, Math.round((Math.min(innerWidth * 0.3, 240) / Math.max(64, fl.naturalWidth)) * 2) / 2);
   const w = fl.naturalWidth * s, x = innerWidth + w / 2 - k * (innerWidth + w);
   fl.style.width = `${w}px`;
