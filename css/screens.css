@@ -2128,9 +2128,9 @@ body.battle-intro { pointer-events: none; }
   animation: owStep 1.1s steps(4) infinite;
 }
 .map-trainer.walking .ow-steps { animation-duration: 0.5s; }
-.map-trainer[data-dir="left"] .ow-steps { background-position-y: 33.333%; }
-.map-trainer[data-dir="right"] .ow-steps { background-position-y: 66.667%; }
-.map-trainer[data-dir="up"] .ow-steps { background-position-y: 100%; }
+[data-dir="left"] > .ow-steps { background-position-y: 33.333%; }
+[data-dir="right"] > .ow-steps { background-position-y: 66.667%; }
+[data-dir="up"] > .ow-steps { background-position-y: 100%; }
 @keyframes owStep { to { background-position-x: 133.333%; } }   /* steps(4) lands on 0, 33, 67 and 100%: the row's four frames */
 
 /* ---------- rewards (choose one) ---------- */

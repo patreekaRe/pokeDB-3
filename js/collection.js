@@ -44,6 +44,7 @@ import { initDevice, openDevice, openApp, deviceOver } from './device.js';
 import { $, el } from './ui.js';
 import { cornerApp } from './shop.js';
 import { smoothIcon } from './smooth-icons.js';
+import { overworldSrc } from './overworld.js';
 
 let dock = null;   // main.js's { menu(), abandonable() } for the dock
 let here = {};     // the pages a run stands on, for the Pokédex apps: { dex, safari }
@@ -95,14 +96,34 @@ export function coverArt() {
   led.title = badgeNews(save) ? 'A new badge!' : deviceNews(save) ? 'Something new!' : '';
   const mate = partner(save);
   const win = el('span', 'cdev-cover-window');
-  const img = el('img', 'pixel');
-  img.src = mate.src;
-  img.alt = '';
-  win.append(img);
+  const sheet = overworldSrc(mate.src);
+  if (sheet) win.append(coverWalker(sheet));
+  else {
+    const img = el('img', 'pixel');
+    img.src = mate.src;
+    img.alt = '';
+    win.append(img);
+  }
   const plate = el('span', 'cdev-cover-plate');
   plate.dataset.tier = cardTier(save).id;
   plate.append(el('b', '', trainerName().toUpperCase()), ...badgeCase(save));
   return [led, win, plate];
+}
+
+/** Your partner on its overworld sheet, stepping in place like a Pokéwalker's and now and then looking another way. */
+function coverWalker(sheet) {
+  const box = el('span', 'cdev-cover-mon');
+  box.dataset.dir = 'down';
+  const steps = el('span', 'ow-steps');
+  steps.style.backgroundImage = `url("${sheet}")`;
+  box.append(steps);
+  const look = () => {
+    if (!box.isConnected) return;
+    box.dataset.dir = box.dataset.dir !== 'down' ? 'down' : ['left', 'right', 'up'][Math.floor(Math.random() * 3)];
+    setTimeout(look, box.dataset.dir === 'down' ? 3000 + Math.random() * 3000 : 1200);
+  };
+  setTimeout(look, 3000);
+  return box;
 }
 
 /** The cover's Badge Case: a slot per group, never more however many are earned, each holding that group's best badge
