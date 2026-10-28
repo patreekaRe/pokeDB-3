@@ -58,7 +58,7 @@ check(s.dug && s.hidden && s.under.join() === 'dig' && !s.inDiscard && !!s.badge
 await digging;
 await B(() => window.__settle());
 s = await B(() => { const b = window.__battle(); return { turn: b.turn, hp: b.enemy.hp, dug: b.dug, hidden: document.getElementById('player-sprite').classList.contains('dug'), under: b.underground.length, disc: b.discard.filter(c => c.id === 'dig').length }; });
-check(s.turn === turn0 + 1 && pre - s.hp === 12 && !s.dug && !s.hidden && s.under === 0 && s.disc === 1, `next turn it surfaces: back in sight, 12 damage, Dig to the discard pile (${JSON.stringify(s)})`);
+check(s.turn === turn0 + 1 && pre - s.hp === 16 && !s.dug && !s.hidden && s.under === 0 && s.disc === 1, `next turn it surfaces: back in sight, 16 damage, Dig to the discard pile (${JSON.stringify(s)})`);
 s = await B(() => window.__why('tunnel'));
 check(s === null, `a fresh turn can play again (${s})`);
 await B(() => window.__play('hunker-down'));

@@ -3757,3 +3757,13 @@ The user caught a Jolteon in the Meadow and met another a few rooms on. `markRar
 `rares` (none repeats until each has come up), one roll a pick as `pickOne()` took, so the day stays seeded the same.
 Test in `tests/catch.test.mjs`. Leaning toward uncaught rares on replays was weighed and left out (Claude's call, the user
 said "you decide"): a rare stays a lucky find.
+
+### Dig takes your Pokémon underground; wild Pokémon leave with Dig / Fly / Dive / Bounce (2026-10-28, cloud; on `main`)
+The user's screenshot: "can you actually show that it's gone when used dig? ... I'm able to play moves while I'm in dig
+mode", and fix any Pokémon that leaves for a turn. Their pick of the options put to them: only the cards that are the move
+(Dig, Tunnel, Burrow, `dig: true`) sink your sprite and end the turn, surfacing at the next; the other 15 delayed Ground
+cards read **Bury** and leave the turn going; no dodge. Wild Safari Pokémon whose move is Dig / Dive / Fly / Bounce
+(Diglett, Nincada, Gabite, Relicanth, Salamence, Magikarp, Spoink) spend a turn out of reach, then strike. Detail in
+`docs/reference/cards.md` ("Dig vs Bury"); probe `tools/ground-probe.mjs`. Bot (pokeDB-sim README): ending the turn cost
+the Ground pairs ~6, so Dig 11 block / 16, Tunnel 10, Burrow 14 (300 a pair: mean 69.2 vs 69.4 before). Not picked
+(Ideas): your own Fly and Dive cards, Diglett's signature Dig, a dodge underground.
