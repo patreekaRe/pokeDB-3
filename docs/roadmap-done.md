@@ -3372,3 +3372,10 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Moves app: the type tabs scroll sideways (2026-10-28, cloud)
+The user's call from a phone screenshot: eleven type tabs squeezed into one row hid their names. They now keep a
+readable size (64px at least, names shown) in a strip that scrolls sideways (`.mv-strip` in `css/menus.css`, `edges()` /
+`reveal()` in `js/cardindex.js`); a nudging arrow and a fade show at each side with more past it, the arrow wears a "!"
+when a tab with new moves is out of sight, and picking a tab (or the D-pad) scrolls it into view. Branch
+`claude/card-layout-scroll-3j40m4`, pushed to `main` too.

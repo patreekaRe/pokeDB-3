@@ -118,11 +118,32 @@ export function movesApp(type) {
   const markTabs = () => {
     const fresh = new Set(newFinds('cards'));
     for (const b of tabs.children) b.classList.toggle('news', ALL_CARDS.some(c => c.type === b.dataset.type && fresh.has(c.id)));
+    edges();
   };
+  // the tabs scroll sideways at a readable size (the user's call, 2026-10-28: eleven squeezed into one row hid their
+  // names); an arrow shows at each side with more past it, wearing a "!" when a new find is out of sight there
+  const edges = () => {
+    const { scrollLeft: x, clientWidth: w, scrollWidth: full } = tabs;
+    const off = (side) => [...tabs.children].some(b => b.classList.contains('news')
+      && (side < 0 ? b.offsetLeft < x : b.offsetLeft + b.offsetWidth > x + w));
+    strip.classList.toggle('more-left', x > 2);
+    strip.classList.toggle('more-right', x + w < full - 2);
+    strip.querySelector('.mv-more.left').classList.toggle('news', off(-1));
+    strip.querySelector('.mv-more.right').classList.toggle('news', off(1));
+  };
+  const reveal = (t) => {
+    const b = [...tabs.children].find(n => n.dataset.type === t);
+    if (!b || !tabs.clientWidth) return;
+    const pad = 28;
+    if (b.offsetLeft - pad < tabs.scrollLeft) tabs.scrollLeft = b.offsetLeft - pad;
+    else if (b.offsetLeft + b.offsetWidth + pad > tabs.scrollLeft + tabs.clientWidth) tabs.scrollLeft = b.offsetLeft + b.offsetWidth + pad - tabs.clientWidth;
+  };
+  let strip;
   const show = (t) => {
     movesTab = t;
     for (const b of tabs.children) b.setAttribute('aria-selected', String(b.dataset.type === t));
     draw();
+    reveal(t);
     panel.scrollTop = 0;
   };
   return {
@@ -142,11 +163,27 @@ export function movesApp(type) {
       }));
       const tools = el('div', 'mv-tools');
       tools.append(lcdKeys('indexFilter', FILTERS, 'all', draw), lcdKeys('indexSort', ORDERS, 'cost', draw));
+      strip = el('div', 'mv-strip');
+      const arrow = (side, step) => {
+        const btn = el('button', `mv-more ${side}`);
+        btn.type = 'button';
+        btn.setAttribute('aria-label', side === 'left' ? 'More types to the left' : 'More types to the right');
+        btn.addEventListener('click', () => tabs.scrollBy({ left: step * tabs.clientWidth * 0.7, behavior: 'smooth' }));
+        return btn;
+      };
+      strip.append(tabs, arrow('left', -1), arrow('right', 1));
+      tabs.addEventListener('scroll', edges, { passive: true });
       const top = el('div', 'mv-top');
-      top.append(tabs, tools);
+      top.append(strip, tools);
       list = el('div', 'mv-list');
       host.append(top, list);
       show([type, movesTab].find(t => available.includes(t)) ?? available[0]);
+      // the app is mounted before its window has a size, so the picked tab's place and the arrows wait for one
+      let placed = false;
+      new ResizeObserver(() => {
+        if (!placed && tabs.clientWidth) { placed = true; reveal(movesTab); }
+        edges();
+      }).observe(tabs);
     },
     back: () => false,
     key(e) {

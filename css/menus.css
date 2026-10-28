@@ -872,15 +872,36 @@ body[data-screen="start-screen"] .topbar { display: none; }
   margin: 0 -10px 4px; padding: 10px 8px 9px; background: #c4dca0; border-bottom: 3px solid var(--shell-rim);
   box-shadow: 0 3px 0 rgba(31, 58, 20, 0.18);
 }
-.mv-tabs { display: flex; gap: 5px; }
+/* the tabs scroll sideways at a size that shows their names; the arrows and fades say there's more (2026-10-28) */
+.mv-strip { position: relative; margin: -6px -8px -5px; }
+.mv-tabs {
+  display: flex; gap: 6px; padding: 6px 8px 5px; overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity; scroll-padding-inline: 28px; scrollbar-width: none;
+}
+.mv-tabs::-webkit-scrollbar { display: none; }
+.mv-more {
+  position: absolute; top: 0; bottom: 0; z-index: 3; width: 34px; padding: 0; border: 0; cursor: pointer;
+  opacity: 0; visibility: hidden; transition: opacity 0.18s, visibility 0.18s;
+}
+.mv-more.left { left: 0; background: linear-gradient(90deg, #c4dca0 40%, rgba(196, 220, 160, 0)); }
+.mv-more.right { right: 0; background: linear-gradient(270deg, #c4dca0 40%, rgba(196, 220, 160, 0)); }
+.mv-strip.more-left .mv-more.left, .mv-strip.more-right .mv-more.right { opacity: 1; visibility: visible; }
+.mv-more::before {
+  content: ''; position: absolute; top: 50%; width: 12px; height: 18px; margin-top: -11px; background: #1f3a14;
+  clip-path: polygon(0 0, 100% 50%, 0 100%); animation: mvNudge 0.9s ease-in-out infinite alternate;
+}
+.mv-more.right::before { right: 6px; }
+.mv-more.left::before { left: 6px; clip-path: polygon(100% 0, 0 50%, 100% 100%); animation-direction: alternate-reverse; }
+@keyframes mvNudge { from { translate: -2px 0; } to { translate: 2px 0; } }
 .mv-tab {
   --c1: #9aa2c8; --c2: #565d84;
-  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px 5px;
+  flex: 0 0 auto; min-width: 64px; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 7px 8px 6px;
+  scroll-snap-align: start;
   border: 3px solid var(--shell-rim); border-radius: 9px; background: #e4f0cc; color: #1f3a14; cursor: pointer;
   font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 var(--shell-rim);
 }
-.mv-tab .smooth-icon { width: 24px; height: 24px; }
-.mv-tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-tab .smooth-icon { width: 30px; height: 30px; }
+.mv-tab-label { white-space: nowrap; }
 .mv-tab.type-fire { --c1: #ff8f4d; --c2: #b8321a; }
 .mv-tab.type-grass { --c1: #72dc70; --c2: #257a38; }
 .mv-tab.type-water { --c1: #5cbcff; --c2: #1d58b8; }
@@ -1491,7 +1512,7 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 /* a new relic, item or move (newFinds in the save) leaves the same trail: every Pokédex / Home key, the app's tile, its
    banner and slot, or the Moves tab and card, till it's been on screen */
 :where(.dex-news) { position: relative; }
-.dex-news::after, .cdev-icon.badge-news::after, .bdx-banner.news::after, .mv-tab.news::after {
+.dex-news::after, .cdev-icon.badge-news::after, .bdx-banner.news::after, .mv-tab.news::after, .mv-more.news::after {
   content: '!'; position: absolute; top: -6px; right: -6px; z-index: 2;
   display: grid; place-items: center; width: 15px; height: 15px; border-radius: 3px;
   background: #ffd040; color: #3a1c0c; box-shadow: 0 0 0 2px #3a1c0c, 0 0 8px #ffd040;
@@ -1501,9 +1522,10 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .bdx-banner.news::after { top: 6px; right: 6px; }
 .mv-tab { position: relative; }
 .mv-tab.news::after { top: -4px; right: -4px; width: 13px; height: 13px; font-size: 12px; }
+.mv-more.news::after { top: 4px; right: auto; left: 50%; margin-left: -7px; width: 13px; height: 13px; font-size: 12px; }
 .pdx-slot.news, .card.news { box-shadow: 0 0 0 2px #ffd040, 0 0 10px rgba(255, 208, 64, 0.6); }
 .card-new { position: absolute; top: -5px; right: -5px; z-index: 3; }
-@media (prefers-reduced-motion: reduce) { .cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new, .dex-news::after, .bdx-banner.news::after, .mv-tab.news::after { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new, .dex-news::after, .bdx-banner.news::after, .mv-tab.news::after, .mv-more.news::after, .mv-more::before { animation: none !important; } }
 @keyframes newsBob { to { translate: 0 -3px; } }
 @media (prefers-reduced-motion: reduce) { .badge-news::after, .badge-news::before, .badge-news .gem-icon::after { animation: none !important; } }
 .bag-pocket .tc-icon { width: 30px; }
