@@ -3159,6 +3159,7 @@ function setupEnemy() {
   $('enemy-zone').dataset.type = type;
   $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.shiny ? '✨ ' : '') + b.def.name;
   $('enemy-plate').classList.toggle('rare', b.rare);
+  $('enemy-rare').hidden = !b.rare;
   $('enemy-plate').classList.toggle('shiny', b.shiny);
   $('enemy-shiny').hidden = !b.shiny;
   box.querySelector('.shiny-aura')?.remove();
@@ -3644,7 +3645,8 @@ function renderStatus() {
 }
 
 /** A rare spawn's run-off count, first in its status row: a figure running and the turns of yours before it runs off.
-    It was a RARE pill in the nameplate until the user moved it out to leave room for a caught mark (2026-10-28). */
+    It sat in the nameplate's RARE pill until the user moved it out to leave room for a caught mark (2026-10-28); the
+    plate keeps the word. */
 function fleeBadge(b) {
   if (!b.rare || b.over) return null;
   const left = Math.max(0, RARE.turns - b.enemy.rock - b.turn + 1);

@@ -3750,7 +3750,7 @@ The user's call from a phone screenshot (a rare Jolteon's grass tuft read as a G
 💨 badge are gone; a RARE pill under the HP bar shows the Run key's running figure and the turns left, red on the last
 (`fleePill()` in `js/battle.js`). The map keeps its rustling grass. Later that day the user liked the figure and number but
 wanted them out of the plate, to leave room for a Poké Ball mark on a caught Pokémon: they're now the first badge in its
-status row under the plate (`fleeBadge()`), and the RARE pill is gone.
+status row under the plate (`fleeBadge()`), and the RARE pill under the HP bar keeps only the word (`#enemy-rare`).
 
 ### No repeat rare spawns on one Safari map (2026-10-28, cloud; on `main`)
 The user caught a Jolteon in the Meadow and met another a few rooms on. `markRares()` now deals from a deck of the area's

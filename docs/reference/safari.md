@@ -75,7 +75,7 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   Run's areas show the same badge (`.rare-mark.inline`); in battle the nameplate gets a grass-green
   rim (`#enemy-plate.rare`; a shiny keeps ✨ and gold) and, first in its status row under the plate, the
   Run key's running figure and the turns left, red on the last (`fleeBadge()` in `js/battle.js`, `.badge.flee`; 2026-10-28, the user's ask: the grass tuft by the name read as a Grass type, and
-  the 💨 badge didn't say what it counted; a RARE pill in the plate for a few hours that day, moved out to leave room for a caught mark). It runs off at the start of its turn once `turn >=
+  the 💨 badge didn't say what it counted; the RARE pill keeps only the word, `#enemy-rare`, its count moved out to leave room for a caught mark). It runs off at the start of its turn once `turn >=
   RARE.turns - rock` (4 of your turns): `runAway()` -> `onEnd({ escaped: true })`, and the map says "ran away. Nothing
   won." Its catch odds are halved (`RARE.mult`).
 
