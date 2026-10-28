@@ -3373,6 +3373,10 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
 
+### New Block and End Turn sounds (2026-10-28, cloud)
+The user asked to change the block sound and End Turn's Game Boy blip. Gaining block now plays `shieldUp()`, a fully
+blocked hit keeps the old whump as `blocked`, and End Turn plays `turnOver()` from `askEndTurn()`; all synths in
+`js/audio.js`. Detail in `docs/reference/music.md`.
 ### The Depths camp's own song (2026-10-26, cloud)
 Walking into the camp from the Clearing's Sealed Gate kept `clearing-hub` playing: `homeRoom()` set no song. It now plays a
 home place's `music` (the camp's `map4`, the user's 2026-10-15 pick); the Clearing's houses map to `clearing-hub` as before.
@@ -3717,3 +3721,6 @@ every `ball3d()` was blank, the battle send-out included; it now sets an absolut
 - **PP and End Turn effects** (2026-10-28, the user's ask, to match the move effects; straight to `main`): PP's refill
   swirls gold motes into the pill with a gold charge and shine, spending puffs sparks, End Turn bursts and shines when
   pressed and as it hops (`ppFx()` / `endTurnFx()` in `js/movefx.js`). Budget check (gym, tower) within budget.
+- **Kurt's bench, compact** (2026-10-28, the user's ask: "that middle section is huge"; on `main`): slimmer tabs, a 52px
+  picture, no MATERIALS label, a smaller Make, Kurt's line on a pick only says what's still needed. On a 390x760 phone the
+  shelf went from 120px to 253px. CSS scoped to `.dialog.craft.kurt`; the Garden could take the same pass.

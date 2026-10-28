@@ -47,13 +47,17 @@ opens (`ballAnimation()` / `caughtIt()`); `catch-success.mp3` is his jingle, its
 `catchShake()` (a hollow knock and a plastic rattle click) and `catchSuccess()` (a double latch click, then a four-note
 chiptune "Gotcha!") stand in.
 `start`/`length` play only part of a file with a short fade-out, so a long or late-starting
-effect is trimmed in code. A `synth` entry builds its sound in code instead of a file: `block` is
-`blockClink()` at the end of `js/audio.js`, an 8-bit shield clink (the user swapped their MP3 for a generated one), normalized to 0.2 like the other synths (at 0.9 it was far too loud).
+effect is trimmed in code. A `synth` entry builds its sound in code instead of a file: `block` (gaining block) is
+`shieldUp()` in `js/audio.js`, a Protect-like shield going up (a triangle tone gliding up an octave, a breath of air, three
+soft sparkles), `blocked` (a hit fully blocked) is `blockClink()`, the padded whump that was `block`'s until the user asked
+for a new one (2026-10-28), and `end-turn` is `turnOver()`, a soft swish over two mallet notes falling G to D, played by
+`askEndTurn()` in `js/battle.js` so End Turn no longer shares the Game Boy menu blip (the user's call, 2026-10-28). All
+normalized to about 0.2 like the other synths (at 0.9 it was far too loud).
 The user supplies the effect MP3s themselves.
 The rest of `SOUNDS` and where each plays: `card` (`playCard()`; at 0.3 gain like `confirm`, the user's call), `hit`
 (damage gets through, either side; `hitSound()` in `js/battle.js` plays `hit-super` /
 `hit-weak` for super / not very effective hits, like the games' three damage sounds, falling
-back to `hit` while those files are missing; a fully blocked hit plays `block`
+back to `hit` while those files are missing; a fully blocked hit plays `blocked`
 instead; there are no critical hits), `block` (a card gains block; at half gain, the user found it too loud), `faint` (enemy KO, in `finish()`),
 `confirm` (the same file as `card` and `item`, the user's call, but at 0.3 gain since it plays on nearly every tap: every window's confirm
 sounds alike; `showChoice` plays it when an `ask` option is taken, or the option's

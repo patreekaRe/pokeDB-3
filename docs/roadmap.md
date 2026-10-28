@@ -1577,14 +1577,11 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
-
-**Kurt's bench, compact** (2026-10-28, the user's ask: "that middle section is huge"; branch
-`claude/kurt-window-compact`, commit `d6081765`): slimmer tabs, a 52px picture, no MATERIALS label, a smaller Make, and
-Kurt's line on a pick only says what's still needed (the card already holds the text). On a 390x760 phone the shelf went
-from 120px to 253px tall. CSS scoped to `.dialog.craft.kurt` (the end of the six-tabs block in `css/screens.css`), so
-the Garden and the dojo are untouched. Patch note: folded into the ✕ look line in `NEXT`. Playtest:
-`https://rawcdn.githack.com/patreekaRe/pokeDB-3/d6081765c64b0df5cf826cb14f8096afdd348084/index.html?mended&satchel`
-(Kurt's on the Clearing's east avenue). On a yes: merge to `main`; the Garden could take the same pass.
+- **New Block and End Turn sounds** (2026-10-28, branch `claude/block-end-turn-sounds-3j8vso`, on `main` too; archive):
+  gaining Block plays `shieldUp()` (a Protect-like shimmer), a fully blocked hit keeps the old whump (`blocked`), and
+  End Turn plays its own `turnOver()` (a swish and two falling mallet notes) instead of the Game Boy menu blip. Play a
+  fight, block and end a turn; say if either should be different (heavier, shorter, more 8-bit, or a file of their own).
+  ▶ Run in: PLAYTEST ON THE LIVE SITE.
 
 **New look for PP and End Turn** (2026-10-28, the user's ask: "I wanted the buttons to look different"; branch
 `button-look`, commit `cee0429c`): dark glass plates with the turn banner's gold rim, leaning; PP's number in the banner's
