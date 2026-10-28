@@ -1584,7 +1584,8 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - **Comic-book evolution intro** (2026-10-28, branch `comic-evolution`, commit `598e5775`; NOT on `main` yet, the user's
   "playtest first"): before "What? X is evolving!", manga panels slam in over the white (`js/evo-comic.js`): alone, an
   eyes strip from the left over a face close-up from the right, "What's... happening?!" and a "!?" stamp; a Duo Run
-  splits the screen down a slanted gutter, each partner's face sliding in from its side facing the other, bubbles
+  splits the screen across a slanted gutter (the user's call, 2026-10-28: across, not down), the lead's face sliding
+  in on top from the left, the partner's below from the right, bubbles
   "Wha-?! What's this?!" / "We're... evolving?!" and a "!!" in both types' colours. A tap slashes the panels away onto
   the morph, and a duo's pair now morph side by side (`evolutionScene(..., mate)`; before, the partner got a line of
   text). Faces are guessed from SPRITE_FIT's pose box (head at the top third, on BODY_X): an odd shape may need its own
