@@ -89,6 +89,7 @@ const freshSave = () => ({
   partner: null,              // the Trainer Card's Pokémon, a key from partnerChoices() (js/trainercard.js); null picks the starter with the most wins
   look: null,                 // the trainer you walk as, your buddy a step behind (js/data/looks.js); null: the buddy walks alone
   looks: [],                  // trainer looks bought on the Trainer Card (the heroes are free)
+  lookAsked: false,           // asked once to pick a trainer (the setup, or a save from before trainers: askTrainer() in js/title.js)
   buddy: null,                // who walks with you in the Clearing, the base and the mall, picked at the PC (js/pc.js): a key from buddyChoices(); null is the most-won starter's first form
   missions: null,             // the daily and weekly missions (js/missions.js): each roll's day or week, its missions' counts and what's been paid; rolled when missing
   mail: [],                   // the Clearing's PC's mailbox (js/mail.js): letters with PokéCoins waiting to be claimed, newest last

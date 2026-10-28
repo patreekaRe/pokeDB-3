@@ -16,7 +16,7 @@
    ============================================================ */
 
 import { $, el, setHpBar, infGlyph, showScreen, lookArt } from './ui.js';
-import { HEROES, lookSheet } from './data/looks.js';
+import { HEROES, lookSheet, wornLook } from './data/looks.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
 import { playSound, playCry, closeSoundPops, setHomeTrack } from './audio.js';
 import { timeOfDay } from './daytime.js';
@@ -272,6 +272,7 @@ async function start(e) {
   const dex = $('title-dex');
   if (setup) await onboard(dex);
   else if (!still()) await powerOn(dex);
+  if (!setup && !peek && !wornLook(getSave()) && !getSave().lookAsked) await askTrainer(dex);
   const hub = await hubReady;   // as a rule long since there; till then the device stays on
   if (setup && hub) await refreshBuddy();
   if (first) {
@@ -352,7 +353,7 @@ async function onboard(dex) {
     if (step < 0) step = 0;
   }
   setTrainerName(name);
-  updateSave(d => { d.buddy = `starter:${mate}`; d.look = look; d.setupDone = true; });
+  updateSave(d => { d.buddy = `starter:${mate}`; d.look = look; d.lookAsked = true; d.setupDone = true; });
   showBuddy();
   box.remove();
   dex.classList.remove('setup', 'instant');
@@ -361,6 +362,22 @@ async function onboard(dex) {
   // the logo and hello come up as they would have, now saying the new name
   screen.querySelectorAll(':scope > *').forEach(n => { n.style.animation = 'none'; void n.offsetWidth; n.style.animation = ''; });
   await wait(still() ? 900 : 2000);
+}
+
+/* A save from before trainers (2026-10-28, the user's pick): once, as the device powers on, the setup's trainer step on
+   its own, Later in place of Back. Either way it's asked only the once; the Trainer Card's Trainer key picks any time. */
+async function askTrainer(dex) {
+  const screen = dex.querySelector('.tdx-screen');
+  const box = el('div', 'tdx-setup');
+  screen.append(box);
+  dex.classList.add('setup');
+  let look = null;
+  const took = await askLook(box, null, (l) => { look = l; }, { later: true });
+  updateSave(d => { d.lookAsked = true; if (took > 0) d.look = look; });
+  box.remove();
+  dex.classList.remove('setup');
+  screen.querySelectorAll(':scope > *').forEach(n => { n.style.animation = 'none'; void n.offsetWidth; n.style.animation = ''; });
+  await wait(still() ? 300 : 900);
 }
 
 /* The opened screen shows your walking buddy over the hello, in place of the game's title (the user's call, 2026-10-11),
@@ -397,10 +414,10 @@ function askName(box, name, keep) {
 
 /** Step 2: the trainer you walk as (2026-10-28), one of the four heroes, its front frame walking once picked; more are
     bought on the Trainer Card. A tap picks, OK takes it, Back goes to the name. Resolves +1 / -1. */
-function askLook(box, look, keep) {
+function askLook(box, look, keep, { later = false } = {}) {
   return new Promise(done => {
     const ok = pill('OK');
-    const back = pill('Back', 'back');
+    const back = pill(later ? 'Later' : 'Back', 'back');
     const row = el('div', 'tdx-mates tdx-looks');
     for (const hero of HEROES) {
       const btn = el('button', `tdx-mate tdx-look${hero.id === look ? ' on' : ''}`);
@@ -417,10 +434,11 @@ function askLook(box, look, keep) {
     }
     ok.disabled = !look;
     ok.addEventListener('click', () => { if (!look) return; keep(look); playSound('confirm'); done(1); });
-    back.addEventListener('click', () => { if (look) keep(look); playSound('cancel'); done(-1); });
+    back.addEventListener('click', () => { if (look && !later) keep(look); playSound('cancel'); done(-1); });
     const keys = el('div', 'tdx-keys');
     keys.append(back, ok);
-    box.replaceChildren(el('span', 'tdx-step', '2 / 3'), el('span', 'tdx-ask', 'WHO ARE YOU?'), el('span', 'tdx-note', 'Your trainer, with your buddy a step behind.'), row, keys);
+    const note = later ? 'New: walk as your own trainer, your buddy a step behind. More on the Trainer Card.' : 'Your trainer, with your buddy a step behind.';
+    box.replaceChildren(...(later ? [] : [el('span', 'tdx-step', '2 / 3')]), el('span', 'tdx-ask', 'WHO ARE YOU?'), el('span', 'tdx-note', note), row, keys);
     box.dataset.step = 'look';
   });
 }
