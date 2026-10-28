@@ -3851,3 +3851,4 @@ The user still looked big in Kurt's Workshop after the shrink: plain houses fram
 another.
 
 - **Trainer Plaza board as a low kiosk, Oak nudged right** (2026-10-28): the tall board hid the PC; the user picked the kiosk of three ideas (a clothesline of Polaroids and a PC-like screen not built). `js/hub-plaza.js`.
+- **Trainer Plaza board full screen** (2026-10-28, a mock the user loved, made real the same day): the kiosk's Look opens `js/plaza-view.js` (styles `.pv-*` in `css/hub.css`): Polaroids, + Add (`addTrainer()`), Trainer Card (the Trainers app's page), your code and add-by-code (`addByCode()`); `?plazaview` pins up made-up trainers.

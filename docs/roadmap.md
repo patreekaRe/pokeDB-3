@@ -1211,8 +1211,6 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**The Trainer Plaza board, full screen** (a mock, 2026-10-28, the user's ask): `?plazaview` makes the kiosk's Look open the cork board itself (`js/plaza-view.js`, its own styles inside): Polaroids pinned in a grid, one tapped lifting off with its card's tier, badges, wins, + Add and Trainer Card; paper notes along the bottom with your code and an add-by-code box. Real trainers when signed in, made-up ones otherwise; nothing is added or sent. Waiting on the user's verdict: if kept, wire + Add / the code box to `addTrainer()` / `addByCode()`, Trainer Card to the Trainers app's page, move the styles into `css/`, and drop the flag.
-
 **Houses show a lot of empty wall** (an idea, 2026-10-28): with houses framed 8 tiles across, Kurt's Workshop sits low
 with a third of the screen plank wall above it. A slightly lower camera tilt in houses would fill the screen without
 changing any sizes. The user wasn't sure ("I dunno"); not asked for yet.
