@@ -3,7 +3,8 @@
    (js/battle.js), 'pouch' the map's note on the first biome a pouch berry can go on (js/run.js), 'kit' Kurt on the first
    run kit item made (js/workshop.js), 'tree' Professor Oak on the first berry a Berry Tree gives (js/run.js), 'gift' Kurt
    on the first gift made (js/workshop.js) and 'meet-<friend>' each friend's hello at home (js/run.js; js/data/workshop.js's
-   GIFT_TOLD and meetKey()). Under `?satchel` they play once a page load and nothing is saved. */
+   GIFT_TOLD and meetKey()), and 'ball-look' Kurt in the Clearing on the Apricorn ball sent out in every battle
+   (js/hub-3d.js's ballNews(), 2026-10-27). Under `?satchel` they play once a page load and nothing is saved. */
 
 import { getSave, updateSave } from './storage.js';
 import { workshopOf, withTold } from './data/workshop.js';

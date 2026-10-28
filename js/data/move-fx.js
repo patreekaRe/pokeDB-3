@@ -1,0 +1,65 @@
+/* ============================================================
+   move-fx.js  -  the effect each attack plays as it lands (js/movefx.js,
+   the user's ask, 2026-10-28): a move named here plays its own, any
+   other its type's. A new attack needs no line; give one only when the
+   type's effect would look wrong for it (a beam, a bite, a storm).
+   ============================================================ */
+
+export const TYPE_FX = {
+  fire: 'flames', water: 'splash', grass: 'blades', electric: 'bolt', ice: 'frost', psychic: 'rings',
+  fighting: 'punch', normal: 'punch', dark: 'slash', ground: 'rocks', flying: 'gust',
+};
+
+/** A card's id (upgrades share it) to its effect. */
+export const MOVE_FX = {
+  'flamethrower': 'stream', 'water-gun': 'stream', 'hydro-pump': 'stream', 'scald': 'stream',
+  'steam-eruption': 'stream', 'hydro-steam': 'stream', 'snipe-shot': 'stream', 'octazooka': 'stream',
+  'mud-shot': 'stream', 'sand-spit': 'stream', 'frost-breath': 'stream', 'icy-wind': 'stream',
+  'powder-snow': 'stream', 'incinerate': 'stream', 'overheat': 'stream', 'sand-blast': 'stream',
+  'scorching-sands': 'stream', 'flame-blast': 'stream',
+  'surf': 'wave', 'muddy-water': 'wave', 'tsunami': 'wave', 'whirlpool': 'wave', 'origin-pulse': 'wave',
+  'lava-plume': 'wave',
+  'solar-beam': 'beam', 'ice-beam': 'beam', 'aurora-beam': 'beam', 'psybeam': 'beam', 'charge-beam': 'beam',
+  'zap-cannon': 'beam', 'hyper-beam': 'beam', 'armor-cannon': 'beam', 'aeroblast': 'beam', 'chloroblast': 'beam',
+  'electro-shot': 'beam', 'psystrike': 'beam', 'mind-lance': 'beam', 'psycho-boost': 'beam', 'hydro-cannon': 'beam',
+  'seed-flare': 'beam', 'glacial-lance': 'beam',
+  'thunder': 'bolt', 'thunderbolt': 'bolt', 'thunder-shock': 'bolt', 'bolt-strike': 'bolt', 'fusion-bolt': 'bolt',
+  'thunderclap': 'bolt', 'max-lightning': 'bolt', 'gigavolt-havoc': 'bolt', 'discharge': 'bolt',
+  'shock-wave': 'bolt', 'zing-zap': 'bolt', 'supercell-slam': 'bolt', 'rising-voltage': 'bolt',
+  'freeze-shock': 'bolt', 'mind-bolt': 'bolt',
+  'bubble': 'bubbles', 'bouncy-bubble': 'bubbles', 'water-pulse': 'bubbles', 'brine': 'bubbles',
+  'razor-leaf': 'blades', 'magical-leaf': 'blades', 'leaf-storm': 'blades', 'leafage': 'blades',
+  'razor-storm': 'blades', 'air-cutter': 'blades', 'air-slash': 'blades', 'aqua-cutter': 'blades',
+  'psycho-cut': 'blades',
+  'petal-dance': 'petals', 'petal-storm': 'petals', 'petal-blizzard': 'petals', 'flower-trick': 'petals',
+  'vine-whip': 'vines', 'power-whip': 'vines', 'fire-lash': 'vines', 'frenzy-plant': 'vines',
+  'drum-beating': 'vines', 'jungle-healing': 'vines',
+  'fire-spin': 'inferno', 'magma-storm': 'inferno', 'firestorm': 'inferno', 'heat-wave': 'inferno',
+  'inferno': 'inferno', 'blast-burn': 'inferno', 'infernal-parade': 'inferno', 'mind-blown': 'inferno',
+  'v-create': 'inferno',
+  'aura-sphere': 'orb', 'focus-blast': 'orb', 'energy-ball': 'orb', 'electro-ball': 'orb', 'seed-bomb': 'orb',
+  'mud-bomb': 'orb', 'pyro-ball': 'orb', 'searing-shot': 'orb', 'ice-ball': 'orb', 'weather-ball': 'orb',
+  'apple-acid': 'orb', 'mystical-fire': 'orb', 'bullet-seed': 'orb', 'ice-pellet': 'orb',
+  'blizzard': 'blizzard', 'sleet': 'blizzard', 'hailstone': 'blizzard', 'mountain-gale': 'blizzard',
+  'glaciate': 'blizzard', 'absolute-zero': 'blizzard',
+  'icicle-spear': 'shards', 'icicle-crash': 'shards', 'ice-shard': 'shards', 'brinicle': 'shards',
+  'shatter': 'shards',
+  'psywave': 'rings', 'brain-wave': 'rings', 'dissonant-pulse': 'rings', 'expanding-force': 'rings',
+  'psyshock-wave': 'rings', 'dream-eater': 'rings', 'psychic-confusion': 'rings', 'psychic-crush': 'rings',
+  'mind-break': 'rings', 'mind-storm': 'rings', 'mindstorm': 'rings',
+  'sacred-sword': 'slash', 'leaf-blade': 'slash', 'solar-blade': 'slash', 'bitter-blade': 'slash',
+  'kowtow-cleave': 'slash', 'wicked-blow': 'slash', 'cross-chop': 'slash', 'karate-chop': 'slash',
+  'dual-chop': 'slash', 'aerial-ace': 'slash', 'ice-spinner': 'slash', 'precipice-blades': 'slash',
+  'bite': 'fangs', 'fire-fang': 'fangs', 'ice-fang': 'fangs', 'thunder-fang': 'fangs', 'jaw-lock': 'fangs',
+  'fishious-rend': 'fangs', 'snap-trap': 'fangs', 'clamp': 'fangs',
+  'earthquake': 'quake', 'bulldoze': 'quake', 'magnitude': 'quake', 'stomping-tantrum': 'quake',
+  'lands-wrath': 'quake', 'high-horsepower': 'quake', 'heat-crash': 'quake', 'grav-apple': 'quake',
+  'avalanche': 'quake',
+  'twister': 'twister', 'hurricane': 'twister', 'bleakwind-storm': 'twister', 'leaf-tornado': 'twister',
+  'sandsear-storm': 'twister',
+  'dark-void': 'void', 'black-hole-eclipse': 'void', 'hyperspace-fury': 'void', 'ruination': 'void',
+  'psycho-annihilation': 'void',
+  'fire-punch': 'punch', 'ice-punch': 'punch', 'thunder-punch': 'punch', 'plasma-fists': 'punch',
+  'jet-punch': 'punch', 'ice-hammer': 'punch', 'wood-hammer': 'punch', 'crabhammer': 'punch', 'peck': 'punch',
+  'drill-peck': 'punch', 'drill-run': 'punch', 'pluck': 'punch',
+};

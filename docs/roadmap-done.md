@@ -3377,3 +3377,347 @@ The user's call from a phone screenshot: the Duo key moved from the bottom row i
 The user asked to change the block sound and End Turn's Game Boy blip. Gaining block now plays `shieldUp()`, a fully
 blocked hit keeps the old whump as `blocked`, and End Turn plays `turnOver()` from `askEndTurn()`; all synths in
 `js/audio.js`. Detail in `docs/reference/music.md`.
+### The Depths camp's own song (2026-10-26, cloud)
+Walking into the camp from the Clearing's Sealed Gate kept `clearing-hub` playing: `homeRoom()` set no song. It now plays a
+home place's `music` (the camp's `map4`, the user's 2026-10-15 pick); the Clearing's houses map to `clearing-hub` as before.
+
+### Duo Run picker: locked types show only ??? (2026-10-20, cloud)
+The user's call: a type not caught yet shows its ??? name and no "Catch X in the Safari" hint, so players find out
+themselves (`hintFor()` gone from `js/duoprep.js`).
+
+### Sky Pillar F100 combo pass: targeted nerfs and a lift (2026-10-21, cloud)
+A friend's ~12-card Turtwig deck climbed to floor 100. Fixes 1-4 of the sweep's lean plus a lift: Growth Spurt+ keeps
+Exhaust (cost 0), Overgrowth+ costs 0 at x1 (not x2), Ice Core and Electric Seed give half a copy, Dark Memory adds only
+to a card's Steal (not Magician's), Lum Berry no longer draws; Flame Wall and Mat Block 9 block (12 upgraded) for Fire and
+Fighting. Bot: Fire 68 / 46 / 24 -> 79 / 55 / 32 (L0 / L3 / L5), Grass and Water unchanged within noise, the 36 Safari pairs
+65.8 -> 67.6 (Fighting +8, Fire +4), a 10-flight Sky Pillar climb's reach to floor 100 Fire 27 -> 40%, Grass 30 -> 23%. Branch `claude/sky-pillar-f100-fixes-jaspxf` (both repos), pushed to `main`. Detail in
+`docs/reference/cards.md`'s last section and pokeDB-sim's README; follow-ups under Ideas ("After the Sky Pillar F100 combo pass").
+
+## A shiny switch in the Duo picker (2026-10-21, the user's ask; branch `claude/choosing-shinies-62dr4q`)
+Each Duo pool portrait wears a ✨ button on its top-right corner when you own the shown look's shiny (first under the
+arrows, moved the same day: it made the cards uneven): the same `save.shiny.on` switch as the character select's ✨ Shiny,
+so the portrait, the gate and the battle follow (`portrait()` in `js/duoprep.js`). Pushed to `main`.
+
+### Moves app: icon-only type tabs (2026-10-21, cloud)
+The user's call from a phone screenshot: the 11 type tabs cut their names to "F…", "G…", so they show only the round
+type badge (`typeBadge()`, as everywhere since 2026-10-20; the name is the tab's tooltip and aria-label). The old
+`smoothIcon` type art had none for Flying or Dark. Branch `claude/top-icon-cleanup-cz0xzz`, also pushed to main.
+
+### Perf audit: the Clearing, the Safari's new areas and the Duo Run (2026-10-21, cloud)
+The user's ask after the Duo Run and six areas went live: an fps, draw-call and memory check of all of it. Measured headless
+(swiftshader, an iPhone 17 Pro's size): `tools/budget-check.mjs` passed every place (Clearing 257 draws / 125 MB, towns
+359-493 draws, three Clearing -> mall -> base trips +1.9 MB, 0 listeners). New `tools/fps-probe.mjs` (JS a frame by the file
+that scheduled it, GC, style and layout, long tasks, animations running unseen): the Clearing ~7 ms of JS a frame, towns
+7-8, the base 2.7; all twelve Safari areas' scenery 0.2-0.7 ms a frame, a boss's storm under 1.3 ms, the six new areas no
+dearer than the old. `tools/run-probe.mjs --duo=fire,water --area=powerplant` (new): eight Duo fights, no leak (flat at
+~150 MB from fight 6 on, once the warmed ? room is built; +5 listeners). Fixed: the map's badges animated a drop-shadow
+(the Safari's new rare-spawn grass and a town's material badge), ~200 ms a second of main thread on a Duo map: now a halo
+fading in and out (`docs/reference/map-screen.md`); a room's blink an opacity ring. Duo map 500 -> 296 ms/s. The Safari and
+Sky Pillar lobbies' backdrops let their canvases go on close (~5 MB each held through a run). The Power Plant and Night
+Alley added to the budget check.
+
+
+## Trainer Levels 6-10 and Apple Acid+ (2026-10-22, the user: too easy at Level 5, Grass and healing most of all; branch `claude/game-difficulty-healing-balance-e107sm`)
+Five Levels above 5, StS's Ascension 15-20 in five steps (`LEVELS` in `js/data/difficulty.js`): 6 Bitter Medicine (healing in
+battle x0.8), 7 Worn Out (starting max HP x0.9), 8 Seasoned Foes (enemies +2 in all, elites x1.25 HP), 9 No Second Wind
+(evolving heals nothing, Centers 5%), 10 Champion's Trial (bosses x1.2 HP, +4). A win from 5 up stays a champion's
+(`isChampion()`). Apple Acid+ 11 + Vulnerable 2 -> 10 + Vulnerable 1 (it beat Seed Bomb, the 2 PP Bash, outright).
+Human bot, 150 a cell, grass / fire / water: L5 27.3 / 32.7 / 28.0, L6 19.3 / 34.7 / 28.7, L7 12.7 / 33.3 / 14.7, L8 6.7 /
+27.3 / 11.3, L9 4.7 / 14.7 / 7.3, L10 2.7 / 8.7 / 7.3 (L10 at 300: see below). Bitter Medicine lands on Grass alone, as
+meant; the user plays well above this bot (it wins ~30% at Level 5, where the user found the game easy). L10 at 300 a
+cell: 3.0 / 10.3 / 6.3. Grass ends lowest (69% of its losses in biome 1): if it plays too hard at the top, Bitter
+Medicine goes to 15%.
+Rewards (the user: "send it", same day): the climbing star and a first-win jackpot per Level (600-900, 2000 at 10);
+see `docs/reference/economy-and-hall-of-fame.md`. The Level 10 title and look, trophies and Master Badges stay on the roadmap.
+
+## A Pokémon Master: the Level 10 title and crystal pedestal (2026-10-22, the roadmap's Level 6-10 reward 3; branch `claude/pokemon-master-title-cape-b33c37`)
+
+- A run won on Trainer Level 10 makes you a Pokémon Master (`isMaster()`, read from the Record Book): a TITLE line on the
+  Trainer Card and a 👑 line on your Trainers page for friends; a crystal pedestal and the title "Pokémon Master" in the
+  Hall of Fame scene and the Collection's handheld. `?master` lends the title. Detail:
+  `docs/reference/economy-and-hall-of-fame.md`'s "A Pokémon Master". A Champion's Cape (painted on the walking buddy, a
+  stand in the Safari Outfitter) was built too, then taken out: the user's call, "no outfits". Checked headless: the
+  card's lines, the scene's class, title and pedestal, no page errors.
+
+- **Level 6-10 rewards 6, 7 and 10** (2026-10-23, the user's picks "6 7 and 10"; one session, branch
+  `claude/cloud-build-shells-letters-jggbf4`, on `main` too). **Foil decks** (`js/foil.js`, css/cards.css's foil block):
+  `bestWin()` of the run's starter sets `data-foil` on `<html>` at each map and battle (`wearFoil()`), cleared off a run's
+  screens; 6-9 a metallic edge in the star's gem colour (the card face's border showing a second background, so no mask),
+  10 a rainbow edge and a `::before` holo, both following `--foil-x` / `--foil-y` (pointer, or `deviceorientation`; an
+  iPhone asks as Settings' Foil cards is turned on). Not in the Safari; still under `calmFx()`. **Shells**:
+  `LEVEL_SHELLS` / `shellEarned()` in `js/data/difficulty.js`, Gilded at 8 and Clear (translucent rgba shell colours) at
+  10, said in the result window. **Letters**: `js/data/level-letters.js`, three friends a Level for 6-9 and the Nietos at
+  10, posted from `level5Rewards()` once per Level (`stats.levelLetters`, only with a PC), shown with the Level's star;
+  the photo (`leaderphoto`, `js/base-furniture-gym.js`, modelled as a gilt `picture`, model-check iou 0.9) is earned by
+  furniture's `level` source (a Record Book win on 10). Budget check: run-map within budget.
+
+## The Champion's Crown (2026-10-23, in place of the cape; on `main`)
+
+- The user saw the cape at `e3f047fc` ("looks retarded") and asked for "a really sick pokemon champion crown". A Level 10
+  win's buddy wears a low-poly 3D gold crown floating over its head, turning and bobbing, five points tipped with the
+  rainbow star's gems that the bloom makes glow (`wearCrown()` / `crownModel()` in `js/hd2d.js`, `wearsCrown()` in
+  `js/data/difficulty.js`); the Trainer Card's partner wears a pixel one with a Crown key. Detail:
+  `docs/reference/economy-and-hall-of-fame.md`'s "The Champion's Crown". Checked headless: six more draws a frame with it
+  on (Clearing 242 -> 245, Secret Base 83 -> 89, mall hall 332 -> 338), memory unchanged, about 21px wide and 15px over
+  Charmander's head on a phone, the key takes it off and puts it back, no page errors, 391 tests pass.
+
+## A preview of the Champion's Crown (2026-10-23, on `main`)
+
+- The user picked two of four ideas. The Trainer Level picker, from Level 5 up until you're a Master, shows the pixel
+  crown and "Win on Level 10 to wear the Champion's Crown." (at 10, "Win this Level..."; `#level-crown`, `renderLevel()`
+  in `js/select.js`); the Trainer Card shows a greyed crown, "Win Lv 10", where a Master's Crown key goes. `crownArt()`
+  moved to `js/ui.js` for both. Checked headless with `?levels`, `?levels&master` and a fresh save; no errors, 391 tests pass.
+
+## The Super Saiyan aura for Trainer Levels 6-10 (2026-10-23, the user's go; on `main`)
+
+- The walking buddy (Clearing, Secret Base, mall) wears the aura of the highest Level won from 6 up, in that star's
+  colour and bigger each Level: 6 a ruby glow at the feet, 7 emerald flames up the sides, 8 sapphire to the head, 9
+  amethyst with lightning, 10 a towering rainbow-gold blaze with lightning and rising sparks, under the crown. Flat
+  additive billboards on the sprite's board, sheets painted once on canvases (`js/aura-art.js`, `wearAura()` in
+  `js/hd2d.js`), still under Calm effects. The Trainer Card's partner wears the same frames in CSS, with an Aura key
+  (earned auras, then off; `save.aura`) and a greyed "Win Lv 6" preview; the Level picker previews each Level's aura
+  (`#level-aura`). `?aura=6..10` lends one (10 the crown too). Detail: `docs/reference/economy-and-hall-of-fame.md`'s
+  "The Super Saiyan aura". Checked headless: every Level builds with no page errors, calm holds one frame with no
+  bolts, the key cycles, budget check within budget (base 83 -> 96 draws and mall hall 332 -> 345 with `?aura=10`, the
+  crown's six included); 396 tests pass (`tests/aura.test.mjs` new).
+- Follow-up the same day: the user found `?aura=10` "laggy af" in the Clearing. Measured headless, JS a frame unchanged
+  and the GPU's share about 6% more at 10 (none at 8); cut 10 from five draws to three (front licks, lightning and
+  sparks one sheet, `auraFront()`), offsets set only on a new frame, `calmFx()` read once a second. After it, the
+  aura shown or hidden times the same.
+- Second follow-up the same day (the user: "I love the aura but the crown is hard to see now it's like behind the aura
+  and maybe tone down the size"): every Level's aura smaller (10 from 2 x the sprite's height to 1.4), the crown drawn
+  after it in the transparent pass so no flame adds onto it (headless, the crown's own pixels change by 0 with the aura
+  on, 5.4 before), and each aura sheet drawn once instead of twice (`forceSinglePass`; 10 is now +3 draws). Found on the
+  way: behind the title the Clearing hides the buddy, so the earlier Clearing timings (and budget-check's `clearing`)
+  never had the aura in them; retimed with the title tapped away, no GPU time beyond the noise.
+
+- **Buddy Projector** (2026-10-22, the user's ask, built in the Desktop app): a hologram of the walking buddy on a
+  pedestal of its own left of the Clearing's quest board (Halloween's dead tree there removed), tapped to pick the buddy
+  with an always-on Shiny switch; the PC's WALKING BUDDY page removed. v1.29 "Champion Levels" cut with it. The phone
+  budget check wasn't run (it needs the cloud's Chromium): a cloud session should run `--only=clearing` once.
+  Notes: `docs/reference/hub-base-mall.md`'s last section.
+
+- **The PC opens straight away** (2026-10-23, the user: "PC doesn't open when I click on it"; on `main`): a tap on the
+  Clearing's PC first downloaded `js/secret-base.js` and every furniture model with it (177 modules) before anything
+  showed, ~2.3 s more even headless, far longer on a phone, and a failed fetch left the tap doing nothing. `js/pc.js` now
+  loads that side behind its boot screen (`loadBaseKit()`), the hub starts it as you set off for the PC (`warmPC()`), and
+  a failed load says to reload. The Buddy Projector's budget check ran too: `clearing` within budget (254 draws, 124 MB).
+### Perf check after the Level 6-10 rewards and the Buddy Projector (2026-10-23, local)
+- `tools/budget-check.mjs`, all 23 places and the trips, run on this PC for the first time (playwright in a scratch folder,
+  `PW_CHROMIUM` pointing at the installed Chrome; `tools/probe-kit.mjs` reads it): every place within budget, the Clearing
+  247 draws / 128 MB with the projector, the mall/base trips x3 growing 0.1 MB and no listeners. The aura, crown and
+  hologram cost nothing measurable (`fps-probe.mjs`'s new `clearing-master`: 2.3 ms of JS a frame, as plain; the
+  hologram's tick 0.015 ms). Fixed: Level 10 foil wrote `--foil-x/y` on `<html>`, so every tilt event restyled the whole
+  page (`battle-foil`: style 1.4 -> 41.6 ms/s); now on each card face, at most 30 a second, skipping drift a still phone
+  reports (11.4 ms/s). Also paused the hidden select screen's pulsing A button behind the Clearing and 3D places, and the
+  see-through run-map Poké Ball's wobble. Not taken: the run map's scenery timer (`scene.js`, ~25 ms/s), as measured on
+  2026-10-21.
+
+## The Berry Booth (2026-10-23, the user's idea and calls; on `main`)
+
+A digital kiosk left of the Clearing's gate (`BOOTH_AT` 12,-1; the route sign moved to 11,-1), shown once Kurt's Workshop
+is open, a "!" while held berries are kept and nothing's packed. It opens the Safari lobby's device (`js/berrybooth.js`):
+the window shows the loadout (held, two pouch slots, kit), and its keys are the Pouch, Kit and Guide apps (an eight-step
+guide played on the window, opening by itself the first time). The loadout is saved (`save.loadout`, `fitLoadout()`) and
+stays packed run after run. Prepare lost its Pack panel and "▼ Berry Pouch · Run kit" tab for one read-only "Bringing:"
+line (option A). No perks, so no bot check. Docs: docs/reference/towns.md's Packing.
+
+### Secret Base: residents room by room (2026-10-23, cloud)
+The user's call: the yard's Pokémon tab listing only the six living indoors "doesn't make sense". Now every room, the
+backyard too, lists the whole Safari list and holds up to `residentCap()` (6, plus the Ranger Task Board's) of its own;
+a Pokémon lives in one room at a time (`secretBase.at`, `placeMon()` / `monRoom()` in `js/secret-base.js`), tagged with
+its room (`ROOM_KINDS`' `tag`) on the other rooms' tabs, and a tap there moves it. Only the room you're in loads its
+guests. The PC's Base Residents picks for the main room (the room you're in from the base's Storage PC). An old save's
+`out` moves over; a room taken down sends its residents back to the box. `tests/base-residents.test.mjs`; checked
+headless (both tabs and the PC), the base and yard within their phone budget. Branch
+`claude/backyard-garden-pokemon-allowlist-u7kn5b`, pushed to `main` too.
+
+### Secret Base: the first two Safari catches move in (2026-10-23, cloud)
+The user's ask: a new Safari player's first two catches move into the Secret Base's main room by themselves, the first
+with a window ("🏠 A new housemate!", the unlock window) saying Safari catches can live there, 6 a room
+(`js/safari-home.js`, `tests/safari-home.test.mjs`). A third catch stays in the box. Checked headless with three real
+catches in a Duo Run. Players who already have three or more catches see no change.
+
+### Secret Base houses, session 1 (2026-10-23, cloud; on branch `houses-playtest` behind `HOUSES_LIVE`)
+The save's `houses` (old bases keep the Ancient Tree, the Starter Cottage free), the Starter Cottage, Log Cabin and
+Seaside Bungalow as 3D models on the lot (`js/hub-houses.js`), the tree in three crown colours, Timburr & Co.'s stand at
+17,4 whose catalogue (`js/house-kiosk.js`) builds each pick on the lot as a try-on, repaints at 250, a YOUR HOUSE row on
+the PC's HOUSE UPGRADES. Off for players until the user's playtest says go (`?houses` shows it); budget line
+`clearing-houses` 275 draws / 119 MB (the Clearing 257 / 124). Its patch note waits in `HELD`.
+Session A (2026-10-23, same branch): the six coin houses (Mushroom Cottage, Red Barn, Machiya Townhouse, Lighthouse
+Cottage, Glasshouse Villa, Victorian Manor), 8 paints a house, the catalogue's paint strip, `tools/house-check.mjs`.
+
+### Cloud save: no "Two saves found" over your own save (2026-10-23, cloud)
+The user's report: it popped after every berry Kurt
+explained, both sides the same, the cloud's "on iPhone"). The iPhone froze or reloaded the page between an upload landing
+and its rev being noted, so the next upload met its own copy. Each browser now signs its uploads (`from`) and the state
+keeps a fingerprint of the agreed progress (`sum`); play time alone no longer counts as a change. Detail:
+`docs/reference/cloud-save.md`. Shipped on `main`.
+
+### Cloud save: a run in progress is never swapped out quietly (2026-10-23, cloud)
+The user lost runs after Menu, only while signed in (incognito was fine): on load, the cloud's copy from another browser
+replaced the save silently, run and all. It now asks when this device holds a run the cloud's doesn't, and a run the
+cloud replaces is kept (`?runback`). A run that fails to load is kept the same way. Detail: `docs/reference/cloud-save.md`.
+
+### The Halloween ghosts no longer greet you (2026-10-23, cloud)
+The user found the walk-up greeting on every Clearing visit annoying. Cut from `js/hub-spooky.js` (and the `greets` lines
+from `js/data/spooky-lines.js`); the random lines over their heads and tap talks stay, nickname lines included.
+
+### Secret Base houses (2026-10-23, cloud, branch `houses-playtest`, live on `main` the same day)
+The user's idea: the Ancient Tree's lot becomes a house from a catalogue. Timburr & Co.'s stand by the lot tries each of
+25 houses on the real lot before you buy (Starter: the Ancient Tree, every new base's home, and the Starter Cottage free
+beside it; 6 Homestead and 6 Estate for coins; 7 earned by feats; 3 seasonal; the Crystal Palace), 8 paints each, 250 a
+repaint; friends' visits start on their front lawn (`js/front-lawn.js`; the lawn over a quick arrival shot, the user's
+call). Built in sessions 1, A, B and C plus the lawn, each playtested on the branch's githack link; the mock-up
+`docs/mockups/secret-base-houses.html`, the lawn's https://claude.ai/artifact/DEh9vUss4bD1StvwxzSrC2. Detail:
+`docs/reference/hub-base-mall.md`, "Secret Base houses" onwards.
+
+
+## Abandon run on the map, a Game & Watch runner (2026-10-23, the user's ask; branch `claude/abandon-run-button-animation-sz67vy`, and `main`)
+
+A key right of the map's floor tag opens the abandon confirm; its runner ticks across three LCD segments with ghosts.
+Detail: `docs/reference/map-screen.md`, "Abandon run beside the floor".
+
+## Take off a held berry (2026-10-25, the user's ask; branch `claude/berries-during-runs-pmaxy1`, and `main`)
+
+The Bag's "Held:" line has a Take off button on the map while the berry's uneaten, so it can be saved for a fight ahead:
+it goes to the front of the Berry Pouch (`takeOff()` in `js/data/held.js`, `takeOffBerry()` in `js/run.js`). It wasn't
+eaten, so the one-a-biome rule doesn't start; Hold puts any back on. Playtest kit `&berries=oran,lum` added.
+
+### Mart: a ware you can't buy still opens to read (2026-10-25, cloud)
+The user's ask: broke or with a full Bag, a tap on a ware only said why in the text box, so reading an item meant tossing
+one. Now `ware()` in `js/run.js` passes a `blocked` reason instead of `disabled`, and `showChoice()` / `openFocus()` in
+`js/rewards.js` blow it up as usual, the reason under it and Buy greyed (tapping the big tile does nothing). The PC is unchanged.
+
+## Town trades vary by item (2026-10-25, the user's ask; on `main`)
+
+Two commons in the Bag were offered the same three items. Now each different Bag item of a rarity gets its own three
+from the trader's rolled order (`offersFor()`, moved to `js/data/towns.js` with `TRADE_OFFERS` so `tests/town-trade.test.mjs`
+can check it), wrapping round once the rarity runs short (rares, 4 a type). Still a sidegrade, so no bot run.
+
+- **Turn banner** (2026-10-25, branch `claude/slay-spire-turn-animation-9g5d7p`, merged to `main` on the user's yes after
+  playtesting): Slay the Spire's banners across the arena, "Battle Start!" with its own synth sting (`battleSting()`),
+  "Your Turn:" with a slanted gold Chakra Petch numeral, and "Enemy Turn" (`turnBanner()`; detail in
+  `docs/reference/battle-screen-layout.md`).
+- **Turn sounds** (2026-10-25, same branch, merged to `main`): Game Boy blips on Your Turn / Enemy Turn
+  (`turnBlips()`), the user's pick after hearing soft bell chimes (liked too) beside them.
+- **Mart relic slots refill** (2026-10-25, `main`): a Mart's relic you picked up on the way there (stock is rolled at
+  biome start) gets another relic in its place on walking in, instead of a SOLD OUT you never bought (`martRoom()`).
+- **Battle juice 1-3** (2026-10-25, same branch, merged to `main` on the user's yes, patch 1.30 "Houses & Banners"
+  cut with it): the lethal warning (💀 bubble, your HP bar blinking red; red arena edges tried first and dropped), a
+  relic's or Ability's first use in a fight on its own banner stripe with what it did (`RELIC_GAIN`, `ABILITY_GAIN`),
+  then its icon in Torrent's window sliding in from the left from turn 2 on, and Victory! / Defeat banners.
+  Detail in `docs/reference/battle-screen-layout.md`.
+
+## Secret Base: stairs look like stairs (2026-10-25, the user's ask; branch `stairwell`, merged to `main` on their yes)
+
+- Upstairs, the way down was a doorway with one step and faint painted treads, which didn't read as stairs. Now it is a
+  stairwell cut into the floor before the back wall: four treads going down under the wall, darker the deeper, a
+  banister each side, your partner sinking step by step as it walks down. The way up got the same (the user's ask): five
+  steps with banisters climbing to a doorway high in the back wall, your partner rising with them. Detail in `docs/reference/hub-base-mall.md`.
+
+### Evolutions play in full again (2026-10-25, cloud)
+The user saw no evolution animation. Since the scene's tap-to-skip (2026-10-18), the tap that closed "What? X is
+evolving!" on its text box bubbled on up to the scene after the skip had started listening, and skipped the whole morph.
+`skipper()` in `js/evolution.js` now starts listening `SKIP_ARM_MS` (300 ms) later. Checked headless in the 3D gym
+(`?gym=lawrence&hp=0.01`, Three.js served locally): the same tap now leaves the morph to play out, and a tap of its own
+still skips it.
+
+## Records and the jukebox (2026-10-25, the user's idea; live the same day, on `main`)
+
+Records (songs) sold only by a mended town's trading post (its shop from home, a Records tab, a tap to listen), 55 of
+them with the user's 41 Gen 1-4 town themes; a jukebox, record player or gramophone at home picks the base's song, and
+friends visiting hear it. Smeargle slides in once (players from before the patch their first time home; newer players
+after their first Waystone is mended) with a one-time pick of the five players and the gift record, the Clearing's
+song (each player turning in 3D on the Furniture store's turntable as you tap it, the user's ask the same day). The jukebox window is a neon cabinet with a turntable deck and the records as sleeves in a crate. Detail:
+`docs/reference/hub-base-mall.md`'s Records section. Built and playtested behind `?records`, then `RECORDS_LIVE` on.
+Phone check the same day (a cloud session, the user's ask; nothing changed): `budget-check` within budget on base, yard,
+the five towns and the trips, which grow as much as the build before records did (the CPU sprite cache rising and
+falling). A scratchpad probe found no leak: one decoded song after 10 records put on, a trip out of a base playing a
+record letting it go, and 0 MB / 0 listeners / 0 textures left after the jukebox opened 6 times, the trader's crate 5
+(20 listens) and Smeargle's pick 3. Over a 2D screen the jukebox and crate cost ~0.2 ms of JS a frame, ~1-1.5 ms
+style and paint, ~4 ms a record flipped. The pick's turntable costs what any Furniture store buy window does.
+
+### Crossroads board: a Research bar (2026-10-26, cloud)
+The user's ask from a phone screenshot of the Ember Wastes board: the Pokédex note shows two bars, Defeated (as before)
+and ★ Research (the page's entries whose research is done, `isResearched()`, a blue fill), in `fillPanel()` in
+`js/crossroads-3d.js`. The painted fallback's card has no Pokédex bar, so it has none.
+
+## No twin cards (2026-10-26, the user's ask; on `main`)
+
+Bubble and Bubble Beam in one hand: "no cards that repeat". `tools/card-twins.mjs` found 378 twin pairs (the same lines
+with other numbers, any cost) and 182 near twins (the same cost, one plus a line) across 332 cards, single runs and Duo
+Runs; 197 cards got moves of their own (`docs/card-twins.md`, before and now), every id kept, Disable+ named Imprison.
+The test now fails on any twin. Kenmatta's trials were rebuilt on the new cards (the user's pick): Patience a new puzzle,
+seven HPs retuned, every trial solved and starred headless. Rule and bot check: `docs/reference/cards.md`'s "The twin
+pass". Open questions (signature cards, basics): roadmap Ideas.
+
+## Signature cards: no twins either (2026-10-27, the user's go; on `main`)
+
+The Safari's 514 signature cards held to the twin rule: counted fully (any run they can be caught in, Duo Runs and near
+twins too), 365 read like a run card and 491 like a run card or each other; 424 got new lines (`docs/card-twins.md`'s
+last sections, before and now), 0 pairs after. `tests/safarimons.test.mjs` runs `sigReport()` now. Safari bot check
+within noise (mean 66.7 -> 65.1). Each type's plain Strike and Defend stay plain (Claude's recommendation).
+
+The house catalogue's "MORE ›" pill (2026-10-27, the user: players didn't know the row of homes scrolled): over the
+row's right edge while houses sit past it, a tap scrolls on, gone at the end (`.hk-more` in `js/house-kiosk.js`).
+
+The cover's Badge Case (2026-10-27, the user: the cover's pile of every badge kept growing; liked, on `main`): a fixed 6×2
+case, a slot per badge group holding its best or pinned badge, gold-rimmed when full, and a count line (`badgeCase()` in
+`js/collection.js`).
+
+### Secret Base: 156 wallpapers and floors, and ways to find them (2026-10-27, cloud)
+The user: players didn't know they had wallpaper and floors, and wanted many more. 72 new wallpapers and 56 new floors
+(`js/base-papers.js`, themed, with chips in the tray), a "!" on unseen ones, a daily half-price wallpaper and floor, a
+one-time line in the base, and Smeargle's Wallpaper & floors catalogue at the Poké Mall (`js/paper-shop.js`). Branch
+`claude/flooring-wallpaper-inventory-lmgj0a`, also pushed to `main`. Detail in `docs/reference/hub-base-mall.md`.
+
+**The pin made easy to find, and the cover's badges chosen** (2026-10-27, the user: "that Pinned tab is like hidden", and
+"is there a way to set the 12 badges in the Pokédex?"): a gold pin plate, the pinned badge on the partner's portrait, and
+a Cover key on the Badge Case to pick each of the cover's 12 slots (`coverPicker()` / `coverBadge()`), on `main`. Detail in
+`docs/reference/badges-and-trainer-card.md`.
+
+### Ball skins in every battle (2026-10-27, cloud, the user's ask: "clean up the default pokeball... customize the skin, not just for safari")
+The battle intro's Poké Ball was a CSS circle with a blue rim and stacked blue shadows; it's now the Poké Ball item
+sprite at 3x, crisp. The Apricorn skin carried from Kurt's Workshop (`ws.skin`) now dresses that ball in every battle as
+well as the Safari Ball (`sendSprite()`); the Workshop's words say so. Kurt slides in once a save on the next visit to
+the Clearing (`ballNews()`), naming the ball carried, or how to make one, then your partner walks to his door; a first
+meeting says it instead. Tests 390 pass; the clearing and gym within budget. Detail in `docs/reference/towns.md`.
+The user's yes the same day to both follow-ups, and a third ask: every ball the Center's 3D ball. `js/ball-looks.js` holds
+one skin painter a ball (27: the Poké and Safari Balls, the eight Outfitter balls moved in from js/mall-outfitter.js, and
+all 18 Apricorns), wrapped round the Center's machine ball (now your carried one) and the Outfitter's, and
+`tools/ball-sheets.mjs` renders each to a 16-frame spinning WebP sheet in `assets/balls/` (about 1 MB in all; a sheet,
+not a WebGL context, on the battle screen). The Trainer Card's Ball key (`ballPicker()`) carries any ball you own; the
+Outfitter's Apricorn stand sells one of Kurt's seven a UTC day for 350 (`apricornToday()`), kept in `workshop.bought`
+apart from `made` so a purchase doesn't open the Workshop early. Tests 428 pass; Clearing, Outfitter, Center and gym
+within budget.
+
+### Apricorn ball skins dress every thrown ball (2026-10-27, cloud)
+The user's call: the skin carried now shows on every ball thrown (Great, Ultra, Master...), not only the Safari Ball
+(`looks()` in `js/battle.js`, `thrownSprite()` in `js/data/workshop.js`), as it already did on the ball sent out. The
+ball picker keeps each ball's own sprite to tell them apart; odds unchanged.
+
+### "More below" tag on scrolling windows (2026-10-27, cloud)
+The user's ask from a phone screenshot: players didn't know Kurt's Workshop or the Berry Garden scrolled. `scrollCue()`
+in `js/ui.js` puts `.more` on a scroll box while anything's hidden under its bottom edge, and `.scroll-cue::after` in
+`css/screens.css` draws a bobbing ▼ MORE tag stuck to that edge (no room taken, taps pass through; an inner box's tag
+hides while its window's own shows). On the Workshop, Berry Garden and dojo windows and their lists; any other long
+window can call it too. **2026-10-28**: the tag covered their bottom Close (the user's phone screenshot), so all three
+close with a ✕ pinned at the top right instead (`closeX()` in `js/ui.js`).
+
+### Trainer Card ball picker: balls drawn, names, Put away (2026-10-27, cloud)
+The user's phone screenshots: the card's ball key and the YOUR BALL tiles were blank, and nothing said how to put a skin
+away. `setBall3d()` (`js/ball-looks.js`) set `--sheet` to a relative `url()`, which resolved against `css/` (a 404), so
+every `ball3d()` was blank, the battle send-out included; it now sets an absolute URL. Each tile is named under its ball
+(the first "Plain"), and the Carrying line has a Put away button while a skin is carried.
+- **Smooth card effects** (2026-10-28, branch `clean-card-fx`, merged to `main` on the user's yes, patch 1.31 "Balls &
+  Records" cut with it): played cards' trails, landing bursts and the exhaust burn drawn smooth from sprites instead of
+  whole pixels (`drawClean()` / `burnClean()` in `js/cardfx.js`); `?pixelfx` shows the old look for a page load.
+- **More card effects** (2026-10-28, branch `more-card-fx`, merged to `main` on the user's "I love it"): every attack
+  plays its move's effect (`js/movefx.js`, `js/data/move-fx.js`: 24 effects, 160-odd moves, the rest by type), hits light
+  the foe and the 3D arena with a jolt, 3-PP and rare cards get a cut-in, blocks a shield bubble, heals motes, the foe's
+  statuses their ambience, the flying card a ribbon and a risen card its type's glow; Settings' Effects look (Smooth /
+  Pixel / Off). Optimized before the merge (1.1 ms a frame, the canvas at 1.5x and freed when quiet; `tools/fx-probe.mjs`).
+- **PP and End Turn effects** (2026-10-28, the user's ask, to match the move effects; straight to `main`): PP's refill
+  swirls gold motes into the pill with a gold charge and shine, spending puffs sparks, End Turn bursts and shines when
+  pressed and as it hops (`ppFx()` / `endTurnFx()` in `js/movefx.js`). Budget check (gym, tower) within budget.

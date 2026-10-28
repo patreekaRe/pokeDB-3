@@ -142,3 +142,11 @@ Saves from before the app get every Leader they had met, beaten or lost to marke
 - **The crest's badge is in full colour before it's won** (2026-10-14, the user's ask: "I want the players to see what
   they're getting"). It used to be a dark seal till earned; now only the extra shine (metalness, glow) waits on the win
   (`crestArt()` / `gymCrest()` in `js/event-3d.js`).
+
+## Letters for a high Level (2026-10-23)
+
+`js/data/level-letters.js`: each friend writes once, on your first win on a Trainer Level from 6 up (Britt, Law and John
+at 6; Jahmes, Clarence and Shaun at 7; Pat, Kayl and Phil, JONA breaking in, at 8; Ricky, Machew and Jerome at 9), and the
+Nietos for everyone at 10, with their signed group photo (`leaderphoto`, all thirteen signing over themselves, a wall piece
+in `js/base-furniture-gym.js`). A new leader gets a line there, at whichever Level fits.
+

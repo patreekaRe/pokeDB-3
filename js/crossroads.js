@@ -20,6 +20,7 @@ import { spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { meowthTalk } from './meowth.js';
 import { leadersOf, spriteOf, gymWins } from './data/gym.js';
+import { typeText } from './type-badge.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
@@ -328,7 +329,8 @@ export function wildTypes(biome) {
 /** What lives on a road, by its wilds' types, the most common first: Alphas and bosses fight as Neutral. */
 function typeChips(biome) {
   return wildTypes(biome).map(([type, n]) => {
-    const chip = el('span', `chip type-${type}`, `${TYPES[type]?.icon ?? ''} ${n}`);
+    const chip = el('span', `chip type-${type}`);
+    chip.append(typeText(type, TYPES[type]?.icon ?? '', `${n}`));
     chip.title = `${n} ${TYPES[type]?.label ?? type} wild Pokémon`;
     return chip;
   });

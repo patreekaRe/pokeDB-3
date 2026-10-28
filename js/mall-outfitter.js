@@ -8,7 +8,7 @@
    js/mall-3d.js walks it and sells. */
 
 import { BALLS, DAY_PASS, safariAccess } from './data/balls.js';
-import { safariDaily, SAFARI_DEX_PAGES, SAFARI_ROSTER } from './data/safari.js';
+import { safariDaily, safariDay, SAFARI_DEX_PAGES, SAFARI_ROSTER } from './data/safari.js';
 import { EXCHANGE_INK } from './data/exchange.js';
 import { shinyImage, sparkleOf } from './data/shinies.js';
 import { ENEMY_DEFS } from './data/enemies.js';
@@ -18,6 +18,8 @@ import { cornerEntries } from './shop.js';
 import { fine, texOf, words, star, mergeStatic, newsArt } from './hub-3d.js';
 import { hallKit } from './mall-hall.js';
 import { calmFx } from './prefs.js';
+import { paintBallSkin } from './ball-looks.js';
+import { SKIN_BY_ID, APRICORN_PRICE, apricornToday, workshopOf, ownsSkin } from './data/workshop.js';
 
 const L = {
   rattan: ['#e8d29a', '#dcc286'], wood: '#9a6a3a', lite: '#c8945a', dark: '#5a3a1e',
@@ -34,7 +36,7 @@ const COLS = 21, ROWS = 13, AISLE = 10, DOOR = { x: AISLE, y: ROWS - 1 };
 const BAYS = [0, 7, 14, 21];
 const STANDS = { great: [2, 4], ultra: [5, 4], luxury: [2, 8], quick: [5, 8], dusk: [15, 4], timer: [18, 4], net: [15, 8], master: [18, 8] };
 const DAIS = { x: AISLE, y: 8 }, BOARD = { x: 17, w: 5, h: 3.1, y: 1.3 };
-const JEEP = { x: 3, y: 1 }, COUNTER = { x: 8, y: 3, w: 5 }, KIOSK = { x: 13, y: 8 };
+const JEEP = { x: 3, y: 1 }, COUNTER = { x: 8, y: 3, w: 5 }, KIOSK = { x: 13, y: 8 }, APRICORN = { x: 7, y: 8 };
 const STUMP_H = 0.82, BALL_R = 0.24, SIGN_W = 1.5, SIGN_H = 0.75;
 
 export const OUTFITTER_KEEPER = { id: 'kangaskhan', name: 'Kangaskhan',
@@ -43,7 +45,8 @@ export const OUTFITTER_KEEPER = { id: 'kangaskhan', name: 'Kangaskhan',
   chat: ['Great and Ultra Balls are the safe bet. The others shine at the right moment: read their tags!', 'Your first try each day is free. After that, a Day Pass from the machine buys replays till midnight.',
     'The board on the wall shows today\'s best catchers. Think you can top it?', 'Check the Ranger Task Board by my jeep: catch enough and there\'s furniture, coins and room for more Pokémon at home.', 'My little one wants to come along on a run. Not until it\'s bigger!',
     'Packs are used up as you throw them. The Safari Balls you get every run are always free.',
-    'The Shiny Exchange by the Day Pass booth holds capsules of every Pokémon you\'ve caught out there. Shiny ones!'] };
+    'The Shiny Exchange by the Day Pass booth holds capsules of every Pokémon you\'ve caught out there. Shiny ones!',
+    'Kurt sends me one Apricorn ball a day, in the basket left of the booth. Your partner comes out of it in every battle!'] };
 
 /** The Day Pass machine's state today: 'pass' (held, even before the free try), 'first' (today's try is free) or
     'locked' (buy one to replay). */
@@ -63,7 +66,7 @@ const previews = new Map();
 function ballPreview(THREE, id) {
   if (previews.has(id)) return previews.get(id);
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
-  const b = BALLS.find(x => x.id === id), pivot = new THREE.Group(), R = 0.5, DISC = 0.1, r = 0.85;
+  const b = BALLS.find(x => x.id === id) ?? {}, pivot = new THREE.Group(), R = 0.5, DISC = 0.1, r = 0.85;
   const disc = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.02, DISC, 64), std({ color: INK[id] ?? L.felt, roughness: 0.95 }));
   disc.position.y = DISC / 2;
   const rim = new THREE.Mesh(new THREE.TorusGeometry(r, 0.025, 8, 64), std({ color: '#e8b848', metalness: 0.85, roughness: 0.22 }));
@@ -90,6 +93,33 @@ export function ballWindow(id, e) {
     ink: INK[id] ?? L.trim, dept: b.weekly ? 'ONE THROW A WEEK' : `PACK OF ${b.pack}`, name: e.name, price: e.cost,
     note: b.weekly ? e.text : `${e.text} You carry ${have}.`, preview: (T) => ballPreview(T, id),
   };
+}
+
+/** Today's Apricorn ball's window (2026-10-27, the user's yes): what it is, that it's looks only, its price, or that
+    it's yours already. */
+export function apricornWindow() {
+  const r = apricornToday(safariDay()), mine = ownsSkin(workshopOf(getSave()), r);
+  return { ink: '#c8642e', dept: 'TODAY\'S APRICORN BALL', name: r.name, price: APRICORN_PRICE, held: mine ? 'Yours already' : undefined,
+    note: `${r.text} Looks only: your partner comes out of it in every battle, and your Safari Balls match. Kurt sends a new one each day.`,
+    preview: (T) => ballPreview(T, r.sprite) };
+}
+
+/** Today's Apricorn ball's sign: its name, the price or YOURS, and that it changes daily. */
+function apricornArt(r, mine) {
+  const f = fine(72, 36, 8), { g, rr } = f;
+  rr(0, 0, 72, 36, 3, L.cane[2]);
+  g.fillStyle = 'rgba(90,60,20,0.35)'; for (let x = 6; x < 72; x += 6) g.fillRect(x, 0, 0.4, 36);
+  rr(2.2, 2.2, 67.6, 31.6, 2, '#fbf3dc');
+  rr(2.2, 2.2, 67.6, 10, [2, 2, 0, 0], '#c8642e');
+  words(g, r.name.toUpperCase(), 36, 7.6, 7, '#fbf3dc');
+  if (mine) words(g, 'YOURS', 36, 21, 10, '#4a2c14');
+  else {
+    g.fillStyle = '#f0c048'; g.beginPath(); g.arc(19, 20.4, 5.2, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#c89418'; star(g, 19, 20.4, 3);
+    words(g, APRICORN_PRICE.toLocaleString(), 43, 21, 13.5, '#4a2c14');
+  }
+  words(g, 'APRICORN · NEW EACH DAY', 36, 30.4, 5, L.trimDark);
+  return f.c;
 }
 
 /** The Day Pass's own picture: a gold ticket standing on a green stand, DAY PASS on both faces. */
@@ -207,35 +237,12 @@ export function outfitterAwning() {
 
 /* ---------- the balls ---------- */
 
-/* Each ball's skin, wrapped round a sphere: x runs round it (16 is the front, where the button is), y top to bottom,
-   the top half its colour and pattern, the bottom white (or black), a dark band round the middle. */
-const SKINS = {
-  great: { top: '#3a74e0', paint: (g) => { g.fillStyle = '#e04838'; for (const x of [0, 32, 64]) { g.beginPath(); g.roundRect(x - 5, 2.5, 10, 11, 3); g.fill(); } } },
-  ultra: { top: '#2c2c34', paint: (g) => { g.fillStyle = '#f8d040'; for (const x of [0, 32, 64]) g.fillRect(x - 4, 1, 8, 15); } },
-  dusk: { top: '#26362a', bottom: '#2c2c30', paint: (g) => {
-    g.fillStyle = '#58c060'; g.fillRect(0, 3.5, 64, 2.4); g.fillRect(0, 9.5, 64, 2);
-    g.fillStyle = '#f08030'; for (let x = 4; x < 64; x += 8) { g.beginPath(); g.arc(x, 13.4, 0.9, 0, Math.PI * 2); g.fill(); } } },
-  quick: { top: '#3a6ad8', paint: (g) => { g.fillStyle = '#f8d040'; for (let x = 0; x <= 64; x += 16) { g.beginPath(); g.ellipse(x, 7.5, 4.2, 5.6, 0, 0, Math.PI * 2); g.fill(); } } },
-  timer: { top: '#f6f6f6', paint: (g) => { g.fillStyle = '#e04838'; g.fillRect(0, 0, 64, 4.2); g.fillStyle = '#2c2c34'; for (const y of [6.4, 9.4, 12.4]) g.fillRect(0, y, 64, 1.4); } },
-  net: { top: '#3aa8c8', paint: (g) => {
-    g.strokeStyle = '#1e2a34'; g.lineWidth = 0.55;
-    g.beginPath();
-    for (let x = 0; x <= 64; x += 4) { g.moveTo(x, 0); g.lineTo(x, 16); }
-    for (let y = 3; y < 16; y += 4) { g.moveTo(0, y); g.lineTo(64, y); }
-    g.stroke(); } },
-  luxury: { top: '#2a2a30', bottom: '#2a2a30', paint: (g) => { g.fillStyle = '#d83838'; g.fillRect(0, 6, 64, 2); g.fillStyle = '#e8c048'; g.fillRect(0, 9.2, 64, 2.2); g.fillRect(0, 17.6, 64, 1.2); } },
-  master: { top: '#7a3ac0', paint: (g) => {
-    g.fillStyle = '#e870b8'; for (const x of [6.5, 25.5, 38.5, 57.5]) { g.beginPath(); g.arc(x, 8, 3.4, 0, Math.PI * 2); g.fill(); }
-    words(g, 'M', 16, 9.4, 7, '#ffffff'); words(g, 'M', 48, 9.4, 7, '#ffffff'); } },
-};
-
+/** A ball's skin, wrapped round a sphere: js/ball-looks.js's, the battle's and the Center's too (`id` a BALLS id or a
+    sprite's name). */
 function skinArt(id) {
-  const k = SKINS[id] ?? { top: '#e84838' }, f = fine(64, 32, 8), { g } = f;
-  g.fillStyle = k.bottom ?? '#f4f4f4'; g.fillRect(0, 0, 64, 32);
-  g.fillStyle = k.top; g.fillRect(0, 0, 64, 16);
-  k.paint?.(g);
-  g.fillStyle = '#26262c'; g.fillRect(0, 14.9, 64, 2.2);
-  g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(0, 2, 64, 1.4);
+  const f = fine(64, 32, 8);
+  paintBallSkin(f.g, id.endsWith('-ball') ? id : `${id}-ball`);
+  f.g.fillStyle = 'rgba(255,255,255,0.18)'; f.g.fillRect(0, 2, 64, 1.4);
   return f.c;
 }
 
@@ -845,6 +852,38 @@ export function buildOutfitter(THREE, size) {
     for (const sx of [-0.5, 0.5]) put(cell, new THREE.BoxGeometry(0.05, 0.5, 0.05), cane, sx, 0.25, 0.5).rotation.x = -0.3;
     // the little balls at its foot and the easel's legs baked together; the big ball turns, so it stays apart
     mergeStatic(cell, (o) => { for (let p = o; p; p = p.parent) if (p === ball) return true; return false; }, true);
+    cell.traverse(o => { o.userData.front = spot; });
+    group.add(cell);
+  }
+
+  // today's Apricorn ball (2026-10-27, the user's yes): left of the Day Pass dais, mirroring the Shiny Exchange's
+  // kiosk, a woven basket of Apricorns on a stump with the day's ball in it, and its sign low in front like the packs'
+  {
+    const { x, y } = APRICORN, r = apricornToday(safariDay());
+    const spot = { id: 'apricorn', kind: 'apricorn', name: r.name, open: true, step: { x, y: y + 1 }, at: { x: tileX(x), y: 0.02, z: tileZ(y) }, ring: 0.62 };
+    spots.push(spot);
+    block(x, y);
+    const cell = new THREE.Group();
+    cell.position.set(tileX(x), 0, tileZ(y));
+    put(cell, new THREE.CylinderGeometry(0.4, 0.47, STUMP_H, 18), [log, rings, log], 0, STUMP_H / 2, 0);
+    put(cell, new THREE.CylinderGeometry(0.36, 0.28, 0.2, 20, 1, true), std({ color: L.cane[1], roughness: 0.9, side: THREE.DoubleSide }), 0, STUMP_H + 0.1, 0);
+    put(cell, new THREE.TorusGeometry(0.36, 0.03, 8, 24), cane, 0, STUMP_H + 0.2, 0, false).rotation.x = Math.PI / 2;
+    for (const [a, col] of [[0.4, '#e86a30'], [2.2, '#6ab040'], [3.9, '#f0c030'], [5.3, '#d84860']]) {
+      put(cell, new THREE.SphereGeometry(0.085, 12, 8), std({ color: col, roughness: 0.5 }), Math.cos(a) * 0.22, STUMP_H + 0.2, Math.sin(a) * 0.22);
+    }
+    const ball = ballMesh(THREE, std, r.sprite, BALL_R);
+    ball.position.y = STUMP_H + 0.14 + BALL_R;
+    cell.add(ball);
+    spinners.push({ o: ball, k: 0.45 });
+    const mineNow = () => ownsSkin(workshopOf(getSave()), r);
+    const map = texOf(apricornArt(r, mineNow()));
+    redraws.push(() => { map.image = apricornArt(r, mineNow()); map.needsUpdate = true; });
+    const board = new THREE.Mesh(new THREE.PlaneGeometry(SIGN_W, SIGN_H), new THREE.MeshBasicMaterial({ map, toneMapped: false }));
+    board.position.set(0, 0.48, 0.62);
+    board.rotation.x = -0.55;
+    cell.add(board);
+    for (const sx of [-0.5, 0.5]) put(cell, new THREE.BoxGeometry(0.05, 0.5, 0.05), cane, sx, 0.25, 0.5).rotation.x = -0.3;
+    mergeStatic(cell, (o) => { for (let p = o; p; p = p.parent) if (p === ball || p === board) return true; return false; }, true);
     cell.traverse(o => { o.userData.front = spot; });
     group.add(cell);
   }

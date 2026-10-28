@@ -19,9 +19,14 @@ export const SKY = {   // top, middle, horizon
 };
 export const CLOUD = { day: ['#ffffff', '#d8e4f2'], dawn: ['#fbe4d8', '#c890a0'], dusk: ['#f8d0b8', '#a06078'], night: ['#3a4870', '#222c4c'] };
 
-let sky = null;
+let sky = null, shown = null;
 
-export function stopGate() { halt(sky); }
+/** The lobby closed: its layers and the window's canvas let go, not held through the run (about 5 MB on a phone). */
+export function stopGate() {
+  halt(sky);
+  sky = null;
+  if (shown) shown.width = shown.height = 0;
+}
 
 /** Paint (and animate) the backdrop on `canvas` over `page`, `ground` being the grass line's CSS y from the page's top.
     Returns the grass line. */
@@ -29,10 +34,11 @@ export function startGate(canvas, page, ground) {
   stopGate();
   const W = page.clientWidth, H = page.clientHeight, G = Math.round(ground);
   if (!W || !H) return G;   // not laid out yet: the lobby's ResizeObserver paints it once it is
+  shown = canvas;
   const dpr = fitCanvas(canvas, W, H);
-  sky = build(W, H, G, dpr, timeOfDay());
+  const s = sky = build(W, H, G, dpr, timeOfDay());
   const ctx = canvas.getContext('2d');
-  animate(sky, (t) => paint(ctx, sky, t));
+  animate(s, (t) => paint(ctx, s, t));
   return G;
 }
 

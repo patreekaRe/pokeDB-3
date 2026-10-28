@@ -10,6 +10,7 @@
    ============================================================ */
 
 import { DEPTHS_CAMP } from './camp.js';
+import { ITEMS_BY_ID } from './items.js';
 
 /** Whether the gateway towns are on (the user's call, 2026-10-14: the new Clearing went live first, the towns still being
     built): off, runs walk straight from the journey film to the map, requests count nothing and the Clearing's Waystone
@@ -953,6 +954,21 @@ export const TOWNS = {
     ],
   },
 };
+
+/** The trader's window (js/town-trade.js): how many items it offers for the one you give. */
+export const TRADE_OFFERS = 3;
+
+/** What the trader gives for `give` (an item id): TRADE_OFFERS of its rarity's rolled order you don't hold, each
+    different Bag item of that rarity its own run of them (the user's ask, 2026-10-25: two commons offered the same three),
+    wrapping round once the rarity runs short. */
+export function offersFor(offers, give, held) {
+  const rarity = ITEMS_BY_ID[give]?.rarity;
+  const free = (offers[rarity] || []).filter(id => ITEMS_BY_ID[id] && !held.includes(id));
+  if (free.length <= TRADE_OFFERS) return free;
+  const kin = [...new Set(held.filter(id => ITEMS_BY_ID[id]?.rarity === rarity))];
+  const at = Math.max(0, kin.indexOf(give)) * TRADE_OFFERS;
+  return Array.from({ length: TRADE_OFFERS }, (_, i) => free[(at + i) % free.length]);
+}
 
 /** The town at the gate of `biomeId`, or null (the Clearing is home; the Depths have none). */
 export const townOf = (biomeId) => TOWNS[biomeId] || null;
@@ -2235,8 +2251,18 @@ export const CLEARING = {
         'Hm? A customer! Come in, come in. Mind Slowpoke, he\'s been asleep there since Tuesday.',
         'I\'m Kurt. Fifty years I made Poké Balls out of Apricorns in Azalea Town. Then the Waystones went dark, and I came where I\'m needed.',
         'That\'s how it works here. You bring what you find out on the roads, I make things from it. What the towns need, furniture, gifts for your friends...',
-        '...and Apricorn skins for your Safari Ball. Looks only, mind. A ball\'s a ball. Have a look at the bench.',
+        '...and Apricorn balls. Carry one and your partner comes out of it in every battle, every ball you throw too. Looks only, mind. A ball\'s a ball. Have a look at the bench.',
       ],
+      // his word in the Clearing, once a save (js/hub-3d.js's ballNews(), 2026-10-27, the user's ask): a carried Apricorn
+      // ball is the one your partner comes out of in every battle now, not just the Safari Ball's look
+      ballTalk: {
+        open: 'Kurt here! Hold on a moment, I\'ve news about your Apricorn balls.',
+        every: 'Carry one from my bench and your partner comes out of it at the start of every battle. Every run, every Gym, not just your Safari Balls.',
+        carried: 'Your {ball}\'s on your belt already. You\'ll see it fly next battle.',
+        made: 'You\'ve one made already. Tap it on my bench\'s Apricorns shelf, then Carry it.',
+        none: 'Bring me three of one town\'s materials and I\'ll carve you one, or buy the one I send the Safari Outfitter each day.',
+        close: 'Swap balls any time on your Trainer Card. Looks only, mind. A ball\'s a ball.',
+      },
       // the first held berry he makes you (js/workshop.js, 2026-10-16, the user's ask): how they work, once a save
       heldTalk: [
         'Ah, your first held berry! Simpler than an Apricorn, this. Let me tell you how it goes.',

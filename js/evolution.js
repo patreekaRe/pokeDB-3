@@ -17,6 +17,7 @@ import { calmFx } from './prefs.js';
 const still = () => calmFx();   // reduced motion or Reduced flashing: the whole show is flashes, so it's skipped
 const CRY_WAIT_MAX = 1500;   // a long cry mustn't hold the scene up
 const STILL_SONG_MS = 5500;  // under reduced motion the song plays about as long as the flashing would
+const SKIP_ARM_MS = 300;     // a skip needs a tap of its own, not the one (or a quick double tap) that closed the text
 
 /** Start downloading the song, the chime, both cries and the new form's sprites (a legendary's aura GIFs run to ~650 KB),
     so neither the scene nor the next battle waits on them. Called as the boss fight starts. */
@@ -120,12 +121,17 @@ function skipper(scene) {
   const onTap = () => { gone = true; resolve(); };
   const onKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTap(); } };
   scene.classList.add('skippable');
-  scene.addEventListener('click', onTap);
-  document.addEventListener('keydown', onKey);
+  // listening at once, the tap that closed "X is evolving!" on its text box bubbled on up to the scene and skipped the
+  // whole show (the user saw no evolution, 2026-10-25)
+  const arm = setTimeout(() => {
+    scene.addEventListener('click', onTap);
+    document.addEventListener('keydown', onKey);
+  }, SKIP_ARM_MS);
   return {
     tapped,
     gone: () => gone,
     done() {
+      clearTimeout(arm);
       scene.classList.remove('skippable');
       scene.removeEventListener('click', onTap);
       document.removeEventListener('keydown', onKey);
