@@ -104,6 +104,16 @@ function moveList(type) {
   return body;
 }
 
+/** The picked tab's nameplate at the top of the cards: its badge, name and how many of its moves you've met. */
+function typePlate(type) {
+  const plate = el('div', `mv-plate type-${type}`);
+  const cards = ALL_CARDS.filter(c => c.type === (type === 'mystery' ? 'psychic' : type));
+  const seen = new Set(type === 'mystery' ? [] : getSave().seen.cards);
+  plate.append(type === 'mystery' ? smoothIcon('lock') : typeBadge(type), el('span', 'mv-plate-name', (TAB_LOOK[type] || TYPES[type]).label),
+    el('span', 'mv-plate-count', type === 'mystery' ? '???' : `${cards.filter(c => seen.has(c.id)).length}/${cards.length}`));
+  return plate;
+}
+
 /** The Moves app on the given type's tab (the picked starter's), else the last one looked at; the D-pad's left and
     right step through the tabs. */
 export function movesApp(type) {
@@ -111,7 +121,7 @@ export function movesApp(type) {
   const draw = () => {
     drawnNew = [];
     const body = moveList(movesTab);
-    list.replaceChildren(...(body.length ? body : [el('p', 'mv-empty', 'No moves like that here.')]));
+    list.replaceChildren(typePlate(movesTab), ...(body.length ? body : [el('p', 'mv-empty', 'No moves like that here.')]));
     if (drawnNew.length) { clearFinds('cards', drawnNew); showBadgeNews(); }
     markTabs();
   };
@@ -158,8 +168,11 @@ export function movesApp(type) {
         btn.type = 'button';
         btn.dataset.type = t;
         btn.setAttribute('role', 'tab');
-        // the names are back now the row scrolls (they cut to "F…", "G…" when eleven shared one row)
-        btn.append(t === 'mystery' ? smoothIcon('lock') : typeBadge(t), el('span', 'mv-tab-label', (TAB_LOOK[t] || TYPES[t]).label));
+        // icons only, every tab one size; the picked type's name sits on the plate atop the cards (the user's call, 2026-10-28)
+        const name = (TAB_LOOK[t] || TYPES[t]).label;
+        btn.title = name;
+        btn.setAttribute('aria-label', name);
+        btn.append(t === 'mystery' ? smoothIcon('lock') : typeBadge(t));
         btn.addEventListener('click', () => show(t));
         return btn;
       }));

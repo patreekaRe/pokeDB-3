@@ -51,7 +51,7 @@ const HELD = [
 export const NEXT = [
   ['battle', 'Every attack plays its own move: jets, bolts, bites, beams and quakes. Blocks raise a shield, heals glow, big cards get a cut-in, and PP and End Turn are new gold plates, PP filling like a glass, the Safari\'s Throw in green.'],
   ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo close with a ✕ at the top right, clear of the ▼ MORE tag, and Kurt\'s bench is compact, its shelf twice as tall on a phone.'],
-  ['dex', 'The Moves app\'s type tabs are bigger and show their names; swipe the row sideways, and arrows show when more types are past the edge.'],
+  ['dex', 'The Moves app\'s type tabs are bigger, swipe sideways with arrows showing more past the edge, and the picked type\'s name and count top its cards.'],
   ['battle', 'The battle\'s hold-and-swipe hint is now a wordless fingertip, gone the moment you slide a card, and gone for good once you\'ve swiped a few.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];

@@ -3734,9 +3734,11 @@ every `ball3d()` was blank, the battle send-out included; it now sets an absolut
 
 ### Moves app: the type tabs scroll sideways (2026-10-28, cloud)
 The user's call from a phone screenshot: eleven type tabs squeezed into one row hid their names. They now keep a
-readable size (64px at least, names shown) in a strip that scrolls sideways (`.mv-strip` in `css/menus.css`, `edges()` /
+readable size in a strip that scrolls sideways (`.mv-strip` in `css/menus.css`, `edges()` /
 `reveal()` in `js/cardindex.js`); a nudging arrow and a fade show at each side with more past it, the arrow wears a "!"
-when a tab with new moves is out of sight, and picking a tab (or the D-pad) scrolls it into view. Branch
+when a tab with new moves is out of sight, and picking a tab (or the D-pad) scrolls it into view. Follow-up the same day: names
+made the tabs different widths, so they're icons only again, all 58px (`.mv-tab`), and the picked type's name and
+met/total count sit on a nameplate in its colours at the top of the cards (`typePlate()`, `.mv-plate`). Branch
 `claude/card-layout-scroll-3j40m4`, pushed to `main` too.
 
 ### Battle hand hint without words (2026-10-28, cloud)
