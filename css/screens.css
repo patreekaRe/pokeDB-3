@@ -1210,7 +1210,7 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .ball-odds { min-width: 3ch; text-align: right; font-weight: 400; color: #2e7020; }
 /* the thrown ball (ballAnimation()): moved by the Web Animations API, from the arena's top-left corner */
 .thrown-ball { position: absolute; left: 0; top: 0; z-index: 4; width: 0; height: 0; pointer-events: none; }
-.thrown-ball .ball3d { --b: 46px; position: absolute; translate: -50% -50%; filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.35)); }
+.thrown-ball .ball3d { --b: 24px; position: absolute; translate: -50% -50%; filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.35)); }
 .thrown-ball.caught .ball3d { filter: brightness(0.6); transition: filter 0.4s ease; }
 .thrown-ball.burst .ball3d { animation: ballPop 0.3s ease-in both; }
 /* pulled into the ball: a white flash and a shrink into it, like the games */

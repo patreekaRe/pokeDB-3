@@ -73,7 +73,7 @@ export const PATCHES = [
   ['dex', 'The Pokédex\'s cover holds a Badge Case: a slot per badge group, gold-rimmed once full. Choose each slot\'s badge with the Trainer Card\'s new Cover key.'],
   ['dex', 'Your pinned badge wears a gold plate on the Trainer Card and sits pinned on your partner\'s portrait, so it\'s easy to find.'],
   ['base', 'Secret Base stairs look like stairs now: a flight with banisters up to a doorway high in the wall, and a stairwell in the floor going down.'],
-  ['fixes', 'Evolutions play in full again: the tap that closed "What? It\'s evolving!" was skipping the whole show, the Depths camp plays its own song, not the Clearing\'s, and a friend\'s "added you" pop-up waits for whoever is talking to finish.'],
+  ['fixes', 'Evolutions play in full again: the tap that closed "What? It\'s evolving!" was skipping the whole show, the Depths camp plays its own song, not the Clearing\'s, and a friend\'s "added you" pop-up waits for whoever is talking to finish; a thrown ball is half its old size.'],
   ['base', 'Jukeboxes play records now: Smeargle brings you one (each turning in 3D as you pick) with your first record, the Clearing\'s song, and friends visiting hear it. Mended towns\' trading posts sell 55 more.'],
   ['runs', 'A crossroads board shows its biome\'s research beside its Pokédex: how many of its Pokémon you\'ve researched, on a bar of its own.'],
   ['battle', 'No two cards in a run are the same card with other numbers any more: 197 cards and 424 signature moves got new moves, and 28 look-alikes left the rewards.'],
