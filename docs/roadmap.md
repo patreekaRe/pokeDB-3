@@ -1220,7 +1220,18 @@ four real directions, shiny if shiny (GIF fallback for anything missing); (2) th
 friends' buddies (Trainer Plaza, `?graves`) and wild Pokémon wandering the towns and Safari areas on them; (3) maybe
 the run map's token. Ship only the sheets a place can show (not all 17 MB), as `assets/overworld/<id>.png` named by our
 ids, and credit the pack's artists (fan-made, community sprites) on a credits page. The upload lived only in that cloud
-session: re-upload the .7z when building. Waiting on the user's pick.
+session: re-upload the .7z when building. Waiting on the user's pick. (Re-checked 2026-10-28: it holds only 5 people,
+RPG Maker XP's own fantasy characters, so it's no source for trainers.)
+
+**Gen 4 trainer walking sprites** (2026-10-28, the user found Vanilla Sunshine's "Gen 4 OWs v1.5", Eevee Expo resource
+404, a .zip). 234 sheets in the same 4x4 layout of 64px frames: 125 trainer classes (`trcharNNN`, Mr. Gela's numbering,
+only 23 named in its `CREDITS.txt`), 94 townspeople (`NPC 01`-`90`: Looker, Charon, 4 betas), the player boy / girl
+running, biking, surfing, fishing, 3 phone sprites, 4 objects; 4.4 MB in all. Terms: credit "Gen 4 OW Sprites by
+Neo-Spriteman, Vanilla Sunshine, PurpleZaffre & Maicerochico, AtomicReactor", and **don't redistribute the pack** (so
+commit only the sheets the game uses, never the whole folder). No limit on how many beyond what a place shows: today the
+towns' and Clearing's folk are all Pokémon, and no fight is against a trainer, so humans would be new. Where they could
+go, asked 2026-10-28: trainers standing on the run map / route rooms, humans among each town's folk, or the Gym Leaders
+and Kurt / Oak walking on sheets. Re-upload the zip when building.
 
 - **More "leave for a turn" moves** (2026-10-28, the user's Dig fix; done part in the archive): offered and **not picked**
   for now: your own Fly card (Flying) and Dive card (Water, in Squirtle's deck) flying / diving out of reach and ending the
