@@ -3816,3 +3816,16 @@ The user found the trainer big indoors (the Secret Base, the Clearing, Kurt's Wo
 townspeople alike, Pokémon untouched. They tried `?walker=` sizes on the live site (the first deploy of the flag failed on
 a GitHub network error and was re-run) and picked 1.0: `WALKER_PX` is now a GIF's pixels, down from 1.25. `?gap=N` was
 added to try the buddy further back; they asked for a tiny bit more, so `GAP` went 0.85 to 0.95. The old branch `trainer-shrink` (a plain 1.06) is no longer needed.
+
+### The Trainer Tailor (2026-10-28, cloud; on `main`)
+
+The user's option 1 and design: a fourth front in the Poké Mall hall, kept by Kecleon (`js/mall-tailor.js`). The hall's
+back wall respaced to four fronts (Furniture 3, Game Corner 7, Trainer Tailor 13, Safari Outfitter 17), the carpet ending
+at the guide between the vending machines, the mezzanine's columns at 5 and 15, the back palms gone. Inside: 33
+mannequins (every look's front frame) on runways in three rows, a WORN / OWNED / price plaque each, one mesh each for the
+figures, plaques and shadows; rails, a mirror, a fitting room, Kecleon's counter. The trainer window (`js/look-window.js`,
+Timburr's card crossed with Meowth's prize screen) opens at a mannequin, the mirror or Kecleon; the one shown is tried on
+(`tryLook()` in `js/data/looks.js`). Buying is the tailor's only; the Trainer Card's Trainer key opens the same window,
+Wear only. A grand-opening ribbon (`tailorRibbon`), Oak / Sonia once in the Clearing (`toldHeld('tailor')`),
+`?mall=tailor`. Headless: the tailor 239 draws a frame and 129 MB (the hall 322, budget 332).
+

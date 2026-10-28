@@ -56,6 +56,7 @@ import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { asking, favourOf } from './data/favours.js';
 import { workshopOf, heartsOf, boothBeckons, ownedSkins, SKIN_BY_ID } from './data/workshop.js';
 import { toldHeld, tellHeld } from './held-tips.js';
+import { wornLook } from './data/looks.js';
 import { unclaimed, friendMail, houseMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -2228,17 +2229,19 @@ export function cameHome(from, town) {
     shard in, the stone lights. */
 let homeNewsBusy = false;
 async function homeNews() {
-  if (homeNewsBusy || held || !townsOpen()) return;
-  const save = getSave(), st = townState(save, 'clearing');
-  const greet = !st.quest && !st.called && nietosHome(friendWins(save, 'nietos')) && !clearingLit(save);
-  const mend = !!st.quest?.lit && !st.quest.welcomed;
-  const balls = !greet && !mend && workshopOpen(save) && (workshopOf(save).met || satchelFlag()) && !toldHeld('ball-look');
-  if (!greet && !mend && !balls) return;
+  if (homeNewsBusy || held) return;
+  const save = getSave(), towns = townsOpen(), st = townState(save, 'clearing');
+  const greet = towns && !st.quest && !st.called && nietosHome(friendWins(save, 'nietos')) && !clearingLit(save);
+  const mend = towns && !!st.quest?.lit && !st.quest.welcomed;
+  const balls = towns && !greet && !mend && workshopOpen(save) && (workshopOf(save).met || satchelFlag()) && !toldHeld('ball-look');
+  const tailor = !greet && !mend && !balls && !toldHeld('tailor');
+  if (!greet && !mend && !balls && !tailor) return;
   homeNewsBusy = true;
   try {
     await new Promise(r => setTimeout(r, calm ? 200 : 900));
     if (!running || held) return;
     if (balls) return await ballNews();
+    if (tailor) return await tailorNews();
     playSound('gate-hum');
     if (greet) {   // only a pointer to their notice (the user's ask, 2026-10-14): the board starts the questline
       const { gymTalk } = await import('./gym.js');
@@ -2287,6 +2290,19 @@ async function ballNews() {
   await gymTalk({ id: 'kurt', name: 'KURT', talk: 'assets/trainers/kurt.png' }, lines, { lit: true, title: 'APRICORN SMITH ' });
   const p = running && !held && !entering && places.find(q => q.id === 'workshop');
   if (p) { arriving = false; goTo(p); }
+}
+
+/** The professor slides in, once a save (2026-10-28, the user's ask: "an NPC tells them"), the first time in the
+    Clearing after the trainer is picked (or put off): more outfits are sold at the Trainer Tailor in the Poké Mall. */
+async function tailorNews() {
+  tellHeld('tailor');
+  const who = profNow(), worn = !!wornLook(getSave());
+  const lines = who.night
+    ? [`Oh, hi! ${worn ? 'Love the outfit, by the way!' : 'Your partner looks happy out here.'}`, 'Did you hear? Kecleon opened the Trainer Tailor in the Poké Mall. There\'s a mannequin for every outfit, and you can try any of them on!', 'Buy one and you walk out wearing it. Switch back any time on your Trainer Card.']
+    : [`Ah, there you are! ${worn ? 'A fine trainer you make, with your partner right behind you.' : 'Your partner seems to be enjoying the walk.'}`, 'Now, a new shop has opened in the Poké Mall: the Trainer Tailor, run by Kecleon. Every outfit there is for sale, and you can try them on first!', 'Buy one and you walk out wearing it. You can switch outfits any time on your Trainer Card.'];
+  profGreeted = true;
+  const { gymTalk } = await import('./gym.js');
+  await gymTalk({ id: who.id, name: who.short, sprite: `assets/trainers/${who.id}.png` }, lines, { lit: true, title: 'PROFESSOR ' });
 }
 
 /** Where the quest board stands: `locked` till Law, Britt or the Nietos are beaten, `new` with their notice to read, `on` (`ready` to

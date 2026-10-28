@@ -8,7 +8,7 @@ before.
 
 **The looks** (`js/data/looks.js`): Gen 4 walking sheets from Vanilla Sunshine's OW pack in `assets/overworld/` (credit
 in About and the credits roll; never commit the whole pack, its terms forbid redistributing it). The four heroes (Ethan,
-Lyra, Lucas, Dawn) are free and offered in the new-player setup; 29 more are bought on the Trainer Card at one
+Lyra, Lucas, Dawn) are free and offered in the new-player setup; 29 more are bought at the Trainer Tailor in the Poké Mall (since 2026-10-28; `docs/reference/hub-base-mall.md`) at one
 price, `LOOK_PRICE` 500 (the user's call, 2026-10-28; a won run pays about 100 plus its fights). **No names show** on any
 tile, key or line (the user's call: naming the heroes took away that you're you); `name` is only for screen readers. `save.look` is the one worn, `save.looks` those bought; `wornLook()` reads them, `?look=<id>` lends one
 for the page load. A new look: its sheet in `assets/overworld/<id>.png` (Essentials' layout, below) and a `LOOKS` line.
@@ -31,8 +31,10 @@ from `{ dir, moving }`. The same sheets walk the towns' and the Clearing's towns
 cast, `js/corner-crowd.js`).
 
 **Picking it**: the setup's step 2 of 3, WHO ARE YOU? (`askLook()` in `js/title.js`), and the Trainer Card's Trainer key
-(`lookPicker()` in `js/trainercard.js`: a first tap on a class says its price, a second buys it; Walk alone takes the
-look off). `lookArt()` in `js/ui.js` draws a look's front frame from its sheet, `.look-art`, the picked one walking.
+(`lookPicker()` in `js/trainercard.js`, since 2026-10-28 the Trainer Tailor's window, `lookWindow()` in `js/look-window.js`,
+without Kecleon: Wear only, the looks not owned greyed "At the Trainer Tailor"; Walk alone takes the look off). Buying is
+the tailor's only (the user's call). A look tried on there is `tryLook()` in `js/data/looks.js`, read first by `wornLook()`,
+never saved. `lookArt()` in `js/ui.js` draws a look's front frame from its sheet, `.look-art`, the picked one walking.
 
 **Checked** headless in every place with a look worn (`?look=dawn`): within the phone budget (2-3 more draws and under
 1 MB a place), and the Clearing -> Secret Base trips keep nothing.

@@ -335,6 +335,24 @@ moves only corners: the first playtest had the ground sink as one slab under eve
 - **Only the door opens the Secret Base** (2026-10-15, the user's ask): the Ancient Tree's billboard takes a tap only on its door and frame (`doorOnly()` / `DOOR_UV` in `js/hub-3d.js`, in `ancientArt()`'s painting coordinates), and the "Home" sign over it takes none, so a tap on the crown or trunk walks there like the ground.
 - **The Poké Mall's outside made grand** (2026-10-15, the user's ask: "more grand and extravagant on the outside"): `mallBuilding()` in `js/hub-3d.js` keeps its 3.5 x 2.5 block and tiles, and adds a gold-ribbed glass dome on a lit drum with a turning Poké Ball on its spire (the old glass pyramid gone), a tower with a gold cupola and flag at each front corner, a gold-posted roof balustrade, and a porch of twin white columns with a red entablature, a Poké Ball pediment and chasing bulbs, on a marble plinth with a red carpet, gold three-globe lamps either side. The painted front got a gold-framed sign ringed with bulbs, arched windows between gold pilasters, and its corners left plain for the towers; the Game Corner's sign moved right to clear the columns. Everything but the spire's ball is merged (`mergeStatic`); `mallFx.tick()` chases the bulbs and turns the ball (still under `calmFx`). The porch stays within the half-tile in front of the doors, where the partner stands.
 
+### The Trainer Tailor (2026-10-28)
+
+The user's pick of a shop for the trainers you walk as (`docs/reference/trainer-follow.md`), kept by Kecleon. **Four fronts
+since**: `FRONTS` in `js/mall-3d.js` at x 3 (Furniture), 7 (Game Corner), 13 (Trainer Tailor), 17 (Safari Outfitter), two
+either side of the middle, where the red carpet ends at the guide between the vending machines; the mezzanine's columns at
+5 and 15 with a banner each, two more over the vending machines; the two back palms gone (`dressHall()` in
+`js/mall-hall.js`). `js/mall-tailor.js` paints its front, sign and awning (`tailorFront()`, `tailorSign()`,
+`tailorAwning()`; its 3D awning and two dress forms are `dressFronts()`'s tailor branch) and builds the boutique
+(`buildTailor()`, place `tl`, 17 x 13): plum damask over a wood wainscot, herringbone, a plum runner to Kecleon's counter,
+clothes rails either side, a gilt mirror (`kind: 'mirror'`) and a fitting room. **The mannequins**: every look's front
+frame on runways in three rows three tiles apart (`ROWS_AT`; the Outfitter's rule, so heads never hide the row behind),
+a plaque each (WORN, OWNED or the price, repainted by `refresh()`); the figures, plaques and shadows are one mesh each on
+one picture (33 mannequins cost a few draws), and each has an invisible box for taps. Always open; a grand-opening ribbon
+(`RIBBONS.tailor`, `tailorRibbon`). **The window**: walking up to a mannequin, a tap on the mirror or on Kecleon opens
+`lookWindow()` (`js/look-window.js`) low on the screen (`openLooks()` in `js/mall-3d.js`); the one shown is tried on as you
+browse (`tryLook()`), its mannequin ringed, and closing (✕, Escape, a tap on the room) takes the try-on off. Buy asks
+`confirmDialog()` and wears it. `?mall=tailor` walks straight in. Headless (2026-10-28): 239 draws a frame and 129 MB.
+
 ### The Safari Outfitter (2026-10-15)
 
 The mall's east front (`FRONTS` id `outfitter`, place `so`), so each shop is one thing coins buy: home, runs, the Safari.

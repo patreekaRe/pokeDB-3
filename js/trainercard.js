@@ -29,7 +29,8 @@ import { tipAt } from './tips.js';
 import { calmFx } from './prefs.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog, crownArt, auraArt, lookArt } from './ui.js';
-import { LOOKS, LOOK_PRICE, lookSheet, ownsLook, wornLook } from './data/looks.js';
+import { lookSheet, wornLook } from './data/looks.js';
+import { lookWindow } from './look-window.js';
 import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
@@ -633,56 +634,19 @@ function ballPicker(body, done) {
   body.scrollTop = 0;
 }
 
-/** The trainer picker (2026-10-28, the user's ask: pick a trainer your buddy follows): the four heroes, free, then the
-    rest at LOOK_PRICE each (a first tap says the price, a second buys); a tap on one you have wears it. No names (the
-    user's call: you're you). Walk alone takes it off: your partner walks by itself, as before. */
+/** The trainer picker (2026-10-28, the user's ask: pick a trainer your buddy follows): the Trainer Tailor's window
+    (js/look-window.js) without Kecleon, switching between the looks you own; the rest greyed, "At the Trainer Tailor"
+    (buying is the tailor's only, the user's call). Walk alone takes the look off: your partner walks by itself. */
 function lookPicker(body, done) {
   const head = el('div', 'tc-head');
   head.append(el('h2', 'tc-title', 'YOUR TRAINER'));
   const back = el('button', 'tc-pick-back', 'Back');
   back.type = 'button';
-  back.addEventListener('click', done);
   head.append(back);
-  const now = el('div', 'tc-pick-note tc-ball-now'), line = el('span', '');
-  const alone = el('button', 'tc-pick-back tc-ball-away', 'Walk alone');
-  alone.type = 'button';
-  alone.title = 'No trainer: your partner walks by itself';
-  now.append(line, alone);
-  const say = () => { const w = wornLook(getSave()); line.textContent = w ? 'Your partner walks a step behind you.' : 'Your partner walks alone.'; alone.hidden = !w; };
-  say();
-  const grid = el('div', 'tc-pick-grid tc-ball-grid tc-look-grid');
-  let asked = null;
-  const wear = (id) => {
-    updateSave(d => { d.look = id; d.lookChosen = true; });
-    grid.querySelectorAll('.tc-pick').forEach(b => b.classList.toggle('on', b.dataset.look === id));
-    say();
-  };
-  alone.addEventListener('click', () => { playSound('cancel'); wear(null); });
-  const tile = (look) => {
-    const save = getSave(), owned = ownsLook(save, look.id);
-    const btn = el('button', `tc-pick tc-ball tc-look${save.look === look.id ? ' on' : ''}${owned ? '' : ' locked'}`);
-    btn.type = 'button';
-    btn.dataset.look = look.id;
-    btn.setAttribute('aria-label', owned ? `Walk as ${look.name}` : `${look.name}, ${LOOK_PRICE} PokéCoins`);
-    const price = el('span', 'tc-look-price', `🪙${LOOK_PRICE}`);
-    btn.append(lookArt(lookSheet(look.id)), ...(owned ? [] : [price]));
-    btn.addEventListener('click', () => {
-      if (ownsLook(getSave(), look.id)) { playSound('confirm'); return wear(look.id); }
-      if (asked !== look.id) { asked = look.id; playSound('confirm'); line.textContent = `This one is ${LOOK_PRICE} PokéCoins. Tap again to buy.`; return; }
-      asked = null;
-      if ((getSave().coins ?? 0) < LOOK_PRICE) { playSound('cancel'); line.textContent = `This one is ${LOOK_PRICE} PokéCoins. You're a little short.`; return; }
-      playSound('buy');
-      updateSave(d => { d.coins -= LOOK_PRICE; d.looks = [...new Set([...(d.looks || []), look.id])]; });
-      btn.classList.remove('locked');
-      price.remove();
-      btn.setAttribute('aria-label', `Walk as ${look.name}`);
-      wear(look.id);
-    });
-    return btn;
-  };
-  grid.append(...LOOKS.map(tile));
-  const note = el('p', 'tc-pick-note', `You walk as your trainer in the Clearing, your Secret Base, the mall, the towns and a run's rooms, your partner a step behind. You have ${(getSave().coins ?? 0).toLocaleString()} PokéCoins.`);
-  body.replaceChildren(head, note, now, grid);
+  const win = lookWindow({ onClose: done });
+  back.addEventListener('click', () => win.close());
+  const note = el('p', 'tc-pick-note', 'You walk as your trainer in the Clearing, your Secret Base, the mall, the towns and a run\'s rooms, your partner a step behind. More outfits are sold at the Trainer Tailor in the Poké Mall.');
+  body.replaceChildren(head, note, win.node);
   head.querySelector('h2').tabIndex = -1;
   body.scrollTop = 0;
 }

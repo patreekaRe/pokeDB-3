@@ -10,6 +10,7 @@
 
 import { fine, texOf, words, star, GC, mergeStatic } from './hub-3d.js';
 import { outfitterSign, outfitterAwning } from './mall-outfitter.js';
+import { tailorSign, tailorAwning } from './mall-tailor.js';
 
 let THREE;
 const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.6, ...o });
@@ -492,27 +493,26 @@ export function dressHall(three, { group, at, cols, rows, deck, deckD, block, ca
     ticks.push(escalator(group, (at(x0, 0)[0] + at(x1, 0)[0]) / 2, zFoot, zHead, deck + 0.22, calm));
     for (let y = 1; y <= 6; y++) { block(x0, y); block(x1, y); }
   }
-  // the mezzanine's columns, between the fronts
-  for (const x of [mid - 3, mid + 3]) { column(group, at(x, 0)[0], wallZ + deckD - 0.18, deck); block(x, 0); }
-  // vending machines and the guide in the gaps
-  vending(group, at(mid - 4, 0)[0], wallZ + 0.32, vendArt('#e84838', '#a82820', 'SODA POP', ['#e84838', '#f8d040', '#ff9a30']), glows);
-  vending(group, at(mid - 2, 0)[0], wallZ + 0.32, vendArt('#3a8ad8', '#2a5a9a', 'FRESH WATER', ['#7ac8f0', '#ffffff', '#4aa8e0']), glows);
-  block(mid - 4, 0); block(mid - 2, 0);
-  directory(group, at(mid + 2, 0)[0], wallZ + 0.4, glows);
-  block(mid + 2, 0);
-  topiary(group, ...at(mid + 4, 0), 0.26, 6);
-  block(mid + 4, 0);
-  // the tall palms keep to the room's sides, beside the outer shops and in the front corners (the user's call, 2026-10-12)
-  for (const [x, y, s, z] of [[2, 0, 3, 0.05], [cols - 3, 0, 4, 0.05], [0, rows - 2, 1, 0], [cols - 1, rows - 2, 2, 0]]) { ticks.push(palm(group, ...at(x, y).map((v, i) => v + (i ? z : 0)), 1.9, s)); block(x, y); }
+  // four fronts since the Trainer Tailor (2026-10-28): two either side of a gap in the middle, where the red carpet
+  // ends at the guide between the vending machines; the mezzanine's columns stand in the gaps between the pairs
+  for (const x of [mid - 5, mid + 5]) { column(group, at(x, 0)[0], wallZ + deckD - 0.18, deck); block(x, 0); }
+  vending(group, at(mid - 1, 0)[0], wallZ + 0.32, vendArt('#e84838', '#a82820', 'SODA POP', ['#e84838', '#f8d040', '#ff9a30']), glows);
+  vending(group, at(mid + 1, 0)[0], wallZ + 0.32, vendArt('#3a8ad8', '#2a5a9a', 'FRESH WATER', ['#7ac8f0', '#ffffff', '#4aa8e0']), glows);
+  block(mid - 1, 0); block(mid + 1, 0);
+  directory(group, at(mid, 0)[0], wallZ + 0.4, glows);
+  block(mid, 0);
+  // the tall palms keep to the room's front corners (the user's call, 2026-10-12; the two at the back gave way to the
+  // fourth front)
+  for (const [x, y, s] of [[0, rows - 2, 1], [cols - 1, rows - 2, 2]]) { ticks.push(palm(group, ...at(x, y), 1.9, s)); block(x, y); }
   // benches by the fountains (the two at the front taken out, 2026-10-12, the user's call), lamps and topiary lining the carpet
   const [lf, rf] = FOUNTAINS;
   bench(group, ...at(lf[0] - 3, lf[1]), Math.PI / 2); block(lf[0] - 3, lf[1]);
   bench(group, ...at(rf[0] + 3, rf[1]), -Math.PI / 2); block(rf[0] + 3, rf[1]);
   for (const [x, y] of [[mid - 1, 3], [mid + 1, 3], [mid - 1, 7], [mid + 1, 7]]) { lamp(group, ...at(x, y), glows); block(x, y); }
   for (const [x, y, s] of [[mid - 2, 5, 1], [mid + 2, 5, 2]]) { topiary(group, ...at(x, y), 0.26, s); block(x, y); }
-  // banners off the mezzanine, either side of each column
+  // banners off the mezzanine, in front of the columns and over the vending machines, clear of the shops' signs
   const banners = [];
-  [[mid - 4, '#e84838', '#a82820', 'ball'], [mid - 2, '#3a8ad8', '#2a5a9a', 'star'], [mid + 2, '#58b048', '#3a7a30', 'star'], [mid + 4, '#f0a830', '#c07818', 'ball']].forEach(([x, c, d, m], i) => {
+  [[mid - 5, '#e84838', '#a82820', 'ball'], [mid - 1, '#3a8ad8', '#2a5a9a', 'star'], [mid + 1, '#58b048', '#3a7a30', 'star'], [mid + 5, '#f0a830', '#c07818', 'ball']].forEach(([x, c, d, m], i) => {
     const geo = new THREE.PlaneGeometry(0.36, 1.0, 1, 6);
     geo.translate(0, -0.5, 0);
     const b = new THREE.Mesh(geo, std({ map: texOf(bannerArt(c, d, m)), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8 }));
@@ -557,7 +557,8 @@ function signArt(kind) {
     s.fillStyle = '#301850'; s.fillRect(0, 0, 66, 13);
     words(s, 'GAME CORNER', 33, 7, 7.4, '#ffe890');
     s.fillStyle = '#ffe890'; star(s, 6, 6.5, 3); star(s, 60, 6.5, 3);
-  } else outfitterSign(f);
+  } else if (kind === 'tailor') tailorSign(f);
+  else outfitterSign(f);
   return f.c;
 }
 
@@ -591,14 +592,14 @@ export function dressFronts(three, { group, fronts, at, wallZ, block, calm }) {
     const g = new THREE.Group(), [cx] = at(fr.x, 0);
     g.position.set(cx, 0, wallZ);
     group.add(g);
-    const pil = fr.id === 'corner' ? std({ color: GC.violetDark, roughness: 0.4 }) : M.wood;
+    const pil = fr.id === 'corner' ? std({ color: GC.violetDark, roughness: 0.4 }) : fr.id === 'tailor' ? std({ color: '#4e1e4c', roughness: 0.4 }) : M.wood;
     for (const s of [-1, 1]) {
       put(g, new THREE.BoxGeometry(0.2, 2.5, 0.16), pil, s * 1.52, 1.25, 0.08);
       put(g, new THREE.BoxGeometry(0.26, 0.08, 0.2), M.gold, s * 1.52, 0.04, 0.1);
     }
     const art = signArt(fr.id), face = std({ map: texOf(art), emissive: '#ffffff', emissiveMap: texOf(art.glow), emissiveIntensity: 0.9, roughness: 0.35 });
     glows.push(face);
-    const trim = fr.id === 'corner' ? M.gold : fr.id === 'furniture' ? std({ color: '#6a4020' }) : std({ color: '#3a2a18' });
+    const trim = fr.id === 'corner' || fr.id === 'tailor' ? M.gold : fr.id === 'furniture' ? std({ color: '#6a4020' }) : std({ color: '#3a2a18' });
     put(g, new THREE.BoxGeometry(3.3, 0.66, 0.24), [trim, trim, trim, trim, face, trim], 0, 2.25, 0.12);
     if (fr.id === 'furniture') {
       const roof = new THREE.PlaneGeometry(3.24, 0.66, 1, 1);
@@ -643,6 +644,25 @@ export function dressFronts(three, { group, fronts, at, wallZ, block, calm }) {
         const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(s * 0.82, 0.74, 1.15), new THREE.Vector3(s * 0.82, 0.48, 1.55), new THREE.Vector3(s * 0.82, 0.74, 1.95));
         put(g, new THREE.TubeGeometry(curve, 16, 0.022, 8), rope);
         block(fr.x + s, 1);
+      }
+    } else if (fr.id === 'tailor') {
+      // the Trainer Tailor (2026-10-28): a plum-and-cream awning, and a dress form either side of its door
+      const aw = put(g, new THREE.PlaneGeometry(3.24, 0.66, 1, 1), std({ map: texOf(tailorAwning()), side: THREE.DoubleSide, roughness: 0.85 }), 0, 1.78, 0.3);
+      aw.rotation.x = -Math.PI / 2 + 0.5;
+      const val = put(g, new THREE.PlaneGeometry(3.24, 0.18), std({ map: texOf(valanceArt('#fbf1e2', '#7a3478', '#4e1e4c')), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 }), 0, 1.55, 0.6);
+      val.castShadow = true;
+      put(g, new THREE.CylinderGeometry(0.012, 0.012, 3.24, 6), M.gold, 0, 1.64, 0.6).rotation.z = Math.PI / 2;
+      const cloth = tint('#fbf1e2', 0.7), sashes = [tint('#d84848', 0.6), tint('#5cb85a', 0.6)];
+      for (const s of [-1, 1]) {
+        const fx = s * 1.15;
+        put(g, new THREE.CylinderGeometry(0.16, 0.19, 0.04, 16), M.gold, fx, 0.02, 0.5);
+        put(g, new THREE.CylinderGeometry(0.02, 0.02, 0.7, 8), M.gold, fx, 0.37, 0.5);
+        const torso = put(g, new THREE.LatheGeometry([[0.01, 0], [0.14, 0.02], [0.16, 0.14], [0.12, 0.3], [0.17, 0.46], [0.15, 0.56], [0.06, 0.62], [0.04, 0.68]].map(([r, y]) => new THREE.Vector2(r, y)), 16), cloth, fx, 0.7, 0.5);
+        torso.scale.set(1, 1, 0.75);
+        const sash = put(g, new THREE.TorusGeometry(0.15, 0.022, 6, 20), sashes[s > 0 ? 1 : 0], fx, 1.0, 0.5);
+        sash.rotation.set(Math.PI / 2, 0.5 * s, 0);
+        sash.scale.set(1, 0.78, 1);
+        block(fr.x + s, 0);
       }
     } else {
       // the Safari Outfitter: a khaki-and-green awning, and a crate of Poké Balls either side of its door

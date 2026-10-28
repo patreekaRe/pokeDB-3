@@ -148,5 +148,11 @@
   "mb": 119.5,
   "awake": 1,
   "hidden": []
+ },
+ "mall-tailor": {
+  "draws": 322,
+  "mb": 133.4,
+  "awake": 1,
+  "hidden": []
  }
 }

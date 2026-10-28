@@ -1217,32 +1217,11 @@ and in the Secret Base) are battle sprites at `NPC_PX` (`js/hd2d.js`, 1/34), nev
 your trainer's 1.45. `?npc=N` (N times it, for a page load) is live to try, e.g. `?npc=0.8`; about 0.7 matches your
 trainer's height. Once they pick, make it the default and add the size to the `look` patch line already in `NEXT`.
 
-**A trainer tailor shop: the user picked option 1** (2026-10-28): a fourth front in the Poké Mall hall, the Trainer
-Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/kecleon.png` are in). Ready to build:
-
-> ▶ Run in: CLOUD · effort: high. Read `docs/reference/hub-base-mall.md` (the mall, and the Safari Outfitter's section as
-> the model: `js/mall-outfitter.js` paints its front, sign and awning and builds its lodge) and
-> `docs/reference/trainer-follow.md` (the looks, `LOOK_PRICE`, `lookPicker()`). Build the Trainer Tailor as the mall's
-> fourth front: respace the hall's back wall from three fronts to four (`FRONTS` in `js/mall-3d.js`, `dressFronts()` in
-> `js/mall-hall.js`), paint its front and sign in the others' style, and build its inside in `js/mall-tailor.js`: clothes
-> racks, a mirror, Kecleon at the counter, and a mannequin per look (its walking sheet's front frame on a stand), owned
-> ones marked. Walk up to a mannequin to try it on (you and your buddy walk out wearing it); one you don't own asks to buy
-> it at `LOOK_PRICE` in the shops' buy window. Keep the Trainer Card's picker for switching (and buying, unless the user
-> says shop only). A `?mall=tailor` flag, a `NEWS` line if the PC should tell of it, a patch note, the budget check on the
-> mall places. No names on the mannequins (the user's call). **Buying is the tailor's only** (the user's call,
-> 2026-10-28): the Trainer Card's window then switches between looks you own, the rest shown greyed with "At the Trainer
-> Tailor", and nothing is bought there (till the shop ships, the card goes on selling, as now). **Tell the player** (the
-> user's ask: "an NPC tells them via slide-in dialogue or something"): once, in the Clearing after the trainer is first
-> picked (or Later), Professor Oak (Sonia at night) slides in by `gymTalk()` as the leaders and Kurt do, saying more
-> looks are sold at the Trainer Tailor in the Poké Mall (a saved flag keeps it to once), plus a PC `NEWS` line.
-> **The trainer window** (the user's design, 2026-10-28: "a combination of the Timburr house select and the Game Corner
-> prize window", the sprites walking in place as you preview them): Timburr's catalogue card (`openKiosk()` in
-> `js/house-kiosk.js`, `.hk-*`: cream, gold rim, the keeper's name tag askew, the keeper's line, coins and a round ✕, a
-> sideways row of cards, the gold key) crossed with Meowth's prize counter (`js/prizes.js` on `js/showcase.js`: one item
-> big on a screen, ◀ / ▶): one trainer big in a spotlit box walking in place (its four steps, turning through its four
-> ways), ◀ / ▶ to step through them, the row of small trainer cards under it (OWNED / 🪙500) to jump to one, Wear / Buy
-> on the gold key, Kecleon's tag and a line about the one shown. The same window replaces the Trainer Card's
-> `lookPicker()` (no keeper there, Wear only) and the setup's WHO ARE YOU? can stay a row of four.
+**The Trainer Tailor** was built 2026-10-28 (cloud, on `main`; archive). **Next: the user playtests it** ▶ PLAYTEST ON
+THE LIVE SITE: `?mall&coins=2000` (the hall's four fronts, the tailor's ribbon with Kecleon), then in: walk up to a
+mannequin, browse with ◀ / ▶ (you try each on), buy one; the Trainer Card's Trainer key (Wear only); Oak (or Sonia at
+night) once in the Clearing. Not done, to ask: the mannequins as their sprite's still frame (they could walk in place),
+and no PC `NEWS` line (the tailor isn't a PC page; Oak tells it).
 
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking

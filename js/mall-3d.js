@@ -4,7 +4,8 @@
    glass rail and the upper floor's lit shops over them, tall windows above. The Game Corner is the middle front, its
    front flat on the wall (cornerFront()), walked into as its own arcade (js/mall-corner.js); the west front is the Furniture store,
    its own place too (js/mall-furniture.js builds its two floors; this file walks every place); the east one is the Safari
-   Outfitter (js/mall-outfitter.js), open with the Safari Zone (a new shop is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it and in (no pill at
+   Outfitter (js/mall-outfitter.js), open with the Safari Zone, and beside it since 2026-10-28 the Trainer Tailor
+   (js/mall-tailor.js), the Game Corner moved left of the middle to make room (a new shop is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it and in (no pill at
    the bottom since 2026-10-09, the user's call); the doormat on each place's doorstep walks back out (doormat() in
    js/hd2d.js), but the store's second floor has none, its way out is the lift. A buy is two taps: the first says the
    price, the second asks in a window with the thing's picture (ask()). */
@@ -32,6 +33,9 @@ import { turner } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { buildArcade } from './mall-arcade.js';
 import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow, apricornWindow } from './mall-outfitter.js';
+import { buildTailor, tailorFront, TAILOR_KEEPER } from './mall-tailor.js';
+import { lookWindow } from './look-window.js';
+import { tryLook, ownsLook, LOOK_PRICE } from './data/looks.js';
 import { APRICORN_PRICE, apricornToday, workshopOf, ownsSkin, withBought } from './data/workshop.js';
 import { safariOpen } from './data/pokedex.js';
 import { safariDaily, safariDay } from './data/safari.js';
@@ -53,10 +57,12 @@ const C = { cream: '#f8f0e0', stone: '#e4d6bc', shade: '#c4b290', red: '#e84838'
 const FRONTS = [
   // the Furniture store opens the UTC day after Smeargle's housewarming in the Secret Base, the Game Corner once Meowth
   // has been met at a crossroads (js/meowth.js), the Safari Outfitter with the Safari Zone; syncShop() opens them; ?mall= goes in
-  // either way
-  { id: 'furniture', name: 'Furniture', line: '', x: 4, step: { x: 4, y: 1 } },
-  { id: 'corner', name: 'Game Corner', line: 'Closed. A note on the tape says: "Grand openin\' soon! Win a run and find me at a crossroads. Meowth"', x: 10, step: { x: 10, y: 1 } },
-  { id: 'outfitter', name: 'Safari Outfitter', line: 'Closed. A note on the door says: "Opening with the Safari Zone! Beat every Pokémon in all three biomes. Kangaskhan"', x: 16, step: { x: 16, y: 1 } },
+  // either way. The Trainer Tailor (2026-10-28) is always open. Four fronts, two either side of the middle, where the
+  // carpet ends at the guide (dressHall() in js/mall-hall.js)
+  { id: 'furniture', name: 'Furniture', line: '', x: 3, step: { x: 3, y: 1 } },
+  { id: 'corner', name: 'Game Corner', line: 'Closed. A note on the tape says: "Grand openin\' soon! Win a run and find me at a crossroads. Meowth"', x: 7, step: { x: 7, y: 1 } },
+  { id: 'tailor', name: 'Trainer Tailor', line: '', x: 13, step: { x: 13, y: 1 } },
+  { id: 'outfitter', name: 'Safari Outfitter', line: 'Closed. A note on the door says: "Opening with the Safari Zone! Beat every Pokémon in all three biomes. Kangaskhan"', x: 17, step: { x: 17, y: 1 } },
 ];
 
 let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, shopEl, turn, hemi, sun;
@@ -181,11 +187,12 @@ function wallArt() {
   rr(0, wy(DECK + 2.6), W, wy(DECK) - wy(DECK + 2.6), 0, lin(0, wy(DECK + 2.6), 0, wy(DECK), [C.cream, C.stone]));
   const ups = [['ball', '#e84838'], ['potion', '#8a5ad0'], ['berry', '#3a8ad8'], ['disc', '#58a858'], ['star', '#e8a830'], ['ball', '#3a8ad8'], ['berry', '#e870b0'], ['potion', '#58a858']];
   ups.forEach(([icon, colour], i) => { const t = 0.4 + i * 2.6; upperShop(f, s, wx(t) + 2, wx(t + 2.3), ICONS[icon], colour); });
-  // the ground floor: pilasters and the three fronts
+  // the ground floor: the four fronts
   for (const fr of FRONTS) {
     const x0 = wx(fr.x - 1) + 2, x1 = wx(fr.x + 2) - 2;
     if (fr.id === 'corner') cornerFront(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
     else if (fr.id === 'furniture') frontArt(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
+    else if (fr.id === 'tailor') tailorFront(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
     else outfitterFront(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
   }
   g.fillStyle = '#6a5a48'; g.fillRect(0, wy(0.12), W, wy(0) - wy(0.12));
@@ -216,7 +223,7 @@ function floorArt() {
   }
   g.restore();
   g.strokeStyle = '#c89418'; g.lineWidth = 0.7; g.strokeRect(b + 1.2, b + 1.2, W - 2 * b - 2.4, H - 2 * b - 2.4);
-  // the runner, from the doors to the Game Corner
+  // the runner, from the doors to the guide between the fronts
   const rx = (HC / 2) * T;
   rr(rx - T / 2 + 1, 0, T - 2, H, 0, '#c89418');
   rr(rx - T / 2 + 2, 0, T - 4, H, 0, lin(rx - T / 2, 0, rx + T / 2, 0, ['#a82838', '#d04050', '#a82838']));
@@ -320,6 +327,13 @@ const RIBBONS = {
     cut: () => updateSave(d => { d.outfitterRibbon = true; }),
     ask: 'You opened the Safari Zone, so we\'re open too! Will you cut the ribbon for the Safari Outfitter? Tap it again!',
     done: 'Snip! The Safari Outfitter is open! Come in and kit yourself out, ranger!',
+  },
+  tailor: {
+    keeper: TAILOR_KEEPER, into: 'tl',
+    up: () => RIBBON_PEEK || !getSave().tailorRibbon,
+    cut: () => updateSave(d => { d.tailorRibbon = true; }),
+    ask: 'Grand opening of the Trainer Tailor! Will you snip the ribbon for me? Tap it again!',
+    done: 'Snip! The Trainer Tailor is open! Come in and try on everything!',
   },
   corner: {
     keeper: KEEPER, into: 'gc',
@@ -553,10 +567,11 @@ function tickOne(ribbon, dt, now) {
 /** The shops' doors by the save: the Furniture store taped up until Smeargle has said it opens, then until that UTC day;
     the Game Corner until Meowth has been met; the Safari Outfitter until the Safari Zone is open. */
 function syncShop() {
-  const [fr, gc, so] = FRONTS;
-  fr.open = shopOpen(loadBase()) || RIBBON_PEEK;
-  gc.open = cornerOpen() || RIBBON_PEEK;
-  so.open = safariOpen(getSave()) || RIBBON_PEEK;
+  const shop = (id) => FRONTS.find(f => f.id === id);
+  shop('furniture').open = shopOpen(loadBase()) || RIBBON_PEEK;
+  shop('corner').open = cornerOpen() || RIBBON_PEEK;
+  shop('outfitter').open = safariOpen(getSave()) || RIBBON_PEEK;
+  shop('tailor').open = true;
   for (const f of FRONTS) for (const m of tapes[f.id] || []) m.visible = !f.open;
   syncRibbon();
   if (!wallMat || painted === wallKey()) return;
@@ -772,6 +787,7 @@ const SHOPS = {
   gc: { front: 'corner', build: () => buildCorner(THREE, SIZE) },
   arc: { front: 'corner', out: 'gc', build: () => buildArcade(THREE, SIZE) },
   so: { front: 'outfitter', build: () => buildOutfitter(THREE, SIZE) },
+  tl: { front: 'tailor', build: () => { const b = buildTailor(THREE, SIZE); b.keeper.special = () => { openLooks(null); return Promise.resolve(true); }; return b; } },
 };
 
 /** A place's shaders compiled (in parallel where the GPU can), its pictures uploaded and its first frame drawn while the
@@ -875,6 +891,7 @@ function setPlace(p, at, facing = 'back') {
   PC = P.cols ?? COLS; PR = P.rows ?? ROWS;
   pick(null);
   closeAsk(false);
+  closeLooks();
   walker.path = []; aim = null; here = null; riding = null;
   post.final.uniforms.uBlur.value = 0;   // no tilt-shift blur anywhere in the mall (the user's call, 2026-10-12)
   walker.tile = { ...at }; walker.x = tileX(at.x); walker.z = tileZ(at.y);
@@ -893,7 +910,7 @@ function setPlace(p, at, facing = 'back') {
 }
 
 // where the hall's Pokémon stand about: the shop windows, the vending machines, the guide, round the fountains
-const HALL_STANDS = [[3, 1], [5, 1], [6, 1], [8, 1], [12, 1], [15, 1], [17, 1], [6, 3], [14, 3], [6, 7], [14, 7], [3, 4], [17, 4], [4, 7], [16, 7]];
+const HALL_STANDS = [[5, 1], [9, 1], [11, 1], [15, 1], [2, 2], [18, 2], [6, 3], [14, 3], [6, 7], [14, 7], [3, 4], [17, 4], [4, 7], [16, 7]];
 
 /** The hall's passers-by (the user's ask, 2026-10-12): two standing about, two wandering, one coming or going now and
     then, a new cast every 8 hours (js/data/mall-crowd.js, walked by js/corner-crowd.js). */
@@ -1037,6 +1054,52 @@ async function apricornTap(spot) {
   if (coins < APRICORN_PRICE) { playSound('cancel'); pick(null); return talk(`The ${r.name} is ${APRICORN_PRICE} PokéCoins, and you have ${coins.toLocaleString()}.`, 3600); }
   updateSave(d => { d.coins -= APRICORN_PRICE; d.workshop = withBought(workshopOf(d), r); });
   thanks(`A ${r.name}! Your partner comes out of it in every battle now. Swap balls any time on your Trainer Card.`);
+}
+
+/* ---------- the Trainer Tailor ---------- */
+
+let looksWin = null;   // the trainer window (js/look-window.js), open at the Trainer Tailor
+
+/** Kecleon's trainer window over the boutique, on `start` (a look's id; null the one worn): the one shown is tried on as
+    you browse, your trainer and buddy walking in it, and the mannequin wearing it is ringed. Closing takes the try-on off. */
+function openLooks(start) {
+  closeLooks();
+  clearTimeout(say.t);
+  lineEl.classList.remove('on');
+  const spotOf = (id) => P.spots.find(s => s.kind === 'look' && s.look === id) ?? null;
+  const w = lookWindow({
+    shop: true, start,
+    onTry: (id) => { tryLook(id); pick(spotOf(id)); },
+    onChange: () => {
+      walker.hopUntil = performance.now() + 500;
+      if (P.keeper) P.keeper.hopUntil = performance.now() + 600;
+      P.refresh?.();
+      showCoins();
+    },
+    onClose: closeLooks,
+  });
+  looksWin = w;
+  root.querySelector('.b3-stage').append(w.node);
+  requestAnimationFrame(() => w.node.classList.add('up'));
+  tryLook(w.look);
+  pick(spotOf(w.look));
+}
+
+function closeLooks() {
+  const w = looksWin;
+  if (!w) return;
+  looksWin = null;
+  w.close();
+  tryLook(null);
+  pick(null);
+  w.node.classList.remove('up');
+  setTimeout(() => w.node.remove(), 350);
+}
+
+/** A mannequin, walked up to: its outfit on you, and the window open on it. */
+function lookTap(spot) {
+  playSound('select');
+  openLooks(spot.look);
 }
 
 /** After a buy: the till, two happy hops, the tags repainted and the keeper's thanks. */
@@ -1305,6 +1368,8 @@ function say(fr, ms = 2600) {
     : fr.kind === 'apricorn' ? `Today's Apricorn ball, the ${fr.name}: ${ownsSkin(workshopOf(getSave()), apricornToday(safariDay())) ? 'yours already.' : `${APRICORN_PRICE} PokéCoins.`}`
     : fr.kind === 'pass' ? `The Day Pass machine: ${passState() === 'pass' ? 'yours for today.' : `${DAY_PASS} PokéCoins.`}`
     : fr.kind === 'lift' ? (floorOf() > 1 || loadBase().upstairs ? 'The lift. Tap it to pick a floor.' : 'The lift upstairs is roped off.')
+    : fr.kind === 'look' ? `A mannequin: ${ownsLook(getSave(), fr.look) ? 'an outfit you own.' : `${LOOK_PRICE} PokéCoins.`} Tap it to try it on.`
+    : fr.kind === 'mirror' ? 'The mirror. Tap it to see what you\'re wearing.'
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
     : fr.id === 'furniture' && !fr.open ? shopLine()
     : FRONTS.includes(fr) && fr.open ? fr.name
@@ -1331,6 +1396,8 @@ function enterFront(fr) {
   if (fr.kind === 'ware') return wareTap(fr);
   if (fr.kind === 'pass') return passTap(fr);
   if (fr.kind === 'apricorn') return apricornTap(fr);
+  if (fr.kind === 'look') return lookTap(fr);
+  if (fr.kind === 'mirror') { pick(fr); return openLooks(null); }
   if (fr.kind === 'door') return throughDoor(fr);
   if (!fr.open) { playSound('cancel'); return say(fr); }
   const r = ribbons.find(r => r.shop === fr && r.group.visible);
@@ -1338,6 +1405,7 @@ function enterFront(fr) {
   if (fr.id === 'furniture') return walkIn('f1');
   if (fr.id === 'corner') return walkIn('gc');
   if (fr.id === 'outfitter') return walkIn('so');
+  if (fr.id === 'tailor') return walkIn('tl');
 }
 
 /** Through a doorway inside a shop (the Game Corner's into the Arcade): a step into it, then the room beyond. */
@@ -1367,6 +1435,7 @@ let drags = null;
 function onTap(e) {
   if (drags?.swallowed()) return;
   if (answer) return closeAsk(false);
+  if (looksWin) { playSound('cancel'); return closeLooks(); }
   if (riding || ribbons.some(r => r.cutAt && !r.done)) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
@@ -1574,6 +1643,7 @@ function forgetShops() {
 }
 
 export async function leave() {
+  closeLooks();
   const shop = document.getElementById('shop-dialog');
   if (shop?.open) shop.close();
   playSound('door');
@@ -1680,7 +1750,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   drags?.off();
   drags = dragWalk({
     target: view,
-    can: () => !answer && !riding && !ribbons.some(r => r.cutAt && !r.done),
+    can: () => !answer && !looksWin && !riding && !ribbons.some(r => r.cutAt && !r.done),
     tile: floorTile,
     go: (t) => { walker.exit = false; aim = null; here = null; pick(null); walker.path = reroute(walker, route, t); },
     done: () => { if (!walker.path.length) arrived(); },
@@ -1692,4 +1762,5 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   if (store === 'corner') goPlace('gc', null);
   if (store === 'arcade') goPlace('arc', null);
   if (store === 'outfitter') goPlace('so', null);
+  if (store === 'tailor') goPlace('tl', null);
 }
