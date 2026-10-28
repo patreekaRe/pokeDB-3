@@ -377,7 +377,7 @@ export function makeCrowd(H) {
         p.m.group.children[1].scale.setScalar(mv === 'float' ? 0.7 : 1);
         // a person stands facing you, and turns to whoever it's talking with (its flip, as a Pokémon's)
         const turned = p.state === 'talk' || p.state === 'counter' || chat?.with.includes(p);
-        H.drawMon(p.m, walks ? { dir: moving ? w.dir : turned ? (w.flip ? 'right' : 'left') : 'down', moving } : { facing: 'front' }, dt);
+        H.drawMon(p.m, walks ? { dir: moving ? w.dir : turned ? (w.flip ? 'right' : 'left') : 'down', moving } : { facing: 'front', flip: w.flip, x: w.x, z: w.z }, dt);
       }
 
       // comings and goings: one heads home, another walks in a few seconds later

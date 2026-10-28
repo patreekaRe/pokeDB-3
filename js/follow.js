@@ -44,7 +44,7 @@ export async function makeLead({ group, pitch, dress }) {
     m, look: look.id,
     /** Call once the place has set the buddy's group where the walker stands (its bob on the board, not the group):
         the trainer takes it, the buddy goes a step back along the trail. `acting`: the buddy's doing something on that
-        spot. Returns the pose to draw the buddy with: `{ facing, flip, sleeping }`. */
+        spot. Returns the pose to draw the buddy with: `{ facing, flip, sleeping, x, z }`. */
     lead(walker, mon, dt, acting = false) {
       const here = { x: mon.group.position.x, y: mon.group.position.y, z: mon.group.position.z };
       const was = trail[trail.length - 1];
@@ -78,7 +78,7 @@ export async function makeLead({ group, pitch, dress }) {
         mateFacing = Math.abs(bz) > Math.abs(bx) && bz < 0 && mon.sheets.back ? 'back' : 'front';
       }
       mon.group.position.set(mate.x, mate.y, mate.z);
-      return acting ? walker : { facing: mateFacing, flip: mateFlip, sleeping: walker.sleeping };
+      return acting ? walker : { facing: mateFacing, flip: mateFlip, sleeping: walker.sleeping, x: mate.x, z: mate.z };   // x, z: an overworld sheet faces the way it moves
     },
     /** Back at the walker's spot, the trail forgotten (a new room, a jump across the map). */
     reset() { trail.length = 0; started = false; },

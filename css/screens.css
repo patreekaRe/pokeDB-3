@@ -2123,6 +2123,22 @@ body.battle-intro { pointer-events: none; }
 @keyframes trainerHop { 50% { translate: 0 -2px; } }   /* translate, not a margin: no layout on every frame of the map */
 .map-trainer.at-start { transform: translate(-50%, -62%); }   /* at the foot of the start road, so the road shows above it */
 .map-trainer.walking { animation: none; will-change: translate; }   /* walkTo() in js/map.js glides it along the route */
+.map-trainer.ow { aspect-ratio: 1; transform: translate(-50%, -94%); width: calc(var(--tile) * 9); }   /* an overworld sheet paints about half its square frame, so it needs a bigger box than a GIF to stand a room tall */
+.map-trainer.ow.at-start { transform: translate(-50%, -60%); }
+.ow-steps {
+  position: absolute;
+  inset: 0;
+  background-position: 0 0;
+  background-size: 400% 400%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  animation: owStep 1.1s steps(4) infinite;
+}
+.map-trainer.walking .ow-steps { animation-duration: 0.5s; }
+.map-trainer[data-dir="left"] .ow-steps { background-position-y: 33.333%; }
+.map-trainer[data-dir="right"] .ow-steps { background-position-y: 66.667%; }
+.map-trainer[data-dir="up"] .ow-steps { background-position-y: 100%; }
+@keyframes owStep { to { background-position-x: 133.333%; } }   /* steps(4) lands on 0, 33, 67 and 100%: the row's four frames */
 
 /* ---------- rewards (choose one) ---------- */
 #reward-screen { display: flex; flex-direction: column; align-items: center; gap: 16px; max-width: 900px; --log-w: 440px; }
