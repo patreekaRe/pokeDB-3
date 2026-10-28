@@ -1224,7 +1224,12 @@ Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/k
 > ones marked. Walk up to a mannequin to try it on (you and your buddy walk out wearing it); one you don't own asks to buy
 > it at `LOOK_PRICE` in the shops' buy window. Keep the Trainer Card's picker for switching (and buying, unless the user
 > says shop only). A `?mall=tailor` flag, a `NEWS` line if the PC should tell of it, a patch note, the budget check on the
-> mall places. No names on the mannequins (the user's call). Ask the user first only whether buying stays on the card too.
+> mall places. No names on the mannequins (the user's call). **Buying is the tailor's only** (the user's call,
+> 2026-10-28): the Trainer Card's window then switches between looks you own, the rest shown greyed with "At the Trainer
+> Tailor", and nothing is bought there (till the shop ships, the card goes on selling, as now). **Tell the player** (the
+> user's ask: "an NPC tells them via slide-in dialogue or something"): once, in the Clearing after the trainer is first
+> picked (or Later), Professor Oak (Sonia at night) slides in by `gymTalk()` as the leaders and Kurt do, saying more
+> looks are sold at the Trainer Tailor in the Poké Mall (a saved flag keeps it to once), plus a PC `NEWS` line.
 > **The trainer window** (the user's design, 2026-10-28: "a combination of the Timburr house select and the Game Corner
 > prize window", the sprites walking in place as you preview them): Timburr's catalogue card (`openKiosk()` in
 > `js/house-kiosk.js`, `.hk-*`: cream, gold rim, the keeper's name tag askew, the keeper's line, coins and a round ✕, a
@@ -1232,7 +1237,7 @@ Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/k
 > big on a screen, ◀ / ▶): one trainer big in a spotlit box walking in place (its four steps, turning through its four
 > ways), ◀ / ▶ to step through them, the row of small trainer cards under it (OWNED / 🪙500) to jump to one, Wear / Buy
 > on the gold key, Kecleon's tag and a line about the one shown. The same window replaces the Trainer Card's
-> `lookPicker()` (no keeper there) and the setup's WHO ARE YOU? can stay a row of four.
+> `lookPicker()` (no keeper there, Wear only) and the setup's WHO ARE YOU? can stay a row of four.
 
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking
