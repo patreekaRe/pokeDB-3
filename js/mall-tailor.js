@@ -32,7 +32,7 @@ const ROWS_AT = [
 const PLINTH = 0.16, CELL = 64, PITCH = 0.6;
 
 export const TAILOR_KEEPER = { id: 'kecleon', name: 'Kecleon',
-  src: 'assets/pokemon/kecleon-front.gif',
+  src: 'assets/pokemon/kecleon-front.gif', gif: true,   // a merchant stands as its GIF, not its overworld sprite (the user's call)
   hello: ['Welcome to the Trainer Tailor! Walk up to any mannequin to try it on.', 'Ooh, a new face! Or is it? I change mine all the time.', 'Every outfit on the floor, ready to try. The mirror is free too!'],
   chat: ['Walk up to a mannequin and you\'re wearing it, just like that. Buy it and you walk out in it!', 'Bought outfits stay yours. Switch between them any time on your Trainer Card.',
     'Every outfit is the same price. Fashion should be fair!', 'I blend in with anything. You should too!', 'The mirror shows what you\'re wearing now. Have a twirl!',

@@ -1225,8 +1225,14 @@ show on a tap of your buddy in the Clearing, towns and rooms too. Not asked for 
 **The Trainer Tailor** was built 2026-10-28 (cloud, on `main`; archive). **Next: the user playtests it** ▶ PLAYTEST ON
 THE LIVE SITE: `?mall&coins=2000` (the hall's four fronts, the tailor's ribbon with Kecleon), then in: walk up to a
 mannequin, browse with ◀ / ▶ (you try each on), buy one; the Trainer Card's Trainer key (Wear only); Oak (or Sonia at
-night) once in the Clearing. Not done, to ask: the mannequins as their sprite's still frame (they could walk in place),
-and no PC `NEWS` line (the tailor isn't a PC page; Oak tells it).
+night) once in the Clearing. No PC `NEWS` line (the tailor isn't a PC page; Oak tells it). The mall's
+shopkeepers (Meowth, Kecleon, Kangaskhan, Smeargle, Minccino, Gardevoir) stand as their battle GIFs again, not their
+overworld sprites (`gif: true` on the keeper, the user's call: "they're merchants").
+**The user isn't sure about the mannequins** (2026-10-28): offered instead, not picked yet: (1) shoppers wearing the
+outfits browsing the shop (the towns' walking crowd), tap one to try its outfit; (2) a row of curtained fitting rooms,
+walk into one and the window opens, step out wearing it, the floor only racks and decor (recommended); (3) a photo wall,
+a framed portrait of each outfit, tap a frame; (4) Kecleon's catwalk, step on and strut each look as you browse.
+▶ CLOUD · effort: medium once they pick (swap the mannequin block in `buildTailor()`, `js/mall-tailor.js`).
 
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking

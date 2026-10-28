@@ -517,11 +517,12 @@ export function bendFine(o) {
 /** A point as the bend draws it, back to where it stands in the world (the inverse of bend() for a point). */
 export const unbend = (p, u) => { p.y += u.k.value * (p.z - u.z.value) ** 2; return p; };
 
-/** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest),
+/** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest;
+    `gif: true` keeps its battle GIF over an overworld sheet, as the mall's shopkeepers do, the user's call 2026-10-28),
     or `{ sheet, name }` for a person on a walking sheet; `back` loads its back GIF too, for walking away from the
     camera. Not yet in any scene. */
 export async function monBoard(mate, back = true) {
-  const front = mate.sheet ?? mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif'), owSrc = !mate.sheet && overworldSrc(front);
+  const front = mate.sheet ?? mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif'), owSrc = !mate.sheet && !mate.gif && overworldSrc(front);
   let sheets, first, ow = null;
   if (mate.sheet) {
     const rows = await walkFrames(mate.sheet);
