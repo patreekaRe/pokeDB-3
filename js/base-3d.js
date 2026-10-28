@@ -1670,6 +1670,7 @@ const EMOTES = {
   note: ['..kkkkk', '..k...k', '..k...k', '..k...k', 'kkk.kkk', 'kkk.kkk', '.......'],
   twinkle: ['...y...', '...y...', '..yoy..', 'yyoooyy', '..yoy..', '...y...', '...y...'],
 };
+const EMOTE_SIZE = 1.05;   // world units; 0.42 read as a speck on a phone (the user, 2026-10-28: "much bigger")
 const EMOTE_INK = { '#': '#2a2a3a', r: '#ff4f7a', w: '#ffd0dc', y: '#ffd23a', o: '#fff6c0', k: '#2a2a3a' };
 
 function emoteTexture(kind) {
@@ -1704,9 +1705,9 @@ function livePuffs(now) {
     if (p.over && k < 1) {
       // pops up with a little overshoot, rides over the head, fades at the end
       const t = Math.min(1, (now - p.t0) / 160), pop = calm ? 1 : t < 1 ? 1 + Math.sin(t * Math.PI) * 0.25 - (1 - t) * 0.6 : 1;
-      const at = p.over.group.position, size = 0.42 * pop;
+      const at = p.over.group.position, size = EMOTE_SIZE * pop;
       p.s.scale.set(size, size, 1);
-      p.s.position.set(at.x, at.y + p.over.board.position.y + p.over.top + 0.3 + (calm ? 0 : k * 0.08), at.z + 0.05);
+      p.s.position.set(at.x, at.y + p.over.board.position.y + p.over.top + EMOTE_SIZE / 2 + 0.05 + (calm ? 0 : k * 0.08), at.z + 0.05);
       p.s.material.opacity = k < 0.8 ? 1 : 1 - (k - 0.8) / 0.2;
       p.s.visible = p.over.group.visible;
       return true;
