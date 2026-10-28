@@ -41,3 +41,17 @@ look off). `lookArt()` in `js/ui.js` draws a look's front frame from its sheet, 
 its own, Later in place of Back (`askTrainer()` in `js/title.js`). Later asks again at every launch till a trainer is
 picked (the user's call, 2026-10-28, replacing once only): `save.lookChosen` stops it, set by the setup, an OK here, or
 wearing a look or Walk alone on the Trainer Card. A lent `?look=` skips it.
+
+**Roaming free in your own Secret Base** (2026-10-28, the user's ask: "let our buddy roam free whenever we get to our secret
+base house... go into other rooms with us but continue to free roam"): with a trainer worn and the base your own (not a
+friend's, `host`), `pal` in `js/base-3d.js` takes the buddy off the trail: you walk as the trainer (`lead.solo()` in
+`js/follow.js`, the trainer alone on the walker) and the buddy lives about the room as the Safari residents do
+(`liveGuest()` / `think()`), a guest's shape `{ id, mon, w }`, now and then trotting over to stand by you (`livePal()`).
+Through a door it comes along, set down beside you in the new room (`placePal()` from `showRoom()`). A tap on a seat sends
+it to sit (`sendPal()`, from `sitPartner()`); a cheer meant for the partner (a piece tapped) is its hop. Taking the look
+off drops `pal` and the old follow comes back.
+
+**Petting** (same day: "cute little emojis over their head when we pet them"): a tap on your buddy or a resident in the
+Base is `pet()`: its cry, a hop and `emote()`, a white pixel speech bubble over its head holding a heart (twice as
+likely), a smile, a note or a twinkle (`EMOTES`), as HeartGold's followers show. It rides over the head, pops in and
+fades in 1.5 s, and a new one replaces the one up. Only the Base has it so far.

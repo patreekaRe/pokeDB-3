@@ -3816,3 +3816,10 @@ The user found the trainer big indoors (the Secret Base, the Clearing, Kurt's Wo
 townspeople alike, Pokémon untouched. They tried `?walker=` sizes on the live site (the first deploy of the flag failed on
 a GitHub network error and was re-run) and picked 1.0: `WALKER_PX` is now a GIF's pixels, down from 1.25. `?gap=N` was
 added to try the buddy further back; they asked for a tiny bit more, so `GAP` went 0.85 to 0.95. The old branch `trainer-shrink` (a plain 1.06) is no longer needed.
+
+### Your buddy roams free in your Secret Base, and pets show an emote (2026-10-28, cloud; on `main`)
+The user's ask: the buddy roams free in their own base, comes room to room with them and roams on there, and a pet shows a
+cute emoji. Built as `pal` in `js/base-3d.js` (a guest-shaped roamer, `lead.solo()` for the trainer) and `emote()` (a
+HeartGold-style bubble: heart, smile, note or twinkle). A friend's base keeps the follow. Detail in
+`docs/reference/trainer-follow.md`. Not yet elsewhere: the Clearing, towns and rooms still have the buddy at your heels
+and a plain hop on a tap (an idea for later, on the roadmap).

@@ -1219,6 +1219,9 @@ trainer's height. They also noticed Kurt's Workshop is zoomed in beside the Base
 across (`homeSize()` in `js/event-3d.js`), the Base's 8, so everything there is drawn ~29% bigger; `?across=N` tries another
 (e.g. `?across=8`, on its own or with `?npc=`). Once they pick, make it the default and add the size to the `look` patch line already in `NEXT`.
 
+**Pet emotes beyond the Secret Base** (an idea, 2026-10-28): the Base's pet emote (`emote()` in `js/base-3d.js`) could
+show on a tap of your buddy in the Clearing, towns and rooms too. Not asked for yet.
+
 **A trainer tailor shop: the user picked option 1** (2026-10-28): a fourth front in the Poké Mall hall, the Trainer
 Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/kecleon.png` are in). Ready to build:
 
