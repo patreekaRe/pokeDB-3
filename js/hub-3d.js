@@ -3691,18 +3691,21 @@ function rebuildLot() {
 
 const KIOSK_CREW = 'assets/pokemon/timburr-front.gif', KIOSK_CRATE = 0.22;
 
-/** The builders' stand, and Timburr behind its counter, hopping now and then to be noticed. */
+/** The builders' stand, and Timburr behind its counter as its battle GIF, hopping now and then to be noticed. */
 function buildKiosk(g) {
   const x = tileX(KIOSK_AT.tx), z = tileZ(KIOSK_AT.ty) + 0.05;
   g.add(makeKiosk(THREE, { x, z, sale: !baseOwned(), fine, texOf, merge: mergeStill }).group);
-  const k = kiosk = { mon: null, next: 0, hop: 0, tick(now) {
-    if (!k.mon || calm) return;
+  const k = kiosk = { mon: null, next: 0, hop: 0, last: 0, tick(now) {
+    if (!k.mon) return;
+    drawMon(k.mon, { facing: 'front' }, k.last ? Math.min(100, now - k.last) : 0);
+    k.last = now;
+    if (calm) return;
     if (!k.next) k.next = now + 4000;
     if (now > k.next) { k.hop = now; k.next = now + 6000 + Math.random() * 5000; }
     const t = (now - k.hop) / 450;
     k.mon.board.position.y = t < 1 ? Math.sin(t * Math.PI) * 0.18 : 0;
   } };
-  monBoard({ src: KIOSK_CREW, name: 'Timburr', cry: 'timburr' }, false).then(m => {
+  monBoard({ src: KIOSK_CREW, name: 'Timburr', cry: 'timburr', gif: true }, false).then(m => {
     if (!g.parent || kiosk !== k) { dispose(m.group); return; }
     m.board.rotation.x = -PITCH;
     m.group.scale.setScalar(0.85);
@@ -4036,6 +4039,12 @@ function liveLeaving(now) {
 
 function showCard(p) {
   here = p;
+  // the catalogue's first open swung the view to the lot and froze on the way: shaders for what comes into view there,
+  // and every house card's still, all made at once (the user, 2026-10-28). Made while this card is up instead.
+  if (p.id === 'kiosk') {
+    warmShaders(renderer, scene, camera);
+    import('./house-kiosk.js').then(m => m.warmKiosk(houseStill), () => {});
+  }
   if (p.waystone) return showWaystone(p);
   if (p.id === 'prof') return profTalk();
   if (p.guest?.welcome) welcomeHome(p.guest.town);

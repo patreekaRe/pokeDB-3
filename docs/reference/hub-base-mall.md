@@ -914,8 +914,11 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   tree's doorstep column; every house stays inside the fence, clear of the garden arch (half-width ≤ 2.25).
 - **Timburr & Co.'s stand** (`KIOSK_AT` 17,4, just outside the fence's left, its step on the ring road; place `kiosk`,
   only with houses on): `makeKiosk()` (counter, orange-and-cream awning, the crew's name board, a FOR SALE panel before
-  the base is bought, HOUSES after, a hard hat and a cone) and Timburr behind the counter as a still board that hops now
-  and then (`kiosk.tick()`). Its card's Catalogue opens `js/house-kiosk.js`.
+  the base is bought, HOUSES after, a hard hat and a cone) and Timburr behind the counter as its battle GIF, animated, that hops now
+  and then (`kiosk.tick()`; `gif: true` over the overworld sheet, the user's call 2026-10-28). Its card's Catalogue opens `js/house-kiosk.js`.
+  **First open** (2026-10-28, the user: it froze, then panned; smooth the second time): showing the stand's card warms the
+  Clearing's shaders (`warmShaders()`) and draws every card's still ahead (`warmKiosk()` in `js/house-kiosk.js`), each still
+  a frame apart; the catalogue's own stills wait 750 ms for the camera's pan. Headless, the first open's new shaders 8 -> 1.
 - **The catalogue** (`openKiosk()` in `js/house-kiosk.js`, `.hk-*` in `css/hub.css`; restyled the same day, the user:
   "doesn't look that great", it was a red Pokédex sheet with a list): a merchant's card in the shops' look (the garden
   catalogue's `.gmerch`: cream, gold rim, white keyline), the crew's orange (`--ink`), low on the screen; Timburr's name
