@@ -410,7 +410,7 @@ async function playIntro() {
     new Image().src = b.def.phase2.image;
     preloadMusic(b.def.phase2.music);
   }
-  preloadSounds('card', 'hit', 'block', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
+  preloadSounds('card', 'hit', 'block', 'blocked', 'end-turn', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
     'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.def.phase2 ? ['charge', ...bossRebirthSounds()] : []), ...(b.shiny ? ['shiny'] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
 
   zone.classList.add('awaiting');
@@ -1990,7 +1990,7 @@ async function itemEffects(e) {
   if (e.draw)     draw(e.draw);
   if (e.blockBonus) { b.blockBonus = (b.blockBonus || 0) + e.blockBonus; pop('player-zone', `🔰 Block +${e.blockBonus}`, 'block'); statFx('player'); }
   if (e.power)    { for (const [k, n] of Object.entries(e.power)) b.powers[k] = (b.powers[k] || 0) + n; playSound('power'); statFx('player'); }
-  if (e.hit)      { const dealt = hurtEnemy(e.hit); hitEffect('enemy-portrait-box'); bigHit(dealt, b.enemy.maxHp, 'enemy-img'); pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? 'dmg' : 'note'); playSound(dealt > 0 ? 'hit' : 'block'); }
+  if (e.hit)      { const dealt = hurtEnemy(e.hit); hitEffect('enemy-portrait-box'); bigHit(dealt, b.enemy.maxHp, 'enemy-img'); pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? 'dmg' : 'note'); playSound(dealt > 0 ? 'hit' : 'blocked'); }
   if (e.echo)     { b.echoNext = (b.echoNext || 0) + e.echo; pop('player-zone', '🧢 Next card twice', 'note good'); }
   if (e.fill)     fillBag();
   if (e.recall && battle === b) await recallCard();
@@ -2359,6 +2359,7 @@ async function askEndTurn() {
     const ok = await confirmDialog(`You still have ${b.energy} PP and ${cards} you can play. End your turn anyway? (The Pokédex's Settings can turn this off.)`, 'End turn');
     if (!ok || battle !== b) return;
   }
+  playSound('end-turn');
   endTurn();
 }
 
@@ -2373,7 +2374,7 @@ async function endTurn() {
     const dealt = hurtEnemy(b.powers.combust);
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', dealt > 0 ? `-${dealt} 💥` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
-    playSound(dealt > 0 ? 'hit' : 'block');
+    playSound(dealt > 0 ? 'hit' : 'blocked');
     log(`Eruption hit ${b.def.name} for ${b.powers.combust}!`);
     renderAll();
     await pause(500);
@@ -3911,7 +3912,7 @@ const lunge = (id) => flash(id, 'lunge', 380);
 
 /** Like the games, a super / not very effective hit has its own sound; a fully blocked one plays block. */
 function hitSound(through, multiplier) {
-  if (through <= 0) playSound('block');
+  if (through <= 0) playSound('blocked');
   else playSound(multiplier > 1 ? 'hit-super' : multiplier < 1 ? 'hit-weak' : 'hit', 'hit');
 }
 

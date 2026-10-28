@@ -129,7 +129,9 @@ const SOUNDS = {
   hit:   { url: 'assets/audio/sfx/hit.mp3' },     // damage gets through, either way
   'hit-super': { url: 'assets/audio/sfx/hit-super.mp3' },  // ...super effectively (falls back to hit)
   'hit-weak':  { url: 'assets/audio/sfx/hit-weak.mp3' },   // ...not very effectively (falls back to hit)
-  block: { synth: blockClink, gain: 0.6 },   // you gain block, or a hit is fully blocked: made in code (the user's call), no file
+  block: { synth: shieldUp, gain: 0.6 },     // you gain block: made in code (the user's call), no file
+  blocked: { synth: blockClink, gain: 0.6 },  // a hit is fully blocked: the padded whump that was block's until 2026-10-28
+  'end-turn': { synth: turnOver, gain: 0.7 }, // End Turn: its own sound, not the menu blip (the user's call, 2026-10-28)
   faint: { url: 'assets/audio/sfx/faint.mp3' },   // the enemy faints
   select: { url: 'assets/audio/sfx/card.mp3', gain: 0.2 },   // a pick in the 3D views (the base's tiles, the mall's stands and prizes, a tap to walk): softer than confirm
   buy:   { url: 'assets/audio/sfx/buy.mp3' },     // a Poké Mart purchase
@@ -950,6 +952,58 @@ function blockClink(ac) {
     out[i] = (puff + thud) * fade;
   }
   return normalize(buffer, 0.22);
+}
+
+/**
+ * Gaining block (2026-10-28, the user wanted it changed from the whump): a shield going up, like the games' Protect. A
+ * soft triangle tone gliding up an octave under a rising breath of air, then three quiet sparkles; no metallic ring.
+ */
+function shieldUp(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.34);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  let phase = 0, lp = 0, hp = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    phase += (440 + 440 * Math.min(1, t / 0.11)) / rate;
+    const tri = 1 - 4 * Math.abs((phase % 1) - 0.5);
+    const tone = tri * Math.min(1, t / 0.015) * Math.exp(-Math.max(0, t - 0.1) / 0.06);
+    lp += (0.15 + 0.5 * Math.min(1, t / 0.12)) * ((Math.random() * 2 - 1) - lp);
+    const air = (lp - hp) * 0.5 * Math.min(1, t / 0.08) * Math.exp(-Math.max(0, t - 0.1) / 0.04);
+    hp = lp;
+    let sparkle = 0;
+    [[1568, 0.09], [2093, 0.13], [2637, 0.17]].forEach(([f, at]) => {
+      if (t > at) sparkle += Math.sin(2 * Math.PI * f * (t - at)) * 0.3 * Math.exp(-(t - at) / 0.05);
+    });
+    const fade = Math.min(1, (length - i) / (rate * 0.03));
+    out[i] = (tone * 0.8 + air + sparkle) * fade;
+  }
+  return normalize(buffer, 0.2);
+}
+
+/**
+ * End Turn (2026-10-28, the user wanted it off the Game Boy menu blip): a soft swish passing the turn over, its air
+ * sweeping down, and under it two mellow mallet notes falling a fourth (G to D), like setting something down.
+ */
+function turnOver(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.42);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  let lp = 0, prev = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    lp += (0.45 - 0.37 * Math.min(1, t / 0.2)) * ((Math.random() * 2 - 1) - lp);
+    const swish = (lp - prev * 0.6) * Math.sin(Math.PI * Math.min(1, t / 0.2)) * 0.6;
+    prev = lp;
+    let mallet = 0;
+    [[784, 0.02], [587, 0.13]].forEach(([f, at]) => {
+      const u = t - at;
+      if (u > 0) mallet += (Math.sin(2 * Math.PI * f * u) + 0.2 * Math.sin(4 * Math.PI * f * u)) * Math.min(1, u / 0.004) * Math.exp(-u / 0.09);
+    });
+    const fade = Math.min(1, (length - i) / (rate * 0.03));
+    out[i] = (swish + mallet * 0.7) * fade;
+  }
+  return normalize(buffer, 0.18);
 }
 
 /** Scale a synth buffer so its loudest sample is `peak`: the MP3s peak around 0.1-0.25, so synths sit with them. */

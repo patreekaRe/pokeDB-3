@@ -3372,3 +3372,8 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### New Block and End Turn sounds (2026-10-28, cloud)
+The user asked to change the block sound and End Turn's Game Boy blip. Gaining block now plays `shieldUp()`, a fully
+blocked hit keeps the old whump as `blocked`, and End Turn plays `turnOver()` from `askEndTurn()`; all synths in
+`js/audio.js`. Detail in `docs/reference/music.md`.
