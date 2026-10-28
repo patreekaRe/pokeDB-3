@@ -3776,6 +3776,10 @@ duo's pair now morph side by side (`evolutionScene(..., mate)`). Faces are guess
 shape may need its own face point. Playtested on branch `comic-evolution`; the user: "I like it all". `?evolve=<starter>`
 (`&stage=1`, `&mate=<id>`) plays it after PRESS START.
 
+**Leader visits off (2026-10-28, the user's ask):** no Gym Leader or friend visits the Secret Base or stands by the Clearing's
+Waystone, and the lines saying they would (the mending toast, the heart and Gold badge toasts, the Friends app's "visits"
+perk, Kurt's gift talk, John's, Shaun's and Machew's after-mend lines) are gone or reworded. One switch, `LEADER_VISITS_LIVE`.
+
 ### People in the gateway towns, on Gen 4 walking sprites (2026-10-28, cloud; on `main`)
 22 people, 4-5 a town, dealt into each town's crowd beside its Pokémon (Kimono Girl and Sage in Lantern Village, a
 Hiker in Cinder Springs, Tubers and a Captain at Driftwood Landing, Rangers in Highbough, a Rancher and Gambler in

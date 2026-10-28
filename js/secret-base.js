@@ -514,6 +514,7 @@ const friendVisit = (id, hearts) => ({ ...GYM_BY_ID[id], visit: BASE_LINES[id][h
 
 export function leaderVisitor(b, save = getSave()) {
   const day = safariDay(), again = new URLSearchParams(location.search).has('visit');
+  if (!LEADER_VISITS_LIVE && !again) return null;
   const ws = workshopOf(save), at = (id) => heartsPeek() ?? heartsOf(ws, id);
   const friends = baseFriends(at), out = todaysGuest(save)?.id;
   if (b.leaderVisit === day && !again) {

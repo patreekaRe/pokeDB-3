@@ -45,7 +45,7 @@ test('the next heart names its piece and what else it brings, nothing at full he
     const at3 = nextHeart(id, 2);
     assert.equal(at3.at, 3, id);
     assert.equal(at3.piece, HEART_PIECES[id][0], id);
-    assert.ok(at3.perks.includes('visits') && at3.perks.includes('requests'), id);
+    assert.ok(!at3.perks.includes('visits') && at3.perks.includes('requests'), id);   // visits are off (LEADER_VISITS_LIVE)
     assert.equal(nextHeart(id, 4).piece, HEART_PIECES[id][1], id);
     assert.equal(nextHeart(id, HEARTS), null, id);
   }

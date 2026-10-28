@@ -17,7 +17,7 @@
 import { rangerCatch, rangerTick, rangerDay, rangerReady } from './ranger.js';
 import { finishedBy } from './data/ranger.js';
 import { timeOfDay } from './daytime.js';
-import { leaderFor, gymWins, friendWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
+import { leaderFor, gymWins, friendWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME, LEADER_VISITS_LIVE } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch, giftMeetDue, meetKey, withTold } from './data/workshop.js';
 import { HELD_BY_ID, POUCH, setOut, canHold, holdFromPouch, takeOff, nextBerryReady } from './data/held.js';
@@ -2070,7 +2070,7 @@ function townRoom(covered = null, at = null) {
       if (run === thisRun) await awakenTalk(Object.entries(quest.awaken || {}).map(([id, lines]) => [GYM_BY_ID[id], lines]), glow);
     } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
     if (run !== thisRun) return;
-    tell(`The Waystone takes the shard and knits itself whole! Back home, a crystal on the Whispering Clearing's Waystone lights: you can travel here any time, and ${town.name}'s Gym Leaders can visit you.`);
+    tell(`The Waystone takes the shard and knits itself whole! Back home, a crystal on the Whispering Clearing's Waystone lights: you can travel here any time${LEADER_VISITS_LIVE ? `, and ${town.name}'s Gym Leaders can visit you` : ''}.`);
     again();
   };
   // every turn-in goes to a Gym Leader at home, a "!" over their name sign (the user's ask, 2026-10-14: it sends you into
@@ -2292,7 +2292,7 @@ function homeRoom(b, onward = null) {
       const more = heartGifts(home.leader, got.was, got.hearts).map(kind => PIECES[kind]?.name).filter(Boolean);
       if (more.length) tell(`For the friendship, ${who} gave you the ${more.join(' and the ')}${got.first ? ' too' : ''}. ${more.length > 1 ? 'They\'re' : 'It\'s'} in your Secret Base.`);
       const news = HEART_LINES[home.leader] ? ` Talk to ${both ? 'them' : GYM_BY_ID[home.leader].name}: there's something new to hear.` : '';
-      const drop = got.hearts === HEARTS ? ' They\'ll drop by your Secret Base often now.' : got.was < VISIT_HEARTS && got.hearts >= VISIT_HEARTS ? ` ${both ? 'They' : GYM_BY_ID[home.leader].name} might drop by your Secret Base now.` : '';
+      const drop = !LEADER_VISITS_LIVE ? '' : got.hearts === HEARTS ? ' They\'ll drop by your Secret Base often now.' : got.was < VISIT_HEARTS && got.hearts >= VISIT_HEARTS ? ` ${both ? 'They' : GYM_BY_ID[home.leader].name} might drop by your Secret Base now.` : '';
       tell(got.hearts > got.was ? (got.hearts === HEARTS ? `Friendship ${got.hearts}/${HEARTS}! You're the best of friends now.${drop}${news}` : `Friendship ${got.hearts}/${HEARTS}!${drop}${news}`)
         : `You're already the best of friends. ${both ? 'They' : GYM_BY_ID[home.leader].name} still ${both ? 'love' : 'loves'} it.`);
       // their secret recipe for Kurt, and its letter in the PC (step 8, session e)
@@ -2605,7 +2605,7 @@ function rematch(leader, again) {
   const step = gymMilestone(again + 1);
   const got = again ? `You received the ${leader.badge} again! ${leader.name} beaten ${again + 1} times.` : `You received the ${leader.badge}!`;
   if (step === 'poster') return { lines: leader.poster, badge: true, got: `${got} And a signed poster for your Secret Base!` };
-  if (step === 'gold') return { lines: leader.gold, badge: 'gold', got: `You received the Gold ${leader.badge}! ${leader.name} might drop by your Secret Base now.` };
+  if (step === 'gold') return { lines: leader.gold, badge: 'gold', got: `You received the Gold ${leader.badge}!${LEADER_VISITS_LIVE ? ` ${leader.name} might drop by your Secret Base now.` : ''}` };
   return { lines: [], badge: true, got };
 }
 

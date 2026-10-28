@@ -1216,7 +1216,7 @@ export const QUESTS = {
       john: [
         'The {pick} was everything. I didn\'t have to decide a single thing. Best night of my life.',
         'The Waystone reaches your Clearing now. I measured the hum. It\'s in tune.',
-        'I\'m bringing the Steam Deck to your Clearing next time. ...Or the Thor.',
+        'Come by with snacks next time. I\'ll have the Steam Deck ready. ...Or the Thor.',
       ],
       jahmes: [
         'The lanterns stay lit ALL NIGHT now! I still go to bed at eleven! But I COULD stay up!',
@@ -1323,7 +1323,7 @@ export const QUESTS = {
       clarence: [
         'The springs are hot, the stream is up, and the Waystone glows like a footlight. Nine o\'clock is SACRED again.',
         'The reopening show? Sold out. It was free. Sold out anyway.',
-        'The Waystone reaches your Clearing now. A touring show. I\'ve always wanted a touring show.',
+        'The Waystone reaches your Clearing now. Come back for the nine o\'clock show. Front row. It\'s always front row.',
       ],
       shaun: [
         'Tower\'s up, ping\'s eleven, and the boys are climbing. Don\'t tell Clarence it isn\'t the show.',
@@ -1649,7 +1649,7 @@ export const QUESTS = {
     after: {
       machew: [
         '...The watering hole is full. The Waystone sings. And my blade is real. I sharpen it every evening. It sharpens now.',
-        'The Waystone reaches your Clearing now. A shadow may travel anywhere. I will visit. After my shift. It ends at six.',
+        'The Waystone reaches your Clearing now. A shadow may travel anywhere. This one stays. My shift ends at six.',
         'This was a good arc. The next will be darker. ...A little less dark. The baby next door is asleep.',
       ],
       jerome: [
@@ -2041,7 +2041,7 @@ export const folkChats = (town, st) => (mended(st) && questOf(town)?.chats
 /* ---------- leaders coming home (session 4, 2026-10-14) ----------
    Once a town's shard is back in, its Waystone reaches the Clearing's, and its Gym Leaders come through: one a UTC day
    stands by the Clearing's Waystone (waystoneGuest(); the one who put the shard in, the first time home after), and they
-   drop by the Secret Base (js/secret-base.js's leaderVisitor()). This replaces LEADER_VISITS_LIVE being off. Each has a
+   drop by the Secret Base (js/secret-base.js's leaderVisitor()); all of it off with LEADER_VISITS_LIVE since 2026-10-28. Each has a
    few speeches (session 5): the Clearing deals one a day, the base one a visit. */
 export const HOME_LINES = {
   john: [
@@ -2370,7 +2370,7 @@ export const CLEARING = {
       giftTalk: [
         'Your first gift! A word on how these go, since the young ones never ask.',
         'Hand it to a friend at their home and it fills a heart. Their favourite fills two. Five hearts is as close as friends get.',
-        'At three hearts and at five, they\'ll give you more of their signature pieces for your Secret Base. Good friends drop by there to visit, too.',
+        'At three hearts and at five, they\'ll give you more of their signature pieces for your Secret Base.',
         'You can see where you stand with each of them in the Friends app on your Pokédex. Off you go!',
       ],
       // after the second line, while the Nietos' Waystone Chime is the step you're on

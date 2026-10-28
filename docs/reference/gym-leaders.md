@@ -121,7 +121,7 @@ The summary CLAUDE.md used to carry, unchanged. Where it and the notes above dis
   (their colours, in `js/data/gym.js`) and a `GYM_LOOK` line. **Rematch rewards** (2026-10-13, the user's picks): the 3rd
   win hands over their signed poster (`<id>poster`, a wall piece painted from their sprite in `js/base-furniture-gym.js`,
   earned by `js/data/furniture.js`'s `gym` source), the 5th their Gold badge (`gym-<id>-gold`), `beatenTalk()` /
-  `gymMilestone()` (`GYM_POSTER` / `GYM_GOLD`); from then on one of them a UTC day visits the Secret Base till tapped (switched off since 2026-10-14, the user's call: `LEADER_VISITS_LIVE` in `js/data/gym.js`; `?visit` still brings one)
+  `gymMilestone()` (`GYM_POSTER` / `GYM_GOLD`); from then on one of them a UTC day visits the Secret Base till tapped (switched off since 2026-10-14, the user's call, and every leader's and friend's visit with it since 2026-10-28: `LEADER_VISITS_LIVE` in `js/data/gym.js`; `?visit` still brings one)
   (`leaderVisitor()` in `js/secret-base.js`, `leaderVisit()` in `js/base-3d.js`, their `visit` / `posterSeen` lines;
   `?gymwins=5` sets every leader's wins for good, `?visit` brings one again).
 

@@ -1595,6 +1595,7 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.
 - A Safari "zone legend" (a weekly Pokémon catchable only on the last floor): the user said no, 2026-10-03.
+- Gym Leaders' and friends' visits (the Secret Base drop-ins, best friends sitting, the daily guest by the Clearing's Waystone): switched off with every line promising them, the user's call 2026-10-28. `LEADER_VISITS_LIVE` in `js/data/gym.js` brings them all back; `?visit` peeks for a page load.
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user

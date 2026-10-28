@@ -49,6 +49,7 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['hub', 'Gym Leaders and friends no longer drop by your Secret Base or wait by the Clearing\'s Waystone.'],
   ['look', 'Evolution opens like a comic: manga panels slam in on your Pokémon\'s face, and a Duo Run\'s pair split the screen, then evolve side by side.'],
   ['battle', 'Every attack plays its own move: jets, bolts, bites, beams and quakes. Blocks raise a shield, heals glow, big cards get a cut-in, and PP and End Turn are new gold plates, PP filling like a glass, the Safari\'s Throw in green and gone against Alphas and bosses.'],
   ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo close with a ✕ at the top right, clear of the ▼ MORE tag, and Kurt\'s bench is compact, its shelf twice as tall on a phone.'],

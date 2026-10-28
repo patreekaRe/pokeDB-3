@@ -38,8 +38,9 @@ const leader = (id, name, biome, bosses, badge, extra = {}) => ({
    Secret Base (js/data/furniture.js's `gym` source), a fifth their Gold badge (js/data/badges.js), and from then on they
    drop by your base now and then (leaderVisitor() in js/secret-base.js). */
 export const GYM_POSTER = 3, GYM_GOLD = 5;
-/* Their visits are switched off for now (2026-10-14, the user's call): no leader turns up in the Secret Base, though
-   `?visit` still brings one for a page load. On for good: LEADER_VISITS_LIVE. */
+/* Their visits are switched off (2026-10-14 for the Gold ones; 2026-10-28, the user's call, every one): no Gym Leader or
+   friend turns up in the Secret Base or by the Clearing's Waystone, and no line says they will, though `?visit` still
+   brings one for a page load. On again: LEADER_VISITS_LIVE. */
 export const LEADER_VISITS_LIVE = false;
 /** What this win (the `wins`th) brings: 'poster', 'gold' or null. */
 export const gymMilestone = (wins) => (wins === GYM_POSTER ? 'poster' : wins === GYM_GOLD ? 'gold' : null);
