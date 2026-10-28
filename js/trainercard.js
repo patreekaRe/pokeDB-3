@@ -645,7 +645,7 @@ function lookPicker(body, done) {
   head.append(back);
   const win = lookWindow({ onClose: done });
   back.addEventListener('click', () => win.close());
-  body.replaceChildren(head, win.node);   // no note above it (the user's call, 2026-10-28: too much text)
+  body.replaceChildren(head, el('p', 'tc-pick-note', 'More outfits at the Poké Mall!'), win.node);   // one line only (the user's call, 2026-10-28)
   head.querySelector('h2').tabIndex = -1;
   body.scrollTop = 0;
 }
