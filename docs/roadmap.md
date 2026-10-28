@@ -1211,6 +1211,10 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+- **More "leave for a turn" moves** (2026-10-28, the user's Dig fix; done part in the archive): offered and **not picked**
+  for now: your own Fly card (Flying) and Dive card (Water, in Squirtle's deck) flying / diving out of reach and ending the
+  turn, Diglett's signature Dig card working like Ground's Dig, and a dodge while underground (the enemy's attack missing,
+  as in the games; it would make Dig nearly free immunity). Ask before building any of them.
 - **Grass is built on healing**: in-fight healing x0.75 takes Grass 62 -> 42 (L3 47 -> 23), x0.5 to 33, none to 6, while
   Fire only drops 76 -> 64 and Water 60 -> 43-53. A blanket heal cut would break Grass long before it touched the others.
 - Single cards move nothing: Apple Acid+ at 10 + Vulnerable 1 (70.7, noise) or Synthesis with Exhaust (61.3).

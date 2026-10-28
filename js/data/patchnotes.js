@@ -55,6 +55,7 @@ export const NEXT = [
   ['battle', 'The battle\'s hold-and-swipe hint is now a wordless fingertip, gone the moment you slide a card, and gone for good once you\'ve swiped a few.'],
   ['battle', 'A rare Safari spawn shows a RARE pill under its HP bar: a figure running and the turns left before it runs off, red on its last.'],
   ['modes', 'A Safari map no longer holds the same rare spawn twice until each of its area\'s rares has turned up.'],
+  ['battle', 'Dig, Tunnel and Burrow take your Pokémon underground and end your turn; Ground\'s other delayed cards are now Bury. Wild Diglett, Salamence and friends really Dig, Fly, Dive and Bounce out of reach.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

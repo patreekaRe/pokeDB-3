@@ -197,6 +197,17 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `js/data/cards.js`: the chip, and +3 on a Ground card's block in `effectsOf()`), `ifSand`; powers `surfaceDraw`,
   `surfaceDamage`, `faultEachTurn`, `sandAttack`, `sandEachTurn`, `sandFault`. Hail's own powers and Safety Goggles now
   read Hail only. Boxes: Dig, Fault, Sandstorm. The Sturdy Ability is in `hurtPlayer()`, after Focus Sash.
+  **Dig vs Bury** (the user's call, 2026-10-28: "I'm able to play moves while I'm in dig mode"): only the cards that are
+  the move itself, `dig: true` in effects (Dig, Tunnel, Burrow), take your Pokémon down: `goUnder()` in `js/battle.js`
+  sinks the sprite (`#player-sprite.dug`, its foot kept on the ground line by clipping as it moves), sets `b.dug`
+  (`whyNotPlayable()` refuses everything) and `playCard()` ends the turn once the card is done; `surface()` brings it
+  back up first thing. Every other `surface` card reads **Bury** (the keyword box, `describe()`) and leaves the turn
+  going. No dodge: the card's block is the guard. A duo's partner coming out is never underground (`comeOut()`).
+  Wild Pokémon whose move is Dig / Dive / Fly / Bounce leave for a turn (`LEAVES` in `js/data/safari-mons.js` puts a
+  `kind: 'away'` step before the attack): `AWAY` in `js/battle.js`, the intent warns of the hit to come, the sprite
+  sinks or flies off (`.away-dig` / `-dive` / `-fly`), attack cards and throws are refused while it's gone and any other
+  hit (`hurtEnemy()`) misses ("Missed"); it comes back at its turn's start (`comeBack()`) and strikes. The sim mirrors
+  both (`b.dug`, `en.away` in `sim/engine.js`).
   Session 10 (2026-10-20, "Ground's second session") brought the other 36 (74 in all), defence-leaning: new keys
   `blockPerUnder`, `blockPerFault` (folded into the card's block in `effectsOf()`), `ifFault` (an extra while the enemy has
   any Fault), `blockFault` (Fault equal to your block, after the card's block: Groundswell); powers `digBlock` (as a card

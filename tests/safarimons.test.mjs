@@ -22,7 +22,7 @@ test('every Safari Pokémon has a def, a sprite on disk, a sprite fit, a signatu
     assert.ok(!MAIN_GAME.has(m.id), `${m.id} is already in the main game`);
     assert.ok(['fire', 'grass', 'water', 'normal'].includes(def.type), m.id);
     assert.ok(TEMPLATES[m.template], `${m.id}: template ${m.template}`);
-    if (!SHARED.has(m.id)) assert.equal(def.moves.length, TEMPLATES[m.template].moves.length, m.id);
+    if (!SHARED.has(m.id)) assert.equal(def.moves.filter(mv => mv.kind !== 'away').length, TEMPLATES[m.template].moves.length, m.id);   // Dig / Fly / Dive / Bounce add a turn away
     for (const mv of def.moves) assert.ok(mv.name && mv.kind, m.id);
     assert.ok(existsSync(new URL(def.image, root)), `${m.id}: ${def.image}`);
     assert.ok(SPRITE_FIT[`${m.id}-front`], `${m.id}: SPRITE_FIT`);

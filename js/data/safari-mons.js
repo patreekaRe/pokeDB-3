@@ -583,9 +583,14 @@ export const SAFARI_MONS = [
 /** One line, made into an ENEMY_DEFS entry (enemies.js adds them all). */
 export function safariMonDef(m) {
   const t = TEMPLATES[m.template];
+  const moves = t.moves.map((move, i) => (typeof m.moves[i] === 'string' ? { ...move, name: m.moves[i] } : { ...move, ...m.moves[i] }));
   return {
     name: m.name, type: m.type, hp: t.hp, image: `assets/pokemon/${m.id}-front.gif`, art: false, spriteId: m.id,
     safari: true, template: m.template, description: m.description,
-    moves: t.moves.map((move, i) => (typeof m.moves[i] === 'string' ? { ...move, name: m.moves[i] } : { ...move, ...m.moves[i] })),
+    moves: moves.flatMap(move => (LEAVES[move.name] && move.kind === 'attack' ? [{ kind: 'away', name: move.name, type: move.type, how: LEAVES[move.name] }, move] : [move])),
   };
 }
+
+/** The moves that leave for a turn, as in the games (the user's call, 2026-10-28): the Pokémon goes out of reach (a
+    `kind: 'away'` step, battle.js's AWAY), then strikes on its next turn. */
+const LEAVES = { Dig: 'dig', Dive: 'dive', Fly: 'fly', Bounce: 'fly' };

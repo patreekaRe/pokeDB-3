@@ -720,6 +720,12 @@ function beginPlayerTurn() {
     usual damage, for whoever is out now). It isn't a card played. Then it goes to its own deck's discard pile. */
 function surface() {
   const b = battle, p = b.powers;
+  if (b.dug) {
+    b.dug = false;
+    $('player-sprite').classList.remove('dug');
+    pop('player-zone', '⛏️ Surfaced!', 'note good');
+    playSound('rustle');
+  }
   const up = b.underground;
   b.underground = [];
   for (const [i, { card, owner, exhaust }] of up.entries()) {
@@ -1156,6 +1162,8 @@ function draw(count) {
 function whyNotPlayable(card) {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
+  if (b.dug) return `${stageName(b.starter, b.stage)} is underground!`;
+  if (b.enemy.away && isAttack(card)) return `${b.def.name} is ${AWAY[b.enemy.away].where}! Attacks can't reach it.`;
   if (card.unplayable && !lumCures(card)) return `${card.name} can't be played.`;
   if (hasRelic('room-service') && b.played >= ROOM_SERVICE_CAP) return `Room Service: only ${ROOM_SERVICE_CAP} cards a turn.`;
   if (costOf(card) > b.energy) return 'Not enough PP!';   // an X card ('X') is always playable, even with 0 PP
@@ -1295,6 +1303,32 @@ function augDamage() {
 /** Your cards' block: Damp Rock and Steady Hands add to it, Fortress and Pacifist multiply it, Berserker takes 1 off. */
 const cardBlock = (n) => (battle.aug.noCardBlock ? 0 : Math.max(0, Math.floor((n + (hasRelic('damp-rock') ? 2 : 0) + (hasRelic('metal-coat') ? 1 : 0) + (battle.aug.blockBonus || 0) + (battle.blockBonus || 0)) * (battle.aug.blockMult || 1))));
 
+/** Where a wild Pokémon goes with a move that leaves for a turn (`kind: 'away'`, safariMonDef() in js/data/safari-mons.js). */
+const AWAY = {
+  dig:  { icon: '⛏️', where: 'underground', pop: 'Dug in!', went: 'burrowed underground', back: 'Popped up!', sound: 'rustle' },
+  dive: { icon: '🌊', where: 'underwater', pop: 'Dove!', went: 'dove out of sight', back: 'Surfaced!', sound: 'splash' },
+  fly:  { icon: '🪽', where: 'up high', pop: 'Flew up!', went: 'flew up high', back: 'Swooped down!', sound: 'gust' },
+};
+const AWAY_CLASSES = Object.keys(AWAY).map(k => `away-${k}`);
+
+/** Dig: your Pokémon goes underground with the card, out of sight, and playCard() ends the turn once the card is done.
+    surface() brings it back up at your next turn's start. */
+function goUnder() {
+  const b = battle;
+  b.dug = true;
+  $('player-sprite').classList.add('dug');
+  pop('player-zone', '⛏️ Underground!', 'note good', 150);
+  playSound('rustle');
+}
+
+/** A wild Pokémon that left with Dig / Fly / Dive / Bounce comes back at its turn's start, to strike. */
+function comeBack() {
+  const en = battle.enemy, how = AWAY[en.away];
+  en.away = null;
+  $('enemy-portrait-box').classList.remove(...AWAY_CLASSES);
+  pop('enemy-zone', `${how.icon} ${how.back}`, 'note bad');
+}
+
 async function playCard(uid) {
   const b = battle;
   const index = b.hand.findIndex(h => h.uid === uid);
@@ -1365,6 +1399,12 @@ async function playCard(uid) {
     if (battle !== b) return;
     switched();
     renderAll();
+  }
+  if (b.dug) {   // Dig: your Pokémon went under with the card, so the turn is over
+    await pause(450);
+    if (battle !== b) return;
+    b.busy = false;
+    return endTurn();
   }
   if (!b.hand.length && fired('magnet')) { draw(1); pop('player-zone', '🧿 Quick Powder', 'note good'); }
   if (!b.hand.length && (b.powers.emptyDraw || b.powers.emptyBlock) && !b.emptied) {   // Feather Light, Weightless: the first time each turn
@@ -1506,6 +1546,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     b.underground.push({ card: settled(card), owner: b.duo?.piles ? b.duo.run.out : null, exhaust: !!(card.exhaust || exhaust || corrupts(card) || lumCures(card)) });
     if (b.powers.digBlock) gainBlock(b.powers.digBlock);
     if (fired('shuca-berry')) gainBlock(3);
+    if (card.effects.dig && !b.dug) goUnder();
   }
   else if (card.exhaust || exhaust || corrupts(card) || lumCures(card)) exhaustCard(card);
   else b.discard.push(card.growOnPlay ? grownCopy(settled(card)) : settled(card));
@@ -2089,6 +2130,7 @@ const canCatch = () => battle.catchable && !battle.over && battle.enemy.hp > 0;
 function whyNotThrow() {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
+  if (b.enemy.away) return `${b.def.name} is ${AWAY[b.enemy.away].where}!`;
   if (b.energy < THROW_PP) return `A throw costs ${THROW_PP} PP.`;
   if (!ballsInBag(getSave().balls, ballWeek(), safariBallsLeft(getSave().safari)).length) return 'You\'re out of balls!';
   return null;
@@ -2296,6 +2338,7 @@ async function runAway() {
 /** Damage the enemy: its block soaks it up first. Returns the damage that got through. */
 function hurtEnemy(amount) {
   const en = battle.enemy;
+  if (en.away) return 0;
   const absorbed = Math.min(en.block, amount);
   if (absorbed > 0) soakShield('enemy');
   en.block -= absorbed;
@@ -2541,6 +2584,7 @@ async function enemyTurn() {
   if (runsOff()) return runAway();
   b.enemyActing = true;
   en.block = 0;                                   // enemy block only lasts one round
+  if (en.away) comeBack();
 
   // 1. Burn hurts the enemy first.
   if (en.burn > 0) {
@@ -2687,6 +2731,14 @@ async function enemyTurn() {
       statFx('enemy');
       $('enemy-portrait-box').classList.add('charging');
       log(`${b.def.name} is gathering energy for ${move.name}! Brace yourself!`);
+    } else if (move.kind === 'away') {
+      // Dig / Fly / Dive / Bounce: out of reach until its next turn, when it strikes with the move after (the intent showed it)
+      const how = AWAY[move.how];
+      en.away = move.how;
+      $('enemy-portrait-box').classList.add(`away-${move.how}`);
+      pop('enemy-zone', `${how.icon} ${how.pop}`, 'note bad');
+      playSound(how.sound);
+      log(`${b.def.name} ${move.name === 'Bounce' ? 'sprang up high' : how.went}! Your attacks can't reach it.`);
     } else if (move.kind === 'defend') {
       en.block += move.amount;
       pop('enemy-zone', `+${move.amount} 🛡️`, 'block');
@@ -3131,6 +3183,7 @@ function dressPlayer() {
   $('player-sprite').alt = stageName(b.starter, b.stage);
   $('player-sprite').dataset.stage = String(b.stage);
   $('player-sprite').classList.remove('defeated', 'lunge', 'hit');
+  $('player-sprite').classList.toggle('dug', !!b.dug);
   // legendaries keep one sprite, so they grow by stage like the map sprites; the others' files already grow
   const oneSprite = b.starter.line.every(form => form.id.replace(/-shiny$/, '') === b.starter.line[0].id);
   sizeSprite($('player-sprite'), 0.5, 1.1, 0.75, 1.25, oneSprite ? [0.78, 0.9, 1][b.stage] : 1);
@@ -3146,7 +3199,7 @@ function setupEnemy() {
   img.classList.toggle('pixel', !b.def.art);
   setAura(img, 0);   // puts out Kenmatta's aura from a previous fight (aura.js)
   const box = $('enemy-portrait-box');
-  box.classList.remove('defeated', 'hit', 'attacking', 'possessed');
+  box.classList.remove('defeated', 'hit', 'attacking', 'possessed', ...AWAY_CLASSES);
   box.classList.toggle('sprite', !b.def.art);
   const zone = $('enemy-zone');
   if (b.def.art) ['--size', '--shift', '--drop', '--head-room'].forEach(name => zone.style.removeProperty(name));
@@ -3315,6 +3368,7 @@ async function comeOut(b, { ending = false } = {}) {   // ending: the switch end
   b.starter = to;
   b.ability = abilityFor(to.type, b.relics, b.aug);
   b.blazeLit = false;
+  b.dug = false;
   setTheme(to.type);
   dressPlayer();
   if (motion) {
@@ -3537,6 +3591,7 @@ function renderIntent() {
     value = b.guard ? '✋' : `${evaded(attackDamage(move))}${arrow}${b.evasion ? '🪶' : ''}`;
     detail = b.guard ? 'will hit your Guard' : `${evaded(attackDamage(move))} damage${b.evasion ? ` (${attackDamage(move)}, halved by Evasion)` : ''}${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
     if (b.safari && !typeless()) detail = `${REAL_TYPES[moveType(move, b.def)].label} move: ${detail}`;   // the real chart: which type is coming
+    if (b.enemy.away) detail = `${AWAY[b.enemy.away].where}, out of reach of your attacks: ${detail}`;
   } else if (move.kind === 'defend') {
     icon = '🛡️'; kind = 'defend'; value = `+${move.amount}`; detail = `+${move.amount} block`;
   } else if (move.kind === 'status') {
@@ -3545,6 +3600,9 @@ function renderIntent() {
     // shows the hit it's charging (the next move), so the warning carries its number
     const hit = b.def.moves[(b.enemy.moveIndex + 1) % b.def.moves.length];
     icon = '⚠️'; kind = 'charge'; value = String(attackDamage(hit)); detail = `charging: the turn after, ${hit.name} deals ${attackDamage(hit)} damage`;
+  } else if (move.kind === 'away') {
+    const hit = b.def.moves[(b.enemy.moveIndex + 1) % b.def.moves.length];
+    icon = AWAY[move.how].icon; kind = 'charge'; value = String(attackDamage(hit)); detail = `goes ${AWAY[move.how].where}, out of reach of your attacks: the turn after, ${hit.name} deals ${attackDamage(hit)} damage`;
   } else {
     icon = '💪'; kind = 'buff'; value = `+${move.amount}`; detail = `+${move.amount} strength`;
   }
@@ -3574,7 +3632,7 @@ function renderIntent() {
   if (b.aug.insight) {   // Insight: the move after it too
     const then = b.def.moves[(b.enemy.moveIndex + 1) % b.def.moves.length];
     const hits = then.kind === 'attack' || then.kind === 'drain';
-    box.append(el('span', 'intent-then', `then ${hits ? `⚔️${attackDamage(then)}` : { defend: '🛡️', buff: '💪', charge: '⚠️' }[then.kind] ?? '❔'} ${then.name}`));
+    box.append(el('span', 'intent-then', `then ${hits ? `⚔️${attackDamage(then)}` : { defend: '🛡️', buff: '💪', charge: '⚠️', away: AWAY[then.how]?.icon }[then.kind] ?? '❔'} ${then.name}`));
     box.title += `, then ${then.name}${hits ? ` (${attackDamage(then)} damage)` : ''}`;
   }
 }
@@ -4243,6 +4301,7 @@ function checkStorm() {
 /** A number or word that floats up from a spot on screen. */
 function pop(zoneId, text, kind = '', delay = 0) {
   const zone = $(zoneId);
+  if (text === 'Blocked' && zoneId === 'enemy-zone' && battle?.enemy?.away) text = 'Missed';
   const node = el('span', `pop ${kind}`, text);
   delay /= speed();
   node.style.animationDelay = `${delay}ms`;

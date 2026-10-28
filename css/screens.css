@@ -957,7 +957,12 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 .fast-battle .gb-hp-shield.soak { animation-duration: 0.25s; }
 @media (prefers-reduced-motion: reduce) { .gb-hp-shield.ghost { animation: none; } .gb-hp-shield.soak { animation: shieldSoak 0.5s steps(1) forwards; } }
 .enemy-portrait.defeated { opacity: 0; transform: scale(0.6) rotate(8deg); filter: grayscale(1); }
-#player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s; }
+#player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s, clip-path 0.9s; }
+/* Dig: the sprite sinks into the ground and pops back up. Moving it down while clipping its bottom by the same share keeps
+   its feet on the ground line, so it reads as going into the earth, not sliding off. A wild Pokémon's Fly flies off the top. */
+#player-sprite.dug, .enemy-portrait:is(.away-dig, .away-dive) #enemy-img { clip-path: inset(0 0 100% 0); transform: translateY(100%); transition: transform 0.55s ease-in, clip-path 0.55s ease-in, opacity 0.55s; }
+#enemy-img { transition: transform 0.9s, clip-path 0.9s, opacity 0.6s; }
+.enemy-portrait.away-fly #enemy-img { transform: translateY(-140%) scale(0.6); opacity: 0; transition: transform 0.6s ease-in, opacity 0.6s ease-in; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }
 #player-sprite.fled { opacity: 0; transform: translateX(-120px); }   /* Poké Doll: ran away */
 

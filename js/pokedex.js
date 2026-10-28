@@ -629,9 +629,10 @@ export function finishTyping(e) {
 function moveList(head, moves, extra) {
   const box = el('div', 'pdx-lcd pdx-moves');
   box.append(el('h4', '', head));
-  for (const m of moves) {
+  for (const [i, m] of moves.entries()) {
+    if (m.kind === 'away') continue;   // Dig / Fly / Dive / Bounce's turn out of reach: told on the strike's row
     const row = el('div', `pdx-move kind-${m.kind}`);
-    const nums = m.kind === 'charge' ? 'charging' : `${moveNumbers(m, extra)}${m.grow ? `, +${m.grow} each use` : ''}`;
+    const nums = m.kind === 'charge' ? 'charging' : `${moveNumbers(m, extra)}${m.grow ? `, +${m.grow} each use` : ''}${moves[i - 1]?.kind === 'away' ? ', after a turn away' : ''}`;
     row.append(el('span', 'pdx-move-icon', (MOVE_KIND[m.kind] || ['⚠️'])[0]), el('span', 'pdx-move-name', m.name), el('span', 'pdx-dots'), el('span', 'pdx-move-num', nums));
     box.append(row);
   }

@@ -14,6 +14,9 @@ window.__battle = () => battle;
 window.__give = (id) => { const card = CARDS_BY_ID[id]; const uid = nextUid++; battle.hand.push({ uid, card }); renderAll(); return uid; };
 window.__play = async (id) => { const uid = window.__give(id); await playCard(uid); for (let i = 0; i < 40 && battle.busy; i++) await sleep(100); };
 window.__render = () => renderAll();
+window.__why = (id) => whyNotPlayable(CARDS_BY_ID[id]);
+window.__whyThrow = () => whyNotThrow();
+window.__settle = async () => { for (let i = 0; i < 80 && (battle.busy || battle.enemyActing); i++) await sleep(100); };
 window.__item = (e) => itemEffects(e);
 window.__endTurn = async () => { battle.busy = false; await endTurn(); for (let i = 0; i < 60 && (battle.busy || battle.enemyActing); i++) await sleep(100); };
 `
@@ -44,19 +47,51 @@ await open();
 let s = await B(() => { const b = window.__battle(); return { type: b.starter.type, ability: b.ability?.id, deck: [...b.drawPile, ...b.hand.map(h => h.card)].length }; });
 check(s.type === 'ground' && s.ability === 'sturdy', `Trapinch is out with Sturdy (${JSON.stringify(s)})`);
 
-// Dig: underground when played, surfacing at your next turn's start
-check(await gain('dig') === 6, 'Dig: block 6 now');
-s = await B(() => { const b = window.__battle(); return { under: b.underground.map(u => u.card.id), inDiscard: b.discard.some(c => c.id === 'dig'), badge: [...document.querySelectorAll('#player-status .badge')].map(n => n.title).find(t => /^Underground/.test(t)) }; });
-check(s.under.join() === 'dig' && !s.inDiscard && !!s.badge, `Dig goes underground, not to the discard pile (${s.badge})`);
-await B(() => window.__play('tunnel'));
+// Dig (Dig, Tunnel, Burrow): your Pokémon goes under with the card, out of sight, and the turn ends by itself; it surfaces
+// at your next turn's start. Bury cards go under alone and the turn goes on (the user's call, 2026-10-28)
+const turn0 = await B(() => window.__battle().turn);
 let pre = await B(() => window.__battle().enemy.hp);
+const digging = B(() => window.__play('dig'));
+await page.waitForFunction(() => window.__battle().enemyActing || window.__battle().turn > 1, null, { timeout: 15000 });
+s = await B(() => { const b = window.__battle(); return { dug: b.dug, hidden: document.getElementById('player-sprite').classList.contains('dug'), under: b.underground.map(u => u.card.id), inDiscard: b.discard.some(c => c.id === 'dig'), badge: [...document.querySelectorAll('#player-status .badge')].map(n => n.title).find(t => /^Underground/.test(t)) }; });
+check(s.dug && s.hidden && s.under.join() === 'dig' && !s.inDiscard && !!s.badge, `Dig: Trapinch goes under with the card, out of sight, and its turn ends by itself (${JSON.stringify(s)})`);
+await digging;
+await B(() => window.__settle());
+s = await B(() => { const b = window.__battle(); return { turn: b.turn, hp: b.enemy.hp, dug: b.dug, hidden: document.getElementById('player-sprite').classList.contains('dug'), under: b.underground.length, disc: b.discard.filter(c => c.id === 'dig').length }; });
+check(s.turn === turn0 + 1 && pre - s.hp === 12 && !s.dug && !s.hidden && s.under === 0 && s.disc === 1, `next turn it surfaces: back in sight, 12 damage, Dig to the discard pile (${JSON.stringify(s)})`);
+s = await B(() => window.__why('tunnel'));
+check(s === null, `a fresh turn can play again (${s})`);
+await B(() => window.__play('hunker-down'));
+s = await B(() => { const b = window.__battle(); return { turn: b.turn, dug: b.dug, busy: b.busy, under: b.underground.map(u => u.card.id) }; });
+check(s.turn === turn0 + 1 && !s.dug && !s.busy && s.under.join() === 'hunker-down', `Bury (Hunker Down): the card goes under, the turn goes on (${JSON.stringify(s)})`);
+pre = await B(() => window.__battle().enemy.hp);
 await B(() => window.__endTurn());
-s = await B(() => { const b = window.__battle(); return { hp: b.enemy.hp, under: b.underground.length, disc: b.discard.filter(c => ['dig', 'tunnel'].includes(c.id)).length }; });
-check(pre - s.hp === 12 + 7 && s.under === 0 && s.disc === 2, `next turn they surface: 12 + 7, then to the discard pile (${pre - s.hp}, ${s.disc} discarded)`);
+check(pre === await B(() => window.__battle().enemy.hp) && await B(() => window.__battle().block) === 4, 'Hunker Down surfaces: block 4');
+
+// a wild Pokémon's Dig: out of reach for a turn (your attacks can't be played, other hits miss), then it strikes
+await fresh();
+await B(() => { const b = window.__battle(); b.def = { ...b.def, moves: [{ kind: 'away', name: 'Dig', type: 'ground', how: 'dig' }, { kind: 'attack', amount: 10, name: 'Dig', type: 'ground' }] }; b.enemy.moveIndex = 0; });
+await B(() => window.__render());
+s = await B(() => document.getElementById('enemy-intent').title);
+check(/underground/.test(s) && /Dig deals \d+ damage/.test(s), `the intent warns it goes underground, then the hit to come (${s})`);
+const hp0 = await B(() => window.__battle().hp);
+await B(() => window.__endTurn());
+s = await B(() => { const b = window.__battle(); return { away: b.enemy.away, cls: document.getElementById('enemy-portrait-box').classList.contains('away-dig'), hp: b.hp, why: window.__why('mud-shot'), throwWhy: window.__whyThrow() }; });
+check(s.away === 'dig' && s.cls && s.hp === hp0, `it digs in, out of sight, and doesn't hit (${JSON.stringify(s)})`);
+check(/underground/.test(s.why || '') && /underground/.test(s.throwWhy || ''), `attacks and throws can't reach it (${s.why}; ${s.throwWhy})`);
+pre = await B(() => window.__battle().enemy.hp);
+await B(() => window.__play('mud-shot'));
+await B(() => window.__play('sand-veil'));
+check(pre === await B(() => window.__battle().enemy.hp) && await B(() => window.__battle().block) >= 8, 'Mud Shot does nothing; Sand Veil still blocks');
+await B(() => { const b = window.__battle(); b.block = 0; });
+await B(() => window.__endTurn());
+s = await B((h) => { const b = window.__battle(); return { away: b.enemy.away, cls: document.getElementById('enemy-portrait-box').classList.contains('away-dig'), lost: h - b.hp }; }, hp0);
+check(!s.away && !s.cls && s.lost > 0, `it pops up and strikes (${JSON.stringify(s)})`);
+await calm();
 
 await fresh();
-await B(() => window.__play('tunnel'));
-await B(() => window.__play('tunnel'));
+await B(() => window.__play('hunker-down'));
+await B(() => window.__play('hunker-down'));
 check(await hit('earth-power') === 6 + 12, 'Earth Power with 2 cards underground: 6 + 6 x2');
 await B(() => window.__play('arena-trap'));
 await B(() => window.__play('excavate'));
@@ -64,9 +99,9 @@ await B(() => window.__play('shore-up'));
 pre = await B(() => window.__battle().enemy.hp);
 await B(() => window.__endTurn());
 s = await B(() => { const b = window.__battle(); return { hp: b.enemy.hp, hand: b.hand.length, block: b.block }; });
-check(pre - s.hp === 7 + 7 + 7 * 3, `three surface: two Tunnels' 7 and Excavate's 7 each (${pre - s.hp})`);
+check(pre - s.hp === 7 * 3, `three surface: Excavate's 7 each (${pre - s.hp})`);
 check(s.hand === 5 + 3, `Arena Trap: a card for each that surfaced (hand ${s.hand})`);
-check(s.block === 7, `Shore Up's Surface: block 7 on the new turn (${s.block})`);
+check(s.block === 4 + 4 + 8, `two Hunker Downs' and Shore Up's Surface: block 16 on the new turn (${s.block})`);
 
 // Fault
 await open();
@@ -123,8 +158,8 @@ check(s.hp === 1 && s.used && !s.over, `Sturdy: a knock-out hit leaves you at 1 
 
 // session 10: the defensive half
 await open();
-await B(() => window.__play('tunnel'));
-await B(() => window.__play('tunnel'));
+await B(() => window.__play('hunker-down'));
+await B(() => window.__play('hunker-down'));
 check(await gain('trench') === 6 + 3 * 2, 'Trench with 2 cards underground: 6 + 3 x2');
 check(await gain('bunker') === 6 + 4 * 2, 'Bunker with 2 cards underground: 6 + 4 x2, then it digs in too');
 await B(() => window.__play('foxhole'));
@@ -168,7 +203,7 @@ check(s.look === 'rhyhorn,rhydon,rhyperior' && s.sturdy === 2, `Rhyhorn plays Tr
 await fresh();
 await calm();
 check(await gain('mud-bomb') === 2, 'Light Clay: 2 block whenever you apply Fault');
-check(await gain('tunnel') === 3, 'Shuca Berry: 3 block as a card goes underground');
+check(await gain('hunker-down') === 2 + 3, 'Shuca Berry: 3 block as a card goes underground');
 check(await hit('mud-shot') === 8 + 2, 'Soft Sand: Ground attacks +2');
 await B(() => window.__play('endless-sands'));
 s = await B(() => window.__battle().weather);
