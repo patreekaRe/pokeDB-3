@@ -108,7 +108,7 @@ export async function openPlazaView({ onCard } = {}) {
   const notes = el('div', 'pv-notes');
   const mine = el('div', 'pv-note');
   const code = myCode();
-  mine.append(el('span', '', 'Your trainer code'), el('b', '', sample ? 'ABCD-EFGH' : code ? formatCode(code) : '----'), el('span', '', code || sample ? 'Give it to a friend!' : 'Sign in to get yours.'));
+  mine.append(el('span', '', 'Your code'), el('b', '', sample ? 'ABCD-EFGH' : code ? formatCode(code) : '----'), el('span', '', code || sample ? 'Share it!' : 'Sign in first.'));
   const addNote = el('div', 'pv-note');
   const form = el('form', ''), input = el('input', ''), go = el('button', 'pv-btn', 'Add');
   Object.assign(input, { placeholder: 'ABCD-EFGH', maxLength: 12, autocomplete: 'off', spellcheck: false });
