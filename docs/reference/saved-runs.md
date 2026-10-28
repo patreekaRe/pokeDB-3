@@ -23,8 +23,9 @@ writes the room (`biome:nodeId`) into the saved run's `credited` list straight a
 (like restarting a StS fight), but winning it again doesn't count for the Pokédex twice (the user farmed Miltank's
 research by refreshing, 2026-09-28). Refreshing mid-fight to restart one you're losing is allowed on purpose (the
 user's call: StS allows it too), so don't serialise battles to stop it.
-A version mismatch or any bad id (deck, relics, Mart stock) silently
-discards it: bump `RUN_SAVE_VERSION` when the shape changes. `route` (roadmap item 19, 2026-10-06) is the biome id taken
+A version mismatch or any bad id (deck, relics, Mart stock) discards it (since 2026-10-23 not silently: the console says
+why, and `stashLostRun()` in `js/storage.js` keeps the last one in `pokedb.run.lost` with its error; `?runback` puts it
+back to try again, after a fix): bump `RUN_SAVE_VERSION` when the shape changes. `route` (roadmap item 19, 2026-10-06) is the biome id taken
 at each slot (`['clearing', 'ruins']`): the crossroads (`crossroads()` from `js/crossroads.js`, in `walkOn()`) adds the next slot's pick before the
 journey film, and the next biome's `showMap()` checkpoints it. A run saved before it has none and is read as the default
 road (`restoreRun()` rebuilds it from `BIOMES`), so it needed no version bump; a route id that isn't a biome of its slot

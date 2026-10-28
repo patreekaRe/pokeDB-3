@@ -21,6 +21,7 @@
    hand-made `sections`, each [icon, heading, lines].
    ============================================================ */
 
+
 /** Where a note goes: its heading, in this order. A new group needs a smooth or pixel icon for its emoji. */
 export const GROUPS = {
   hub: ['🌳', 'The Clearing'],
@@ -41,9 +42,19 @@ export const RELEASE_AT = 12;
 /** Past this the tests fail: cut a patch. */
 export const NEXT_MAX = 20;
 
+/** Lines for something built but held behind its switch, each [on, [group, line]]: they join NEXT by themselves the
+    day the switch goes on, so players never read of what they can't see. */
+const HELD = [
+];
+
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['battle', 'Every attack plays its own move: jets, bolts, bites, beams and quakes. Blocks raise a shield, heals glow, big cards get a cut-in, and PP and End Turn are new gold plates, PP filling like a glass, the Safari\'s Throw in green and gone against Alphas and bosses.'],
+  ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo close with a ✕ at the top right, clear of the ▼ MORE tag, and Kurt\'s bench is compact, its shelf twice as tall on a phone.'],
+  ['dex', 'The Moves app\'s type tabs are bigger, swipe sideways with arrows showing more past the edge, and the picked type\'s name and count top its cards.'],
+  ['battle', 'The battle\'s hold-and-swipe hint is now a wordless fingertip, gone the moment you slide a card, and gone for good once you\'ve swiped a few.'],
   ['battle', 'A rare Safari spawn shows a RARE pill under its HP bar: a figure running and the turns left before it runs off, red on its last.'],
+  ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -55,6 +66,64 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.31',
+    name: 'Balls & Records',
+    date: '2026-10-28',
+    notes: [
+  ['dex', 'The Pokédex\'s cover holds a Badge Case: a slot per badge group, gold-rimmed once full. Choose each slot\'s badge with the Trainer Card\'s new Cover key.'],
+  ['dex', 'Your pinned badge wears a gold plate on the Trainer Card and sits pinned on your partner\'s portrait, so it\'s easy to find.'],
+  ['base', 'Secret Base stairs look like stairs now: a flight with banisters up to a doorway high in the wall, and a stairwell in the floor going down.'],
+  ['fixes', 'Evolutions play in full again: the tap that closed "What? It\'s evolving!" was skipping the whole show, the Depths camp plays its own song, not the Clearing\'s, and a friend\'s "added you" pop-up waits for whoever is talking to finish; a thrown ball is half its old size.'],
+  ['base', 'Jukeboxes play records now: Smeargle brings you one (each turning in 3D as you pick) with your first record, the Clearing\'s song, and friends visiting hear it. Mended towns\' trading posts sell 55 more.'],
+  ['runs', 'A crossroads board shows its biome\'s research beside its Pokédex: how many of its Pokémon you\'ve researched, on a bar of its own.'],
+  ['battle', 'No two cards in a run are the same card with other numbers any more: 197 cards and 424 signature moves got new moves, and 28 look-alikes left the rewards.'],
+  ['base', 'Timburr & Co.\'s catalogue shows a MORE pill while more houses sit off to the right; tap it or swipe the row.'],
+  ['base', 'Over 120 new wallpapers and floors, sorted by theme, with a "!" on new ones and one of each half price every day; Smeargle at the Poké Mall sells them too.'],
+  ['battle', 'Every ball you throw is a 3D ball like the Pokémon Center\'s, wearing the Apricorn skin you carry (picked by name on your Trainer Card, or put away for a plain one), as does the ball your partner comes out of.'],
+  ['mall', 'The Safari Outfitter sells one of Kurt\'s Apricorn balls a day, left of the Day Pass booth.'],
+  ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo show a bobbing ▼ MORE tag while there\'s more to scroll down to.'],
+  ['battle', 'Played cards leave smooth trails in their type: glowing embers, falling droplets, tumbling leaves, twinkling stars and snowflakes, and exhausted cards burn away with a glowing edge.'],
+    ],
+  },
+  {
+    version: '1.30',
+    name: 'Houses & Banners',
+    date: '2026-10-25',
+    notes: [
+  ['hub', 'A Berry Booth by the Clearing\'s gate is where you pack your Berry Pouch and run kit now, with a guide to how the pouch works; what you pack stays packed.'],
+  ['fixes', 'The Clearing\'s PC opens as soon as you reach it, instead of waiting, sometimes for good, on the Secret Base\'s furniture to load, Level 10 foil cards no longer slow a fight while their sheen follows your phone\'s tilt, and cloud save stops asking "Two saves found" over your own phone\'s save, or swapping out a run in progress without asking. Runs use less memory: a Center or Mart rests once you leave it, a biome\'s rooms are let go as you walk on, and songs play in mono. A Mart no longer shows a relic SOLD OUT because you found it on the way there; another takes its place. Game Corner regulars play the card tables from the ends and step out of your way, instead of standing in front of a game.'],
+  ['hub', 'The Clearing\'s Halloween ghosts no longer walk up to greet you each visit; they still chat at random and when tapped.'],
+  ['base', 'Your Secret Base can be a house: Timburr & Co.\'s stand by your lot builds 25 houses, tried on before you buy, in eight paints; big feats earn rarer ones. Friends\' visits start on their front lawn.'],
+  ['base', 'Every room of your Secret Base, the backyard too, picks from all your Safari catches, up to 6 a room, and your first two catches move in by themselves.'],
+  ['runs', 'A town\'s trader offers different items for each item you show them, so two commons no longer get the same three.'],
+  ['runs', 'The run map has an Abandon run key beside the floor, a Game & Watch runner dashing across it.'],
+  ['music', 'The Safari Zone has its own song, in its lobby and on every area\'s map.'],
+  ['runs', 'A held berry not yet eaten can come off again from the Bag\'s Items on the map, back into the Berry Pouch, to save it for a fight ahead.'],
+  ['runs', "In the Poké Mart you can tap a card, item or relic to read it even when you can't afford it or your Bag is full."],
+  ['battle', 'Each turn opens with a banner across the arena, Slay the Spire style: Battle Start! with its own sting, then Your Turn and its number, then Enemy Turn, each with a Game Boy blip.'],
+  ['battle', 'A skull and a red-blinking HP bar warn of a knockout hit, relics and Abilities get a banner saying what they did, and fights end on Victory! or Defeat.'],
+    ],
+  },
+  {
+    version: '1.29',
+    name: 'Champion Levels',
+    date: '2026-10-22',
+    notes: [
+  ['modes', 'Duo Run: it has three areas of its own, your pair stands at the gate as you pick it, a ✨ on a Pokémon\'s portrait switches its shiny, and you hold your Pokémon to switch, for 1 PP and your turn.'],
+  ['modes', 'Ten duo starters a type now, Absol to Zorua: the map marks their rooms. Two-stage lines and single Pokémon like Lapras power up like legendaries.'],
+  ['look', 'Types now show as round coloured badges everywhere, from cards and battle to the Pokédex and map; a duo\'s swap button sits on your HP box\'s corner.'],
+  ['battle', 'Endless combos trimmed: Growth Spurt+ keeps Exhaust, Overgrowth+ costs 0 instead of doubling, Ice Core and Electric Seed give half, Dark Memory skips Magician, Lum Berry no longer draws.'],
+  ['battle', 'Flame Wall and Mat Block now give 9 block (12 upgraded), a lift for Fire and Fighting.'],
+  ['dex', 'The Moves app\'s type tabs show just their round type badges now, instead of cut-off names.'],
+  ['runs', 'Trainer Levels 6-10 for champions: weaker healing, less HP, tougher foes and bosses. Your star changes colour as you climb, and each Level\'s first win pays a jackpot.'],
+  ['runs', 'Each win on Trainer Levels 6-10 wraps your partner in a bigger Super Saiyan aura; Level 10 makes you a Pokémon Master, with a title, a crystal pedestal and a floating crown.'],
+  ['runs', 'More for high Levels: foil cards for starters won on 6 and up, Gilded and Clear Pokédex shells at 8 and 10, and a letter from every Gym Leader.'],
+  ['battle', 'Apple Acid+ now deals 10 damage and applies 1 Vulnerable, so it no longer outdoes Seed Bomb.'],
+  ['fixes', 'The run map is smoother on phones: its glowing badges and blinking rooms no longer repaint every frame.'],
+  ['hub', 'A Buddy Projector stands by the quest board: tap it to pick your walking buddy, shiny ones too, and see them as a hologram. The PC no longer picks them.'],
+    ],
+  },
   {
     version: '1.28',
     name: 'Duo Run',
@@ -583,12 +652,12 @@ export const IN_THE_GAME = [
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
   ['🏘️', '5 towns', 'A gateway town on every road out of the Clearing, each with a trader, its Gym Leaders\' homes and a broken Waystone to mend, plus Kurt\'s Workshop at home to craft for it.'],
   ['🏅', '13 Gym Leaders', 'Two or three in every biome, standing in front of its boss, each with their own gym, speeches and badge.'],
-  ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
+  ['⭐', '11 Trainer Levels', 'Level 0 to 10, each adding a new rule. Win to unlock the next, strike the Sealed Gate harder, and past 5 earn an aura and a crown.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
   ['🏆', '189 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over twelve areas, each with a rare shiny, and a leaderboard; then a Duo Run with two starters of nine types.'],
-  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
+  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, or one of 25 houses Timburr & Co. build, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls, Day Passes and the Shiny Exchange.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 28 games to take home and play, from slot machines to five pinball tables, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],

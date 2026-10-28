@@ -23,6 +23,7 @@ import { SAFARI_ROSTER } from './data/safari.js';
 
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
+const LOST_KEY = 'pokedb.run.lost';
 
 /** The two localStorage keys, for the cloud save (js/cloud.js), which copies them as they are. */
 export const SAVE_KEYS = { save: KEY, run: RUN_KEY };
@@ -44,6 +45,7 @@ const freshSave = () => ({
   cryVolume: null,           // the Cries bar; null = `sfxVolume` (cries went with effects before it had a bar)
   battleSpeed: 1,            // 1 or 2: the enemy's turn and the hit animations (battleSpeed() in js/battle.js)
   endTurnWarn: true,         // ask before ending a turn with PP left and a card you could play
+  handSwipes: 0,             // cards swiped up to play, counted to HAND_TAUGHT; the battle's gesture hint stops after (js/battle.js)
   textSpeed: 'mid',          // text boxes typing: slow, mid, fast or instant (textPace() in js/settings.js)
   textAuto: true,            // text boxes move on by themselves, all but their last line (textHold() in js/prefs.js), or wait for a tap
   clock: 'auto',             // the scenes' time of day: auto (the device clock) or dawn / day / dusk / night (js/daytime.js)
@@ -121,6 +123,8 @@ const freshSave = () => ({
     biomesSeen: [],           // every biome a run has walked into, by id (the crossroads' other roads too; the Explorer Badge's)
     level5WinsBy: {},         // Trainer Level 5 wins per starter (a gold star on its portrait); counted from the rewards' release, not seeded
     level5Jackpot: {},        // { fire: true }: the type's first Level 5 win paid LEVEL5_JACKPOT
+    levelJackpot: {},         // { 7: true }: the first win on Trainer Level 6-10 paid LEVEL_JACKPOT
+    levelLetters: {},         // { 7: true }: the Gym Leaders wrote for the first win on Trainer Level 6-10 (js/data/level-letters.js)
     playMs: 0,                // play time while the page is visible, counted from the Trainer Card's release (initPlayTime())
   },
 });
@@ -354,7 +358,7 @@ export function countDex(id) {
 
 // Settings' choices (and the deck view's sort) belong to the player, not the progress: a reset keeps them
 const PREF_KEYS = ['muted', 'volume', 'musicVolume', 'sfxVolume', 'cryVolume', 'battleSpeed', 'battleFx', 'endTurnWarn', 'textSpeed', 'textAuto',
-  'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName', 'setupDone'];
+  'clock', 'calmFx', 'vibration', 'shell', 'foil', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName', 'setupDone'];
 
 export function resetSave() {
   const kept = Object.fromEntries(PREF_KEYS.filter(k => k in data).map(k => [k, data[k]]));
@@ -384,4 +388,19 @@ export function clearRunData() {
   try { localStorage.removeItem(RUN_KEY); }
   catch (err) { /* blocked: nothing to clear */ }
   wrote();
+}
+
+/* A run that wouldn't load used to vanish without a trace (2026-10-23: the user lost a run with berries packed and
+   nothing showed why). The last one is kept here with its error, and ?runback puts it back to try again. */
+export function stashLostRun(saved, err) {
+  try { localStorage.setItem(LOST_KEY, JSON.stringify({ at: Date.now(), why: String(err?.stack || err), saved })); }
+  catch (e) { /* storage full or blocked */ }
+}
+
+export function restoreLostRun() {
+  try {
+    const lost = JSON.parse(localStorage.getItem(LOST_KEY));
+    if (lost?.saved) saveRunData(lost.saved);
+    return lost;
+  } catch (err) { return null; }
 }

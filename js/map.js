@@ -33,6 +33,8 @@ import { random } from './rng.js';
 import { RING } from './data/towns.js';
 import { MATERIALS_BY_ID } from './data/satchel.js';
 import { getSave } from './storage.js';
+import { REAL_TYPES } from './data/real-types.js';
+import { typeBadge } from './type-badge.js';
 
 // Map generation is also imported by the headless balance bot's Web Worker. Load DOM helpers only in a page so the
 // worker can share generateMap() without evaluating UI modules that need document/window.
@@ -743,7 +745,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
-export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, read = null, track = 0, type = null, peek = null, ken = false, gym = null, graves = null, onGrave = null } = {}) {
+export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, read = null, track = 0, type = null, peek = null, ken = false, gym = null, graves = null, onGrave = null, duoNew = null } = {}) {
   // peek: a look-only copy drawn into another box (the Bag's map, from a battle or a reward), leaving the map screen's own alone
   // ken: Kenmatta has been beaten once, so the Move Tutor's ❓ room shows his face
   // read: picking a ❓ room for Unown Rubbing; track: Tracker's Eye's level, marking wild fights by match-up against `type`
@@ -792,7 +794,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     const match = track && type && node.type === 'fight' && !node.visited && matchUp(node.enemyId, type, track);
     if (match) {
       const def = ENEMY_DEFS[node.enemyId];
-      btn.append(el('span', `map-match ${match}`, TYPES[def.type].icon));
+      btn.append(el('span', `map-match ${match}`)); btn.lastChild.append(typeBadge(def.type));
       label = `${label}: a ${TYPES[def.type].label} Pokémon, ${match === 'tough' ? 'a tough match-up' : 'weak to you'}`;
     }
 
@@ -808,6 +810,13 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
       label = `${label}: ${tip}`;
       btn.classList.add('rare');
       floater(box, node, 'map-rare map-grass', '', tip).append(rareMark());
+    }
+    // a Safari wild whose line you haven't caught: its type's badge on the room's top-left, unnamed like every room
+    const newType = node.type === 'fight' && !node.visited && node.enemyId && duoNew?.(node.enemyId);
+    if (newType) {
+      const tip = `A new duo starter lives here! Catch it to add ${/^[AEIOU]/.test(REAL_TYPES[newType].label) ? 'an' : 'a'} ${REAL_TYPES[newType].label} look to your duo pool.`;
+      label = `${label}: ${tip}`;
+      floater(box, node, 'map-rare map-duo', '', tip).append(typeBadge(newType));
     }
     // a town's material (js/data/satchel.js's markSparkles()) glints by its room till you walk in
     if (node.sparkle && !node.visited) {
@@ -926,13 +935,14 @@ export function graveSvg({ flowers = false, avenged = false } = {}) {
 /** A floating icon by its room (a Safari rare spawn's star, a town's material, a Waystone Shard), its own button so a tap
     says what it is (the user's ask, 2026-10-18). A material's badge, a shard and a rare spawn's grass all sit on the room's top-right corner. */
 function floater(box, node, cls, glyph, tip) {
-  const corner = /map-sparkle|map-shard|map-grass/.test(cls), off = BUILDINGS.includes(node.type) ? 2 : 1.5;
+  const corner = /map-sparkle|map-shard|map-grass|map-duo/.test(cls), off = BUILDINGS.includes(node.type) ? 2 : 1.5;
+  const dx = /map-duo/.test(cls) ? -off : off;   // a new duo starter's badge on the top-left, clear of the others
   const btn = el('button', `map-float ${cls}`, glyph);
   btn.type = 'button';
   btn.title = tip;
   btn.setAttribute('aria-label', tip);
   btn.addEventListener('click', (e) => { e.stopPropagation(); mapTip(box, btn, tip); });
-  place(btn, nodeX(node) + (corner ? off : 0), rowY(node.floor) - (corner ? off : 2.5));
+  place(btn, nodeX(node) + (corner ? dx : 0), rowY(node.floor) - (corner ? off : 2.5));
   box.append(btn);
   return btn;
 }
@@ -1007,7 +1017,7 @@ function revealedFigure(node) {
   img.src = def.image;
   img.alt = '';
   fig.append(img);
-  if (node.type === 'fight' && TYPES[def.type]) fig.append(el('span', `map-revealed-type type-${def.type}`, TYPES[def.type].icon));
+  if (node.type === 'fight' && TYPES[def.type]) { fig.append(el('span', `map-revealed-type type-${def.type}`)); fig.lastChild.append(typeBadge(def.type)); }
   fig.title = `${node.type === 'elite' ? 'Alpha ' : ''}${def.name}${node.type === 'fight' ? ` (${TYPES[def.type].label} type)` : ''}`;
   place(fig, nodeX(node), rowY(node.floor));
   return fig;

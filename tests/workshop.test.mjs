@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { RECIPES, GIFTS, FAVOURITE, SKINS, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, safariSprite } from '../js/data/workshop.js';
+import { RECIPES, GIFTS, FAVOURITE, SKINS, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, thrownSprite, sendSprite } from '../js/data/workshop.js';
 import { MATERIALS_BY_ID, KEY_BY_ID, satchelOf, addMat } from '../js/data/satchel.js';
 import { TOWNS, QUESTS, CLEARING } from '../js/data/towns.js';
 import { FURNITURE, isEarned, howToEarn } from '../js/data/furniture.js';
@@ -93,9 +93,13 @@ test('a gift: their favourite twice the liking, and the first one makes them fon
   assert.equal(giveGift(c.ws, 'fan', 'john').ws, c.ws, 'none left to give');
 });
 
-test('an Apricorn skin only changes the Safari Ball\'s sprite, and every sprite is there', () => {
-  assert.equal(safariSprite(workshopOf({})), 'safari-ball');
-  assert.equal(safariSprite({ skin: 'love' }), 'love-ball');
+test('an Apricorn skin changes every thrown ball and the ball sent out in battle, and every sprite is there', () => {
+  assert.equal(thrownSprite(workshopOf({}), 'safari-ball'), 'safari-ball');
+  assert.equal(thrownSprite(workshopOf({}), 'ultra-ball'), 'ultra-ball');
+  assert.equal(thrownSprite({ skin: 'love' }, 'safari-ball'), 'love-ball');
+  assert.equal(thrownSprite({ skin: 'love' }, 'master-ball'), 'love-ball');
+  assert.equal(sendSprite(workshopOf({})), 'poke-ball');
+  assert.equal(sendSprite({ skin: 'love' }), 'love-ball');
   for (const s of SKINS) assert.ok(existsSync(new URL(`../assets/items/${s.sprite}.png`, import.meta.url)), s.sprite);
   assert.ok(existsSync(new URL('../assets/trainers/kurt.png', import.meta.url)) && existsSync(new URL('../assets/trainers/kurt-blink.png', import.meta.url)));
 });
@@ -190,7 +194,7 @@ test('each friend teaches Kurt one secret Safari Ball look at four hearts, with 
     assert.ok(!isMade(r, workshopOf({}), satchelOf({})));
     const ws = madeInto(r, workshopOf({}));
     assert.ok(isMade(r, ws, satchelOf({})), 'made only once');
-    assert.equal(safariSprite({ ...ws, skin: r.makes }), r.sprite);
+    assert.equal(thrownSprite({ ...ws, skin: r.makes }, 'great-ball'), r.sprite);
   }
 });
 

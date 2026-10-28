@@ -20,8 +20,8 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
   makes it a grid of three equal columns, each capsule stretched to fill its own, and `.turn-side` `display: contents`; the user's calls
   2026-10-02 and 2026-10-03, when End Turn was squeezed and its label sat low). Normal fights keep PP left, End Turn right.
 - **When**: a Safari run's wild rooms only (`battle.catchable`: `run.safari` and kind `fight`; Alphas and bosses can't be
-  caught: there `battle.uncatchable` shows Throw greyed, and a tap says so, `NO_CATCH`; 2026-10-20, the user was caught off guard
-  by the button just missing), every turn, at any HP (like the games; until 2026-10-02 only once the HP was red, below 25%). The **Throw**
+  caught, and Throw doesn't show there: 2026-10-20 it showed greyed, `battle.uncatchable`, a tap saying why, as the user was
+  caught off guard by it missing; 2026-10-28 the user asked for it gone), every turn, at any HP (like the games; until 2026-10-02 only once the HP was red, below 25%). The **Throw**
   button (`#throw-btn`, green, beside End Turn; on phones on the PP row) shows all fight.
 - **Cost**: a throw costs `THROW_PP` (1 PP) and ends your turn (`whyNotThrow()`: `energy >= THROW_PP`); cards and items
   can be played first, so wear it down, then throw with the PP you kept. A miss runs `endTurn()`, so the enemy acts.
@@ -51,8 +51,9 @@ The daily seeded run (roadmap: "Post-v1.0: the Safari Zone daily run"). Phase 1 
 - In `js/data/cards.js`: `SIGNATURE_CARDS` (one per Safari Pokémon, `sig-<enemy id>`, built from its own best-known move
   with existing mechanics, `safari: true`, `maxCopies: 1`, `from`) and `SAFARI_ONLY_CARDS` (Bait, Rock). They're in
   `CARDS_BY_ID` (upgrades too) but never in `ALL_CARDS`, so never in the Card index or `poolForType()`. `SIGNATURE_FOR`
-  maps an enemy id to its card. A new Safari Pokémon needs one (the test checks every `SAFARI_ROSTER` id). Their texts
-  were checked against the run's pools for same cost + same text (the "No duplicates in one run" rule).
+  maps an enemy id to its card. A new Safari Pokémon needs one (the test checks every `SAFARI_ROSTER` id). The twin rule
+  holds them (the signature pass, 2026-10-27, `docs/card-twins.md`'s last section): 424 of the 514 got new lines so none
+  reads like a card a run meets or like another signature card.
 - **Bait** (0 PP, `bait: 1`): `enemy.bait`, a 🍓 badge; +50% catch multiplier each, its attacks +`BAIT.damage` (3) each
   (`attackDamage()`).
 - **Rock** (0 PP, 4 damage, Vulnerable 1, `rock: 1`): `enemy.rock`, a 🪨 badge. `runsOff()` at the start of the enemy's
@@ -267,8 +268,10 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   signature card's type. Battles use the real types (below).
 - A new Pokémon: its line, `assets/pokemon/<id>-front.gif` (PokeAPI's `versions/generation-v/black-white/animated/<dex>.gif`
   from raw.githubusercontent.com) and its `SPRITE_FIT` line (a PIL median bbox over all frames). `tests/safarimons.test.mjs`
-  checks them all, that it isn't a main-game Pokémon, and that no signature card has the same cost, text and keywords as
-  another card a Fire / Grass / Water run can meet (Mewtwo's Psychic cards are left out: it never walks the Safari).
+  checks them all, that it isn't a main-game Pokémon, and that no signature card reads like a card any run can meet or
+  another signature card, by the twin rule (`sigReport()` in `tools/card-twins.mjs`, `docs/card-twins.md`; since
+  2026-10-27, was the same cost and text against a Fire / Grass / Water run). A new one needs a line of its own:
+  `node tools/card-twins.mjs` names what it reads like. Mewtwo's Psychic cards are left out: it never walks the Safari.
 
 ## Real types (2026-10-19, the roadmap's "Six new types for the Safari's duo pool", session 2)
 
@@ -349,10 +352,27 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
   your owned starters of the type), how the pair fares in each area (`fares()`), A = Pick 2 / Start Duo / Locked.
   Start Duo goes through `safariTicket()` (the Day Pass) and `onDuo` in `js/main.js`. Locked until the day's free try
   ends, won or lost (`save.safari.done`, set in `endRun()`; abandoning never gets there); `?duorun` lends it.
+  **Its layout** (the user's calls, 2026-10-20): the Duo app alone keeps the lobby's window (`window: true` in `APPS`),
+  and the picks stand at the gate as they're made, lead on the left (`dressGate()` in `js/safariprep.js`, `duoLooks()`;
+  "Pick your duo" / "Pick a partner" until two are picked). Below it the panel scrolls: the pool first, then today's
+  road, each area a `<details>` row (number, name, its Safari Dex count; collapsed by default, its open state kept
+  across a pick's re-render) holding the types, Pokémon and fares. The road is the Daily run's own three areas and the
+  counts are the one Safari Dex, the same as the lobby's rows. Type chips and the portraits' corners are round badges
+  (`typeBadge()` in `js/type-badge.js`, SVG glyphs in the games' icon colours, not the emoji), and each portrait stands
+  its sprite by `SPRITE_FIT` / `BODY_X` (`faceSprite()`), not by its GIF's frame.
+- **The Duo Run's own road** (the user's call, 2026-10-20: "keep it 3 biomes but always different than the daily"):
+  `duoRoad(daily)` in `js/data/safari.js` deals three of the day's other areas on `${seed}|duo-areas`, the same all day
+  for everyone, so the Duo app shows it ahead; `beginSafari()` swaps it in for a duo, and each try still rolls a fresh
+  seed for its maps. `?powerplant` and the like still put their area first. Pinned by `tests/duo.test.mjs`.
+- **New duo starters on the map** (2026-10-20): on a Safari map (not a peek), a wild room whose Pokémon is a stage of a
+  duo line you haven't caught (`duoGains()`) shows its type's badge on the room's top-left (14px, `.map-duo`) (`map-duo`, `duoNew` in
+  `tracking()` in `js/run.js`), unnamed like every room; a tap says a new duo starter lives there.
 - **The duo pool**: `save.duoPool` holds the types caught beyond Fire / Grass / Water (type -> starter ids as looks);
   the base three are every owned starter of the type. `duoNews()` in `js/run.js` (from `creditSafari()`) adds a type
   when a stage of one of its `DUO_LINES` starter lines is in `save.safariDex.caught`, old catches included, with the
-  reward box's "Shinx joined your duo pool! Electric unlocked." `DUO_LINES` is empty until the type sessions.
+  unlock window ("🔓 New duo starter!", 2026-10-20: `duoNews(windows)` feeds `unlockWindow`'s `feat` form; a line in
+  the reward box was easy to miss). 30 lines in all; the 14 added 2026-10-20 (`docs/duo-design.md` section 3) stay in the
+  areas they already lived in.
 - **Electric** (session 3, 2026-10-19; its rules and card table are `docs/duo-design.md` section 5's "Electric's first
   session"): the first new type. **Shinx** (`DUO_STARTERS` in `js/data/starters.js`: looked up by id only, never in
   `STARTERS`, so no character select, Game Corner, statue or "every starter" count sees it; its back GIFs, `SPRITE_FIT`,
@@ -462,6 +482,8 @@ PokéCoins). The map says so at the start, and the result window's first-try lin
 - **Playtest**: `?duorun` (the Duo key open; `&duopool` lends Electric, Ice, Fighting, Ground, Flying and Dark; `&powerplant` / `&icecave` / `&dojomountain` / `&quarry` / `&windycliffs` / `&nightalley` put that area first), `tools/duo-probe.mjs` (headless: the lobby, two picks, a fight, a switch
   and back (the same hand), the turn's end (both hands discarded), the reward, the save's two decks, the Neutral ask and
   the grouped Forget). The sim: `cfg.duo` (pokeDB-sim's README).
+
+- **Shinies in the Duo picker** (2026-10-21, the user's ask): a portrait whose shown look's shiny you own wears a round ✨ button on its top-right corner (`.duo-shiny`, gold when on), flipping the same `save.shiny.on` as the character select's ✨ Shiny. Not under the arrows: a second row there made the cards uneven (the user's "ew", same day). The ◀ ▶ row never wraps (`.duo-count` a fixed width).
 
 ## The areas' scenes (phase 5b, 2026-10-02)
 

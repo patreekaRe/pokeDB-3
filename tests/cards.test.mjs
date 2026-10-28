@@ -9,37 +9,11 @@ const { RELICS, ENERGY_RELICS } = await import('../js/data/relics.js');
 const { ITEMS } = await import('../js/data/items.js');
 const { CARD_ART_IDS } = await import('../js/card-art.js');
 
-const STARTER = { fire: 'charmander', grass: 'bulbasaur', water: 'squirtle', psychic: 'mewtwo', electric: 'shinx', ice: 'vanillite', fighting: 'timburr', ground: 'trapinch', flying: 'starly', dark: 'deino' };
-
-test('no two cards a run can meet share a cost and text (CLAUDE.md\'s rule)', () => {
-  for (const [type, id] of Object.entries(STARTER)) {
-    const cards = new Map();
-    for (const c of [...poolForType(type, ['electric', 'ice', 'fighting', 'ground', 'flying', 'dark'].includes(type)), ...STARTERS_BY_ID[id].deck.map(x => CARDS_BY_ID[x])]) cards.set(c.id, c);
-    const seen = new Map(), dupes = [];
-    for (const c of cards.values()) {
-      const key = `${c.cost}|${describe(c)}|${!!c.exhaust}|${!!c.retain}|${!!c.power}|${!!c.innate}|${!!c.ethereal}`;
-      if (seen.has(key)) dupes.push(`${type}: ${c.id} reads like ${seen.get(key)}`);
-      seen.set(key, c.id);
-    }
-    assert.deepEqual(dupes, []);
-  }
-});
-
-// a Duo Run meets two types' pools (docs/duo-design.md): same-text cards of two types still play differently there (STAB,
-// the chart), so the type is part of the key; same type or Neutral twins would still be caught
-test('no two cards a duo can meet share a type, cost and text', () => {
-  const types = ['fire', 'grass', 'water', 'electric', 'ice', 'fighting', 'ground', 'flying', 'dark'];
-  for (const [i, a] of types.entries()) for (const b of types.slice(i + 1)) {
-    const cards = new Map();
-    for (const t of [a, b]) for (const c of [...poolForType(t, true), ...STARTERS_BY_ID[STARTER[t]].deck.map(x => CARDS_BY_ID[x])]) cards.set(c.id, c);
-    const seen = new Map(), dupes = [];
-    for (const c of cards.values()) {
-      const key = `${c.type}|${c.cost}|${describe(c)}|${!!c.exhaust}|${!!c.retain}|${!!c.power}|${!!c.innate}|${!!c.ethereal}`;
-      if (seen.has(key)) dupes.push(`${a}+${b}: ${c.id} reads like ${seen.get(key)}`);
-      seen.set(key, c.id);
-    }
-    assert.deepEqual(dupes, []);
-  }
+// the user's call (2026-10-26, after Bubble and Bubble Beam sat in one hand): not even the same card with other numbers.
+// tools/card-twins.mjs lists any it finds, with the runs that meet them
+test('no two cards a run can meet read alike: the same lines with other numbers, or one plus a line (CLAUDE.md\'s rule)', async () => {
+  const { twinReport } = await import('../tools/card-twins.mjs');
+  assert.deepEqual(twinReport().map(p => `${p.kind}: ${p.a.id} / ${p.b.id} (${p.runs[0]})`), []);
 });
 
 test('every card has text, its art and an upgrade that changes something', () => {
@@ -104,7 +78,7 @@ test('Ice: a full starting deck, its evolution cards, its Ability, and Icicle on
   assert.equal(evolutionCardsFor('ice', 2).length, 4);
   assert.equal(ABILITIES.ice.id, 'snow-warning');
   const pool = typePool('ice');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 6
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [19, 31, 14]);   // StS's split, whole since session 6, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.swinub.skinOf, 'vanillite');
   assert.ok(CARDS_BY_ID.icicle.token && CARDS_BY_ID.icicle.icicle);
 });
@@ -115,11 +89,11 @@ test('Fighting: a full starting deck, its evolution cards, its Ability, and Sore
   const deck = STARTERS_BY_ID.timburr.deck.map(id => CARDS_BY_ID[id]);
   assert.equal(deck.length, 10);
   assert.ok(deck.every(c => c.type === 'fighting'));
-  assert.equal(evolutionCardsFor('fighting', 1).length, 4);
+  assert.equal(evolutionCardsFor('fighting', 1).length, 3);   // less the cards taken out of the pools as twins, 2026-10-27 (docs/card-twins.md)
   assert.equal(evolutionCardsFor('fighting', 2).length, 4);
   assert.equal(ABILITIES.fighting.id, 'guts');
   const pool = typePool('fighting');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 8
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 31, 14]);   // StS's split, whole since session 8, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.machop.skinOf, 'timburr');
   const sore = CARDS_BY_ID.sore;
   assert.ok(sore.status && sore.unplayable && sore.ethereal);
@@ -132,10 +106,10 @@ test('Ground: a full starting deck, its evolution cards, its Ability, and Dig ca
   assert.equal(deck.length, 10);
   assert.ok(deck.every(c => c.type === 'ground'));
   assert.equal(evolutionCardsFor('ground', 1).length, 4);
-  assert.equal(evolutionCardsFor('ground', 2).length, 4);
+  assert.equal(evolutionCardsFor('ground', 2).length, 3);   // less the cards taken out of the pools as twins, 2026-10-27 (docs/card-twins.md)
   assert.equal(ABILITIES.ground.id, 'sturdy');
   const pool = typePool('ground');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 10
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [19, 32, 14]);   // StS's split, whole since session 10, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.rhyhorn.skinOf, 'trapinch');
   // a Dig card's upgrade keeps a Surface part (an upgrade replaces `surface` whole)
   for (const c of [...pool, ...evolutionCardsFor('ground', 1), ...evolutionCardsFor('ground', 2)].filter(c => c.effects.surface)) {
@@ -150,10 +124,10 @@ test('Flying: a full starting deck, its evolution cards, its Ability, and the ne
   assert.equal(deck.length, 10);
   assert.ok(deck.every(c => c.type === 'flying'));
   assert.equal(evolutionCardsFor('flying', 1).length, 4);
-  assert.equal(evolutionCardsFor('flying', 2).length, 4);
+  assert.equal(evolutionCardsFor('flying', 2).length, 3);   // less the cards taken out of the pools as twins, 2026-10-27 (docs/card-twins.md)
   assert.equal(ABILITIES.flying.id, 'keen-eye');
   const pool = typePool('flying');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 12
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 31, 14]);   // StS's split, whole since session 12, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.pidgey.skinOf, 'starly');
   assert.equal(STARTERS_BY_ID.pidove.skinOf, 'starly');
   // answer 18: Flying owns Tailwind; the neutral card keeps its id under another name
@@ -171,7 +145,7 @@ test('Dark: a full starting deck, its evolution cards, its Ability, and the name
   assert.equal(evolutionCardsFor('dark', 2).length, 4);
   assert.equal(ABILITIES.dark.id, 'intimidate');
   const pool = typePool('dark');
-  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 32, 14]);   // StS's split, whole since session 14
+  assert.deepEqual([pool.filter(c => !c.rarity).length, pool.filter(c => c.rarity === 'uncommon').length, pool.filter(c => c.rarity === 'rare').length], [20, 31, 14]);   // StS's split, whole since session 14, less the twins taken out 2026-10-27
   assert.equal(STARTERS_BY_ID.sandile.skinOf, 'deino');
   // Intimidate is Dark's Ability, so Fighting's card of that id goes by another name
   assert.notEqual(CARDS_BY_ID.intimidate.name, 'Intimidate');

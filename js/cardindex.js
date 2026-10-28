@@ -13,6 +13,7 @@ import { newFinds, showBadgeNews } from './trainercard.js';
 import { el, makeCard, zoomable } from './ui.js';
 import { kindOf, costRank } from './deckpreview.js';
 import { smoothIcon } from './smooth-icons.js';
+import { typeBadge } from './type-badge.js';
 
 const TAB_LOOK = { mystery: { label: '???' } };
 const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare']];
@@ -97,10 +98,20 @@ function moveList(type) {
   }
   const cards = ALL_CARDS.filter(c => c.type === type);
   const seen = new Set(getSave().seen.cards);
-  const body = RARITIES.flatMap(([rarity, label]) => moveGroup(label, cards.filter(c => !c.evoOnly && (c.rarity || 'common') === rarity), seen));
+  const body = RARITIES.flatMap(([rarity, label]) => moveGroup(label, cards.filter(c => !c.evoOnly && !c.noOffer && (c.rarity || 'common') === rarity), seen));
   body.push(...moveGroup('Evolution: 1st form', evolutionCardsFor(type, 1), seen, 'Offered when your starter first evolves.'),
     ...moveGroup('Evolution: final form', evolutionCardsFor(type, 2), seen, 'Offered when it reaches its final form.'));
   return body;
+}
+
+/** The picked tab's nameplate at the top of the cards: its badge, name and how many of its moves you've met. */
+function typePlate(type) {
+  const plate = el('div', `mv-plate type-${type}`);
+  const cards = ALL_CARDS.filter(c => c.type === (type === 'mystery' ? 'psychic' : type));
+  const seen = new Set(type === 'mystery' ? [] : getSave().seen.cards);
+  plate.append(type === 'mystery' ? smoothIcon('lock') : typeBadge(type), el('span', 'mv-plate-name', (TAB_LOOK[type] || TYPES[type]).label),
+    el('span', 'mv-plate-count', type === 'mystery' ? '???' : `${cards.filter(c => seen.has(c.id)).length}/${cards.length}`));
+  return plate;
 }
 
 /** The Moves app on the given type's tab (the picked starter's), else the last one looked at; the D-pad's left and
@@ -110,7 +121,7 @@ export function movesApp(type) {
   const draw = () => {
     drawnNew = [];
     const body = moveList(movesTab);
-    list.replaceChildren(...(body.length ? body : [el('p', 'mv-empty', 'No moves like that here.')]));
+    list.replaceChildren(typePlate(movesTab), ...(body.length ? body : [el('p', 'mv-empty', 'No moves like that here.')]));
     if (drawnNew.length) { clearFinds('cards', drawnNew); showBadgeNews(); }
     markTabs();
   };
@@ -118,11 +129,32 @@ export function movesApp(type) {
   const markTabs = () => {
     const fresh = new Set(newFinds('cards'));
     for (const b of tabs.children) b.classList.toggle('news', ALL_CARDS.some(c => c.type === b.dataset.type && fresh.has(c.id)));
+    edges();
   };
+  // the tabs scroll sideways at a readable size (the user's call, 2026-10-28: eleven squeezed into one row hid their
+  // names); an arrow shows at each side with more past it, wearing a "!" when a new find is out of sight there
+  const edges = () => {
+    const { scrollLeft: x, clientWidth: w, scrollWidth: full } = tabs;
+    const off = (side) => [...tabs.children].some(b => b.classList.contains('news')
+      && (side < 0 ? b.offsetLeft < x : b.offsetLeft + b.offsetWidth > x + w));
+    strip.classList.toggle('more-left', x > 2);
+    strip.classList.toggle('more-right', x + w < full - 2);
+    strip.querySelector('.mv-more.left').classList.toggle('news', off(-1));
+    strip.querySelector('.mv-more.right').classList.toggle('news', off(1));
+  };
+  const reveal = (t) => {
+    const b = [...tabs.children].find(n => n.dataset.type === t);
+    if (!b || !tabs.clientWidth) return;
+    const pad = 28;
+    if (b.offsetLeft - pad < tabs.scrollLeft) tabs.scrollLeft = b.offsetLeft - pad;
+    else if (b.offsetLeft + b.offsetWidth + pad > tabs.scrollLeft + tabs.clientWidth) tabs.scrollLeft = b.offsetLeft + b.offsetWidth + pad - tabs.clientWidth;
+  };
+  let strip;
   const show = (t) => {
     movesTab = t;
     for (const b of tabs.children) b.setAttribute('aria-selected', String(b.dataset.type === t));
     draw();
+    reveal(t);
     panel.scrollTop = 0;
   };
   return {
@@ -136,17 +168,37 @@ export function movesApp(type) {
         btn.type = 'button';
         btn.dataset.type = t;
         btn.setAttribute('role', 'tab');
-        btn.append(smoothIcon(t === 'mystery' ? 'lock' : t), el('span', 'mv-tab-label', (TAB_LOOK[t] || TYPES[t]).label));
+        // icons only, every tab one size; the picked type's name sits on the plate atop the cards (the user's call, 2026-10-28)
+        const name = (TAB_LOOK[t] || TYPES[t]).label;
+        btn.title = name;
+        btn.setAttribute('aria-label', name);
+        btn.append(t === 'mystery' ? smoothIcon('lock') : typeBadge(t));
         btn.addEventListener('click', () => show(t));
         return btn;
       }));
       const tools = el('div', 'mv-tools');
       tools.append(lcdKeys('indexFilter', FILTERS, 'all', draw), lcdKeys('indexSort', ORDERS, 'cost', draw));
+      strip = el('div', 'mv-strip');
+      const arrow = (side, step) => {
+        const btn = el('button', `mv-more ${side}`);
+        btn.type = 'button';
+        btn.setAttribute('aria-label', side === 'left' ? 'More types to the left' : 'More types to the right');
+        btn.addEventListener('click', () => tabs.scrollBy({ left: step * tabs.clientWidth * 0.7, behavior: 'smooth' }));
+        return btn;
+      };
+      strip.append(tabs, arrow('left', -1), arrow('right', 1));
+      tabs.addEventListener('scroll', edges, { passive: true });
       const top = el('div', 'mv-top');
-      top.append(tabs, tools);
+      top.append(strip, tools);
       list = el('div', 'mv-list');
       host.append(top, list);
       show([type, movesTab].find(t => available.includes(t)) ?? available[0]);
+      // the app is mounted before its window has a size, so the picked tab's place and the arrows wait for one
+      let placed = false;
+      new ResizeObserver(() => {
+        if (!placed && tabs.clientWidth) { placed = true; reveal(movesTab); }
+        edges();
+      }).observe(tabs);
     },
     back: () => false,
     key(e) {

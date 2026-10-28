@@ -79,12 +79,14 @@ export const KEEPERS = {
   1: { id: 'smeargle', name: 'Smeargle', src: 'assets/pokemon/smeargle-front.gif',
     hello: ['Welcome to my showroom! I painted every piece in here myself.', 'Fresh pieces in every department today, still wet! Kidding.', 'Have a look round. Tap a piece and I\'ll tell you about it.'],
     chat: ['Every colour of a piece comes with it. I can never pick just one.', 'New stock every day, the moment the clock strikes midnight.', 'A room is a canvas, you know. Your Secret Base is your masterpiece!',
-      'Seats and tables on the left, décor on the right. A place for everything!', 'Build a backyard on your PC\'s House Upgrades, and tap me: I keep a garden catalogue too!',
+      'Seats and tables on the left, décor on the right. A place for everything!', 'Build a backyard on your PC\'s House Upgrades: my catalogue has garden pieces too!',
+      'Tap me for my wallpaper and floor catalogue! One of each is half price every day.',
       'Have you seen the top floor? The Grand Ballroom is for real collectors. Own 40 kinds of furniture and the lift goes up!'],
-    // with a backyard, a tap opens the garden catalogue (js/garden-shop.js), the Yard shelf, always in stock
-    special: (done) => import('./garden-shop.js').then(m => m.gardenTap(done)),
+    // a tap opens the wallpaper and floor catalogue (js/paper-shop.js; 2026-10-27), and with a backyard its Garden tab
+    // the garden catalogue (js/garden-shop.js), the Yard shelf, always in stock
+    special: (done) => import('./paper-shop.js').then(m => m.paperTap(done)),
     // floats over it while a tap opens a catalogue (2026-10-19, the user's ask: players didn't know to tap it)
-    sign: (b) => b.house?.yard ? 'Garden catalogue' : '', signIcon: 'flower', ink: '#2a7a5e' },
+    sign: (b) => b.house?.yard ? 'Walls, floors & garden' : 'Wallpaper & floors', signIcon: 'home', ink: '#2a7a5e' },
   2: { id: 'minccino', name: 'Minccino', src: 'assets/pokemon/minccino-front.gif',
     hello: ['Welcome to the Rose Salon! Mind the... no, there\'s no dust. I checked.', 'Oh! A customer! Let me just polish that plinth. There.'],
     chat: ['I dust every plinth twice a day. Three times on Sundays.', 'Eight more pieces up here, every day. All spotless.', 'The chandeliers took me all morning. Worth it!'] },

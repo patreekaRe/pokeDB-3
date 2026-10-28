@@ -10,12 +10,7 @@ import { playSound } from './audio.js';
 import { el, itemSprite } from './ui.js';
 import { calmFx } from './prefs.js';
 import { ITEMS_BY_ID } from './data/items.js';
-
-export const TRADE_OFFERS = 3;
-
-/** What the trader gives for `give` (an item id): the first TRADE_OFFERS of its rarity's rolled order you don't hold. */
-export const offersFor = (offers, give, held) =>
-  (offers[ITEMS_BY_ID[give]?.rarity] || []).filter(id => ITEMS_BY_ID[id] && !held.includes(id)).slice(0, TRADE_OFFERS);
+import { TRADE_OFFERS, offersFor } from './data/towns.js';
 
 const wait = (ms) => new Promise(r => setTimeout(r, calmFx() ? 0 : ms));
 

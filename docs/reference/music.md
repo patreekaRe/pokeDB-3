@@ -12,9 +12,10 @@ mastered ~11 dB louder; `evolve()` resumes it after the evolution scene) through
 win, the Hall of Fame's `hall-of-fame`, after any other won run `run-win`, each `victory` while its file is missing), and `center` at rest sites
 (`restSite()` in `js/run.js`), `mart` in a Poké Mart (`martRoom()`, the user's song, 2026-10-04: looped over its 48.71 s repeat with a crossfade, at `TRACK_GAIN` 0.27 since it's ~11.5 dB louder).
 `savanna` on the Sunscorch Savanna's map at either fork, in place of its slot's `mapN` (a biome's `music` in `js/data/enemies.js`, read by `showMap()`; a new biome song is one such key): the user's song, 2026-10-09, 56.7 s fading from ~48 s, looped over a 23.51 s repeat (17.3-40.81 s, 0.95 melody match, cross-faded), at `TRACK_GAIN` 0.12 since it's ~18.2 dB louder than `map2` (RMS -13.4 vs -31.6).
-`map4` (the user's, 2026-10-04) was the Crystal Depths' map song until 2026-10-09; since then it is the Sky Pillar climb's (`showMap()` plays it for any `isTower()` run, whatever biome the floors borrow), and the Depths play `seal` (the user's call). Since 2026-10-15 the Crystal Depths' map and Mewtwo's camp play `map4` too (the user's call: "use the sky pillar song on crystal depths"); `seal` still plays through the fall and the gate.
+`map4` (the user's, 2026-10-04) was the Crystal Depths' map song until 2026-10-09; since then it is the Sky Pillar climb's (`showMap()` plays it for any `isTower()` run, whatever biome the floors borrow), and the Depths play `seal` (the user's call). Since 2026-10-15 the Crystal Depths' map and Mewtwo's camp play `map4` too (the user's call: "use the sky pillar song on crystal depths"); `seal` still plays through the fall and the gate. `homeRoom()` plays a home place's `music` (2026-10-26: walking in from the hub had kept the Clearing's song on in the camp).
 `ruins` on the Sunken Ruins' map the same way: the user's song, 2026-10-09, 133.4 s, looped over a 61.09 s repeat (16.05-77.14 s, 0.968 melody match, 0.912 at the join, cross-faded), at `TRACK_GAIN` 0.26 (~11.8 dB louder than `map2`, RMS -19.8).
 `thornwood` on the Thornwood Jungle's map the same way: the user's song, 2026-10-09, 94.8 s fading from ~86 s, looped over a 65.34 s repeat (20.2-85.54 s, 0.888 melody match, 0.747 at the join, cross-faded; the finder's top pick, a 16 s repeat at 1.8 s, would have skipped most of the song), at `TRACK_GAIN` 0.15 (~16.6 dB louder than `map2`, RMS -15.0).
+`safari` in the Safari lobby (`openSafariPrep()` plays it; shut without starting a run, `playMusic('title')` brings the Clearing's back) and on every Safari area's map, Daily and Duo Runs (`showMap()`, `run.safari`), in place of the `mapN` songs: the user's song, 2026-10-24, 69.2 s fading from ~60 s, looped over a 31.09 s repeat (17.25-48.34 s, 0.950 melody match, 0.800 at the join, cross-faded), at `TRACK_GAIN` 0.18 (~15 dB louder than `map2`, RMS -16.5). Fights keep their battle songs.
 `team-rocket` in Team Rocket's ? room (an event's `music` in `js/data/events.js`, played by `eventRoom()`): the user's song, 2026-10-09, 75 s, looped over its 58.73 s repeat (2.5-61.23 s, cross-faded), at `TRACK_GAIN` 0.24 (~12.9 dB louder than `center`). Battle! cuts to `elite` as usual (the user's call: it stops when the fight starts); Pay / Run go back to the map's song.
 `event-room` in the four indoor ? rooms, the Move Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club (their events.js `music`, like Team Rocket's): the user's song, 2026-10-11, 145.6 s fading from ~137 s, looped over a 62.97 s repeat (33.02-95.99 s, 0.998 melody match, 0.961 at the join, cross-faded), at `TRACK_GAIN` 0.36 (-19.2 LUFS, set level with `team-rocket`); Kenmatta's fight cuts to `kombat`, Leave goes back to the map's song.
 `event-outdoor` in the Hot Spring, Berry Tree, Wishing Well and Item Ball the same way: the user's song, 2026-10-11, 86 s, its second pass fading from ~74 s, looped over a 37.24 s repeat (7.94-45.18 s, 0.996 melody match, 0.79 at the join, so a 0.3 s cross-fade), at `TRACK_GAIN` 0.16 (-12.1 LUFS).
@@ -46,13 +47,17 @@ opens (`ballAnimation()` / `caughtIt()`); `catch-success.mp3` is his jingle, its
 `catchShake()` (a hollow knock and a plastic rattle click) and `catchSuccess()` (a double latch click, then a four-note
 chiptune "Gotcha!") stand in.
 `start`/`length` play only part of a file with a short fade-out, so a long or late-starting
-effect is trimmed in code. A `synth` entry builds its sound in code instead of a file: `block` is
-`blockClink()` at the end of `js/audio.js`, an 8-bit shield clink (the user swapped their MP3 for a generated one), normalized to 0.2 like the other synths (at 0.9 it was far too loud).
+effect is trimmed in code. A `synth` entry builds its sound in code instead of a file: `block` (gaining block) is
+`shieldUp()` in `js/audio.js`, a Protect-like shield going up (a triangle tone gliding up an octave, a breath of air, three
+soft sparkles), `blocked` (a hit fully blocked) is `blockClink()`, the padded whump that was `block`'s until the user asked
+for a new one (2026-10-28), and `end-turn` is `turnOver()`, a soft swish over two mallet notes falling G to D, played by
+`askEndTurn()` in `js/battle.js` so End Turn no longer shares the Game Boy menu blip (the user's call, 2026-10-28). All
+normalized to about 0.2 like the other synths (at 0.9 it was far too loud).
 The user supplies the effect MP3s themselves.
 The rest of `SOUNDS` and where each plays: `card` (`playCard()`; at 0.3 gain like `confirm`, the user's call), `hit`
 (damage gets through, either side; `hitSound()` in `js/battle.js` plays `hit-super` /
 `hit-weak` for super / not very effective hits, like the games' three damage sounds, falling
-back to `hit` while those files are missing; a fully blocked hit plays `block`
+back to `hit` while those files are missing; a fully blocked hit plays `blocked`
 instead; there are no critical hits), `block` (a card gains block; at half gain, the user found it too loud), `faint` (enemy KO, in `finish()`),
 `confirm` (the same file as `card` and `item`, the user's call, but at 0.3 gain since it plays on nearly every tap: every window's confirm
 sounds alike; `showChoice` plays it when an `ask` option is taken, or the option's
@@ -90,7 +95,7 @@ seamlessly inside the file instead, between `LOOP_POINTS` (seconds; the gap is t
 60.64 s, found by correlating each file against itself, and the seam checked by rendering it offline against the file's
 own continuation). An `<audio>` element can only loop the whole file, so those play through `LoopedTrack` in
 `js/audio.js`, a stand-in with the element's `play` / `pause` / `paused` / `currentTime` over a decoded buffer's
-`loopStart` / `loopEnd`; only the playing one stays decoded (~50 MB each), and only up to its loop's end (2026-10-18, below). Replacing one of those MP3s means finding its
+`loopStart` / `loopEnd`; only the playing one stays decoded (~25 MB each, mono), and only up to its loop's end (2026-10-18, below). Replacing one of those MP3s means finding its
 loop points again (or deleting its `LOOP_POINTS` line). The map songs (`map1`-`map3`) loop too (2026-09-29): each file
 is one pass of its song then a fade-out over its start coming round again, which matches in melody and beat (chroma and
 onsets) but not sample for sample, so their `LOOP_POINTS` carry a third number, a 0.3 s equal-power crossfade across the
@@ -137,3 +142,4 @@ the waveform at the join correlates under 0.95. It found Mart's 48.709 s to the 
   a lower rate. Above 16 kHz the songs hold almost nothing (37-45 dB down), but Safari's and Chrome's buffer sources resample
   by straight lines, ~3 dB off at 10 kHz from a 32 kHz buffer; and mono, as every song has real stereo (side 4-14 dB under
   mid).
+- 2026-10-24: a looped song is folded to mono once decoded (`mono()` in `js/audio.js`), halving what the playing one holds (15-35 MB stereo). The user's pick over a lower `AudioContext` sample rate, which would dull cymbals and the top end; a phone's speaker plays mono the same. The MP3s stay stereo; the width the line above notes is what headphones lose.

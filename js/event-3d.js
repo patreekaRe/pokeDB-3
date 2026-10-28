@@ -11914,9 +11914,16 @@ function forgetRooms() {
 /** Lets go of every town and home built, as the run walks on out of the town into its biome. A town is ~90MB on the
     GPU, kept awake under the map while it warmed the next rooms on top, and an iPhone reloaded the tab just after
     leaving one (a friend's run, 2026-10-17). */
-export function forgetTowns() {
+export function forgetTowns() { forget(id => /^(town|home)\//.test(id)); }
+
+/** Lets go of every room built, as the run walks on into the next biome: no ? room or gym of the biome left can be walked
+    into again, yet the last two stayed kept, paintings and all, beside the next town as it was built (the town never
+    counts against KEEP_ROOMS), and an iPhone reloaded the tab at Biome 1's crossroads (2026-10-25). */
+export function forgetBiome() { forget(() => true); }
+
+function forget(which) {
   for (const [id, kept] of Object.entries(built)) {
-    if (!/^(town|home)\//.test(id)) continue;
+    if (!which(id)) continue;
     delete built[id];
     if (kept === entering) entering = null;
     kept.then(b => {

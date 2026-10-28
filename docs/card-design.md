@@ -1,5 +1,8 @@
 # Card design: the StS feel (roadmap step 6c)
 
+**Since 2026-10-26, 197 of the cards below read differently** (the twin pass: no two cards a run can meet may be the same
+card with other numbers). `docs/card-twins.md` lists each one, before and now; `js/data/cards.js` is the truth.
+
 **Status: approved (2026-09-26); Psychic pool added in Part A (2026-09-29).** The user asked Claude to settle the open
 questions by whatever is closest to StS (see Decisions at the end). Built so far: the engine pieces marked **(engine: done)**,
 the four Abilities, **Fire's whole pool** (6c.3), **Water's whole pool** (6c.4), **Grass's whole pool** (6c.5), and

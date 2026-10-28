@@ -789,6 +789,15 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .prep-coins { padding: 3px 7px; border-radius: 4px; background: #1f3a14; color: #b6d68e; }
 .prep-coins .smooth-icon { width: 12px; height: 12px; }
 .prep-coins[hidden] { display: none; }
+/* The Champion's Crown a Level 10 win earns, shown from Level 5 up until it's yours (js/ui.js's crownArt()). */
+.prep-crown { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;
+  line-height: 1.5; color: #f8d048; background: #1f3a14; }
+.prep-crown[hidden] { display: none; }
+.prep-crown-art { flex: none; width: 24px; filter: drop-shadow(0 0 3px rgba(255, 220, 120, 0.7)); }
+.prep-crown-art svg, .tc-crown-mini svg { display: block; width: 100%; }
+/* A Level's Super Saiyan aura, from Level 6 up (js/ui.js's auraArt()): its flames beside the line, in the star's colour. */
+.prep-aura { color: #ffe8f0; }
+.prep-aura-art { position: relative; flex: none; overflow: hidden; }
 .prep-all { margin-left: auto; }
 .prep-all summary { cursor: pointer; list-style: none; text-align: right; text-transform: uppercase; }
 .prep-all summary::-webkit-details-marker { display: none; }
@@ -872,28 +881,48 @@ body[data-screen="start-screen"] .topbar { display: none; }
   margin: 0 -10px 4px; padding: 10px 8px 9px; background: #c4dca0; border-bottom: 3px solid var(--shell-rim);
   box-shadow: 0 3px 0 rgba(31, 58, 20, 0.18);
 }
-.mv-tabs { display: flex; gap: 5px; }
+/* the tabs scroll sideways, every one the same size; the arrows and fades say there's more (2026-10-28) */
+.mv-strip { position: relative; margin: -6px -8px -5px; }
+.mv-tabs {
+  display: flex; gap: 6px; padding: 6px 8px 5px; overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity; scroll-padding-inline: 28px; scrollbar-width: none;
+}
+.mv-tabs::-webkit-scrollbar { display: none; }
+.mv-more {
+  position: absolute; top: 0; bottom: 0; z-index: 3; width: 34px; padding: 0; border: 0; cursor: pointer;
+  opacity: 0; visibility: hidden; transition: opacity 0.18s, visibility 0.18s;
+}
+.mv-more.left { left: 0; background: linear-gradient(90deg, #c4dca0 40%, rgba(196, 220, 160, 0)); }
+.mv-more.right { right: 0; background: linear-gradient(270deg, #c4dca0 40%, rgba(196, 220, 160, 0)); }
+.mv-strip.more-left .mv-more.left, .mv-strip.more-right .mv-more.right { opacity: 1; visibility: visible; }
+.mv-more::before {
+  content: ''; position: absolute; top: 50%; width: 12px; height: 18px; margin-top: -11px; background: #1f3a14;
+  clip-path: polygon(0 0, 100% 50%, 0 100%); animation: mvNudge 0.9s ease-in-out infinite alternate;
+}
+.mv-more.right::before { right: 6px; }
+.mv-more.left::before { left: 6px; clip-path: polygon(100% 0, 0 50%, 100% 100%); animation-direction: alternate-reverse; }
+@keyframes mvNudge { from { translate: -2px 0; } to { translate: 2px 0; } }
 .mv-tab {
   --c1: #9aa2c8; --c2: #565d84;
-  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px 5px;
+  flex: 0 0 58px; display: grid; place-items: center; height: 54px; padding: 0;
+  scroll-snap-align: start;
   border: 3px solid var(--shell-rim); border-radius: 9px; background: #e4f0cc; color: #1f3a14; cursor: pointer;
   font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 var(--shell-rim);
 }
-.mv-tab .smooth-icon { width: 24px; height: 24px; }
-.mv-tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mv-tab.type-fire { --c1: #ff8f4d; --c2: #b8321a; }
-.mv-tab.type-grass { --c1: #72dc70; --c2: #257a38; }
-.mv-tab.type-water { --c1: #5cbcff; --c2: #1d58b8; }
-.mv-tab.type-psychic { --c1: #d49aff; --c2: #7138a8; }
-.mv-tab.type-electric { --c1: #ffe066; --c2: #b88a00; }
-.mv-tab.type-ice { --c1: #a8ecff; --c2: #2a8cb8; }
-.mv-tab.type-fighting { --c1: #f49a70; --c2: #a03420; }
-.mv-tab.type-ground { --c1: #e8c878; --c2: #8a6430; }
-.mv-tab.type-flying { --c1: #c8c0ff; --c2: #5a50b0; }
-.mv-tab.type-dark { --c1: #a8907c; --c2: #3e2e26; }
+.mv-tab .smooth-icon, .mv-tab .type-badge { width: 32px; height: 32px; flex: none; }
+:is(.mv-tab, .mv-plate).type-fire { --c1: #ff8f4d; --c2: #b8321a; }
+:is(.mv-tab, .mv-plate).type-grass { --c1: #72dc70; --c2: #257a38; }
+:is(.mv-tab, .mv-plate).type-water { --c1: #5cbcff; --c2: #1d58b8; }
+:is(.mv-tab, .mv-plate).type-psychic { --c1: #d49aff; --c2: #7138a8; }
+:is(.mv-tab, .mv-plate).type-electric { --c1: #ffe066; --c2: #b88a00; }
+:is(.mv-tab, .mv-plate).type-ice { --c1: #a8ecff; --c2: #2a8cb8; }
+:is(.mv-tab, .mv-plate).type-fighting { --c1: #f49a70; --c2: #a03420; }
+:is(.mv-tab, .mv-plate).type-ground { --c1: #e8c878; --c2: #8a6430; }
+:is(.mv-tab, .mv-plate).type-flying { --c1: #c8c0ff; --c2: #5a50b0; }
+:is(.mv-tab, .mv-plate).type-dark { --c1: #a8907c; --c2: #3e2e26; }
 .mv-tab[aria-selected="true"] { background: var(--c1); color: #fff; text-shadow: 1px 1px 0 var(--c2); translate: 0 2px; box-shadow: 0 1px 0 var(--shell-rim), inset 0 0 0 2px rgba(255, 255, 255, 0.4); }
-.mv-tab[aria-selected="true"] .smooth-icon { filter: drop-shadow(0 1px 1px rgba(20, 10, 30, 0.45)); }
-.mv-tab:not([aria-selected="true"]) .smooth-icon { filter: grayscale(0.5) opacity(0.75); }
+.mv-tab[aria-selected="true"] :is(.smooth-icon, .type-badge) { filter: drop-shadow(0 1px 1px rgba(20, 10, 30, 0.45)); }
+.mv-tab:not([aria-selected="true"]) :is(.smooth-icon, .type-badge) { filter: grayscale(0.5) opacity(0.75); }
 .mv-tools { display: flex; justify-content: space-between; gap: 8px; }
 .mv-keys { display: flex; border: 2px solid #1f3a14; border-radius: 6px; overflow: hidden; background: #d6e8b8; }
 .mv-key {
@@ -907,6 +936,17 @@ body[data-screen="start-screen"] .topbar { display: none; }
   border-bottom: 2px dashed rgba(31, 58, 20, 0.45); font: 0.75rem var(--pixel-font); font-synthesis-weight: none; color: #1f3a14;
 }
 .mv-list > .mv-head:first-child { margin-top: 8px; }
+/* the picked type's nameplate, set into the top of the cards' window (the tabs carry icons only) */
+.mv-plate {
+  --c1: #9aa2c8; --c2: #565d84;
+  display: flex; align-items: center; gap: 10px; margin: 10px 0 0; padding: 7px 12px 7px 8px;
+  border: 3px solid var(--shell-rim); border-radius: 10px; background: var(--c1); color: #fff; text-shadow: 1px 1px 0 var(--c2);
+  box-shadow: 0 3px 0 var(--shell-rim), inset 0 0 0 2px rgba(255, 255, 255, 0.4); font: 0.875rem/1 var(--pixel-font); font-synthesis-weight: none;
+}
+.mv-plate :is(.smooth-icon, .type-badge) { width: 30px; height: 30px; flex: none; filter: drop-shadow(0 1px 1px rgba(20, 10, 30, 0.45)); }
+.mv-plate-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv-plate-count { font-size: 0.75rem; }
+.mv-plate + .mv-head { margin-top: 14px; }
 .mv-count { font-size: 0.85em; }
 .mv-note { margin: -4px 0 10px; font-size: 0.75rem; color: #3a4a2a; }
 .mv-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 9px; padding: 0 3px 0 2px; }
@@ -1217,6 +1257,8 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 }
 .depths .hofx-pedestal { background: linear-gradient(90deg, #3e2482, #9a70e0 35%, #e0d0ff 50%, #8a5ad0 65%, #3e2482); }
 .depths .hofx-pedestal::before { background: radial-gradient(ellipse at 50% 40%, #f4ecff, #b48ae8 60%, #5a3a98); box-shadow: 0 2px 0 #d8b048; }
+.hofx.master .hofx-pedestal { background: repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.3) 0 3cqw, transparent 3cqw 8cqw), linear-gradient(90deg, #284a8a, #7ac4ec 35%, #ffffff 50%, #7ac4ec 65%, #284a8a); }
+.hofx.master .hofx-pedestal::before { background: radial-gradient(ellipse at 50% 40%, #ffffff, #b8ecff 55%, #5ab0e0); box-shadow: 0 2px 0 #f8d048, 0 4px 0 #b07af0; }
 .hofx-replay { text-align: center; }
 @media (prefers-reduced-motion: reduce) { .hofx-light { animation: none; } }
 
@@ -1271,8 +1313,13 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 }
 .cdev-cover-plate b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.75rem; font-weight: 400; letter-spacing: 1px; }
 .cdev-cover-plate small { font-size: 0.75rem; opacity: 0.9; }
-.cdev-cover-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
-.cdev-cover-badges img { width: 26px; height: 26px; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.35)); }
+.cdev-cover-badges { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; width: 100%; max-width: 300px; }
+.cdev-cover-slot {
+  display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.38)); box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.cdev-cover-slot.full { box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.45), 0 0 0 2px #ffd23a, 0 0 6px 1px rgba(255, 210, 58, 0.6); }
+.cdev-cover-slot img { width: 82%; height: 82%; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.35)); }
 /* once open, the lid's yellow light carries the LED on */
 .cdev.news.powered .pdx-light.yellow { animation: cdevLidLed 1s steps(1) infinite 0.9s; }
 @keyframes cdevLidLed { 50% { filter: brightness(0.45); } 0% { filter: brightness(1.4); box-shadow: 0 0 10px #ffd23a; } }
@@ -1405,7 +1452,55 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tc-pick:hover, .tc-pick:focus-visible { background: rgba(48, 48, 56, 0.18); outline: none; }
 .tc-pick.on, .tc-pick-auto.on { box-shadow: 0 0 0 3px var(--tc2), 0 0 0 5px #303038; }
 .tc-partner img { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; }
-.tc-case-label { display: block; margin: 14px 0 6px; font-size: 0.75rem; color: #fff; text-shadow: 1px 1px 0 var(--tc3); }
+/* the ball your partner comes out of (ballPicker() in js/trainercard.js): a 3D ball (js/ball-looks.js) by its name */
+.tc-ball-key { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+.tc-ball-key .ball3d { --b: 18px; flex: none; }
+.tc-ball-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+.tc-ball { aspect-ratio: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 2px 6px; overflow: visible; }
+.tc-ball .ball3d { --b: 40px; flex: none; }
+.tc-ball-name { font: 0.75rem/1 var(--pixel-font); color: var(--win-ink); white-space: nowrap; }
+.tc-ball.locked .ball3d { filter: grayscale(1) brightness(0.55); opacity: 0.45; }
+.tc-ball.locked .tc-ball-name { opacity: 0.5; }
+.tc-ball-now { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tc-ball-away[hidden] { display: none; }
+/* The Champion's Crown (js/data/difficulty.js's wearsCrown(), a Level 10 win) floating over the partner, bobbing like the
+   walking buddy's. */
+.tc-crown { position: absolute; z-index: 2; left: 50%; top: -6px; width: 36px; translate: -50% 0; pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(255, 220, 120, 0.8)); animation: tc-crown-bob 2.8s ease-in-out infinite; }
+.tc-crown svg { display: block; width: 100%; }
+@keyframes tc-crown-bob { 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .tc-crown { animation: none; } }
+.tc-crown-key.on { border-color: #b07a10; background: #d8a020; }
+.tc-crown-locked { display: flex; align-items: center; justify-content: center; gap: 4px; opacity: 0.75; cursor: default; }
+.tc-crown-mini { width: 16px; filter: grayscale(1); }
+/* The Super Saiyan aura a Level 6-10 win earns (js/data/difficulty.js's auraWorn()), the walking buddy's frames stepped
+   behind the partner and, from 9 up, over it: a strip of frames slid one frame at a time. */
+.tc-partner img { position: relative; }
+.tc-aura { position: absolute; left: 50%; translate: -50% 0; overflow: hidden; pointer-events: none; }
+.tc-partner img + .tc-aura { z-index: 1; opacity: 0.9; }
+.aura-strip { display: block; width: calc(100% * var(--n)); height: 100%; image-rendering: pixelated;
+  animation: aura-run var(--ms) steps(var(--n)) infinite; }
+@keyframes aura-run { to { transform: translateX(-100%); } }
+html.calm-fx .aura-strip { animation: none; }
+@media (prefers-reduced-motion: reduce) { .aura-strip { animation: none; } }
+.tc-aura.aura-lv6 { filter: drop-shadow(0 0 3px rgba(255, 58, 92, 0.6)); }
+.tc-aura.aura-lv7 { filter: drop-shadow(0 0 3px rgba(52, 232, 120, 0.6)); }
+.tc-aura.aura-lv8 { filter: drop-shadow(0 0 4px rgba(62, 144, 255, 0.65)); }
+.tc-aura.aura-lv9 { filter: drop-shadow(0 0 4px rgba(180, 98, 255, 0.7)); }
+.tc-aura.aura-lv10 { filter: drop-shadow(0 0 5px rgba(255, 208, 64, 0.8)); }
+.tc-aura-key.on { color: #fff; border-color: #303038; }
+.tc-aura-key.aura-key-lv6 { background: #d8284a; }
+.tc-aura-key.aura-key-lv7 { background: #18a052; }
+.tc-aura-key.aura-key-lv8 { background: #2a6ee0; }
+.tc-aura-key.aura-key-lv9 { background: #8a3ee0; }
+.tc-aura-key.aura-key-lv10 { background: linear-gradient(90deg, #e8484a, #e8a020, #38b048, #2a7ee0, #8a3ee0); }
+.tc-aura-mini { position: relative; flex: none; overflow: hidden; filter: grayscale(1); }
+/* A Pokémon Master's title (js/data/difficulty.js's isMaster(), a Level 10 win): a dark chip with a rainbow underline, like the rainbow star. */
+.tc-lines dd.tc-master { justify-self: end; padding: 3px 7px 4px; border-radius: 4px; color: #f8d048;
+  background: linear-gradient(90deg, #ff5a5a, #ffd84a, #6ee86e, #5ac8ff, #b07af0) 0 100% / 100% 2px no-repeat, #1f3a14; }
+.tc-case-label { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin: 14px 0 8px; font-size: 0.75rem; color: #fff; text-shadow: 1px 1px 0 var(--tc3); }
+.tc-case-label > span:first-child { white-space: nowrap; }
+.tc-case-keys { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin-left: auto; }
 .tc-case { display: grid; gap: 8px; padding: 10px; border-radius: var(--round-sm); background: #2a3048;
   box-shadow: 0 0 0 3px #181820, inset 0 3px 0 rgba(0, 0, 0, 0.35); }
 .tc-row { display: grid; gap: 4px; }
@@ -1485,13 +1580,33 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tc-new { top: -5px; right: -5px; width: 13px; height: 13px; font-size: 12px; }
 .tc-seen-all { float: right; padding: 3px 7px; border: 0; border-radius: var(--round-xs); font: 0.75rem/1 var(--pixel-font);
   color: #3a1c0c; background: #ffd040; box-shadow: 0 0 0 2px #3a1c0c; cursor: pointer; }
-.tc-pin-btn { float: right; display: inline-flex; align-items: center; gap: 5px; margin: -4px 0 0 8px; padding: 3px 8px; border: 0; border-radius: var(--round-xs);
-  font: 0.75rem/1 var(--pixel-font); color: #fff; background: rgba(0, 0, 0, 0.3); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5); cursor: pointer; text-shadow: none; }
-.tc-pin-btn img { width: 20px; height: 20px; object-fit: contain; }
+/* the pin plate: gold on the card's dark ink, so it reads on every tier's stripes (a faint grey tab was missed, 2026-10-27) */
+.tc-pin-btn { position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 4px; overflow: hidden; border: 0; border-radius: 999px;
+  font: 0.75rem/1 var(--pixel-font); color: #fff; background: var(--tc3); box-shadow: 0 0 0 2px #ffd040, 0 3px 0 rgba(0, 0, 0, 0.35), 0 0 12px rgba(255, 208, 64, 0.45);
+  cursor: pointer; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4); }
+.tc-pin-btn:hover, .tc-pin-btn:focus-visible { filter: brightness(1.2); outline: none; }
+.tc-pin-btn:active { transform: translateY(2px); box-shadow: 0 0 0 2px #ffd040, 0 1px 0 rgba(0, 0, 0, 0.35); }
+.tc-pin-art { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fffbe8, #f0e0b0);
+  box-shadow: inset 0 0 0 2px #ffd040; }
+.tc-pin-art img { width: 22px; height: 22px; object-fit: contain; }
+.tc-cover-btn { padding: 8px 12px 7px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 3px 0 rgba(0, 0, 0, 0.35); }
+.tc-cover-btn:active { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 1px 0 rgba(0, 0, 0, 0.35); }
+.tc-pick-word { font: 0.75rem/1 var(--pixel-font); color: var(--tc3); }
+.tc-pin-btn.empty .tc-pin-art::before { content: '+'; color: var(--tc3); font-size: 1rem; text-shadow: none; }
+.tc-pin-btn.shine::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+  transform: translateX(-100%); animation: tc-pin-shine 2.8s ease-in-out infinite; pointer-events: none; }
+@keyframes tc-pin-shine { 60%, 100% { transform: translateX(100%); } }
+/* the same badge pinned to the partner's portrait, as friends see it beside them */
+.tc-tack { position: absolute; top: -6px; left: -6px; z-index: 1; display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fffbe8, #f0e0b0); box-shadow: 0 0 0 2px #ffd040, 0 0 0 4px var(--tc3), 0 3px 4px rgba(0, 0, 0, 0.35);
+  transform: rotate(-12deg); cursor: pointer; font: 1rem/1 var(--pixel-font); color: var(--tc3); }
+.tc-tack img { width: 28px; height: 28px; object-fit: contain; }
+.tc-tack:hover, .tc-tack:focus-visible { transform: rotate(-12deg) scale(1.1); outline: none; }
+.tc-tack.empty { opacity: 0.85; }
 /* a new relic, item or move (newFinds in the save) leaves the same trail: every Pokédex / Home key, the app's tile, its
    banner and slot, or the Moves tab and card, till it's been on screen */
 :where(.dex-news) { position: relative; }
-.dex-news::after, .cdev-icon.badge-news::after, .bdx-banner.news::after, .mv-tab.news::after {
+.dex-news::after, .cdev-icon.badge-news::after, .bdx-banner.news::after, .mv-tab.news::after, .mv-more.news::after {
   content: '!'; position: absolute; top: -6px; right: -6px; z-index: 2;
   display: grid; place-items: center; width: 15px; height: 15px; border-radius: 3px;
   background: #ffd040; color: #3a1c0c; box-shadow: 0 0 0 2px #3a1c0c, 0 0 8px #ffd040;
@@ -1501,9 +1616,10 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .bdx-banner.news::after { top: 6px; right: 6px; }
 .mv-tab { position: relative; }
 .mv-tab.news::after { top: -4px; right: -4px; width: 13px; height: 13px; font-size: 12px; }
+.mv-more.news::after { top: 4px; right: auto; left: 50%; margin-left: -7px; width: 13px; height: 13px; font-size: 12px; }
 .pdx-slot.news, .card.news { box-shadow: 0 0 0 2px #ffd040, 0 0 10px rgba(255, 208, 64, 0.6); }
 .card-new { position: absolute; top: -5px; right: -5px; z-index: 3; }
-@media (prefers-reduced-motion: reduce) { .cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new, .dex-news::after, .bdx-banner.news::after, .mv-tab.news::after { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .tc-pin-btn.shine::after, .cdev-owner.badge-news::after, .tc-row.new > .tc-group::after, .tc-new, .dex-news::after, .bdx-banner.news::after, .mv-tab.news::after, .mv-more.news::after, .mv-more::before { animation: none !important; } }
 @keyframes newsBob { to { translate: 0 -3px; } }
 @media (prefers-reduced-motion: reduce) { .badge-news::after, .badge-news::before, .badge-news .gem-icon::after { animation: none !important; } }
 .bag-pocket .tc-icon { width: 30px; }
@@ -1832,38 +1948,10 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .qlog-tip { margin: 14px 8px 0; padding: 8px 10px; border-radius: 4px; text-align: center; color: #fff8e8; background: rgba(60, 30, 10, 0.55); }
 @media (prefers-reduced-motion: reduce) { .qlog-caret { transition: none; } }
 
-/* ---------- Pack: a held berry or run kit item from Kurt's Workshop to set out with (renderPack() in js/select.js, 2026-10-15) ---------- */
-.prep-pack { margin-top: 8px; }
-.prep-pack[hidden] { display: none; }
-.pack-pick { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 8ch; max-width: 46vw; padding: 2px 6px; border-radius: 4px; background: #1f3a14; color: #b6d68e; font-size: 0.75rem; text-align: center; }
-.pack-ico { flex: none; display: grid; place-items: center; width: 24px; height: 24px; }
-.pack-ico .item-sprite { width: 24px; height: 24px; image-rendering: pixelated; }
-.pack-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pack-none { padding: 4px 0; }
-/* the Berry Pouch (2026-10-15): three slots, the first one held as the run sets out, and the kept berries to tap in */
-/* the tab pinned to the panel's foot while the pack is below it (updatePeek(), 2026-10-16): no height of its own, so
-   showing it never shifts the scroll */
-.pack-peek-pin { position: sticky; bottom: 0; height: 0; display: flex; justify-content: center; }
-.pack-peek {
-  position: absolute; bottom: 2px; padding: 6px 12px; border: 2px solid #b6d68e; border-radius: 999px; background: #1f3a14;
-  color: #b6d68e; font: 0.75rem var(--pixel-font); white-space: nowrap; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3); cursor: pointer;
-  animation: peekBob 1.4s ease-in-out infinite;
-}
-.pack-peek[hidden] { display: none; }
-@keyframes peekBob { 50% { translate: 0 -3px; } }
-@media (prefers-reduced-motion: reduce) { .pack-peek { animation: none; } }
-.pack-pouch[hidden], .pack-kit[hidden] { display: none; }
-.pack-kit { margin-top: 6px; }
-.pouch-level { flex-direction: column; align-items: stretch; }
-.pouch-slots { display: flex; justify-content: center; gap: 14px; }
-.pouch-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.pouch-cell small { font-size: 0.75rem; }
-.pouch-slot { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 2px dashed rgba(31, 58, 20, 0.45); border-radius: 8px; background: rgba(31, 58, 20, 0.08); cursor: default; }
-.pouch-slot.full { border-style: solid; border-color: #1f3a14; background: #1f3a14; cursor: pointer; }
-.pouch-slot.first.full { box-shadow: 0 0 0 2px #b6d68e, 0 0 0 4px #1f3a14; }
-.pouch-kept { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 8px 0 6px; }
-.pouch-chip { display: flex; align-items: center; gap: 2px; min-height: 36px; padding: 2px 8px 2px 4px; border: 2px solid #1f3a14; border-radius: 999px; background: #1f3a14; color: #b6d68e; font: 0.75rem var(--pixel-font); cursor: pointer; }
-.pouch-chip:disabled { opacity: 0.4; cursor: default; }
+/* ---------- what the run sets out with, packed at the Berry Booth (renderBring() in js/select.js, 2026-10-23): one
+   read-only line ---------- */
+.prep-bring { margin: 8px 0 0; padding: 6px 8px; border: 2px dashed rgba(31, 58, 20, 0.45); border-radius: 6px; font-size: 0.75rem; line-height: 1.4; }
+.prep-bring[hidden] { display: none; }
 
 /* ---------- the "added you" pop-up (js/trainer-notice.js): a TRAINER LINK card in the adder's card colour, a Poké Ball
    that drops, wobbles and opens on their buddy, a name plate, the games' text box, and A / B keys ---------- */
@@ -1983,3 +2071,12 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tn-welcome .tn-name { letter-spacing: 0.12em; user-select: all; }
 .trn-code { flex-wrap: wrap; }
 .trn-help { margin-left: auto; padding: 6px 10px 5px; }
+
+/* A champion's star climbs with the best Trainer Level won (js/data/difficulty.js's starClass()): gold at 5, then ruby,
+   emerald, sapphire, amethyst, and a rainbow-rimmed star at 10 (still: no repaint a frame). The span tints the ⭐ whether it's the emoji or its smooth icon. */
+.star-lv5, .star-lv6, .star-lv7, .star-lv8, .star-lv9, .star-lv10 { display: inline-block; }
+.star-lv6 { filter: hue-rotate(-50deg) saturate(1.8); }
+.star-lv7 { filter: hue-rotate(80deg) saturate(1.4); }
+.star-lv8 { filter: hue-rotate(170deg) saturate(1.6); }
+.star-lv9 { filter: hue-rotate(235deg) saturate(1.5); }
+.star-lv10 { filter: hue-rotate(300deg) saturate(1.4) drop-shadow(1px 0 0 #ff5a5a) drop-shadow(-1px 0 0 #5ac8ff) drop-shadow(0 1px 0 #6ee86e) drop-shadow(0 -1px 0 #ffd84a); }
