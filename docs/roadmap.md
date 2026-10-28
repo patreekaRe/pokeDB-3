@@ -1581,6 +1581,16 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **Comic-book evolution intro** (2026-10-28, branch `comic-evolution`, commit `598e5775`; NOT on `main` yet, the user's
+  "playtest first"): before "What? X is evolving!", manga panels slam in over the white (`js/evo-comic.js`): alone, an
+  eyes strip from the left over a face close-up from the right, "What's... happening?!" and a "!?" stamp; a Duo Run
+  splits the screen down a slanted gutter, each partner's face sliding in from its side facing the other, bubbles
+  "Wha-?! What's this?!" / "We're... evolving?!" and a "!!" in both types' colours. A tap slashes the panels away onto
+  the morph, and a duo's pair now morph side by side (`evolutionScene(..., mate)`; before, the partner got a line of
+  text). Faces are guessed from SPRITE_FIT's pose box (head at the top third, on BODY_X): an odd shape may need its own
+  face point. Playtest: `?evolve=<starter>` (`&stage=1`, `&mate=<id>`), after PRESS START. If liked, merge to `main`;
+  the patch line is already in `NEXT`. ▶ Run in: PLAYTEST ON THE BRANCH LINK.
+
 - **New Block and End Turn sounds** (2026-10-28, branch `claude/block-end-turn-sounds-3j8vso`, on `main` too; archive):
   gaining Block plays `shieldUp()` (a Protect-like shimmer), a fully blocked hit keeps the old whump (`blocked`), and
   End Turn plays its own `turnOver()` (a swish and two falling mallet notes) instead of the Game Boy menu blip. Play a
