@@ -680,7 +680,7 @@ function lookPicker(body, done) {
     });
     return btn;
   };
-  grid.append(...LOOKS.map(tile));
+  grid.append(...[...LOOKS].sort((a, b) => (a.price ?? 0) - (b.price ?? 0)).map(tile));   // the free heroes, then cheapest first
   const note = el('p', 'tc-pick-note', `You walk as your trainer in the Clearing, your Secret Base, the mall, the towns and a run's rooms, your partner a step behind. You have ${(getSave().coins ?? 0).toLocaleString()} PokéCoins.`);
   body.replaceChildren(head, note, now, grid);
   head.querySelector('h2').tabIndex = -1;

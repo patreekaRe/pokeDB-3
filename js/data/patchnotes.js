@@ -77,7 +77,7 @@ export const PATCHES = [
   ['modes', 'A Safari map no longer holds the same rare spawn twice until each of its area\'s rares has turned up.'],
   ['battle', 'Dig, Tunnel and Burrow take your Pokémon underground and end your turn; Ground\'s other delayed cards are now Bury. Wild Diglett, Salamence and friends really Dig, Fly, Dive and Bounce out of reach.'],
   ['runs', 'People now live in the Clearing and the gateway towns beside the Pokémon: kimono dancers, hikers, sailors, rangers, ranchers and more, walking about and chatting.'],
-  ['hub', 'Walk as your own trainer, your buddy a step behind: pick Ethan, Lyra, Lucas or Dawn, or buy a Ranger, Kimono Girl or Rocket Grunt on the Trainer Card.'],
+  ['hub', 'Walk as your own trainer, your buddy a step behind: pick Ethan, Lyra, Lucas or Dawn, or buy one of 29 more on the Trainer Card, from Youngster to Rocket Grunt.'],
   ['fixes', 'A battle can no longer freeze on a big card\'s cut-in after a move effect misfires.'],
     ],
   },
@@ -676,6 +676,6 @@ export const IN_THE_GAME = [
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls, Day Passes and the Shiny Exchange.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 28 games to take home and play, from slot machines to five pinball tables, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
-  ['🧢', 'Your trainer', 'Walk as Ethan, Lyra, Lucas or Dawn, or one of 11 trainers to buy, your buddy a step behind, among the people of the Clearing and the towns.'],
+  ['🧢', 'Your trainer', 'Walk as Ethan, Lyra, Lucas or Dawn, or one of 29 trainers to buy, your buddy a step behind, among the people of the Clearing and the towns.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

@@ -8,8 +8,9 @@ before.
 
 **The looks** (`js/data/looks.js`): Gen 4 walking sheets from Vanilla Sunshine's OW pack in `assets/overworld/` (credit
 in About and the credits roll; never commit the whole pack, its terms forbid redistributing it). The four heroes (Ethan,
-Lyra, Lucas, Dawn) are free and offered in the new-player setup; eleven classes are bought with PokéCoins on the Trainer
-Card (300-800). `save.look` is the one worn, `save.looks` those bought; `wornLook()` reads them, `?look=<id>` lends one
+Lyra, Lucas, Dawn) are free and offered in the new-player setup; 29 classes are bought with PokéCoins on the Trainer
+Card (300 for kids and townsfolk, 400-500 working trainers, 600-800 the rarer ones; a won run pays about 100 plus its
+fights), the picker cheapest first. `save.look` is the one worn, `save.looks` those bought; `wornLook()` reads them, `?look=<id>` lends one
 for the page load. A new look: its sheet in `assets/overworld/<id>.png` (Essentials' layout, below) and a `LOOKS` line.
 
 **The follow** (`js/follow.js`): each place still moves its own `walker` and sets its buddy's group where the walker
