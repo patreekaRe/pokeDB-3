@@ -55,3 +55,5 @@ and takes the first spot that covers no button or tab (else the one covering lea
 **More below (2026-10-27, the user's ask):** a window or list that scrolls calls `scrollCue(box, ...)` (`js/ui.js`) so
 a bobbing ▼ MORE tag shows at its bottom edge while anything's hidden under it (`.scroll-cue` in `css/screens.css`; set
 `--cue-gap` to the box's flex `gap` so the tag takes no room). Kurt's Workshop, the Berry Garden and the dojo use it.
+Such a window closes with `closeX()` (`js/ui.js`, 2026-10-28, the user's ask: the tag sat over the bottom Close), a ✕ that
+is the window's first child, sticky at its top right as it scrolls; no Close at the bottom.

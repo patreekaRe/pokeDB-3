@@ -113,6 +113,15 @@ export function scrollCue(...boxes) {
   }
 }
 
+/** A scrolling window's ✕, pinned to its top right as it scrolls (2026-10-28, the user's ask: a Close at the bottom sat
+    under scrollCue()'s ▼ MORE tag). The window's first child, so it stays put over the top of whatever's under it. */
+export function closeX() {
+  const b = el('button', 'craft-close', '✕');
+  b.type = 'button';
+  b.setAttribute('aria-label', 'Close');
+  return b;
+}
+
 /** A pixel-art ∞ (the pixel font has none), 9x5 pixels, sized by `--ip` in CSS (`.inf-px`). */
 export function infGlyph() {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

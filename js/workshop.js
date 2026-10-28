@@ -5,7 +5,7 @@
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
-import { el, scrollCue } from './ui.js';
+import { el, scrollCue, closeX } from './ui.js';
 import { calmFx } from './prefs.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID, matHints } from './data/satchel.js';
 import { RECIPES, TABS, FRIENDS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT, GIFT_TOLD, ownsSkin } from './data/workshop.js';
@@ -125,9 +125,8 @@ export function openWorkshop() {
   const talk = el('div', 'craft-talk'), say = el('p', 'craft-say');
   talk.append(el('span', 'craft-tag', KURT), say);
   const tabs = el('div', 'craft-tabs'), card = el('div', 'craft-card'), list = el('div', 'craft-list');
-  const close = el('button', 'btn secondary craft-close', 'Close');
-  close.type = 'button';
-  d.append(head, talk, tabs, card, list, close);
+  const close = closeX();
+  d.append(close, head, talk, tabs, card, list);
   document.body.append(d);
   scrollCue(d, list);
   let tab = TABS.find(t => shelf(t.id).length)?.id ?? 'skin', picked = null, hint = null, busy = false, aside = false;

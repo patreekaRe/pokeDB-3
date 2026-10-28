@@ -50,6 +50,7 @@ const HELD = [
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['battle', 'Every attack plays its own move: Flamethrower\'s jet, Thunderbolt\'s bolt, bites, beams and quakes. Blocks raise a shield, heals glow, PP refills in gold, End Turn bursts, big cards get a cut-in.'],
+  ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo close with a ✕ at the top right, clear of the ▼ MORE tag.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 
