@@ -3464,10 +3464,19 @@ function renderBars() {
   b.refilled = false;
   const count = el('b', refill ? 'bump fill' : b.energy !== shown ? 'bump' : '', String(b.energy));
   const numbers = el('span', 'pp-count');
-  numbers.append(count, `/${max}`);
+  numbers.append(count, el('small', '', `/${max}`));
   const pill = el('span', 'pp-pill');
   pill.append(el('span', 'pp-label', 'PP'), numbers);
-  orb.replaceChildren(pill);
+  // the plate fills like a glass to the PP left of the turn's; kept, not rebuilt, so its level eases rather than jumps
+  let fill = orb.querySelector('.pp-fill');
+  if (!fill) {
+    fill = el('span', 'pp-fill');
+    fill.append(el('span', 'pp-liquid'));
+    orb.replaceChildren(fill);
+  }
+  fill.style.setProperty('--lvl', max ? Math.min(1, b.energy / max) : 0);
+  orb.querySelector('.pp-pill')?.remove();
+  orb.append(pill);
   orb.dataset.shown = String(b.energy);
   orb.classList.toggle('empty', b.energy === 0);
   if ((refill || b.energy !== shown) && battleFx() && orb.getClientRects().length) ppChanged(orb, b.energy - shown, refill);

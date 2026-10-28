@@ -2175,6 +2175,81 @@ body.battle-intro { pointer-events: none; }
 }
 @keyframes stripeScroll { to { background-position: 0 8px; } }
 @media (prefers-reduced-motion: reduce) { :is(.battle-controls .energy-orb, #end-turn-btn, .ds-btn):hover { animation: none; } }
+
+/* The controls' look (2026-10-28, branch button-look, the user's ask: the buttons to look different, to match the move
+   effects): dark glass plates with a rim in the turn banner's gold, leaning like its stripe, the PP in its slanted
+   numeral over a gold fill (below), End Turn in Chakra Petch with a » that runs
+   while it's the move. Throw keeps the Safari's green rim and Mulligan its violet. Ids in the selectors: the hover rules
+   above match through #end-turn-btn and would win otherwise. */
+.battle-controls :is(#player-energy, #end-turn-btn, .throw-btn) {
+  --rim: #e8b830; --glow: rgba(255, 196, 60, 0.28);
+  padding: 0; border-radius: 12px;
+  background: linear-gradient(180deg, #3c3858 0%, #24213a 55%, #15131e 100%); background-size: auto;
+  box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px var(--rim), inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 4px 0 2px rgba(0, 0, 0, 0.45), 0 0 14px var(--glow);
+  transform: skewX(-8deg);
+}
+.battle-controls .throw-btn { --rim: #6cd048; --glow: rgba(108, 208, 72, 0.3); }
+.battle-controls .mulligan-btn { --rim: #a880f0; --glow: rgba(168, 128, 240, 0.3); }
+#player-energy.empty { --rim: #e85040; --glow: rgba(232, 80, 64, 0.3); }
+.battle-controls :is(#player-energy, #end-turn-btn, .throw-btn) .pp-pill {
+  background: none; box-shadow: none; transform: skewX(8deg);
+  color: #fff; text-shadow: 2px 2px 0 #0c0b12;
+}
+#player-energy .pp-pill { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+#player-energy .pp-label { color: #fff8e0; font-size: 1rem; text-shadow: 2px 2px 0 #0c0b12, -1px -1px 0 #0c0b12, 1px -1px 0 #0c0b12, -1px 1px 0 #0c0b12; }
+/* PP as a glass filling (2026-10-28, the user's idea: "fill up the background of it like you're filling a glass of
+   water"): gold liquid to --lvl of the plate (the PP left of the turn's), right to the top when full, with a flat bright
+   surface (a wave and bubbles were tried first; the user: no "wavy" stuff). It rises after the refill's motes land and
+   drops as PP is spent. */
+#player-energy .pp-fill { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; contain: strict; }
+#player-energy .pp-liquid {
+  position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--lvl, 0) * 100%);
+  background: linear-gradient(180deg, #ffcc40 0%, #f0a020 45%, #b85c08 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 244, 190, 0.8), inset 0 -6px 10px rgba(80, 30, 0, 0.35);
+  transition: height 0.45s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+#player-energy.refill .pp-liquid { transition-duration: 0.8s; transition-delay: 0.3s; }
+#player-energy.gain .pp-liquid { transition-delay: 0.2s; }
+#player-energy .pp-count { display: flex; align-items: baseline; }
+#player-energy .pp-count b {
+  font: italic 700 2.1rem/0.8 "Chakra Petch", var(--pixel-font); color: #fffbe8;   /* white over the gold liquid: gold on gold didn't read */
+  text-shadow: 2px 2px 0 #0c0b12, -1px -1px 0 #0c0b12, 1px -1px 0 #0c0b12, -1px 1px 0 #0c0b12, 0 0 10px rgba(255, 196, 60, 0.6);
+  padding-right: 2px; font-variant-numeric: tabular-nums;
+}
+#player-energy .pp-count small { font-size: 0.85rem; color: #ece8ff; text-shadow: 2px 2px 0 #0c0b12, -1px -1px 0 #0c0b12, 1px -1px 0 #0c0b12, -1px 1px 0 #0c0b12; }
+#player-energy.empty .pp-count b { color: #ff6a5a; text-shadow: 2px 2px 0 #0c0b12, -1px -1px 0 #0c0b12, 1px -1px 0 #0c0b12, -1px 1px 0 #0c0b12, 0 0 10px rgba(255, 80, 60, 0.6); }
+.battle-controls :is(#end-turn-btn, .throw-btn) .pp-pill { font: italic 700 1.3rem/1 "Chakra Petch", var(--pixel-font); text-transform: uppercase; letter-spacing: 0.5px; }
+.et-arrow { display: inline-block; margin-left: 8px; font-style: normal; color: #ffd84a; text-shadow: 2px 2px 0 #0c0b12, 0 0 8px rgba(255, 196, 60, 0.7); }
+#end-turn-btn:disabled .et-arrow { color: #8a86a0; text-shadow: 2px 2px 0 #0c0b12; }
+.battle-controls #end-turn-btn:hover:not(:disabled) .pp-pill { background: none; }
+.battle-controls :is(#end-turn-btn, .throw-btn):active:not(:disabled) {
+  transform: skewX(-8deg) translateY(3px);
+  box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px var(--rim), inset 0 4px 0 2px rgba(0, 0, 0, 0.25), 0 1px 0 2px rgba(0, 0, 0, 0.45), 0 0 14px var(--glow);
+}
+.battle-controls #end-turn-btn.nudge { background-size: auto; animation: turnHop 1.4s ease-in-out infinite, rimGlow 1.4s ease-in-out infinite; }
+#end-turn-btn.nudge .et-arrow { animation: etRun 0.7s ease-in-out infinite; }
+@keyframes etRun { 50% { translate: 5px 0; } }
+@keyframes rimGlow { 50% { box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px #fff0a0, inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 4px 0 2px rgba(0, 0, 0, 0.45), 0 0 24px 6px rgba(255, 200, 60, 0.6); } }
+@keyframes ppCharge { 30% { box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px #fff0a0, inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 4px 0 2px rgba(0, 0, 0, 0.45), 0 0 28px 8px rgba(255, 200, 60, 0.7); } }
+@keyframes ppFill { 35% { transform: translateY(-5px) scale(1.25); color: #fffbe0; } }
+@keyframes ppShake { 0%, 100% { transform: skewX(-8deg); } 20%, 60% { transform: skewX(-8deg) translateX(-5px); } 40%, 80% { transform: skewX(-8deg) translateX(5px); } }
+@media (hover: hover) {
+  .battle-controls :is(#player-energy:not(.shake), #end-turn-btn:not(:disabled):not(.nudge)):hover { animation: none; filter: brightness(1.12); }
+  .battle-controls :is(#player-energy, #end-turn-btn:not(:disabled)):hover:not(:active) {
+    box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px #fff0a0, inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 7px 0 2px rgba(0, 0, 0, 0.4), 0 0 20px var(--glow);
+  }
+}
+@media (max-width: 720px) {
+  .battle-controls :is(#player-energy, #end-turn-btn, .throw-btn) { padding: 0; border-radius: 10px; }
+  .battle-controls .pp-pill { min-width: 6.4rem; height: 2.6rem; padding: 4px 12px; }
+  #player-energy .pp-pill { gap: 8px; }
+  #player-energy .pp-label { font-size: 0.75rem; }
+  #player-energy .pp-count b { font-size: 1.6rem; }
+  #player-energy .pp-count small { font-size: 0.75rem; }
+  .battle-controls :is(#end-turn-btn, .throw-btn) .pp-pill { font-size: 0.95rem; }
+  .et-arrow { margin-left: 5px; }
+}
+@media (prefers-reduced-motion: reduce) { #end-turn-btn.nudge .et-arrow { animation: none; } }
 .reward-option.picked { transform: translateY(-10px) scale(1.04); }
 .reward-option.picked .card-face { --ring: 0 0 0 1cqw #fff, 0 0 0 2.8cqw #f8d030, 0 0 6cqw 2cqw rgba(248, 208, 48, 0.7); }   /* like a picked card in battle */
 .reward-option.picked > .relic { outline: 4px solid #f8d030; outline-offset: 2px; }
