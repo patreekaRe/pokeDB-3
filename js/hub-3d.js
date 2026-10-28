@@ -2524,7 +2524,7 @@ function makePlaces() {
     id: 'plaza', name: 'Trainer Plaza', step: PLAZA_AT.step, tiles: PLAZA_AT.tiles, tag: [PLAZA_AT.at[0], 2.9, PLAZA_AT.at[1]], open: true,
     line: cloudRemembered() ? 'The Trainer Plaza\'s board: Polaroids of trainers who\'ve played lately. Add one from your Pokédex\'s Trainers app.'
       : 'The Trainer Plaza\'s board, where trainers pin themselves up. Sign in at the PC to join them.',
-    buttons: [['Look', () => acts.onApp('trainers', 'plaza')]],
+    buttons: [['Look', () => (new URLSearchParams(location.search).has('plazaview') ? import('./plaza-view.js').then(m => m.openPlazaView()) : acts.onApp('trainers', 'plaza'))]],
     build: (g) => {
       plazaFx = plazaBoard(THREE, { glows: glowMats, merge: mergeStill });
       plazaFx.group.position.set(tileX(PLAZA_AT.at[0]), 0, tileZ(PLAZA_AT.at[1]));
