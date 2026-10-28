@@ -1471,8 +1471,7 @@ img.shade, .sx-mon.unknown img { filter: brightness(0); opacity: 0.75; }
 .pv-note b { display: block; font-size: 14px; margin: 4px 0 2px; white-space: nowrap; }
 .pv-note > span:not(.pv-pin) { display: block; }
 .pv-note form { display: flex; gap: 6px; margin-top: 6px; }
-@media (max-width: 520px) { .pv-note form { flex-wrap: wrap; } .pv-note form .pv-btn { flex: 1 0 100%; } }
-.pv-note input { flex: 1; min-width: 0; width: 100%; font: inherit; font-size: 16px; padding: 8px 6px; border: 2px solid #2a2238; background: #fff; text-transform: uppercase; }
+.pv-note input { flex: 1; min-width: 0; width: 100%; font: inherit; font-size: 16px; padding: 8px 4px; border: 2px solid #2a2238; background: #fff; text-transform: uppercase; }
 .pv-btn { font: inherit; font-size: 12px; padding: 6px 10px; border: 2px solid #1c1430; border-radius: 4px; cursor: pointer;
   background: linear-gradient(#ff6a6a, #d8303a); color: #fff; text-shadow: 1px 1px 0 #6a0a10; box-shadow: 0 3px 0 #6a0a10; }
 .pv-btn.blue { background: linear-gradient(#6aa8ff, #2a6ad8); text-shadow: 1px 1px 0 #0a2a6a; box-shadow: 0 3px 0 #0a2a6a; }
