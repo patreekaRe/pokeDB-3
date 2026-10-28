@@ -2198,31 +2198,16 @@ body.battle-intro { pointer-events: none; }
 #player-energy .pp-pill { position: relative; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 #player-energy .pp-label { color: #fff8e0; font-size: 1rem; text-shadow: 2px 2px 0 #0c0b12, -1px -1px 0 #0c0b12, 1px -1px 0 #0c0b12, -1px 1px 0 #0c0b12; }
 /* PP as a glass filling (2026-10-28, the user's idea: "fill up the background of it like you're filling a glass of
-   water"): gold liquid to --lvl of the plate (the PP left of the turn's), a rolling surface of two waves, bubbles. It
-   rises after the refill's motes land and drops as PP is spent. Every motion is a transform, in a contained box. */
+   water"): gold liquid to --lvl of the plate (the PP left of the turn's), right to the top when full, with a flat bright
+   surface (a wave and bubbles were tried first; the user: no "wavy" stuff). It rises after the refill's motes land and
+   drops as PP is spent. */
 #player-energy .pp-fill { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; contain: strict; }
 #player-energy .pp-liquid {
-  position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--lvl, 0) * (100% - 8px));
+  position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--lvl, 0) * 100%);
   background: linear-gradient(180deg, #ffcc40 0%, #f0a020 45%, #b85c08 100%);
-  box-shadow: inset 0 -6px 10px rgba(80, 30, 0, 0.35);
+  box-shadow: inset 0 2px 0 rgba(255, 244, 190, 0.8), inset 0 -6px 10px rgba(80, 30, 0, 0.35);
   transition: height 0.45s cubic-bezier(0.3, 0.7, 0.3, 1);
 }
-#player-energy .pp-liquid::before, #player-energy .pp-liquid::after {
-  content: ""; position: absolute; left: -28px; bottom: calc(100% - 1px); width: calc(100% + 56px); height: 7px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='7'%3E%3Cpath d='M0 4Q7 0 14 4T28 4V7H0Z' fill='%23ffcc40'/%3E%3C/svg%3E") repeat-x 0 0 / 28px 7px;
-  animation: ppWave 1.6s linear infinite;
-}
-#player-energy .pp-liquid::before { filter: brightness(0.75); opacity: 0.8; bottom: calc(100% - 2px); animation-duration: 2.4s; animation-direction: reverse; }
-@keyframes ppWave { to { transform: translateX(28px); } }
-#player-energy .pp-bubbles { position: absolute; inset: 0; overflow: hidden; }
-#player-energy .pp-bubbles::before, #player-energy .pp-bubbles::after {
-  content: ""; position: absolute; bottom: -6px; left: 22%; width: 5px; height: 5px; border-radius: 50%;
-  border: 1px solid rgba(255, 248, 210, 0.85); background: rgba(255, 255, 255, 0.25);
-  animation: ppBubble 2.2s ease-in infinite;
-}
-#player-energy .pp-bubbles::after { left: 64%; width: 4px; height: 4px; animation-duration: 2.9s; animation-delay: 1.1s; }
-@keyframes ppBubble { 70% { opacity: 1; } to { transform: translate(3px, -48px); opacity: 0; } }
-#player-energy.empty .pp-liquid::before, #player-energy.empty .pp-liquid::after { opacity: 0; }
 #player-energy.refill .pp-liquid { transition-duration: 0.8s; transition-delay: 0.3s; }
 #player-energy.gain .pp-liquid { transition-delay: 0.2s; }
 #player-energy .pp-count { display: flex; align-items: baseline; }
@@ -2264,10 +2249,7 @@ body.battle-intro { pointer-events: none; }
   .battle-controls :is(#end-turn-btn, .throw-btn) .pp-pill { font-size: 0.95rem; }
   .et-arrow { margin-left: 5px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  #player-energy .pp-liquid::before, #player-energy .pp-liquid::after, #player-energy .pp-bubbles::before, #player-energy .pp-bubbles::after,
-  #end-turn-btn.nudge .et-arrow { animation: none; }
-}
+@media (prefers-reduced-motion: reduce) { #end-turn-btn.nudge .et-arrow { animation: none; } }
 .reward-option.picked { transform: translateY(-10px) scale(1.04); }
 .reward-option.picked .card-face { --ring: 0 0 0 1cqw #fff, 0 0 0 2.8cqw #f8d030, 0 0 6cqw 2cqw rgba(248, 208, 48, 0.7); }   /* like a picked card in battle */
 .reward-option.picked > .relic { outline: 4px solid #f8d030; outline-offset: 2px; }

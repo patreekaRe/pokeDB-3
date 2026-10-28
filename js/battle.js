@@ -3469,10 +3469,8 @@ function renderBars() {
   // the plate fills like a glass to the PP left of the turn's; kept, not rebuilt, so its level eases rather than jumps
   let fill = orb.querySelector('.pp-fill');
   if (!fill) {
-    const liquid = el('span', 'pp-liquid');
-    liquid.append(el('span', 'pp-bubbles'));
     fill = el('span', 'pp-fill');
-    fill.append(liquid);
+    fill.append(el('span', 'pp-liquid'));
     orb.replaceChildren(fill);
   }
   fill.style.setProperty('--lvl', max ? Math.min(1, b.energy / max) : 0);

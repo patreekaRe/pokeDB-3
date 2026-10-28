@@ -1581,7 +1581,7 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 **New look for PP and End Turn** (2026-10-28, the user's ask: "I wanted the buttons to look different"; branch
 `button-look`, commit `cee0429c`): dark glass plates with the turn banner's gold rim, leaning; PP's number in the banner's
 slanted Chakra Petch; "END TURN »" with the » running and
-the rim breathing while it's the move; then (the user's idea) the plate fills like a glass, gold liquid to the PP left of the turn's with a rolling surface and bubbles, rising as the refill lands and dropping as PP is spent; it replaced pips (one per PP), which widened the plate past 5 and overflowed Safari's row at 8; Throw / Mulligan in the same plates with their green / violet rims. One CSS block
+the rim breathing while it's the move; then (the user's idea) the plate fills like a glass, gold liquid to the PP left of the turn's, right to the top when full and flat (a wave and bubbles came off on the user's call), rising as the refill lands and dropping as PP is spent; it replaced pips (one per PP), which widened the plate past 5 and overflowed Safari's row at 8; Throw / Mulligan in the same plates with their green / violet rims. One CSS block
 after the hover rules in `css/screens.css` overrides the old salmon capsules. Playtest:
 `https://rawcdn.githack.com/patreekaRe/pokeDB-3/cee0429c4132bf948ceab72520da0d625aa36f99/index.html?arena=wild&starter=charmander`. On a yes: merge,
 fold the old capsule rules out, add a patch note (edit the battle line in `NEXT`), note it in battle-screen-layout.md.
