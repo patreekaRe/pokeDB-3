@@ -1215,6 +1215,11 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 with a third of the screen plank wall above it. A slightly lower camera tilt in houses would fill the screen without
 changing any sizes. The user wasn't sure ("I dunno"); not asked for yet.
 
+**The flyovers' overworld sprites** (asked 2026-10-28): the Clearing's flyovers already use the new overworld sheets
+(`monBoard()` picks them; Eternatus has none). The journey film's silhouette (`js/travel.js`) and the Signs title keep
+their battle GIFs: solid black, so a swap would barely show, and a side-on walking pose could read as walking. Claude
+recommended leaving them; the user agreed.
+
 **Pet emotes beyond the Secret Base** (an idea, 2026-10-28): the Base's pet emote (`emote()` in `js/base-3d.js`) could
 show on a tap of your buddy in the Clearing, towns and rooms too. Not asked for yet.
 
