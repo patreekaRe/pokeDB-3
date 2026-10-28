@@ -746,8 +746,8 @@ const GROUND_CARDS = [
   { id: 'sand-veil',      name: 'Sand Veil',      type: 'ground', cost: 1, art: '🏜️', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },   // Defend
   { id: 'bulldoze',       name: 'Bulldoze',       type: 'ground', cost: 2, art: '🚜', effects: { damage: 10, weaken: 2, fault: 5 }, upgrade: { effects: { damage: 12, weaken: 3, fault: 7 } } },   // Bash, Fault for its Vulnerable (+ Weak, as Icy Wind)
   { id: 'sand-attack',    name: 'Sand Attack',    type: 'ground', cost: 1, art: '💨', effects: { block: 10, fault: 3 }, upgrade: { effects: { block: 13, fault: 4 } } },   // Iron Wave (Frost Armor's shape)
-  { id: 'dig',            name: 'Dig',            type: 'ground', cost: 1, art: '⛏️', effects: { block: 9, dig: true, surface: { damage: 12 } }, upgrade: { effects: { block: 11, surface: { damage: 15 } } } },   // Iron Wave over two turns, the turn ending as you go under
-  { id: 'tunnel',         name: 'Tunnel',         type: 'ground', cost: 0, art: '🕳️', effects: { dig: true, surface: { damage: 7 } }, upgrade: { effects: { surface: { damage: 10 } } } },   // a free Strike, a turn late (Doppelganger's delay), the turn ending as you go under
+  { id: 'dig',            name: 'Dig',            type: 'ground', cost: 1, art: '⛏️', effects: { block: 11, dig: true, surface: { damage: 16 } }, upgrade: { effects: { block: 14, surface: { damage: 20 } } } },   // Iron Wave over two turns, the turn ending as you go under
+  { id: 'tunnel',         name: 'Tunnel',         type: 'ground', cost: 0, art: '🕳️', effects: { dig: true, surface: { damage: 10 } }, upgrade: { effects: { surface: { damage: 14 } } } },   // a free Strike, a turn late (Doppelganger's delay), the turn ending as you go under
   { id: 'mud-bomb',       name: 'Mud Bomb',       type: 'ground', cost: 1, art: '💣', effects: { damage: 6, fault: 5 }, upgrade: { effects: { damage: 8, fault: 7 } } },   // Poisoned Stab
   { id: 'bonemerang',     noOffer: true, name: 'Bonemerang',     type: 'ground', cost: 1, art: '🦴', effects: { damage: 4, hits: 2, fault: 3 }, upgrade: { effects: { damage: 5, fault: 4 } } },   // Twin Strike
   { id: 'sandstorm',      name: 'Sandstorm',      type: 'ground', cost: 1, art: '🌪️', effects: { sand: 4 }, upgrade: { cost: 0 } },   // Noxious Fumes, as a timer (Hail's twin)
@@ -993,7 +993,7 @@ const FIGHTING_EVO_HIGH = [
 ];
 
 const GROUND_EVO_MID = [
-  { id: 'burrow',         name: 'Burrow',         type: 'ground', cost: 1, art: '⛏️', effects: { dig: true, surface: { damage: 10, draw: 2 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { surface: { damage: 14, draw: 2 } } } },   // it pops up hitting, with two cards
+  { id: 'burrow',         name: 'Burrow',         type: 'ground', cost: 1, art: '⛏️', effects: { dig: true, surface: { damage: 14, draw: 2 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { surface: { damage: 18, draw: 2 } } } },   // it pops up hitting, with two cards
   { id: 'magnitude',      name: 'Magnitude',      type: 'ground', cost: 1, art: '📈', effects: { damage: 7, ifFault: { bonus: 7 } }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 10, ifFault: { bonus: 9 } } } },   // stronger on a cracked enemy
   { id: 'sand-spit',      name: 'Sand Spit',      type: 'ground', cost: 2, art: '🐍', effects: { damage: 14, sand: 2 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 18, sand: 3 } } },   // Sandstorm
   { id: 'high-horsepower', name: 'High Horsepower', type: 'ground', cost: 2, art: '🐎', effects: { damage: 15, fault: 5, draw: 1 }, evoOnly: true, maxCopies: 1, upgrade: { effects: { damage: 20, fault: 6 } } },   // Fault and a draw
