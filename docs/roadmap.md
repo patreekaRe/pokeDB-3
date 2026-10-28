@@ -1212,11 +1212,9 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 ## Ideas, not agreed yet (ask the user before building)
 
 **Your trainer looks big indoors** (the user's question, 2026-10-28, with phone shots of the Secret Base, the Clearing
-and Kurt's Workshop): right in the Clearing (the townspeople share `WALKER_PX`, 1.25x a Pokémon's pixels), a touch big
-in the base, clearly big in Kurt's Workshop (a close camera, and a chunky sheet beside Kurt's slim sprite). Proposed:
-the worn trainer about 15% smaller indoors only (the base, ? rooms and town houses, the Center, the Mart), the
-Clearing and town streets as they are; the other way, every walking sheet smaller, townspeople too. Waiting on the
-user's yes; then a branch and a githack link to compare. ▶ Run in: CLOUD · effort: medium.
+and Kurt's Workshop). The user picked an overall shrink over indoor only: `WALKER_PX` from 1.25x to 1.06x a Pokémon's
+pixels (about 15% smaller), the worn trainer and every townsperson alike, Pokémon untouched. **On branch
+`trainer-shrink`**, waiting on the user's playtest; if they like it, merge to `main` with a `look` patch note.
 
 **A trainer tailor shop: the user picked option 1** (2026-10-28): a fourth front in the Poké Mall hall, the Trainer
 Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/kecleon.png` are in). Ready to build:
