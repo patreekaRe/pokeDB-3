@@ -1647,6 +1647,13 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+
+- **Smooth card effects** (2026-10-28, branch `clean-card-fx`, NOT on `main` yet; the user's ask: the pixelated
+  Fire / Water / Grass trails looked messy). A played card's trail and burst and the exhaust burn are drawn smooth now
+  (`drawClean()` / `burnClean()` in `js/cardfx.js`; `docs/reference/battle-screen-layout.md`); `?pixelfx` shows the old
+  pixels to compare. ▶ Run in: PLAYTEST ON THE LIVE SITE (the branch's githack link). If the user likes it: merge to
+  `main`, add a `battle` patch line ("Played cards leave smooth trails ..."; `NEXT` is at 12, so cut a patch then), and
+  ask whether to keep `?pixelfx` or a Settings choice. If not: what to change (size, glow, count).
 - **3D balls, the Trainer Card's Ball key, the Outfitter's Apricorn** (2026-10-27, branch
   `claude/pokeball-appearance-customization-4ww68i`, on `main` too; archive): every ball thrown in battle (the send-out,
   a Gym Leader's, a Safari catch) is the Center's 3D ball as a pre-rendered spinning sheet, your partner comes out of the

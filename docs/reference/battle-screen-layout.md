@@ -150,8 +150,13 @@ in view (the user found it too much in the way).
 Once played it flies off to where it acts (`flyCard()` -> `flyTrail()` in js/cardfx.js, the user's call 2026-09-28, 0.4 s,
 0.2 s at 2x, never awaited): an attack arcs high, spinning, into the enemy as the hit lands, anything else drops glowing into your
 Pokémon, both shedding a trail in the card's type (Fire embers, Water droplets, Grass leaves, Psychic sparkles, Neutral white;
-roadmap 8, 2026-10-03) with a burst where it lands. The particles are whole pixels on one low-res canvas (`.card-fx`, 3 CSS px
-a pixel on phones, 4 wider), faded by stepping down a palette. The card is a clone flown by a Web Animation of transform and opacity (2026-10-18:
+roadmap 8, 2026-10-03) with a burst where it lands. The particles live on one canvas (`.card-fx`). Since 2026-10-28 (branch
+`clean-card-fx`, the user's ask: the pixels looked messy) they're drawn smooth at the screen's sharpness (at most 2x, the canvas
+emptied to 0x0 once idle, it's megabytes): soft glowing embers cooling white to red, turned and stretched water droplets,
+spinning, tumbling leaves, twinkling four-point stars (Psychic, Electric), snowflakes (Ice), soft specks, and a ring where it
+lands, from sprites painted once per type (`drawClean()` in js/cardfx.js); the exhaust burn's edge is a smooth wavering glow
+over a char band (`burnClean()`). The physics is shared: particles move in units of 3 CSS px on phones, 4 wider. `?pixelfx`
+shows the old look for a page load: whole pixels on a low-res canvas, faded by stepping down a palette. The card is a clone flown by a Web Animation of transform and opacity (2026-10-18:
 moved by hand every frame it restyled ~60 elements a frame and stuttered whenever the 3D arena, the text box or the hand's
 redraw ran long; a block's glow is `.fly-glow`'s opacity, not a filter). `renderHand()` keeps a hand card's node while it
 would look the same (its HTML, less the art's numbered SVG ids), so a tap no longer rebuilds and re-fits the whole hand; a
