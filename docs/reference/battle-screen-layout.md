@@ -171,7 +171,13 @@ Static and Frostbite show on it all fight (`ambience()`, from `renderStatus()`; 
 that is left, and stops off screen). The flying card leaves a tapering ribbon (`ribbon()`), and a risen card glows its
 type's colour (`.lift-glow`, opacity only). Settings' **Effects look** (`cardFx`: Smooth / Pixel / Off) picks the canvas:
 Pixel draws everything, the new effects too, in pixels; Off skips them (Battle animations Off skips them too).
-`tests/move-fx.test.mjs` checks every `MOVE_FX` line names a card and an effect that exists. The card is a clone flown by a Web Animation of transform and opacity (2026-10-18:
+`tests/move-fx.test.mjs` checks every `MOVE_FX` line names a card and an effect that exists. **Kept cheap** (2026-10-28, the
+user's ask before main): the canvas draws at 1.5x CSS pixels at most (2x dropped frames headless in a busy fight and
+held 5.6 MB; 1.5x holds 3.2 and dropped none), is cleared when quiet and freed after 5 s of it (freeing it at once made
+the next card's first frame cost ~4 ms), particles are capped at `MAX_PARTS` (450), drawn in two passes by blend (the
+glowing ones in one run) with `put()` setting the transform outright rather than a save/restore each, the dead dropped
+in place, and every gradient a sprite painted once (a hit's light, the shield, a scorch, the void). `tools/fx-probe.mjs`
+measures it: 1.1 ms a frame on average, 2.2 at the 95th percentile, and nothing left behind or growing. The card is a clone flown by a Web Animation of transform and opacity (2026-10-18:
 moved by hand every frame it restyled ~60 elements a frame and stuttered whenever the 3D arena, the text box or the hand's
 redraw ran long; a block's glow is `.fly-glow`'s opacity, not a filter). `renderHand()` keeps a hand card's node while it
 would look the same (its HTML, less the art's numbered SVG ids), so a tap no longer rebuilds and re-fits the whole hand; a

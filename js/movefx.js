@@ -24,7 +24,7 @@ export const fxFor = (card) => MOVE_FX[card.id?.replace(/\+$/, '')] || TYPE_FX[c
 
 function part(o) {
   const p = { age: 0, vx: 0, vy: 0, g: 0, drag: 1, phase: rand(0, 20), life: 30, ...o };
-  parts.push(p);
+  if (parts.length < kit.MAX_PARTS) parts.push(p);
   kit.start(!!o.ambient);
   return p;
 }
@@ -96,6 +96,30 @@ const hexes = () => sprite('hex', 128, 128, (g) => {
   }
 });
 
+/** A soft light with no white core, for the glow a hit throws round it. */
+const light = (hex) => sprite(`light${hex}`, 64, 64, (g) => {
+  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, rgba(hex, 1)); grad.addColorStop(0.4, rgba(hex, 0.35)); grad.addColorStop(1, rgba(hex, 0));
+  g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+});
+const scorch = () => sprite('scorch', 64, 64, (g) => {
+  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(30, 10, 4, 0.9)'); grad.addColorStop(1, 'rgba(30, 10, 4, 0)');
+  g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+});
+const hole = () => sprite('hole', 64, 64, (g) => {
+  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(10, 0, 20, 0.85)'); grad.addColorStop(0.7, 'rgba(40, 0, 60, 0.5)'); grad.addColorStop(1, 'rgba(40, 0, 60, 0)');
+  g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+});
+/** The shield's bubble, its rim and hexagons painted once; each frame only scales and fades it. */
+const shieldBall = () => sprite('shield', 128, 128, (g) => {
+  const grad = g.createRadialGradient(64, 64, 35, 64, 64, 64);
+  grad.addColorStop(0, 'rgba(120, 200, 255, 0)'); grad.addColorStop(0.85, 'rgba(120, 200, 255, 0.3)'); grad.addColorStop(1, 'rgba(220, 245, 255, 0.7)');
+  g.fillStyle = grad; g.beginPath(); g.arc(64, 64, 64, 0, Math.PI * 2); g.fill();
+  g.save(); g.clip(); g.globalAlpha = 0.28; g.drawImage(hexes(), 0, 0, 128, 128); g.restore();
+});
+
 /* ---------- particles drawn by their own hand ---------- */
 
 const fadeOf = (f, from = 0.6) => (f < from ? 1 : 1 - (f - from) / (1 - from));
@@ -133,12 +157,8 @@ function drawDust(p, f) {
   put(glow(p.col), p.x, p.y, p.r * (1 + f) * 2, p.r * (1 + f) * 1.4);
 }
 function drawScorch(p, f) {
-  const ctx = kit.ctx;
-  ctx.globalAlpha = Math.min(1, f * 6) * (1 - f) * 0.5;
-  const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
-  grad.addColorStop(0, 'rgba(30, 10, 4, 0.9)'); grad.addColorStop(1, 'rgba(30, 10, 4, 0)');
-  ctx.fillStyle = grad;
-  ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r, p.r * 0.32, 0, 0, Math.PI * 2); ctx.fill();
+  kit.ctx.globalAlpha = Math.min(1, f * 6) * (1 - f) * 0.5;
+  put(scorch(), p.x, p.y, p.r * 2, p.r * 0.64);
 }
 function drawMote(p, f) {
   kit.ctx.globalAlpha = fadeOf(f, 0.5);
@@ -436,9 +456,7 @@ const MOVES = {
     job(480 * o.ts, (t, f) => {
       const ctx = kit.ctx, k = f < 0.7 ? Math.min(1, f / 0.25) : 1 - (f - 0.7) / 0.3, r = B.w * 0.75 * k;
       if (r <= 0) return;
-      const grad = ctx.createRadialGradient(B.x, B.y, 0, B.x, B.y, r);
-      grad.addColorStop(0, 'rgba(10, 0, 20, 0.85)'); grad.addColorStop(0.7, 'rgba(40, 0, 60, 0.5)'); grad.addColorStop(1, 'rgba(40, 0, 60, 0)');
-      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(B.x, B.y, r, 0, Math.PI * 2); ctx.fill();
+      put(hole(), B.x, B.y, r * 2, r * 2);
       ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = DARK_EDGE; ctx.lineWidth = U(2);
       for (let i = 0; i < 3; i++) {
         const a = -t * 0.01 + (i * Math.PI * 2) / 3;
@@ -464,14 +482,8 @@ export function attackFx(card, from, to, { power = 0, big = false, fast = false,
   try { (first ? MOVES[kind] || MOVES.punch : MOVES.punch)(A, B, pal, o, type); } catch (err) { console.warn('movefx', kind, err); }
   const glowR = B.w * (1.1 + power * 1.5 + (big ? 0.6 : 0));
   part({ x: B.x, y: B.y, r: glowR, col: pal[2], alpha: 0.55, life: 16, add: true, draw: drawGlow, shrink: -0.3 });
-  job(260 * o.ts, (t, f) => {   // the light it throws over the scene
-    const ctx = kit.ctx, R = Math.max(innerWidth, innerHeight) / kit.PX;
-    const grad = ctx.createRadialGradient(B.x, B.y, 0, B.x, B.y, R * 0.8);
-    grad.addColorStop(0, rgba(pal[2], 0.22 * (1 - f) * (1 + power)));
-    grad.addColorStop(1, rgba(pal[2], 0));
-    ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, R * 2, R * 2);
-  });
+  const R = B.w * 4.5;   // the light it throws over the scene round the foe (a whole-screen fill was the costliest draw)
+  part({ x: B.x, y: B.y, life: 16 * o.ts, add: true, draw(p, f) { kit.ctx.globalAlpha = 0.55 * (1 - f) * (1 + power); put(light(pal[2]), p.x, p.y, R, R); } });
 }
 /** The colour an attack lights the 3D arena in. */
 export const lightOf = (type) => palOf(type)[2];
@@ -483,12 +495,7 @@ export function shieldFx(node, { fast = false } = {}) {
   job(700 * (fast ? 0.5 : 1), (t, f) => {
     const ctx = kit.ctx, r = R * (0.75 + 0.25 * ease(Math.min(1, f / 0.22))), a = f < 0.6 ? 1 : 1 - (f - 0.6) / 0.4;
     ctx.globalCompositeOperation = 'lighter';
-    const grad = ctx.createRadialGradient(A.x, A.y, r * 0.55, A.x, A.y, r);
-    grad.addColorStop(0, 'rgba(120, 200, 255, 0)'); grad.addColorStop(0.85, `rgba(120, 200, 255, ${0.3 * a})`); grad.addColorStop(1, `rgba(220, 245, 255, ${0.7 * a})`);
-    ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(A.x, A.y, r, 0, Math.PI * 2); ctx.fill();
-    ctx.save(); ctx.clip();
-    ctx.globalAlpha = 0.28 * a; ctx.drawImage(hexes(), A.x - r, A.y - r, r * 2, r * 2);
-    ctx.restore();
+    ctx.globalAlpha = a; put(shieldBall(), A.x, A.y, r * 2, r * 2);
     ctx.globalAlpha = 0.9 * a; ctx.strokeStyle = '#e8f8ff'; ctx.lineWidth = U(3); ctx.lineCap = 'round';
     const s = f * 5;   // a sheen sweeping round its rim
     ctx.beginPath(); ctx.arc(A.x, A.y, r, s, s + 0.9); ctx.stroke();

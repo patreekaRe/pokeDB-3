@@ -1535,7 +1535,7 @@ function frame(now) {
   const look = A.look;
   hemi.intensity = look.hemi[2] * (1 - stormK * 0.45) + flashK * 2 + glowK * 1.4;
   if (glowK > 0 || glowed) {   // an attack's light: the sky light leans to its colour for a moment (no new light, no new shaders)
-    hemi.color.set(look.hemi[0]).lerp(glowCol, Math.min(1, glowK) * 0.6);
+    hemi.color.copy(look.hemiCol ||= new THREE.Color(look.hemi[0])).lerp(glowCol, Math.min(1, glowK) * 0.6);
     glowed = glowK > 0;
     glowK = Math.max(0, glowK - dt * 3);
   }

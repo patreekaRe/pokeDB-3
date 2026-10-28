@@ -38,14 +38,15 @@ const KIND = { fire: 'ember', water: 'drop', grass: 'leaf', psychic: 'spark', el
 const CHAR = '#281008';
 
 /* Particles move in units of PX CSS px either way, so both looks share one set of physics; the clean look only draws
-   them at the screen's own sharpness (at most 2x, for memory), from sprites painted once per type. */
-let canvas, ctx, PX = 4, DPR = 1, raf = 0, last = 0;
+   them sharper than the screen's CSS pixels (1.5x at most: at 2x a busy fight dropped frames headless and held 5.6 MB at a phone's size, 2026-10-28), from sprites painted once per type. */
+let canvas, ctx, PX = 4, DPR = 1, S = 1, raf = 0, last = 0;
+const MAX_PARTS = 450;   // past this a new particle is made but never drawn: a burst on a burst on a trail stays cheap
 const parts = [];
 const jobs = [];   // flights and burns, each a function(now) that returns false once done
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const reduced = () => !battleFx() || look() === 'off';
-let busyAt = 0, beat = 0;   // the last time something other than a status's ambience was drawn
+let busyAt = 0, beat = 0, freeAt = 0;   // the last time something other than a status's ambience was drawn
 
 function ensureCanvas() {
   CLEAN = look() !== 'pixel';
@@ -56,7 +57,7 @@ function ensureCanvas() {
     ctx = canvas.getContext('2d');
   }
   if (!canvas.isConnected) document.body.append(canvas);
-  DPR = CLEAN ? Math.min(2, devicePixelRatio || 1) : 1;
+  DPR = CLEAN ? Math.min(1.5, devicePixelRatio || 1) : 1;
   canvas.classList.toggle('clean', CLEAN);
   const w = Math.ceil(CLEAN ? innerWidth * DPR : innerWidth / PX), h = Math.ceil(CLEAN ? innerHeight * DPR : innerHeight / PX);
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
@@ -77,30 +78,50 @@ function frame(now) {
   last = now;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.setTransform(CLEAN ? DPR * PX : 1, 0, 0, CLEAN ? DPR * PX : 1, 0, 0);
+  S = CLEAN ? DPR * PX : 1;
+  ctx.setTransform(S, 0, 0, S, 0, 0);
   for (let i = jobs.length - 1; i >= 0; i--) if (jobs[i](now) === false) jobs.splice(i, 1);
-  for (let i = parts.length - 1; i >= 0; i--) {
+  let kept = 0;
+  lit.length = 0;
+  for (let i = 0; i < parts.length; i++) {   // moved, and the dead dropped in place (a splice each was quadratic)
     const p = parts[i];
     p.age += k;
-    if (p.age >= p.life) { parts.splice(i, 1); continue; }
+    if (p.age >= p.life) continue;
+    parts[kept++] = p;
     if (p.home) {   // an ember drawn into the exhaust pile
       p.vx += (p.home.x - p.x) * 0.012 * k;
       p.vy += (p.home.y - p.y) * 0.012 * k;
     }
     p.vy += p.g * k;
-    p.vx *= p.drag ** k;
-    p.vy *= p.drag ** k;
+    if (p.drag !== 1) { const d = p.drag ** k; p.vx *= d; p.vy *= d; }
     p.x += (p.vx + (p.sway ? Math.sin((p.age + p.phase) / 5) * p.sway : 0)) * k;
     p.y += p.vy * k;
-    if (p.draw) { ctx.globalCompositeOperation = p.add ? 'lighter' : 'source-over'; p.draw(p, p.age / p.life); }
-    else if (CLEAN) drawClean(p);
-    else { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; draw(p); }
+    if (additive(p)) lit.push(p); else paint(p);
   }
+  parts.length = kept;
+  // the glowing ones after, in one run: switching the blend for each particle made the canvas flush every time
+  ctx.globalCompositeOperation = 'lighter';
+  for (const p of lit) paint(p);
+  lit.length = 0;
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
   if (jobs.length || parts.length) raf = requestAnimationFrame(frame);
-  else if (CLEAN) { raf = 0; canvas.width = canvas.height = 0; }   // a full-sharpness canvas is megabytes; it's re-made on the next card
+  else if (CLEAN) {   // a full-sharpness canvas is megabytes: freed once the fight's been quiet a while (making it again costs a frame)
+    raf = 0;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    clearTimeout(freeAt);
+    freeAt = setTimeout(() => { if (!raf) canvas.width = canvas.height = 0; }, 5000);
+  }
   else { raf = 0; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+}
+
+const lit = [];
+const additive = (p) => (p.draw ? !!p.add : CLEAN && !(p.kind === 'drop' || p.kind === 'leaf' || p.pal === PALETTES.dark));
+function paint(p) {
+  if (p.draw) p.draw(p, p.age / p.life);
+  else if (CLEAN) drawClean(p);
+  else { ctx.globalAlpha = 1; draw(p); }
 }
 
 const sprites = new Map();
@@ -188,18 +209,16 @@ const drop = (pal) => sprite(`drop${pal[2]}`, 48, 64, (g) => {
 
 /** A sprite drawn centred on (x, y), w by h units, turned by `a` and squashed sideways by `sx`. */
 function put(img, x, y, w, h, a = 0, sx = 1) {
-  ctx.save();
-  ctx.translate(x, y);
-  if (a) ctx.rotate(a);
-  if (sx !== 1) ctx.scale(sx, 1);
+  if (!a && sx === 1) { ctx.drawImage(img, x - w / 2, y - h / 2, w, h); return; }
+  const c = Math.cos(a) * S, s = Math.sin(a) * S;   // set outright: a save() and restore() round every particle cost more than its drawing
+  ctx.setTransform(c * sx, s * sx, -s, c, x * S, y * S);
   ctx.drawImage(img, -w / 2, -h / 2, w, h);
-  ctx.restore();
+  ctx.setTransform(S, 0, 0, S, 0, 0);
 }
 
 function drawClean(p) {
   const f = p.age / p.life, s = p.size || 1, pal = p.pal;
   const fade = f < 0.6 ? 1 : 1 - (f - 0.6) / 0.4;
-  ctx.globalCompositeOperation = p.kind === 'drop' || p.kind === 'leaf' || pal === PALETTES.dark ? 'source-over' : 'lighter';
   switch (p.kind) {
     case 'ember': {   // white-hot to red as it cools, shrinking, with a flicker
       const at = f * 4, i = Math.min(3, Math.floor(at)), mix = at - i;
@@ -289,7 +308,7 @@ function spawn(type, x, y, { burst = 0, fast = false, ember = false } = {}) {
   else { p.vx += rand(-0.25, 0.25); p.vy += rand(-0.3, 0.1); p.drag = 0.94; p.life = rand(14, 24); }
   if (!ember) { p.size = 2; p.life *= 1.8; }   // the trail hangs on after the card lands: at 1 px and ~0.4 s it was gone before you saw it (the user, 2026-10-03)
   if (fast) p.life /= 2;
-  parts.push(p);
+  if (parts.length < MAX_PARTS) parts.push(p);
   return p;
 }
 
@@ -505,7 +524,7 @@ function burnClean({ ghost, wrap, r, pile, home, total, fast, t0 }) {
 /** What js/movefx.js draws with: the same canvas, loop and sprites. Positions are in particle units (PX CSS px). */
 export const kit = {
   get ctx() { return ctx; }, get PX() { return PX; }, get clean() { return CLEAN; },
-  parts, jobs, PALETTES, rand, rgba, glow, star, flake, leaf, drop, put, sprite, spawn, reduced,
+  parts, jobs, PALETTES, MAX_PARTS, rand, rgba, glow, star, flake, leaf, drop, put, sprite, spawn, reduced,
   open() { if (reduced()) return false; ensureCanvas(); return true; },
   start,
   /** An element's box in particle units. */
