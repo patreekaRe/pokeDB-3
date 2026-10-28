@@ -3463,9 +3463,11 @@ function renderBars() {
   b.refilled = false;
   const count = el('b', refill ? 'bump fill' : b.energy !== shown ? 'bump' : '', String(b.energy));
   const numbers = el('span', 'pp-count');
-  numbers.append(count, `/${max}`);
+  numbers.append(count, el('small', '', `/${max}`));
+  const pips = el('span', 'pp-pips');   // one per PP this turn, lit while unspent; past 8 they'd be too thin to read
+  if (max <= 8) for (let i = 0; i < max; i++) { const pip = el('i', i < b.energy ? 'on' : ''); pip.style.setProperty('--i', i); pips.append(pip); }
   const pill = el('span', 'pp-pill');
-  pill.append(el('span', 'pp-label', 'PP'), numbers);
+  pill.append(el('span', 'pp-label', 'PP'), pips, numbers);
   orb.replaceChildren(pill);
   orb.dataset.shown = String(b.energy);
   orb.classList.toggle('empty', b.energy === 0);

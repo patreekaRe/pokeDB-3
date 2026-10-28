@@ -2175,6 +2175,81 @@ body.battle-intro { pointer-events: none; }
 }
 @keyframes stripeScroll { to { background-position: 0 8px; } }
 @media (prefers-reduced-motion: reduce) { :is(.battle-controls .energy-orb, #end-turn-btn, .ds-btn):hover { animation: none; } }
+
+/* The controls' look (2026-10-28, branch button-look, the user's ask: the buttons to look different, to match the move
+   effects): dark glass plates with a rim in the turn banner's gold, leaning like its stripe, the PP in its slanted gold
+   numeral with a pip lit per PP left (lit one by one as a turn refills), End Turn in Chakra Petch with a » that runs
+   while it's the move. Throw keeps the Safari's green rim and Mulligan its violet. Ids in the selectors: the hover rules
+   above match through #end-turn-btn and would win otherwise. */
+.battle-controls :is(#player-energy, #end-turn-btn, .throw-btn) {
+  --rim: #e8b830; --glow: rgba(255, 196, 60, 0.28);
+  padding: 0; border-radius: 12px;
+  background: linear-gradient(180deg, #3c3858 0%, #24213a 55%, #15131e 100%); background-size: auto;
+  box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px var(--rim), inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 4px 0 2px rgba(0, 0, 0, 0.45), 0 0 14px var(--glow);
+  transform: skewX(-8deg);
+}
+.battle-controls .throw-btn { --rim: #6cd048; --glow: rgba(108, 208, 72, 0.3); }
+.battle-controls .mulligan-btn { --rim: #a880f0; --glow: rgba(168, 128, 240, 0.3); }
+#player-energy.empty { --rim: #e85040; --glow: rgba(232, 80, 64, 0.3); }
+.battle-controls :is(#player-energy, #end-turn-btn, .throw-btn) .pp-pill {
+  background: none; box-shadow: none; transform: skewX(8deg);
+  color: #fff; text-shadow: 2px 2px 0 #0c0b12;
+}
+#player-energy .pp-pill {
+  display: grid; grid-template-columns: auto 1fr; grid-template-areas: "label count" "pips count";
+  align-items: center; align-content: center; column-gap: 12px; row-gap: 5px;
+}
+#player-energy .pp-label { grid-area: label; color: #ffe9a6; font-size: 1rem; }
+#player-energy .pp-pips { grid-area: pips; display: flex; gap: 3px; }
+#player-energy .pp-pips:empty { display: none; }
+#player-energy .pp-pips i {
+  width: 8px; height: 7px; border-radius: 2px; transform: skewX(-14deg);
+  background: #2c293e; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+#player-energy .pp-pips i.on { background: linear-gradient(#fff6c0, #ffd84a 50%, #f0a020); box-shadow: 0 0 6px rgba(255, 200, 60, 0.85); }
+#player-energy .pp-count { grid-area: count; justify-self: end; display: flex; align-items: baseline; }
+#player-energy .pp-count b {
+  font: italic 700 2.1rem/0.8 "Chakra Petch", var(--pixel-font); color: #ffd84a;
+  text-shadow: 2px 2px 0 #0c0b12, -1px -1px 0 #0c0b12, 1px -1px 0 #0c0b12, -1px 1px 0 #0c0b12, 0 0 10px rgba(255, 196, 60, 0.6);
+  padding-right: 2px;
+}
+#player-energy .pp-count small { font-size: 0.85rem; color: #a8a4c4; }
+#player-energy.empty .pp-count b { color: #ff6a5a; text-shadow: 2px 2px 0 #0c0b12, -1px -1px 0 #0c0b12, 1px -1px 0 #0c0b12, -1px 1px 0 #0c0b12, 0 0 10px rgba(255, 80, 60, 0.6); }
+.battle-controls :is(#end-turn-btn, .throw-btn) .pp-pill { font: italic 700 1.3rem/1 "Chakra Petch", var(--pixel-font); text-transform: uppercase; letter-spacing: 0.5px; }
+.et-arrow { display: inline-block; margin-left: 8px; font-style: normal; color: #ffd84a; text-shadow: 2px 2px 0 #0c0b12, 0 0 8px rgba(255, 196, 60, 0.7); }
+#end-turn-btn:disabled .et-arrow { color: #8a86a0; text-shadow: 2px 2px 0 #0c0b12; }
+.battle-controls #end-turn-btn:hover:not(:disabled) .pp-pill { background: none; }
+.battle-controls :is(#end-turn-btn, .throw-btn):active:not(:disabled) {
+  transform: skewX(-8deg) translateY(3px);
+  box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px var(--rim), inset 0 4px 0 2px rgba(0, 0, 0, 0.25), 0 1px 0 2px rgba(0, 0, 0, 0.45), 0 0 14px var(--glow);
+}
+.battle-controls #end-turn-btn.nudge { background-size: auto; animation: turnHop 1.4s ease-in-out infinite, rimGlow 1.4s ease-in-out infinite; }
+#end-turn-btn.nudge .et-arrow { animation: etRun 0.7s ease-in-out infinite; }
+@keyframes etRun { 50% { translate: 5px 0; } }
+@keyframes rimGlow { 50% { box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px #fff0a0, inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 4px 0 2px rgba(0, 0, 0, 0.45), 0 0 24px 6px rgba(255, 200, 60, 0.6); } }
+@keyframes ppCharge { 30% { box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px #fff0a0, inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 4px 0 2px rgba(0, 0, 0, 0.45), 0 0 28px 8px rgba(255, 200, 60, 0.7); } }
+@keyframes ppFill { 35% { transform: translateY(-5px) scale(1.25); color: #fffbe0; } }
+@keyframes ppShake { 0%, 100% { transform: skewX(-8deg); } 20%, 60% { transform: skewX(-8deg) translateX(-5px); } 40%, 80% { transform: skewX(-8deg) translateX(5px); } }
+#player-energy.refill .pp-pips i.on { animation: pipOn 0.35s ease-out calc(0.4s + var(--i) * 0.08s) both; }
+@keyframes pipOn { from { background: #2c293e; box-shadow: none; } 55% { transform: skewX(-14deg) scale(1.5); box-shadow: 0 0 10px 2px rgba(255, 220, 90, 0.95); } }
+@media (hover: hover) {
+  .battle-controls :is(#player-energy:not(.shake), #end-turn-btn:not(:disabled):not(.nudge)):hover { animation: none; filter: brightness(1.12); }
+  .battle-controls :is(#player-energy, #end-turn-btn:not(:disabled)):hover:not(:active) {
+    box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px #fff0a0, inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 7px 0 2px rgba(0, 0, 0, 0.4), 0 0 20px var(--glow);
+  }
+}
+@media (max-width: 720px) {
+  .battle-controls :is(#player-energy, #end-turn-btn, .throw-btn) { padding: 0; border-radius: 10px; }
+  .battle-controls .pp-pill { min-width: 6.4rem; height: 2.6rem; padding: 4px 12px; }
+  #player-energy .pp-pill { column-gap: 8px; row-gap: 4px; }
+  #player-energy .pp-label { font-size: 0.75rem; }
+  #player-energy .pp-pips i { width: 6px; height: 5px; }
+  #player-energy .pp-count b { font-size: 1.6rem; }
+  #player-energy .pp-count small { font-size: 0.75rem; }
+  .battle-controls :is(#end-turn-btn, .throw-btn) .pp-pill { font-size: 0.95rem; }
+  .et-arrow { margin-left: 5px; }
+}
+@media (prefers-reduced-motion: reduce) { #player-energy.refill .pp-pips i.on, #end-turn-btn.nudge .et-arrow { animation: none; } }
 .reward-option.picked { transform: translateY(-10px) scale(1.04); }
 .reward-option.picked .card-face { --ring: 0 0 0 1cqw #fff, 0 0 0 2.8cqw #f8d030, 0 0 6cqw 2cqw rgba(248, 208, 48, 0.7); }   /* like a picked card in battle */
 .reward-option.picked > .relic { outline: 4px solid #f8d030; outline-offset: 2px; }
