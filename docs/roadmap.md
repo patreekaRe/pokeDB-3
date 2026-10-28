@@ -1225,6 +1225,14 @@ Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/k
 > it at `LOOK_PRICE` in the shops' buy window. Keep the Trainer Card's picker for switching (and buying, unless the user
 > says shop only). A `?mall=tailor` flag, a `NEWS` line if the PC should tell of it, a patch note, the budget check on the
 > mall places. No names on the mannequins (the user's call). Ask the user first only whether buying stays on the card too.
+> **The trainer window** (the user's design, 2026-10-28: "a combination of the Timburr house select and the Game Corner
+> prize window", the sprites walking in place as you preview them): Timburr's catalogue card (`openKiosk()` in
+> `js/house-kiosk.js`, `.hk-*`: cream, gold rim, the keeper's name tag askew, the keeper's line, coins and a round ✕, a
+> sideways row of cards, the gold key) crossed with Meowth's prize counter (`js/prizes.js` on `js/showcase.js`: one item
+> big on a screen, ◀ / ▶): one trainer big in a spotlit box walking in place (its four steps, turning through its four
+> ways), ◀ / ▶ to step through them, the row of small trainer cards under it (OWNED / 🪙500) to jump to one, Wear / Buy
+> on the gold key, Kecleon's tag and a line about the one shown. The same window replaces the Trainer Card's
+> `lookPicker()` (no keeper there) and the setup's WHO ARE YOU? can stay a row of four.
 
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking
