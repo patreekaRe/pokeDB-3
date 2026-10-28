@@ -49,18 +49,6 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['dex', 'The Pokédex\'s cover holds a Badge Case: a slot per badge group, gold-rimmed once full. Choose each slot\'s badge with the Trainer Card\'s new Cover key.'],
-  ['dex', 'Your pinned badge wears a gold plate on the Trainer Card and sits pinned on your partner\'s portrait, so it\'s easy to find.'],
-  ['base', 'Secret Base stairs look like stairs now: a flight with banisters up to a doorway high in the wall, and a stairwell in the floor going down.'],
-  ['fixes', 'Evolutions play in full again: the tap that closed "What? It\'s evolving!" was skipping the whole show, the Depths camp plays its own song, not the Clearing\'s, and a friend\'s "added you" pop-up waits for whoever is talking to finish.'],
-  ['base', 'Jukeboxes play records now: Smeargle brings you one (each turning in 3D as you pick) with your first record, the Clearing\'s song, and friends visiting hear it. Mended towns\' trading posts sell 55 more.'],
-  ['runs', 'A crossroads board shows its biome\'s research beside its Pokédex: how many of its Pokémon you\'ve researched, on a bar of its own.'],
-  ['battle', 'No two cards in a run are the same card with other numbers any more: 197 cards and 424 signature moves got new moves, and 28 look-alikes left the rewards.'],
-  ['base', 'Timburr & Co.\'s catalogue shows a MORE pill while more houses sit off to the right; tap it or swipe the row.'],
-  ['base', 'Over 120 new wallpapers and floors, sorted by theme, with a "!" on new ones and one of each half price every day; Smeargle at the Poké Mall sells them too.'],
-  ['battle', 'Every ball you throw is a 3D ball like the Pokémon Center\'s, wearing the Apricorn skin you carry (picked by name on your Trainer Card, or put away for a plain one), as does the ball your partner comes out of.'],
-  ['mall', 'The Safari Outfitter sells one of Kurt\'s Apricorn balls a day, left of the Day Pass booth.'],
-  ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo show a bobbing ▼ MORE tag while there\'s more to scroll down to.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 
@@ -73,6 +61,26 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.31',
+    name: 'Balls & Records',
+    date: '2026-10-28',
+    notes: [
+  ['dex', 'The Pokédex\'s cover holds a Badge Case: a slot per badge group, gold-rimmed once full. Choose each slot\'s badge with the Trainer Card\'s new Cover key.'],
+  ['dex', 'Your pinned badge wears a gold plate on the Trainer Card and sits pinned on your partner\'s portrait, so it\'s easy to find.'],
+  ['base', 'Secret Base stairs look like stairs now: a flight with banisters up to a doorway high in the wall, and a stairwell in the floor going down.'],
+  ['fixes', 'Evolutions play in full again: the tap that closed "What? It\'s evolving!" was skipping the whole show, the Depths camp plays its own song, not the Clearing\'s, and a friend\'s "added you" pop-up waits for whoever is talking to finish.'],
+  ['base', 'Jukeboxes play records now: Smeargle brings you one (each turning in 3D as you pick) with your first record, the Clearing\'s song, and friends visiting hear it. Mended towns\' trading posts sell 55 more.'],
+  ['runs', 'A crossroads board shows its biome\'s research beside its Pokédex: how many of its Pokémon you\'ve researched, on a bar of its own.'],
+  ['battle', 'No two cards in a run are the same card with other numbers any more: 197 cards and 424 signature moves got new moves, and 28 look-alikes left the rewards.'],
+  ['base', 'Timburr & Co.\'s catalogue shows a MORE pill while more houses sit off to the right; tap it or swipe the row.'],
+  ['base', 'Over 120 new wallpapers and floors, sorted by theme, with a "!" on new ones and one of each half price every day; Smeargle at the Poké Mall sells them too.'],
+  ['battle', 'Every ball you throw is a 3D ball like the Pokémon Center\'s, wearing the Apricorn skin you carry (picked by name on your Trainer Card, or put away for a plain one), as does the ball your partner comes out of.'],
+  ['mall', 'The Safari Outfitter sells one of Kurt\'s Apricorn balls a day, left of the Day Pass booth.'],
+  ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo show a bobbing ▼ MORE tag while there\'s more to scroll down to.'],
+  ['battle', 'Played cards leave smooth trails in their type: glowing embers, falling droplets, tumbling leaves, twinkling stars and snowflakes, and exhausted cards burn away with a glowing edge.'],
+    ],
+  },
   {
     version: '1.30',
     name: 'Houses & Banners',

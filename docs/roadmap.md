@@ -1211,6 +1211,16 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+- **More card effects** (2026-10-28, offered after the smooth trails landed; the user only asked what more could look
+  like, nothing picked yet): (1) a move's own effect, an `FX` line per card like `ART` (Flamethrower a flame stream,
+  Bubble popping bubbles, Razor Leaf spinning blades, Thunderbolt a bolt from card to foe, Ice Beam a frosting beam);
+  (2) hits that land on the foe (a type-coloured flash on the sprite, a splash crown, scorch marks, vines, a shake by
+  damage under `calmFx()`); (3) the effect lighting the 3D arena for a moment; (4) a bigger moment for 3-PP and rare
+  cards (the screen dims, a type backdrop, a beat of slow motion); (5) blocks and heals with their own look (a shield
+  bubble forming, green motes rising); (6) the card's flight leaving a smooth ribbon, and a type glow on its edge as
+  it's lifted; (7) status ambience (embers on a burned foe, poison bubbles); (8) a Settings choice, Smooth / Pixel /
+  Off. ▶ Run in: CLOUD, effort high (new effects per move: medium once the pattern is set).
+
 **Friends' buddies wearing their aura and crown** (asked 2026-10-27, "does this show on our friends walking buddies?"):
 not yet. The Trainer Plaza's buddies (`js/hub-buddies.js`) build from `graves/<uid>`, which holds only the buddy key and
 card tier, so the Super Saiyan aura (`auraWorn()`) and the Level 10 crown show on your own buddy alone. To build: add
@@ -1648,12 +1658,6 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 
 ## Waiting on the user
 
-- **Smooth card effects** (2026-10-28, branch `clean-card-fx`, NOT on `main` yet; the user's ask: the pixelated
-  Fire / Water / Grass trails looked messy). A played card's trail and burst and the exhaust burn are drawn smooth now
-  (`drawClean()` / `burnClean()` in `js/cardfx.js`; `docs/reference/battle-screen-layout.md`); `?pixelfx` shows the old
-  pixels to compare. ▶ Run in: PLAYTEST ON THE LIVE SITE (the branch's githack link). If the user likes it: merge to
-  `main`, add a `battle` patch line ("Played cards leave smooth trails ..."; `NEXT` is at 12, so cut a patch then), and
-  ask whether to keep `?pixelfx` or a Settings choice. If not: what to change (size, glow, count).
 - **3D balls, the Trainer Card's Ball key, the Outfitter's Apricorn** (2026-10-27, branch
   `claude/pokeball-appearance-customization-4ww68i`, on `main` too; archive): every ball thrown in battle (the send-out,
   a Gym Leader's, a Safari catch) is the Center's 3D ball as a pre-rendered spinning sheet, your partner comes out of the

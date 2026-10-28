@@ -3705,3 +3705,6 @@ The user's phone screenshots: the card's ball key and the YOUR BALL tiles were b
 away. `setBall3d()` (`js/ball-looks.js`) set `--sheet` to a relative `url()`, which resolved against `css/` (a 404), so
 every `ball3d()` was blank, the battle send-out included; it now sets an absolute URL. Each tile is named under its ball
 (the first "Plain"), and the Carrying line has a Put away button while a skin is carried.
+- **Smooth card effects** (2026-10-28, branch `clean-card-fx`, merged to `main` on the user's yes, patch 1.31 "Balls &
+  Records" cut with it): played cards' trails, landing bursts and the exhaust burn drawn smooth from sprites instead of
+  whole pixels (`drawClean()` / `burnClean()` in `js/cardfx.js`); `?pixelfx` shows the old look for a page load.
