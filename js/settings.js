@@ -48,6 +48,8 @@ const OPTIONS = {
   calmFx: { values: [[false, 'Full'], [true, 'Reduced']], apply: v => document.documentElement.classList.toggle('calm-fx', v) },
   battleSpeed: { values: [[1, '1x'], [2, '2x']], apply: v => document.documentElement.classList.toggle('fast-battle', v > 1) },
   battleFx: { values: [[true, 'On'], [false, 'Off']], apply: v => document.documentElement.classList.toggle('no-battle-fx', !v) },
+  // read as each effect starts (js/cardfx.js)
+  cardFx: { values: [['smooth', 'Smooth'], ['pixel', 'Pixel'], ['off', 'Off']] },
   endTurnWarn: { values: [[true, 'On'], [false, 'Off']] },
   vibration: { values: [[true, 'On'], [false, 'Off']], apply: (v, changed) => { if (changed && v) vibrate(20); } },
 };

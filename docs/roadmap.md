@@ -1211,86 +1211,6 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
-- **More card effects** (2026-10-28, offered after the smooth trails landed; the user only asked what more could look
-  like, nothing picked yet): (1) a move's own effect, an `FX` line per card like `ART` (Flamethrower a flame stream,
-  Bubble popping bubbles, Razor Leaf spinning blades, Thunderbolt a bolt from card to foe, Ice Beam a frosting beam);
-  (2) hits that land on the foe (a type-coloured flash on the sprite, a splash crown, scorch marks, vines, a shake by
-  damage under `calmFx()`); (3) the effect lighting the 3D arena for a moment; (4) a bigger moment for 3-PP and rare
-  cards (the screen dims, a type backdrop, a beat of slow motion); (5) blocks and heals with their own look (a shield
-  bubble forming, green motes rising); (6) the card's flight leaving a smooth ribbon, and a type glow on its edge as
-  it's lifted; (7) status ambience (embers on a burned foe, poison bubbles); (8) a Settings choice, Smooth / Pixel /
-  Off. ▶ Run in: CLOUD, effort high (new effects per move: medium once the pattern is set).
-
-**Friends' buddies wearing their aura and crown** (asked 2026-10-27, "does this show on our friends walking buddies?"):
-not yet. The Trainer Plaza's buddies (`js/hub-buddies.js`) build from `graves/<uid>`, which holds only the buddy key and
-card tier, so the Super Saiyan aura (`auraWorn()`) and the Level 10 crown show on your own buddy alone. To build: add
-`aura` (0, 6-10) to the graves doc (`publishGraves()`, `checkGraves()`, `validGraves` in `firestore.rules`, which the
-user re-publishes in Firebase), then pass `aura: () => fr.aura` and `crown: () => fr.aura === 10` to `monBoard()`; the
-budget check with four aura'd buddies in the Plaza (`?graves=4` plus a sample aura). ▶ Run in: CLOUD, effort medium.
-
-**Twins, what the 2026-10-26 pass left**: (1) the Safari signature cards: done 2026-10-27 (the user went with Claude's
-recommendation; all of the twin rule, not only the 170 first counted, see the archive); (2) each type's plain **Strike
-and Defend** stay plain (Claude's recommendation, 2026-10-27: a Duo Run's partners draw from their own decks, so two
-types' Strikes never share a hand); (3) Kenmatta's dojo was rebuilt on the new cards, done 2026-10-26. (4) **The look-alikes the pass reworded**: done
-2026-10-27 (the user: "why not just get rid of cards that are the same"); 28 cards left the pools and the rule reads
-"5 damage twice" as "Deal 10" (`docs/card-twins.md`'s "Taken out of the pools", the archive). (5) **Signature cards and
-the hits rule**, waiting on the user: under it 97 signature moves would read like a run card or each other (Swift 3x3
-Retain / Night Slash 10 Retain...), and a Pokémon can't lose its signature, so each needs a real idea or stays; Claude's
-recommendation: redo them in one pass, a type's area at a time. ▶ Run in: CLOUD, effort medium, both repos. (6) **Fire's first
-evolution offers only Flame Charge and Incinerate** since Fire Fang and Flame Wheel left: Claude's recommendation (the
-user asked "you tell me", 2026-10-27), first a playtest of the removals, then one session doing (6) and (5) together:
-Fire Fang gets a move that is really its own (a bite that does something no Fire card does) so the stage offers a
-choice again, then the signature moves, each tied to what its Pokémon does, and one left as it is where no real idea
-fits.
-
-**Records and the jukebox, what's left** (live 2026-10-25, see the archive). Ideas not yet asked for: music fading with
-distance from the jukebox; the player piece animating while a record plays; a nudge to go home once a new player mends
-the Clearing's Waystone (Smeargle waits there for their next visit). More records: each a TRACKS line, loop points, a
-TRACK_GAIN and a RECORDS line (`docs/reference/hub-base-mall.md`'s Records section).
-
-**A basement in the Secret Base** (2026-10-25: the user asked whether you can build downstairs; you can't, floors only
-go up, `lv` 0 the ground and each one up a staircase). Not asked for yet, only noted: it would take a negative `lv`, a
-stairwell down in a ground-floor room (the `stairwell` branch's look) and its own floor tab on the blueprint.
-
-**Battle juice, after the turn banner** (2026-10-25: the user asked what other "cool aesthetic UI stuff like this" the
-game could use; 1-3 of Claude's list are built and on `main`, see the archive). Still ideas: (4) drawn cards fly out of the draw pile, played ones into the discard, and a reshuffle streams
-discard into draw with a riffle sound (today it's a "♻️ Reshuffled" pop); (5) the PP pill's pips fill one by one with a
-sparkle at turn start; (6) damage numbers that scale with the hit, and a short hit-stop and shake on big or super
-effective hits (hit-stop is only on a boss's last blow today); (7) "Groudon's Turn" in place of "Enemy Turn" for a boss
-or Gym Leader; (8) a red heartbeat vignette at low HP, matching the low-HP sound loop (likely a no: the user found red arena edges odd). Every one checks `battleFx()` /
-`calmFx()`. ▶ Run in: CLOUD (build) then PLAYTEST, effort medium each.
-
-**Friends playing it as an app on their phones** (the user's question, 2026-10-24: "turn it into a game on Unity or
-something other than a browser"). Claude's answer, not decided yet: **no Unity**, since that means rewriting ~200k lines
-of JS and every three.js place from scratch. The game is already an installable web app (`manifest.webmanifest`,
-`fullScreenApp()`), so friends can Add to Home Screen today. Steps, cheapest first: (1) **a service worker** (there is none
-yet), so it opens instantly and works offline once cached. Cache assets as they're used, not the whole 186 MB (111 MB of
-Pokémon GIFs, 72 MB of audio), and version the cache so a push still reaches players. ▶ CLOUD, effort high. (2) **Lighter
-downloads**: re-encode the audio smaller and look at WebP for the GIFs, checked by `tools/budget-check.mjs`. (3) **A
-Capacitor wrapper**, the same code in a real Android / iOS app: an Android APK can go to friends directly, but iOS needs a
-Mac and Apple's $99 a year. **The app stores are a no**, because Pokémon's names, sprites and cries are Nintendo's and the
-stores take such apps down. They could only take it with original art and names.
-**The user's go, 2026-10-24** ("I want both"), as two sessions: **1, smoothness** (done the same day: the Center and Mart
-sleep, mono songs, the hidden title blink; "Mid-run reloads" above), then **2, loading** (▶ Run in: CLOUD, effort high):
-the service worker of (1), and the music re-encoded smaller with every `LOOP_POINTS` loop checked after (re-encoding can
-shift timing). The GIF-to-WebP step is out: `js/gif-frames.js` decodes GIFs itself, for little gain. Claude's note to the
-user: neither makes play smoother, only loading.
-
-**Cloud save: look at the cloud again when the game comes back from the background** (Claude's offer, 2026-10-23, not
-answered yet): a tab left open on one device only learns the other played at its next save, then asks "Two saves found".
-Re-checking on return would take the newer cloud save quietly when this device hadn't changed (a reload mid-play, so ask
-the user first). ▶ Run in: CLOUD, effort medium.
-
-**Secret Base houses: still open after launch (2026-10-23).** The houses went live (archive: "Secret Base houses").
-Waiting on the user: **insides per house** (Claude's pick: drop them, since a round or narrow room breaks friends' laid-out
-rooms; a safe middle is house-themed floors, wallpaper and window frames only). Watch for: a friend's lawn shows the
-Ancient Tree until they open the game after launch (their page then carries `lot`); the first real Trainers-app visit
-through the lawn is its first test with the cloud (a githack link has none).
-
-**The game feels too easy, Grass most of all; healing feels overpowered** (2026-10-22, the user, after a Servine run where
-Apple Acid+ (1 PP, 11 + Vulnerable 2) sat beside Seed Bomb (2 PP, 10 + Vulnerable 2)). The human bot, 150 a cell, sim
-variants `heal75` / `heal50` / `heal0` / `appleNerf` / `synthEx` (pokeDB-sim, branch `claude/game-difficulty-healing-balance-e107sm`):
-- Base: Grass L0 62.0 / L3 46.7, Fire L0 76.0, Water L0 60.0. To the bot Grass isn't the easiest; Fire is.
 - **Grass is built on healing**: in-fight healing x0.75 takes Grass 62 -> 42 (L3 47 -> 23), x0.5 to 33, none to 6, while
   Fire only drops 76 -> 64 and Water 60 -> 43-53. A blanket heal cut would break Grass long before it touched the others.
 - Single cards move nothing: Apple Acid+ at 10 + Vulnerable 1 (70.7, noise) or Synthesis with Exhaust (61.3).
@@ -1657,6 +1577,15 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+
+- **More card effects** (2026-10-28, branch `more-card-fx`, NOT on `main` yet; the user's ask: "can we do all of it"):
+  every idea from the list is built: a move's own effect for 160-odd attacks plus a type's for the rest
+  (`js/movefx.js`, `js/data/move-fx.js`), hits lighting the foe and the 3D arena with a jolt, a cut-in for 3-PP and
+  rare cards, a shield bubble on block, heal motes, status ambience (Burn, Leech Seed, Static, Frostbite), the card's
+  ribbon and a risen card's type glow, and Settings' Effects look (Smooth / Pixel / Off). Notes in
+  `docs/reference/battle-screen-layout.md`. ▶ Run in: PLAYTEST ON THE LIVE SITE (the branch's githack link). If the user
+  likes it: merge to `main` (its patch line is in `NEXT` already). To ask: whether the cut-in is too slow, and any move
+  whose effect looks wrong (one `MOVE_FX` line moves it).
 
 - **3D balls, the Trainer Card's Ball key, the Outfitter's Apricorn** (2026-10-27, branch
   `claude/pokeball-appearance-customization-4ww68i`, on `main` too; archive): every ball thrown in battle (the send-out,

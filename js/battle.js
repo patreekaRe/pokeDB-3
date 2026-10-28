@@ -29,7 +29,7 @@ import { heldFires, heldHeal, clearsCard } from './data/held.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { isShiny, getSave, updateSave, markSeen, safariSparkle } from './storage.js';
 import { shinyImage } from './data/shinies.js';
-import { vibrate, battleFx, calmFx } from './prefs.js';
+import { vibrate, battleFx, calmFx, pref } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS, RELICS_BY_ID } from './data/relics.js';
 import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems, syncDecks } from './data/duo.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
@@ -47,6 +47,7 @@ import { ball3d, setBall3d } from './ball-looks.js';
 import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows, safariBallsLeft } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 import { flyTrail, burnAway } from './cardfx.js';
+import { attackFx, shieldFx, healFx, ambience, cutIn, lightOf } from './movefx.js';
 import { typeText } from './type-badge.js';
 
 const ENERGY_PER_TURN = 3;
@@ -793,6 +794,7 @@ function healPlayer(amount) {
   b.hp += healed;
   if (healed > 0) {
     pop('player-zone', `+${healed} HP`, 'heal');
+    if (battleFx()) healFx($('player-sprite'));
     b.healedThisTurn = true;
     if (b.powers.healStrength && !b.pledged) { b.pledged = true; gainStrength(b.powers.healStrength); }
     if (fired('luminous-moss')) gainBlock(2);
@@ -1309,6 +1311,11 @@ async function playCard(uid) {
   const x = cost === 'X' ? b.energy : 0;
   b.energy -= cost === 'X' ? b.energy : cost;
   if (cost !== 'X' && cost >= 3 && fired('zap-plate')) gainBlock(8);   // Overcharge's payoff
+  b.bigCard = !card.status && ((cost === 'X' ? x : cost) >= 3 || card.rarity === 'rare');
+  if (b.bigCard && battleFx()) {   // a big card's cut-in first, then it flies (js/movefx.js)
+    await cutIn(card, { fast: speed() > 1 });
+    if (battle !== b) return;
+  }
   if (!card.power && (card.exhaust || corrupts(card) || lumCures(card))) burnOut(uid);   // it burns away as it's played
   else flyCard(uid, card);
   if (card.safari && card.from && battleFx() && safariSparkle(card.from) >= 2) shinySparkle($('player-zone'));   // its shiny's Sparkle ★2
@@ -1342,6 +1349,7 @@ async function playCard(uid) {
     playSound('hit');
   }
 
+  b.bigCard = false;
   renderAll();
   await pause(220);
 
@@ -1424,6 +1432,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
       hitSound(dealt, multiplier);
       hitEffect('enemy-portrait-box');
       bigHit(dealt, b.enemy.maxHp, 'enemy-img');
+      strikeFx(card, i === 0 && !echo, dealt);
       pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? (multiplier > 1 ? 'dmg super' : 'dmg') : 'note');
       if (b.enemy.hp <= 0) { await finishingBlow(dealt); break; }
       if (i < hits.length - 1) { renderBars(); await pause(200); }
@@ -1657,6 +1666,7 @@ function gainBlock(n) {
   pop('player-zone', `+${n} 🛡️`, 'block');
   playSound('block');
   statFx('player');
+  if (battleFx() && performance.now() - shieldAt > 400) { shieldAt = performance.now(); shieldFx($('player-sprite'), { fast: speed() > 1 }); }
   if (battle.powers.riptide) riptide();
 }
 
@@ -3568,6 +3578,8 @@ function renderStatus() {
   if (b.rare && !b.over) { const left = Math.max(0, RARE.turns - en.rock - b.turn + 1); enemyBadges.push(['💨', left, `A rare Pokémon: it runs off after ${left} more turn${left === 1 ? '' : 's'} of yours. Catch it or knock it out first!`, 'bad']); }
   if (b.def.trait) enemyBadges.push([TRAITS[b.def.trait.id].icon, '', TRAITS[b.def.trait.id].text(b.def.trait), 'bad']);
   $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
+  const alive = en.hp > 0 && !b.over && battleFx();
+  ambience($('enemy-img'), alive ? { burn: en.burn, seed: en.seed, stat: en.static, frost: en.frostbite } : {});
 
   const playerBadges = [];
   if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage ${b.powers.keepBlock ? 'and stays between turns' : 'until your next turn'}`, 'block']);
@@ -3901,6 +3913,7 @@ function renderFocus() {
   big.dataset.focusUid = entry.uid;
   const problem = choosing ? null : whyNotPlayable(entry.card);
   if (problem) big.classList.add('unplayable');
+  else if (!choosing && battleFx() && pref('cardFx') === 'smooth') big.append(el('i', 'lift-glow'));   // its type's glow while it's up
   else if (!choosing) showPreview(entry);
   big.tabIndex = 0;
   big.setAttribute('role', 'button');
@@ -4091,6 +4104,37 @@ function statFx(side, dir = 'up') {
 }
 
 const hitEffect = (id) => flash(id, 'hit', 420);
+let shieldAt = 0;
+
+/**
+ * An attack's hit, beyond the numbers: its move's effect and light (js/movefx.js), the arena taking on its colour, the
+ * foe flashing it, and a jolt as big as the hit (a big one has bigHit()'s). A big card's first hit holds a beat.
+ */
+function strikeFx(card, first, dealt) {
+  const b = battle;
+  if (!battleFx()) return;
+  const power = Math.min(1, (dealt / Math.max(1, b.enemy.maxHp)) * 3), colour = lightOf(card.type);
+  attackFx(card, $('player-sprite'), $('enemy-img'), { power, big: b.bigCard, fast: speed() > 1, first });
+  arenaMod?.glowArena?.(colour, 0.4 + power * 0.6);
+  if (dealt > 0) tintFoe(colour);
+  if (calmFx()) return;
+  if (first && b.bigCard) { flash('battle-screen', 'hitstop', 140); return; }
+  if (dealt > 0 && dealt < Math.max(12, Math.min(25, b.enemy.maxHp * 0.25))) {
+    $('battle-screen').style.setProperty('--jolt', `${Math.round(2 + power * 8)}px`);
+    flash('battle-screen', 'fx-jolt', 240);
+  }
+}
+/** The foe's sprite flashes the colour of what hit it, masked to its own shape like statFx(). */
+function tintFoe(colour) {
+  const img = $('enemy-img'), host = $('enemy-portrait-box');
+  host.querySelector('.hit-tint')?.remove();
+  const box = img.getBoundingClientRect(), at = host.getBoundingClientRect();
+  const fx = el('div', 'hit-tint');
+  Object.assign(fx.style, { left: `${box.left - at.left}px`, top: `${box.top - at.top}px`, width: `${box.width}px`, height: `${box.height}px`, background: colour });
+  fx.style.setProperty('--mask', `url("${img.currentSrc || img.src}")`);
+  host.append(fx);
+  setTimeout(() => fx.remove(), 400);
+}
 const lunge = (id) => flash(id, 'lunge', 380);
 
 /** Like the games, a super / not very effective hit has its own sound; a fully blocked one plays block. */

@@ -12,10 +12,14 @@
    is playable at once; only a picked exhaust waits for its burn.
    ============================================================ */
 
-import { battleFx } from './prefs.js';
+import { battleFx, pref } from './prefs.js';
 import { tooSoon } from './hd2d.js';
 
-const CLEAN = !/[?&]pixelfx\b/.test(location.search);
+/* Settings' Effects look: Smooth (the default), Pixel (the old look, every effect drawn on the low-res canvas) or Off.
+   `?pixelfx` is Pixel for a page load. */
+const PIXEL_FLAG = /[?&]pixelfx\b/.test(location.search);
+const look = () => (PIXEL_FLAG ? 'pixel' : pref('cardFx'));
+let CLEAN = look() !== 'pixel';
 
 const PALETTES = {
   fire:    ['#fff8c0', '#ffd848', '#ff9028', '#e04818', '#902010', '#401008'],
@@ -30,7 +34,7 @@ const PALETTES = {
   dark:    ['#f4ece4', '#c8b4a4', '#9a8070', '#6a5444', '#3e2e26', '#1c1410'],
   normal:  ['#ffffff', '#f4f4f8', '#d8d8e0', '#b0b0bc', '#808090', '#484858'],
 };
-const KIND = { fire: 'ember', water: 'drop', grass: 'leaf', psychic: 'spark', electric: 'spark', ice: CLEAN ? 'flake' : 'spark', fighting: 'speck', ground: 'speck', flying: 'speck', dark: 'speck', normal: 'speck' };
+const KIND = { fire: 'ember', water: 'drop', grass: 'leaf', psychic: 'spark', electric: 'spark', ice: 'flake', fighting: 'speck', ground: 'speck', flying: 'speck', dark: 'speck', normal: 'speck' };
 const CHAR = '#281008';
 
 /* Particles move in units of PX CSS px either way, so both looks share one set of physics; the clean look only draws
@@ -40,9 +44,11 @@ const parts = [];
 const jobs = [];   // flights and burns, each a function(now) that returns false once done
 
 const rand = (a, b) => a + Math.random() * (b - a);
-const reduced = () => !battleFx();
+const reduced = () => !battleFx() || look() === 'off';
+let busyAt = 0, beat = 0;   // the last time something other than a status's ambience was drawn
 
 function ensureCanvas() {
+  CLEAN = look() !== 'pixel';
   PX = innerWidth <= 720 ? 3 : 4;
   if (!canvas) {
     canvas = document.createElement('canvas');
@@ -54,21 +60,24 @@ function ensureCanvas() {
   canvas.classList.toggle('clean', CLEAN);
   const w = Math.ceil(CLEAN ? innerWidth * DPR : innerWidth / PX), h = Math.ceil(CLEAN ? innerHeight * DPR : innerHeight / PX);
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  ctx.imageSmoothingEnabled = CLEAN;
 }
 
-function start() {
+function start(ambient = false) {
+  if (!ambient) busyAt = performance.now();
   if (raf) return;
   last = performance.now();
   raf = requestAnimationFrame(frame);
 }
 
 function frame(now) {
-  if (tooSoon(now, last)) { raf = requestAnimationFrame(frame); return; }
+  // only a status's ambience left: half the frames, so a long fight against a burned foe doesn't run the phone hot
+  if (tooSoon(now, last) || (now - busyAt > 1200 && beat++ % 2)) { raf = requestAnimationFrame(frame); return; }
   const k = Math.min(3, (now - last) / 16.67);
   last = now;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (CLEAN) ctx.setTransform(DPR * PX, 0, 0, DPR * PX, 0, 0);
+  ctx.setTransform(CLEAN ? DPR * PX : 1, 0, 0, CLEAN ? DPR * PX : 1, 0, 0);
   for (let i = jobs.length - 1; i >= 0; i--) if (jobs[i](now) === false) jobs.splice(i, 1);
   for (let i = parts.length - 1; i >= 0; i--) {
     const p = parts[i];
@@ -83,7 +92,9 @@ function frame(now) {
     p.vy *= p.drag ** k;
     p.x += (p.vx + (p.sway ? Math.sin((p.age + p.phase) / 5) * p.sway : 0)) * k;
     p.y += p.vy * k;
-    if (CLEAN) drawClean(p); else draw(p);
+    if (p.draw) { ctx.globalCompositeOperation = p.add ? 'lighter' : 'source-over'; p.draw(p, p.age / p.life); }
+    else if (CLEAN) drawClean(p);
+    else { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; draw(p); }
   }
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
@@ -266,7 +277,8 @@ function draw(p) {
 
 /** One particle of a type's trail, at (x, y) in canvas pixels. `burst` throws it outwards. */
 function spawn(type, x, y, { burst = 0, fast = false, ember = false } = {}) {
-  const kind = ember ? 'ember' : KIND[type] || 'speck';
+  let kind = ember ? 'ember' : KIND[type] || 'speck';
+  if (kind === 'flake' && !CLEAN) kind = 'spark';
   const pal = ember ? PALETTES.fire : PALETTES[type] || PALETTES.normal;
   const a = Math.random() * Math.PI * 2, s = burst ? rand(0.4, 1) * burst : 0;
   const p = { x, y, kind, pal, age: 0, vx: Math.cos(a) * s, vy: Math.sin(a) * s, g: 0, drag: 0.96, phase: rand(0, 20) };
@@ -339,9 +351,12 @@ export function flyTrail(src, target, { type = 'normal', attack = true, fast = f
   }
   const t0 = performance.now();
   let lastX = x0, lastY = y0, landed = false;
+  const trail = [], pal = PALETTES[type] || PALETTES.normal;
   jobs.push((now) => {
     const t = Math.min(1, (now - t0) / total);
     const { u, x, y, scale } = at(t);
+    if (u < 1) trail.push([x / PX, y / PX, now]);
+    ribbon(trail, now, pal, (r.width * Math.min(1, scale)) / PX * 0.32);
     if (u < 1) {   // a trail as dense as the distance covered, from across the card's shrinking width
       const steps = Math.max(1, Math.round(Math.hypot(x - lastX, y - lastY) / 4.5));
       const half = (r.width * scale) / 2;
@@ -358,9 +373,28 @@ export function flyTrail(src, target, { type = 'normal', attack = true, fast = f
         if (!attack) p.vy -= 0.6;   // the glow rises off your Pokémon
       }
     }
-    if (t >= 1) return false;
+    if (t >= 1 && (!trail.length || now - trail.at(-1)[2] > 260)) return false;
   });
   start();
+}
+
+/** The card's flight leaves a smooth ribbon of light, tapering and fading behind it over a quarter second. */
+function ribbon(trail, now, pal, width) {
+  while (trail.length && now - trail[0][2] > 260) trail.shift();
+  if (trail.length < 2) return;
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.lineCap = 'round';
+  for (const [col, w, a] of [[pal[2], 1, 0.35], [pal[0], 0.35, 0.8]]) {
+    ctx.strokeStyle = col;
+    for (let i = 1; i < trail.length; i++) {
+      const k = 1 - (now - trail[i][2]) / 260;
+      ctx.globalAlpha = a * k;
+      ctx.lineWidth = Math.max(0.2, width * w * k);
+      ctx.beginPath(); ctx.moveTo(trail[i - 1][0], trail[i - 1][1]); ctx.lineTo(trail[i][0], trail[i][1]); ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
 }
 
 /**
@@ -467,3 +501,16 @@ function burnClean({ ghost, wrap, r, pile, home, total, fast, t0 }) {
     start();
   });
 }
+
+/** What js/movefx.js draws with: the same canvas, loop and sprites. Positions are in particle units (PX CSS px). */
+export const kit = {
+  get ctx() { return ctx; }, get PX() { return PX; }, get clean() { return CLEAN; },
+  parts, jobs, PALETTES, rand, rgba, glow, star, flake, leaf, drop, put, sprite, spawn, reduced,
+  open() { if (reduced()) return false; ensureCanvas(); return true; },
+  start,
+  /** An element's box in particle units. */
+  box(node) {
+    const r = node.getBoundingClientRect();
+    return { x: (r.left + r.width / 2) / PX, y: (r.top + r.height / 2) / PX, w: r.width / PX, h: r.height / PX, top: r.top / PX, bottom: r.bottom / PX };
+  },
+};

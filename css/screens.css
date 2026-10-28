@@ -847,6 +847,18 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 }
 /* a big hit (bigHit() in battle.js): the arena jolts and the screen flashes white; `translate` leaves the sprites' own transforms alone */
 #battle-screen.big-hit .arena { animation: bigJolt 0.45s linear; }
+/* any other hit nudges the arena as hard as the hit (--jolt, strikeFx() in battle.js) */
+#battle-screen.fx-jolt:not(.big-hit) .arena { animation: fxJolt 0.24s linear; }
+@keyframes fxJolt { 20% { translate: calc(var(--jolt) * -1) calc(var(--jolt) * 0.5); } 45% { translate: calc(var(--jolt) * 0.7) calc(var(--jolt) * -0.4); } 70% { translate: calc(var(--jolt) * -0.3) 0; } }
+.fast-battle #battle-screen.fx-jolt .arena { animation-duration: 0.12s; }
+/* the foe flashes the colour of what hit it, in its own shape */
+.hit-tint {
+  position: absolute; z-index: 1; pointer-events: none; mix-blend-mode: screen;
+  -webkit-mask: var(--mask) 50% 100% / contain no-repeat; mask: var(--mask) 50% 100% / contain no-repeat;
+  animation: hitTint 0.36s ease-out forwards;
+}
+@keyframes hitTint { 0% { opacity: 0.95; } 100% { opacity: 0; } }
+.fast-battle .hit-tint { animation-duration: 0.18s; }
 @keyframes bigJolt {
   11% { translate: -8px 4px; }
   22% { translate: 7px -5px; }

@@ -156,7 +156,22 @@ emptied to 0x0 once idle, it's megabytes): soft glowing embers cooling white to 
 spinning, tumbling leaves, twinkling four-point stars (Psychic, Electric), snowflakes (Ice), soft specks, and a ring where it
 lands, from sprites painted once per type (`drawClean()` in js/cardfx.js); the exhaust burn's edge is a smooth wavering glow
 over a char band (`burnClean()`). The physics is shared: particles move in units of 3 CSS px on phones, 4 wider. `?pixelfx`
-shows the old look for a page load: whole pixels on a low-res canvas, faded by stepping down a palette. The card is a clone flown by a Web Animation of transform and opacity (2026-10-18:
+shows the old look for a page load: whole pixels on a low-res canvas, faded by stepping down a palette. **More effects** (2026-10-28, branch `more-card-fx`, the
+user's ask, all of the ideas at once; `js/movefx.js`, drawn on the same canvas and loop through `kit` in js/cardfx.js):
+each attack's hit plays its move's effect (`MOVE_FX` in js/data/move-fx.js, else its type's `TYPE_FX`: a stream, wave,
+beam, bolt, bubbles, blades, petals, vines, flames / inferno, orb, frost / blizzard / shards, rings, punch, slash,
+fangs, rocks / quake, gust / twister, void; a multi-hit move's later hits only punch and flash), the hit's light over the
+scene, the foe's sprite flashing its colour (`tintFoe()`, masked like `statFx()`), the 3D arena's sky light leaning to it
+(`glowArena()` in js/arena-3d.js: no new light, so no shader rebuilds) and a jolt as big as the hit (`.fx-jolt`, `--jolt`;
+not under `calmFx()`, and a big hit keeps `bigHit()`'s); all of it from `strikeFx()` in js/battle.js. A 3-PP (or X of 3+)
+or rare card's cut-in plays first (`cutIn()`, 0.6 s, 0.3 at 2x: the screen dims and a band in its type's colours sweeps
+across with its name) and its first hit holds a beat (`.hitstop`). Block gained forms a hex shield bubble round your
+Pokémon (`shieldFx()`, at most one each 0.4 s), a heal raises green motes (`healFx()`), and the foe's Burn, Leech Seed,
+Static and Frostbite show on it all fight (`ambience()`, from `renderStatus()`; the loop drops to half rate once only
+that is left, and stops off screen). The flying card leaves a tapering ribbon (`ribbon()`), and a risen card glows its
+type's colour (`.lift-glow`, opacity only). Settings' **Effects look** (`cardFx`: Smooth / Pixel / Off) picks the canvas:
+Pixel draws everything, the new effects too, in pixels; Off skips them (Battle animations Off skips them too).
+`tests/move-fx.test.mjs` checks every `MOVE_FX` line names a card and an effect that exists. The card is a clone flown by a Web Animation of transform and opacity (2026-10-18:
 moved by hand every frame it restyled ~60 elements a frame and stuttered whenever the 3D arena, the text box or the hand's
 redraw ran long; a block's glow is `.fly-glow`'s opacity, not a filter). `renderHand()` keeps a hand card's node while it
 would look the same (its HTML, less the art's numbered SVG ids), so a tap no longer rebuilds and re-fits the whole hand; a
