@@ -1115,3 +1115,9 @@ a new pattern, one `LOOKS` entry. The `ball` look takes `h` (its shine). Players
   **Garden ›** tab closes it and opens the garden catalogue, which replaced the old "its tap only chats" without one.
 The Decorate tray's Wallpaper / Floor tabs got theme chips (`paperFilters()`), as the Furniture tab's kinds.
 
+**The Clearing's townspeople** (2026-10-28, the user's ask: people in the Clearing, people only; Oak and Sonia kept as
+they are): six neighbours on Gen 4 walking sheets (Youngster, Lass, Picnicker, Gardener, Poké Fan, School Kid;
+`js/data/clearing-folk.js`), four out at a time, on the towns' crowd code (`clearingCrowd()` in `js/hub-3d.js`,
+`js/corner-crowd.js`): in and out through the north gate (the crowd's `enter`), standing at `FOLK_STANDS` (a spot taken
+by a place, its doorstep or the season's decorations dropped), two walking at most. A tap on one: its line in the
+crowd's bubble over its head (no `say` handed in). You walk as your trainer here too: `docs/reference/trainer-follow.md`.

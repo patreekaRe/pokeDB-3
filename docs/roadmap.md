@@ -1223,14 +1223,6 @@ ids, and credit the pack's artists (fan-made, community sprites) on a credits pa
 session: re-upload the .7z when building. Waiting on the user's pick. (Re-checked 2026-10-28: it holds only 5 people,
 RPG Maker XP's own fantasy characters, so it's no source for trainers.)
 
-**You as a trainer, your buddy following** (2026-10-28, the user's ask: "choose a trainer so our buddy can follow us").
-The user's calls: pick from the Gen 4 pack's heroes (Ethan, Lyra, Lucas, Dawn, alt outfits) free, plus a handful of
-trainer classes to unlock / buy with PokéCoins; you walk as the trainer and the buddy follows a step behind
-**everywhere the buddy walks** (the Clearing, Secret Base, mall, towns, and the Center, Mart and ? rooms on runs);
-picked in the **new-player setup** and on the **Trainer Card** (no mall shop). Also: **townspeople in the Clearing,
-people only**, Oak / Sonia kept as they are. Gym Leaders keep their own sprites (no pack sprite can be a friend).
-Being built in the cloud session of 2026-10-28.
-
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking
 in a town. Oak / Sonia, Kurt and the ? room's grunts stay as they are (the user agreed). Needs the Gen 4 pack

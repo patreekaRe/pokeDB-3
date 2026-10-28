@@ -49,17 +49,6 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['hub', 'Gym Leaders and friends no longer drop by your Secret Base or wait by the Clearing\'s Waystone.'],
-  ['look', 'Evolution opens like a comic: manga panels slam in on your Pokémon\'s face, and a Duo Run\'s pair split the screen, then evolve side by side.'],
-  ['battle', 'Every attack plays its own move: jets, bolts, bites, beams and quakes. Blocks raise a shield, heals glow, big cards get a cut-in, and PP and End Turn are new gold plates, PP filling like a glass, the Safari\'s Throw in green and gone against Alphas and bosses.'],
-  ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo close with a ✕ at the top right, clear of the ▼ MORE tag, and Kurt\'s bench is compact, its shelf twice as tall on a phone.'],
-  ['dex', 'The Moves app\'s type tabs are bigger, swipe sideways with arrows showing more past the edge, and the picked type\'s name and count top its cards.'],
-  ['battle', 'The battle\'s hold-and-swipe hint is now a wordless fingertip, gone the moment you slide a card, and gone for good once you\'ve swiped a few.'],
-  ['battle', 'A rare Safari spawn wears a RARE tag, and a running figure in its status row counts the turns before it runs off.'],
-  ['modes', 'A Safari map no longer holds the same rare spawn twice until each of its area\'s rares has turned up.'],
-  ['battle', 'Dig, Tunnel and Burrow take your Pokémon underground and end your turn; Ground\'s other delayed cards are now Bury. Wild Diglett, Salamence and friends really Dig, Fly, Dive and Bounce out of reach.'],
-  ['runs', 'People now live in the gateway towns beside the Pokémon: kimono dancers, hikers, sailors, rangers, ranchers and more, walking about and chatting.'],
-  ['fixes', 'A battle can no longer freeze on a big card\'s cut-in after a move effect misfires.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 
@@ -72,6 +61,25 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.32',
+    name: 'Trainers & Townsfolk',
+    date: '2026-10-28',
+    notes: [
+  ['hub', 'Gym Leaders and friends no longer drop by your Secret Base or wait by the Clearing\'s Waystone.'],
+  ['look', 'Evolution opens like a comic: manga panels slam in on your Pokémon\'s face, and a Duo Run\'s pair split the screen, then evolve side by side.'],
+  ['battle', 'Every attack plays its own move: jets, bolts, bites, beams and quakes. Blocks raise a shield, heals glow, big cards get a cut-in, and PP and End Turn are new gold plates, PP filling like a glass, the Safari\'s Throw in green and gone against Alphas and bosses.'],
+  ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo close with a ✕ at the top right, clear of the ▼ MORE tag, and Kurt\'s bench is compact, its shelf twice as tall on a phone.'],
+  ['dex', 'The Moves app\'s type tabs are bigger, swipe sideways with arrows showing more past the edge, and the picked type\'s name and count top its cards.'],
+  ['battle', 'The battle\'s hold-and-swipe hint is now a wordless fingertip, gone the moment you slide a card, and gone for good once you\'ve swiped a few.'],
+  ['battle', 'A rare Safari spawn wears a RARE tag, and a running figure in its status row counts the turns before it runs off.'],
+  ['modes', 'A Safari map no longer holds the same rare spawn twice until each of its area\'s rares has turned up.'],
+  ['battle', 'Dig, Tunnel and Burrow take your Pokémon underground and end your turn; Ground\'s other delayed cards are now Bury. Wild Diglett, Salamence and friends really Dig, Fly, Dive and Bounce out of reach.'],
+  ['runs', 'People now live in the Clearing and the gateway towns beside the Pokémon: kimono dancers, hikers, sailors, rangers, ranchers and more, walking about and chatting.'],
+  ['hub', 'Walk as your own trainer, your buddy a step behind: pick Ethan, Lyra, Lucas or Dawn, or buy a Ranger, Kimono Girl or Rocket Grunt on the Trainer Card.'],
+  ['fixes', 'A battle can no longer freeze on a big card\'s cut-in after a move effect misfires.'],
+    ],
+  },
   {
     version: '1.31',
     name: 'Balls & Records',
@@ -650,9 +658,9 @@ export const PATCHES = [
 /** What's in the game, as of the newest patch. */
 export const IN_THE_GAME = [
   ['🔥', '31 starters', 'Charmander, Bulbasaur and Squirtle, 12 more from later generations, 15 legendaries to earn, and Mewtwo behind the Sealed Gate.'],
-  ['🃏', '786 moves', 'About 80 each for Fire, Grass and Water, 74 for each of the Duo Run\'s six Safari types, 74 Psychic moves for Mewtwo, and 28 Neutral moves any type can learn. Every one can be powered up with PP Up.'],
+  ['🃏', '787 moves', 'About 80 each for Fire, Grass and Water, 74 for each of the Duo Run\'s six Safari types, 74 Psychic moves for Mewtwo, and 28 Neutral moves any type can learn. Every one can be powered up with PP Up.'],
   ['🗺️', '7 biomes', 'Whispering Clearing, Overgrown Shrine and Ember Wastes, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna on the roads that branch off them, and the Crystal Depths for Mewtwo alone.'],
-  ['💎', '136 relics', 'Starter Abilities, relics for each type, and boss relics: extra PP with a catch, or your Ability made stronger.'],
+  ['💎', '137 relics', 'Starter Abilities, relics for each type, and boss relics: extra PP with a catch, or your Ability made stronger.'],
   ['🧴', '46 items', 'Potions, battle items and one for each type, carried in your Bag, plus five held berries Kurt makes from your backyard\'s crop.'],
   ['❓', '30 events', 'From the Berry Tree, Move Tutor and Team Rocket to a Sleeping Snorlax, Bill\'s PC, a Litwick Bonfire and Voltorb Flip, each a 3D place you walk about, with its own music.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
@@ -661,11 +669,12 @@ export const IN_THE_GAME = [
   ['⭐', '11 Trainer Levels', 'Level 0 to 10, each adding a new rule. Win to unlock the next, strike the Sealed Gate harder, and past 5 earn an aura and a crown.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
-  ['🏆', '189 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
+  ['🏆', '217 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over twelve areas, each with a rare shiny, and a leaderboard; then a Duo Run with two starters of nine types.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, or one of 25 houses Timburr & Co. build, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls, Day Passes and the Shiny Exchange.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 28 games to take home and play, from slot machines to five pinball tables, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
+  ['🧢', 'Your trainer', 'Walk as Ethan, Lyra, Lucas or Dawn, or one of 11 trainers to buy, your buddy a step behind, among the people of the Clearing and the towns.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

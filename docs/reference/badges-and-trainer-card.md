@@ -73,3 +73,7 @@ the ball your partner comes out of in every battle, and the Safari Balls' look.
 plain Poké Ball "Plain") and puts a Put away button on the Carrying line while an Apricorn skin is carried. A `ball3d()`
 sheet is an absolute URL (`setBall3d()` in `js/ball-looks.js`): a relative `url()` in a custom property resolves against
 the stylesheet that uses it, `css/`.
+
+**The Trainer key** (2026-10-28, the user's ask: a trainer the buddy follows): beside the Ball key, the worn look's front
+frame and name (or "Trainer"), opening `lookPicker()`: the heroes free, the classes for PokéCoins, Walk alone to go
+without. The system's notes: `docs/reference/trainer-follow.md`.

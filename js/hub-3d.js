@@ -13,6 +13,8 @@ import { timeOfDay } from './daytime.js';
 import { season } from './season.js';
 import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
 import { makeSpooks } from './hub-spooky.js';
+import { makeCrowd } from './corner-crowd.js';
+import { CLEARING_FOLK, CLEARING_SHARED, CLEARING_CHATS } from './data/clearing-folk.js';
 import { calmFx } from './prefs.js';
 import { plazaBoard } from './hub-plaza.js';
 import { plazaTop } from './trainers.js';
@@ -186,6 +188,7 @@ let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
 let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
+let crowd = null, folk = null;   // the Clearing's townspeople (clearingCrowd())
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let safariFx = null;
 let plazaFx = null;   // the Trainer Plaza's board: its lanterns, its Poké Ball and its cork of Polaroids (js/hub-plaza.js)   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
@@ -3210,6 +3213,27 @@ function dressSeason() {
   }
 }
 
+/** The Clearing's townspeople (2026-10-28, the user's ask: people in the Clearing, people only), on the towns' crowd code
+    (js/corner-crowd.js): four at a time of the day's six (js/data/clearing-folk.js), in and out through the north gate,
+    standing about the lawns, the plaza and the pond (a spot taken by a place, its doorstep or the season's decorations
+    left out), one or two walking at once. A tap on one: its line over its head. */
+const FOLK_STANDS = [[10, 12], [20, 13], [9, 7], [21, 7], [25, 10], [6, 13], [11, 19], [19, 20], [24, 19], [13, 4], [19, 6], [26, 15], [13, 21], [17, 21]];
+function clearingCrowd() {
+  folk = new THREE.Group();
+  scene.add(folk);
+  const byStep = (x, y) => places.some(p => Math.abs(p.step.x - x) <= 1 && Math.abs(p.step.y - y) <= 1);
+  const stands = FOLK_STANDS.filter(([x, y]) => free({ x, y }) && !byStep(x, y) && !yardTiles.has(key(x, y)));
+  return makeCrowd({
+    THREE, group: folk, monBoard, drawMon, dispose, PITCH, spots: [], cols: COLS, rows: ROWS,
+    door: { x: GATE_AT.tx, y: 0 }, enter: { x: GATE_AT.tx, y: GATE_AT.ty - 0.97 },
+    route, free, tileX, tileZ, camera, view, stage: root, drawn: (v) => { v.y -= BEND.k.value * (v.z - BEND.z.value) ** 2; return v; },
+    partner: () => walker, keeper: () => null, calm: () => calm,
+    cast: CLEARING_FOLK, shared: CLEARING_SHARED, chats: CLEARING_CHATS, seed: 'clearing', size: 4, castSize: 6, castHours: 6,
+    stations: stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
+    wants: ['stand', 'stand', 'stand', null], swap: [40000, 80000], walkers: 2,
+  });
+}
+
 /** The view out past the Safari gate (js/hub-vista.js), square to the camera so it reads as the far distance, its foot
     on the ground's back edge; and plain meadow under everything, where the cleared corner shows past the ground's edges. */
 function buildVista() {
@@ -4220,9 +4244,10 @@ function ndc(e) {
 function onTap(e) {
   if (dragged) { dragged = false; return; }
   if (held || cutscene || arriving || leaving || outbound || returning) return;
-  const rays = tapRays(e), ghosts = [...(spooks?.boards() || []), ...(buddies?.boards() || [])], under = [mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])];
+  const rays = tapRays(e), ghosts = [...(spooks?.boards() || []), ...(buddies?.boards() || [])], under = [mon.board, ...ghosts, ...(folk ? [folk] : []), placeGroup, ...(cauldron ? [cauldron.hit] : [])];
   let hit;
   for (const ray of rays) if ((hit = ray.intersectObjects(under, true).find(h => !h.object.userData.who || onSprite(h)))) break;
+  if (crowd?.tap(hit?.object)) { spooks?.hush(); buddies?.hush(); return; }   // a neighbour stops to talk
   if (spooks?.tap(hit, walker)) { buddies?.hush(); return; }
   if (buddies?.tap(hit, walker)) { spooks?.hush(); return; }
   if ([spooks?.hush(), buddies?.hush()].some(Boolean)) return;
@@ -4631,6 +4656,7 @@ function frame(now) {
   liveNietos(now);
   liveDuck(now);
   spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
+  crowd?.tick(now, dt, !(held || arriving || inside || entering || outbound || !card.hidden));
   buddies?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   sealed?.tick(now, (LIGHT[time] || LIGHT.day).glow, calm);
@@ -4780,6 +4806,8 @@ async function openHub(titleScreen, actions, hold) {
   }
   lead ??= leadFor({ group: scene, pitch: PITCH, free: dispose });
   await lead.ready();
+  crowd ??= clearingCrowd();
+  crowd.enter();
   held = hold;
   root.classList.toggle('held', held);
   mon.group.visible = !held;
@@ -4854,6 +4882,7 @@ export const hubDex = () => (root?.isConnected ? root.querySelector('.hub-help')
 
 /** Back to the signs (Settings' Title screen). */
 export function hideHub() {
+  crowd?.hide();
   running = false;
   held = arriving = false;
   quiet();

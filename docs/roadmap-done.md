@@ -3786,3 +3786,9 @@ Hiker in Cinder Springs, Tubers and a Captain at Driftwood Landing, Rangers in H
 Sunwell Bazaar...), each with lines of its own. They walk on four-way sheets from Vanilla Sunshine's Gen 4 OW pack
 (`walkFrames()` / `drawStep()` in `js/hd2d.js`), turn to talk, credited in About and the roll. Walked headless in all
 five towns (`&people`), within the phone budget. Details in `towns.md`.
+
+### Your trainer with the buddy following, and people in the Clearing (2026-10-28, cloud; on `main`, v1.32)
+You walk as a trainer, your buddy a step behind, in every place the buddy walks (the user's calls: heroes free, a handful
+of classes for PokéCoins, picked in the setup and on the Trainer Card, no mall shop). Six townspeople in the Clearing,
+people only, Oak and Sonia as they were. Notes: `docs/reference/trainer-follow.md`, the Clearing's in `hub-base-mall.md`.
+Within the phone budget with a look worn; the patch cut as v1.32 Trainers & Townsfolk.

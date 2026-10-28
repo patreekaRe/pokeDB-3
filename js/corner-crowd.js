@@ -50,10 +50,11 @@ function kindOf(spot) {
     `castSize`, `castHours` (deal a new cast every that many UTC hours, else one a day), `seed`, `stations` (where they
     stand, else the place's games), `wants` (what each of the first crowd heads for, null to wander), `swap` ([ms, ms]).
     THREE, group, monBoard, drawMon, dispose, PITCH, spots, door, cols, rows, route, free, tileX, tileZ, camera, view,
-    stage (where the bubble goes), say(fr, ms), partner() (your walker), keeper() (the shop's keeper, its mon), calm(),
+    stage (where the bubble goes), say(fr, ms) (a tapped one's line; without it, the bubble over its head), partner() (your walker), keeper() (the shop's keeper, its mon), calm(),
     oneWalker (only one walks at a time, the rest at their games or standing, and none stops on or beside the doormat:
     the Game Corner's, the user's ask, 2026-10-13, as the Clearing's ghosts), or `walkers` (that many at most: the
-    towns' 2, the user's ask, 2026-10-14, the rest stationed), `drawn(v)` (where a point is drawn, a rolling town's). */
+    towns' 2, the user's ask, 2026-10-14, the rest stationed), `drawn(v)` (where a point is drawn, a rolling town's),
+    `enter` (where they come in from and go out to, past the door; the bottom edge below it by default). */
 export function makeCrowd(H) {
   const { THREE } = H;
   const LIST = H.cast ?? PATRONS, LINES = H.shared ?? SHARED, TALKS = H.chats ?? CHATS, SIZE = H.size ?? CROWD;
@@ -106,7 +107,7 @@ export function makeCrowd(H) {
     if (gone) return H.dispose(m.group);
     m.board.rotation.x = -H.PITCH;
     m.board.userData.patron = true;
-    const door = H.door, start = at ?? { x: door.x, y: H.rows - 0.03 };
+    const door = H.door, start = at ?? H.enter ?? { x: door.x, y: H.rows - 0.03 };
     const p = { def, m, w: { x: H.tileX(start.x), z: H.tileZ(start.y), tile: at ?? { ...door }, path: [], facing: 'front', flip: Math.random() < 0.5, hop: 0 },
       state: 'ponder', until: 0, deck: [], phase: Math.random() * 6, grow: at ? 1 : 0, hopUntil: 0 };
     m.board.userData.who = p;
@@ -118,7 +119,7 @@ export function makeCrowd(H) {
 
   function leave(p) {
     p.leaving = true; p.goal = null; p.station = null;
-    p.w.path = [...H.route(p.w.tile, H.door), { x: H.door.x, y: H.rows - 0.03 }];
+    p.w.path = [...H.route(p.w.tile, H.door), H.enter ?? { x: H.door.x, y: H.rows - 0.03 }];
     p.state = 'walk'; p.then = 'gone';
     maybeSay(p, pickOne(LINES.leaving));
   }
@@ -335,7 +336,8 @@ export function makeCrowd(H) {
       p.w.path = []; p.state = 'talk'; p.until = performance.now() + 5000;
       p.w.flip = me.x > p.w.x; p.hopUntil = performance.now() + 500;
       playCry(p.def.id);
-      H.say({ line: named(p.deck.shift()), who: p.def.name }, 4200);
+      const line = named(p.deck.shift());
+      if (H.say) H.say({ line, who: p.def.name }, 4200); else blurt(p, line, 4200, true);   // no speech window (the Clearing's): over its head
       nextTalk = Math.max(nextTalk, performance.now() + 6000);
       return true;
     },
