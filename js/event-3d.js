@@ -10801,7 +10801,10 @@ const HOMES = {
 HOMES.depths = {
   camp: { cols: 13, rows: 9, camp: true, mewtwoAt: { x: 7.8, ty: 1.1, scale: 1.1 } },
 };
-const homeSize = (town, id) => { if (LEADER_HOMES[id]) return LEADER_SIZE; if (HALLS[id]) return HALL_SIZE; const h = HOMES[town]?.[id]; if (h?.dojo) return SIZES.tutor; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
+// a plain house's shot is 6.2 tiles across, closer than the Secret Base's 8; `?across=N` tries another for a page load
+// (2026-10-28: the user found Kurt's Workshop zoomed in beside the Base once trainers were drawn smaller)
+const HOME_ACROSS = Number(new URLSearchParams(location.search).get('across')) || 6.2;
+const homeSize = (town, id) => { if (LEADER_HOMES[id]) return LEADER_SIZE; if (HALLS[id]) return HALL_SIZE; const h = HOMES[town]?.[id]; if (h?.dojo) return SIZES.tutor; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : HOME_ACROSS }; };
 
 function homeFloor(kind) {
   const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g, rr, lin } = f;
