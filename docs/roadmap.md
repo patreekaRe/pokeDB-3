@@ -9,6 +9,18 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Overworld walking sprites, Gen 1-7** (the user's pick, 2026-10-28; **on branch `overworld-sprites`, not `main`: the
+user is experimenting, don't push it to `main` until they say**). The pack ("Gen 1-7 OV Sprites", Pokémon Essentials
+follower sheets: 4 rows down / left / right / up x 4 steps, drawn 2x) is imported by `tools/overworld-import.py` (halved
+to 1x, renamed to our ids by national-dex name, normal + shiny) into `assets/overworld/` (601 Pokémon, 3.4 MB) and
+`js/data/overworld.js` (`OVERWORLD`). `monBoard()` in `js/hd2d.js` loads the sheet in place of the back GIF and draws it
+as tall as the battle GIF; `drawMon()` hands it to `drawOverworld()`, which faces the way the walker moved (else back =
+up, flip = right, held until moved or turned) and un-mirrors the board every place mirrors. So every walker (buddy,
+plaza buddies, spooks, crowds, Center/Mart/rooms/base/mall) uses it with no change at their call sites. Battle GIFs
+stay for battles, portraits and powered-up legendaries (aura). `?ow=0` turns it off to compare. Budgets within (Clearing
+112 MB, base 54.5, Center 68.5). Not yet: Gen 8+ (Eternatus etc.) has no sheet; the run map's token; credits page for
+the pack's artists. The raw pack lived in the session only.
+
 **▶ PLAYTEST ON THE LIVE SITE. No twin cards: done 2026-10-26, on `main`** (the user's ask: Bubble and Bubble Beam in one
 hand, "no cards that repeat ... all across the board"). 197 cards have new moves so no two cards one run can meet read
 alike (`docs/card-twins.md` lists each: what it read like, before, now); `tools/card-twins.mjs` finds any and
@@ -1210,17 +1222,6 @@ window needs work (effort: low). ▶ Playtest on the live site.
 user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lum`, open the Bag's Items, Take off, then Hold.
 
 ## Ideas, not agreed yet (ask the user before building)
-
-**Overworld walking sprites, Gen 1-7** (2026-10-28, the user found a pack: "Gen 1-7 OV Sprites", 2,937 PNGs, 17 MB).
-Pokémon Essentials follower sheets: 256x256 = 4 rows (down, left, right, up) x 4 walk frames of 64px; `NNN.png`, shiny
-`NNNs.png`, forms `NNN_1.png` (Alolan etc.), `NNN_0` a copy of `NNN`; #001-#809 plus Meltan/Melmetal, 158 big ones at
-512px. Today the buddy walks on its battle GIFs (front / back, left and right only a flip, `walker.facing` in
-`js/hub-3d.js`). Claude's lean, in order: (1) the buddy in the Clearing, Secret Base, mall and towns walks on its sheet,
-four real directions, shiny if shiny (GIF fallback for anything missing); (2) the town folk, Gym Leaders' Pokémon,
-friends' buddies (Trainer Plaza, `?graves`) and wild Pokémon wandering the towns and Safari areas on them; (3) maybe
-the run map's token. Ship only the sheets a place can show (not all 17 MB), as `assets/overworld/<id>.png` named by our
-ids, and credit the pack's artists (fan-made, community sprites) on a credits page. The upload lived only in that cloud
-session: re-upload the .7z when building. Waiting on the user's pick.
 
 - **More "leave for a turn" moves** (2026-10-28, the user's Dig fix; done part in the archive): offered and **not picked**
   for now: your own Fly card (Flying) and Dive card (Water, in Squirtle's deck) flying / diving out of reach and ending the

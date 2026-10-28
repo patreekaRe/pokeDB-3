@@ -3,6 +3,7 @@
    rendered small and scaled up with crisp pixels, then tilt-shift and bloom in one chain). */
 
 import { spriteFit } from './data/sprite-fit.js';
+import { OVERWORLD } from './data/overworld.js';
 import { decodeGif } from './gif-frames.js';
 import { sharpness, calmFx } from './prefs.js';
 import { AURA, AURA_FRAMES, AURA_FPS, CALM_FRAME, auraFlames, auraFront, auraGlow } from './aura-art.js';
@@ -519,21 +520,28 @@ export const unbend = (p, u) => { p.y += u.k.value * (p.z - u.z.value) ** 2; ret
 /** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest);
     `back` loads its back GIF too, for walking away from the camera. Not yet in any scene. */
 export async function monBoard(mate, back = true) {
-  const front = mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif');
-  const [ff, bf] = await Promise.all([gifFrames(front), back && backSrc !== front ? gifFrames(backSrc) : null]);
+  const front = mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif'), owSrc = overworldSrc(front);
+  const [ff, bf, ow] = await Promise.all([gifFrames(front), back && !owSrc && backSrc !== front ? gifFrames(backSrc) : null, owSrc && overworldSheet(owSrc)]);
   const sheets = { front: { frames: ff || [] } };
   if (bf) sheets.back = { frames: bf };
-  const first = ff?.[0].bmp;
-  const w = first?.width || 96, h = first?.height || 96;
+  const gif = ff?.[0].bmp;
+  let [top, bottom, left, right] = gif && /\.png$/.test(front) ? gaps(gif) : spriteFit(front);
+  let w = gif?.width || 96, h = gif?.height || 96, px = mate.px || MON_PX;
+  if (ow) {
+    // drawn as tall as its battle sprite, so the world's sizes hold
+    const tall = gif ? h - top - bottom : ow.size;
+    px *= tall / (ow.size - ow.top - ow.bottom);
+    if (back) sheets.back = { frames: [] };
+    w = h = ow.size;
+    [top, bottom, left, right] = [ow.top, ow.bottom, ow.side, ow.side];
+  }
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const t = tex(c);
   const m = new THREE.MeshStandardMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
   feetDepth(m);
-  const px = mate.px || MON_PX;
   const board = new THREE.Mesh(new THREE.PlaneGeometry(w * px, h * px), m);
   board.castShadow = true;
-  const [top, bottom, left, right] = first && /\.png$/.test(front) ? gaps(first) : spriteFit(front);
   const wide = (w - left - right) * px;
   board.geometry.translate((right - left) / 2 * px, (h / 2 - bottom) * px, 0);
   const blob = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.28, depthWrite: false }));
@@ -545,8 +553,69 @@ export async function monBoard(mate, back = true) {
   return {
     group, board, c, g: c.getContext('2d', { willReadFrequently: true }), t, sheets, frame: 0, clock: 0, src: front,
     id: mate.cry ?? front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name, top: (h - bottom - top) * px,
-    crowned: mate.crown, aura: mate.aura, wide, px,
+    crowned: mate.crown, aura: mate.aura, wide, px, ow,
   };
+}
+
+/** Its overworld walking sheet (js/data/overworld.js, tools/overworld-import.py), if it has one and ?ow=0 isn't set: a
+    legendary's powered-up GIF keeps its GIF, the aura being drawn into it. */
+function overworldSrc(front) {
+  const [, id, shiny] = front.match(/\/([a-z0-9-]+?)(-shiny)?-front\.gif$/) || [];
+  if (!OVERWORLD.has(id) || new URLSearchParams(location.search).get('ow') === '0') return null;
+  return `assets/overworld/${id}${shiny ?? ''}.png`;
+}
+
+/** A Pokémon Essentials follower sheet: four rows (walking down, left, right, up) of four steps. Kept on a CPU canvas
+    (keep()), with how far its painted feet and head sit from a frame's edges across every step. */
+const owSheets = new Map();
+function overworldSheet(src) {
+  if (!owSheets.has(src)) owSheets.set(src, (async () => {
+    try {
+      const res = await fetch(src);
+      if (!res.ok) return null;
+      const sheet = keep(await createImageBitmap(await res.blob())), size = sheet.width / 4;
+      const d = sheet.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, sheet.width, sheet.height).data;
+      let x0 = size, x1 = -1, y0 = size, y1 = -1;
+      for (let y = 0; y < sheet.height; y++) for (let x = 0; x < sheet.width; x++) {
+        if (d[(y * sheet.width + x) * 4 + 3] <= 8) continue;
+        x0 = Math.min(x0, x % size); x1 = Math.max(x1, x % size); y0 = Math.min(y0, y % size); y1 = Math.max(y1, y % size);
+      }
+      return y1 < 0 ? null : { sheet, size, top: y0, bottom: size - 1 - y1, side: Math.min(x0, size - 1 - x1) };
+    } catch { return null; }
+  })());
+  return owSheets.get(src);
+}
+
+const OW_ROW = { down: 0, left: 1, right: 2, up: 3 };
+
+/** Which way an overworld sprite faces: the way it moved since the last frame, else the way it was told to face (back is
+    up, a flip right), held until it moves or is turned again, so it doesn't snap to the camera each time it stops. */
+function owFacing(m, w) {
+  const told = `${w.facing}${w.flip ? '>' : ''}`;
+  if (w.x !== undefined) {
+    const dx = w.x - (m.owX ?? w.x), dz = w.z - (m.owZ ?? w.z);
+    m.owX = w.x; m.owZ = w.z;
+    m.owMoving = Math.hypot(dx, dz) > 0.002;
+    if (m.owMoving) { m.owTold = told; return m.owDir = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? 'right' : 'left') : (dz < 0 ? 'up' : 'down'); }
+  }
+  if (m.owTold !== told || !m.owDir) { m.owTold = told; m.owDir = w.facing === 'back' ? 'up' : w.flip ? 'right' : 'down'; }
+  return m.owDir;
+}
+
+function drawOverworld(m, w, dt) {
+  const { sheet, size } = m.ow, dir = owFacing(m, w);
+  m.clock += w.sleeping ? dt / 3 : dt;
+  if (m.clock >= (m.owMoving ? 140 : 280)) { m.clock = 0; m.frame = (m.frame + 1) % 4; }
+  // every place mirrors the board to turn a GIF round, which the sheet's own left and right rows don't want: mirror it back
+  const mirror = m.board.scale.x < 0, key = `${dir}${m.frame}${mirror ? '>' : ''}`;
+  if (m.shown === key) return;
+  m.g.clearRect(0, 0, size, size);
+  m.g.save();
+  if (mirror) { m.g.translate(size, 0); m.g.scale(-1, 1); }
+  m.g.drawImage(sheet, m.frame * size, OW_ROW[dir] * size, size, size, 0, 0, size, size);
+  m.g.restore();
+  m.t.needsUpdate = true;
+  m.shown = key;
 }
 
 /** A still's empty rows and columns round what is painted, [top, bottom, left, right], as SPRITE_FIT keeps a GIF's. */
@@ -563,6 +632,7 @@ function gaps(bmp) {
 export function drawMon(m, w, dt) {
   if (m.crowned) wearCrown(m);
   if (m.aura) wearAura(m);
+  if (m.ow) return drawOverworld(m, w, dt);
   const s = m.sheets[w.facing] || m.sheets.front;
   if (!s.frames.length) return;
   m.clock += w.sleeping ? dt / 3 : dt;
