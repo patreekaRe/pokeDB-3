@@ -1212,6 +1212,13 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 ## Ideas, not agreed yet (ask the user before building)
 
 
+**A trainer tailor shop** (2026-10-28, the user's question: where would a tailor for the trainer looks go). Offered:
+(1, Claude's pick) a fourth front in the Poké Mall hall (the back wall respaced from 3 to 4; `FRONTS` in `js/mall-3d.js`),
+a Trainer Tailor with racks, a mannequin per look to walk up to and try on, a mirror, Kecleon keeping it; (2) a changing
+corner in the Safari Outfitter (no new front, but shut till the Safari Zone opens); (3) a real shop on the hall's
+painted mezzanine (stairs needed, the most work); (4) a stall in Sunwell Bazaar (runs only). The Trainer Card's picker
+stays for switching; buying in the shop only or both, to ask. Waiting on the user's pick.
+
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking
 in a town. Oak / Sonia, Kurt and the ? room's grunts stay as they are (the user agreed). Needs the Gen 4 pack
