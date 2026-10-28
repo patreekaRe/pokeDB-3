@@ -7081,6 +7081,30 @@ button.craft-mat.on { box-shadow: inset 0 0 0 3px #f0a820; background: #fff8e0; 
 /* ---------- Kurt's Workshop's two repeatable shelves, Held berries and Run kit (2026-10-15): six tabs, two rows of three ---------- */
 .craft-tabs { grid-template-columns: repeat(3, 1fr); row-gap: 12px; }
 .held-row.used { opacity: 0.6; }
+/* Kurt's bench made compact (2026-10-28, the user's ask: the tabs and the recipe card took most of a phone's height,
+   leaving the shelf a row and a half): slimmer tabs, a smaller picture, no MATERIALS label, a smaller Make, and his
+   line no longer repeats the card. Scoped to .kurt: the Garden and the dojo share .dialog.craft. */
+.dialog.craft.kurt { gap: 8px; padding: 12px; }
+.dialog.craft.kurt .craft-head h2 { font-size: 0.95rem; }
+@media (max-width: 480px) { .dialog.craft.kurt .craft-sub { display: none; } }
+.dialog.craft.kurt .craft-talk { margin-top: 6px; padding: 12px 12px 8px; }
+.dialog.craft.kurt .craft-say { min-height: 0; line-height: 1.4; }
+.dialog.craft.kurt .craft-tabs { row-gap: 8px; gap: 5px; }
+.dialog.craft.kurt .craft-tab { gap: 0; padding: 3px 2px 4px; border-radius: 8px; line-height: 1.3; }
+.dialog.craft.kurt .craft-dot { top: -8px; right: -5px; min-width: 18px; height: 18px; padding: 0 4px; }
+.dialog.craft.kurt .craft-card { padding: 8px 10px 10px; }
+.dialog.craft.kurt .craft-top { gap: 10px; align-items: flex-start; }
+.dialog.craft.kurt .craft-pic { width: 52px; height: 52px; }
+.dialog.craft.kurt .craft-pic > * { width: 40px; height: 40px; }
+.dialog.craft.kurt .craft-pic .wshop-glyph { font-size: 1.8rem; }
+.dialog.craft.kurt .craft-name { margin: 0 0 1px; font-size: 0.85rem; }
+.dialog.craft.kurt .craft-goes { margin: 0 0 2px; }
+.dialog.craft.kurt .craft-text { line-height: 1.3; }
+.dialog.craft.kurt .craft-mats { margin-top: 8px; gap: 5px; }
+.dialog.craft.kurt .craft-mat { row-gap: 3px; padding: 4px 7px; grid-template-rows: auto 4px; }
+.dialog.craft.kurt .craft-mat-ico { font-size: 1.2rem; }
+.dialog.craft.kurt .craft-bar { height: 4px; }
+.dialog.craft.kurt .craft-make { margin-top: 7px; padding: 5px 16px; min-width: 120px; }
 
 /* ---------- held berries' first-time tips (2026-10-16): the battle's LCD note on the first one eaten, the dock's Items key pulsing ---------- */
 .held-tip {

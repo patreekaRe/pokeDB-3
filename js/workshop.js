@@ -119,7 +119,7 @@ const ORDER = { ready: 0, short: 1, carried: 2, made: 3 };
     The picked recipe on a card with every material's have / need, the shelf below it sorted ready first, a tab per
     shelf counting what's ready and made, and a short forge when something's made. Resolves once it's closed. */
 export function openWorkshop() {
-  const d = el('dialog', 'dialog craft');
+  const d = el('dialog', 'dialog craft kurt');
   const head = el('div', 'craft-head');
   head.append(el('h2', '', 'KURT\'S WORKSHOP'), el('span', 'craft-sub', 'Apricorn balls · since forever'));
   const talk = el('div', 'craft-talk'), say = el('p', 'craft-say');
@@ -199,19 +199,13 @@ export function openWorkshop() {
     go.type = 'button';
     go.disabled = !madeSkin && st !== 'ready';
     go.addEventListener('click', () => make(r));
-    card.replaceChildren(top, el('p', 'craft-label', st === 'made' || madeSkin ? 'Made from' : 'Materials'), mats, go);
+    card.replaceChildren(top, mats, go);
   };
   const about = (r, ws, sat) => {
     if (r.kind === 'skin' && isMade(r, ws, sat)) return `${r.name}. ${ws.skin === r.makes ? 'Your partner comes out of this one now, and every ball you throw matches.' : 'Carry it: your partner comes out of it in every battle, and every ball you throw matches.'}`;
     if (isMade(r, ws, sat)) return r.kind === 'key' ? `The ${nameOf(r)}'s in your Satchel already.` : `The ${nameOf(r)}'s made. It's in your Secret Base.`;
     const short = shortOf(r, sat);
-    const need = short.length ? ` I still need ${short.map(m => `${m.need - m.have} ${MATERIALS_BY_ID[m.id].name}`).join(' and ')}.` : ' I can make it now.';
-    if (r.kind === 'gift') return `${r.name}, ${gifteeOf(r.leader, GYM_BY_ID[r.leader].name)}'s favourite. Give it at their home and they'll give you something of theirs for your Secret Base.${need}`;
-    if (r.kind === 'skin') return `${r.name}. ${r.text}${need}`;
-    if (r.kind === 'held') return `${an(r.name).replace(/^a/, 'A')} for your Pokémon to hold. ${r.text.replace(/^Held\. /, '')}${need}`;
-    if (r.kind === 'kit') return `${an(r.name).replace(/^a/, 'A')}, for your Bag. ${r.text}${need}`;
-    if (r.kind === 'key') return `${nameOf(r)}. ${KEY_BY_ID[r.makes].text}${need}`;
-    return `A ${nameOf(r)}, made by hand.${need}`;
+    return `${nameOf(r)}? ${short.length ? `I still need ${short.map(m => `${m.need - m.have} ${MATERIALS_BY_ID[m.id].name}`).join(' and ')}.` : 'I can make it now.'}`;
   };
   const make = async (r) => {
     if (busy) return;
