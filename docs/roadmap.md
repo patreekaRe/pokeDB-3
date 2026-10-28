@@ -1211,6 +1211,17 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Overworld walking sprites, Gen 1-7** (2026-10-28, the user found a pack: "Gen 1-7 OV Sprites", 2,937 PNGs, 17 MB).
+Pokémon Essentials follower sheets: 256x256 = 4 rows (down, left, right, up) x 4 walk frames of 64px; `NNN.png`, shiny
+`NNNs.png`, forms `NNN_1.png` (Alolan etc.), `NNN_0` a copy of `NNN`; #001-#809 plus Meltan/Melmetal, 158 big ones at
+512px. Today the buddy walks on its battle GIFs (front / back, left and right only a flip, `walker.facing` in
+`js/hub-3d.js`). Claude's lean, in order: (1) the buddy in the Clearing, Secret Base, mall and towns walks on its sheet,
+four real directions, shiny if shiny (GIF fallback for anything missing); (2) the town folk, Gym Leaders' Pokémon,
+friends' buddies (Trainer Plaza, `?graves`) and wild Pokémon wandering the towns and Safari areas on them; (3) maybe
+the run map's token. Ship only the sheets a place can show (not all 17 MB), as `assets/overworld/<id>.png` named by our
+ids, and credit the pack's artists (fan-made, community sprites) on a credits page. The upload lived only in that cloud
+session: re-upload the .7z when building. Waiting on the user's pick.
+
 - **More "leave for a turn" moves** (2026-10-28, the user's Dig fix; done part in the archive): offered and **not picked**
   for now: your own Fly card (Flying) and Dive card (Water, in Squirtle's deck) flying / diving out of reach and ending the
   turn, Diglett's signature Dig card working like Ground's Dig, and a dodge while underground (the enemy's attack missing,
