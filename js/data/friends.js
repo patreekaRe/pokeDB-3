@@ -6,7 +6,7 @@
 
 import { FRIENDS, FAVOURITE, HEARTS, HEART_AT, MAIL_HEARTS, VISIT_HEARTS, SECRET_AT, SECRETS, heartsOf, heartPieces, workshopOf } from './workshop.js';
 import { FAVOUR_HEARTS } from './favours.js';
-import { friendWins } from './gym.js';
+import { friendWins, LEADER_VISITS_LIVE } from './gym.js';
 import { townsOpen } from './towns.js';
 
 /** The app shows (and the PC's FRIENDS row): with the towns on, once a Gym Leader who takes gifts is beaten. */
@@ -45,7 +45,7 @@ export const friendPieces = (save, id, hearts = heartsOf(workshopOf(save), id)) 
 
 /** What the next heart that brings anything brings: { at, piece (a kind or null), perks: [ids] }; null at HEARTS. */
 export function nextHeart(id, hearts) {
-  const perks = [[MAIL_HEARTS, 'letters'], [VISIT_HEARTS, 'visits'], [FAVOUR_HEARTS, 'requests'], ...(SECRETS[id] ? [[SECRET_AT, 'recipe']] : []), [HEARTS, 'badge']];
+  const perks = [[MAIL_HEARTS, 'letters'], ...(LEADER_VISITS_LIVE ? [[VISIT_HEARTS, 'visits']] : []), [FAVOUR_HEARTS, 'requests'], ...(SECRETS[id] ? [[SECRET_AT, 'recipe']] : []), [HEARTS, 'badge']];
   const ats = [...perks.map(([at]) => at), ...HEART_AT].filter(at => at > hearts);
   if (!ats.length) return null;
   const at = Math.min(...ats);

@@ -3775,3 +3775,7 @@ down), each partner's face with a bubble and a "!!" in both types' colours. A ta
 duo's pair now morph side by side (`evolutionScene(..., mate)`). Faces are guessed from SPRITE_FIT's pose box; an odd
 shape may need its own face point. Playtested on branch `comic-evolution`; the user: "I like it all". `?evolve=<starter>`
 (`&stage=1`, `&mate=<id>`) plays it after PRESS START.
+
+**Leader visits off (2026-10-28, the user's ask):** no Gym Leader or friend visits the Secret Base or stands by the Clearing's
+Waystone, and the lines saying they would (the mending toast, the heart and Gold badge toasts, the Friends app's "visits"
+perk, Kurt's gift talk, John's, Shaun's and Machew's after-mend lines) are gone or reworded. One switch, `LEADER_VISITS_LIVE`.

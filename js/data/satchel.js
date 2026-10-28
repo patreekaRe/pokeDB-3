@@ -26,7 +26,7 @@ export const MATERIALS = [
   mat('sea-glass', 'ruins', 'Sea Glass', '💎', 'Lanterns, charms and Apricorn ball skins, at Kurt\'s Workshop.'),
   mat('seeds', 'thornwood', 'Thornwood Seeds', '🌱', 'Highbough wants them to plant the Withered Nursery again.'),
   mat('ghostcap', 'thornwood', 'Ghostcap', '🍄', 'It glows in the dark. Kurt can light a Spirit Lantern with it.'),
-  mat('spice', 'savanna', 'Savanna Spice', '🌶️', 'Dishes for visiting leaders, at Kurt\'s Workshop.'),
+  mat('spice', 'savanna', 'Savanna Spice', '🌶️', 'Dishes for the Gym Leaders, at Kurt\'s Workshop.'),
   mat('resin', 'savanna', 'Acacia Resin', '🍯', 'Glue for anything, and a blade\'s grip, at Kurt\'s Workshop.'),
   // grown, not found (the backyard's berry garden, js/data/berries.js): `biome: 'garden'` is no biome, so none drops in a run
   mat('cheri', 'garden', 'Cheri Berry', '🍒', 'Grown in your backyard. Kurt makes held berries and run items from them; sell the spares.', { grown: true }),

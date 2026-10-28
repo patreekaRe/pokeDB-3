@@ -13,7 +13,7 @@ import { safariDay } from './data/safari.js';
 import { gainMat, gainKey } from './satchel.js';
 import { FAVOURS, FAVOUR_COINS, FRIEND_TOWN, favourOf, asking, countFavour, currentFavour, favourText, handInFavour } from './data/favours.js';
 import { workshopOf, heartsOf, gifteeOf } from './data/workshop.js';
-import { GYM_BY_ID } from './data/gym.js';
+import { GYM_BY_ID, LEADER_VISITS_LIVE } from './data/gym.js';
 
 /** Count play into the request of the town whose biome `ctx.biome` is; lines saying one just finished. */
 export function trackTowns(events, amount, ctx) {
@@ -122,8 +122,10 @@ export function welcomeHome(id) {
   updateSave(d => { d.towns = { ...(d.towns || {}), [id]: { ...st, quest: { ...st.quest, welcomed: true } } }; });
 }
 
-/** Today's Gym Leader by the Clearing's Waystone (js/data/towns.js's waystoneGuest()), or null: dealt by the UTC day. */
-export const todaysGuest = (save = getSave()) => waystoneGuest(save, streamOf(safariDay(), 'waystone-guest'));
+/** Today's Gym Leader by the Clearing's Waystone (js/data/towns.js's waystoneGuest()), or null: dealt by the UTC day.
+    None while LEADER_VISITS_LIVE is off, bar a `?visit` peek. */
+export const todaysGuest = (save = getSave()) => (LEADER_VISITS_LIVE || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('visit'))
+  ? waystoneGuest(save, streamOf(safariDay(), 'waystone-guest')) : null);
 
 /* The Depths camp's memory (docs/roadmap.md's step 5, the user's call 2026-10-15): a won run's landing there is a walk
    only when something new waits (the camp never walked, or a shard Mewtwo hasn't seen lit), else one tap through. Under

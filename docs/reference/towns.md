@@ -383,7 +383,7 @@ happens so fast"): `outSlow()` in `homeRoom()` walks your partner to the doormat
 `doorWalk` keeping `arrived()` from leaving), then a 650 ms fade to black with the door sound; the town's room lifts it
 once it's in (`townRoom()`'s `covered`), the Clearing's hub through `goHome()` as any door.
 **Leaders coming home** (this replaces `LEADER_VISITS_LIVE` being off): once a town is mended, `homeLeaders()` in
-`js/data/towns.js` lists its Gym Leaders. One a UTC day stands by the Clearing's Waystone, left of it (`GUEST_AT`,
+`js/data/towns.js` lists its Gym Leaders. **Off since 2026-10-28 (the user's call):** with `LEADER_VISITS_LIVE` off no leader or friend visits the base or stands by the Clearing's Waystone (`todaysGuest()` is null), and the toasts promising visits say nothing of them; `?visit` peeks. One a UTC day stands by the Clearing's Waystone, left of it (`GUEST_AT`,
 `standGuest()` in `js/hub-3d.js`, a place `guest`; its card says their lines): `todaysGuest()` in `js/towns.js` →
 `waystoneGuest()`, the first time home after a mending the leader who put the shard in (`welcome`, a thank-you first;
 tapping them sets `quest.welcomed`, `welcomeHome()`), else dealt by the day. The others drop by the Secret Base
