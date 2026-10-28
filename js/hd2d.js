@@ -3,7 +3,7 @@
    rendered small and scaled up with crisp pixels, then tilt-shift and bloom in one chain). */
 
 import { spriteFit } from './data/sprite-fit.js';
-import { OVERWORLD } from './data/overworld.js';
+import { overworldSrc, OW_ROW } from './overworld.js';
 import { decodeGif } from './gif-frames.js';
 import { sharpness, calmFx } from './prefs.js';
 import { AURA, AURA_FRAMES, AURA_FPS, CALM_FRAME, auraFlames, auraFront, auraGlow } from './aura-art.js';
@@ -557,14 +557,6 @@ export async function monBoard(mate, back = true) {
   };
 }
 
-/** Its overworld walking sheet (js/data/overworld.js, tools/overworld-import.py), if it has one and ?ow=0 isn't set: a
-    legendary's powered-up GIF keeps its GIF, the aura being drawn into it. */
-function overworldSrc(front) {
-  const [, id, shiny] = front.match(/\/([a-z0-9-]+?)(-shiny)?-front\.gif$/) || [];
-  if (!OVERWORLD.has(id) || new URLSearchParams(location.search).get('ow') === '0') return null;
-  return `assets/overworld/${id}${shiny ?? ''}.png`;
-}
-
 /** A Pokémon Essentials follower sheet: four rows (walking down, left, right, up) of four steps. Kept on a CPU canvas
     (keep()), with how far its painted feet and head sit from a frame's edges across every step. */
 const owSheets = new Map();
@@ -585,8 +577,6 @@ function overworldSheet(src) {
   })());
   return owSheets.get(src);
 }
-
-const OW_ROW = { down: 0, left: 1, right: 2, up: 3 };
 
 /** Which way an overworld sprite faces: the way it moved since the last frame, else the way it was told to face (back is
     up, a flip right), held until it moves or is turned again, so it doesn't snap to the camera each time it stops. */

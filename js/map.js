@@ -35,6 +35,7 @@ import { MATERIALS_BY_ID } from './data/satchel.js';
 import { getSave } from './storage.js';
 import { REAL_TYPES } from './data/real-types.js';
 import { typeBadge } from './type-badge.js';
+import { overworldSrc } from './overworld.js';
 
 // Map generation is also imported by the headless balance bot's Web Worker. Load DOM helpers only in a page so the
 // worker can share generateMap() without evaluating UI modules that need document/window.
@@ -887,10 +888,20 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
 
   if (trainer) {
     const here = currentId && map.byId[currentId];
-    const img = el('img', here ? 'map-trainer' : 'map-trainer at-start');
+    const sheet = overworldSrc(trainer);
+    const img = el(sheet ? 'div' : 'img', here ? 'map-trainer' : 'map-trainer at-start');
     img.dataset.stage = String(stage);
-    img.src = trainer;
-    img.alt = '';
+    if (sheet) {
+      // its walking sheet: a row a direction (walkTo() turns it), CSS stepping through the row's four frames
+      img.classList.add('ow');
+      img.dataset.dir = 'down';
+      const steps = el('span', 'ow-steps');
+      steps.style.backgroundImage = `url("${sheet}")`;
+      img.append(steps);
+    } else {
+      img.src = trainer;
+      img.alt = '';
+    }
     place(img, (here ? nodeX(here) : CENTER_X), here ? rowY(here.floor) : START_ROW);
     box.append(img);
     if (!peek) trainerImg = img;
@@ -1036,6 +1047,13 @@ function place(elem, x, y) {
 const WALK_MS = [500, 850];    // one link's walk, from a short straight link to the long start road (the user's pace: 0.3-0.5 s zoomed past, 0.65-1.1 s dragged)
 let walking = false, routesSvg = null, trainerImg = null, walkFrom = null;
 
+/** The way a walking sheet faces along a leg of the road: the map's y runs down the screen, so a leg up it is 'up'. */
+function facing([x1, y1], [x2, y2]) {
+  const dx = x2 - x1, dy = y2 - y1;
+  if (!dx && !dy) return null;
+  return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy < 0 ? 'up' : 'down');
+}
+
 function walkTo(node, onPick) {
   if (walking) return;
   const img = trainerImg;
@@ -1053,7 +1071,7 @@ function walkTo(node, onPick) {
   const dx = points.at(-1)[0] - points[0][0];
   img.classList.remove('at-start');
   img.classList.add('walking');
-  if (dx) img.style.setProperty('--face', dx > 0 ? -1 : 1);
+  if (dx && !img.classList.contains('ow')) img.style.setProperty('--face', dx > 0 ? -1 : 1);
   const trail = routesSvg.path({ points: [] }, ROUTE.walked, 0.75);
   // Glides on `translate` from the start point (the GPU moves it), so the tile size is read once in px.
   const box = img.parentElement.getBoundingClientRect();
@@ -1074,6 +1092,7 @@ function walkTo(node, onPick) {
     const t = Math.min(1, (now - start) / total);
     const d = ease(t) * length;
     const { i, p } = at(d);
+    if (img.classList.contains('ow')) img.dataset.dir = facing(points[i], points[i + 1]) ?? img.dataset.dir;
     const hop = Math.abs(Math.sin(Math.PI * hops * d / length)) * 0.35 * th;   // a little hop about every other tile, landing on arrival
     img.style.translate = `${(p[0] - x0) * tw}px ${(p[1] - y0) * th - hop}px`;
     trail.setAttribute('points', polyPoints([...points.slice(0, i + 1), p]));
