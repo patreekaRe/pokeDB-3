@@ -45,6 +45,7 @@ const freshSave = () => ({
   cryVolume: null,           // the Cries bar; null = `sfxVolume` (cries went with effects before it had a bar)
   battleSpeed: 1,            // 1 or 2: the enemy's turn and the hit animations (battleSpeed() in js/battle.js)
   endTurnWarn: true,         // ask before ending a turn with PP left and a card you could play
+  handSwipes: 0,             // cards swiped up to play, counted to HAND_TAUGHT; the battle's gesture hint stops after (js/battle.js)
   textSpeed: 'mid',          // text boxes typing: slow, mid, fast or instant (textPace() in js/settings.js)
   textAuto: true,            // text boxes move on by themselves, all but their last line (textHold() in js/prefs.js), or wait for a tap
   clock: 'auto',             // the scenes' time of day: auto (the device clock) or dawn / day / dusk / night (js/daytime.js)

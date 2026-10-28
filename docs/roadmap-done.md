@@ -3738,3 +3738,6 @@ readable size (64px at least, names shown) in a strip that scrolls sideways (`.m
 `reveal()` in `js/cardindex.js`); a nudging arrow and a fade show at each side with more past it, the arrow wears a "!"
 when a tab with new moves is out of sight, and picking a tab (or the D-pad) scrolls it into view. Branch
 `claude/card-layout-scroll-3j40m4`, pushed to `main` too.
+
+### Battle hand hint without words (2026-10-28, cloud)
+The user's ask: the alternating "hold to drag" / "swipe up to play" pills looked crammed. Now a wordless fingertip loop (slide along a track, then lift past a chevron), still turns 1-2 only; it hides on your first slide or swipe and stops for good after 3 swipes to play (`handSwipes`). Detail in `docs/reference/battle-screen-layout.md`.

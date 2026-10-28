@@ -1303,23 +1303,39 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 
 /* --- hand --- */
 .hand-wrap { grid-area: hand; min-width: 0; padding-top: 4px; position: relative; isolation: isolate; }
-/* the slide / swipe hint (showHandHint() in js/battle.js): in the gap over the fan, behind the cards, so it moves nothing;
-   a dark pill so it reads over any scenery, the two lines taking turns until the third turn */
-.hand-hint { position: absolute; z-index: -1; top: 0; left: 0; right: 0; height: 1.5em; font-size: 0.75rem; pointer-events: none; white-space: nowrap; }
-.hand-hint > span {
-  position: absolute; top: -6px; left: 50%; translate: -50% 0; padding: 2px 10px; line-height: 1.2;
-  color: #ffe680; text-shadow: 1px 1px 0 #181818; background: rgb(16 16 28 / 0.45); border: 1px solid rgb(255 230 128 / 0.35); border-radius: 999px;
-  opacity: 0; animation: handHintA 5s ease-in-out infinite;
+/* the slide / swipe hint (showHandHint() in js/battle.js), in the gap over the fan, behind the cards, so it moves nothing.
+   Wordless (the user's call, 2026-10-28: the two worded pills looked crammed): a fingertip slides along a track with an
+   arrow each end, then lifts up past a chevron, on a loop. The dark ring and gold glow read over any scenery. */
+.hand-hint { position: absolute; z-index: -1; top: -8px; left: 50%; width: 92px; height: 16px; translate: -50% 0; pointer-events: none;
+  --hh-gold: #ffe680; --hh-ink: rgb(16 16 28 / 0.55); }
+.hand-hint > i { position: absolute; display: block; }
+.hh-track { left: 6px; right: 6px; top: 7px; height: 2px; border-radius: 2px; background: var(--hh-gold); box-shadow: 0 0 0 1px var(--hh-ink);
+  opacity: 0; animation: hhTrack 4.4s ease-in-out infinite; }
+.hh-track::before, .hh-track::after { content: ''; position: absolute; top: -3px; width: 6px; height: 6px; border: solid var(--hh-gold);
+  border-width: 2px 2px 0 0; filter: drop-shadow(0 0 1px var(--hh-ink)); }
+.hh-track::before { left: -1px; rotate: -135deg; }
+.hh-track::after { right: -1px; rotate: 45deg; }
+.hh-up { left: calc(50% - 5px); top: -22px; width: 8px; height: 8px; border: solid var(--hh-gold); border-width: 2px 0 0 2px; rotate: 45deg;
+  filter: drop-shadow(0 0 1px var(--hh-ink)); opacity: 0; animation: hhUp 4.4s ease-out infinite; }
+.hh-dot { left: calc(50% - 7px); top: 1px; width: 14px; height: 14px; border-radius: 50%; background: rgb(255 255 255 / 0.9);
+  box-shadow: 0 0 0 2px var(--hh-ink), 0 0 8px 2px rgb(255 230 128 / 0.7); opacity: 0; animation: hhDot 4.4s ease-in-out infinite; }
+@keyframes hhDot {
+  0% { opacity: 0; translate: 0 0; scale: 1.3; }
+  6% { opacity: 1; translate: 0 0; scale: 1; }
+  18% { translate: -34px 0; }
+  32% { translate: 34px 0; }
+  42%, 52% { opacity: 1; translate: 0 0; scale: 1; }
+  68% { opacity: 1; translate: 0 -26px; scale: 0.9; }
+  76%, 100% { opacity: 0; translate: 0 -34px; scale: 0.8; }
 }
-.hand-hint > span + span { animation-name: handHintB; }
 .swap-hint { position: absolute; z-index: 3; left: 0; right: 0; top: var(--hint-y, 50%); translate: 0 -50%; display: flex; justify-content: center; pointer-events: none; font-size: 0.75rem; white-space: nowrap; }
 .swap-hint[hidden] { display: none; }
 .swap-hint > span { padding: 2px 10px; line-height: 1.2; color: #ffe680; text-shadow: 1px 1px 0 #181818; background: rgb(16 16 28 / 0.45);
   border: 1px solid rgb(255 230 128 / 0.35); border-radius: 999px; opacity: 0; animation: swapHint 4s ease-in-out 0.6s infinite; }
 @keyframes swapHint { 0% { opacity: 0; transform: translateY(4px); } 15%, 60% { opacity: 1; transform: none; } 80%, 100% { opacity: 0; transform: translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) { .swap-hint > span { animation: none; opacity: 0.85; } }
-@keyframes handHintA { 0% { opacity: 0; } 8%, 42% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes handHintB { 0%, 50% { opacity: 0; transform: translateY(4px); } 58%, 92% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-4px); } }
+@keyframes hhTrack { 0% { opacity: 0; } 6%, 40% { opacity: 0.85; } 50%, 100% { opacity: 0; } }
+@keyframes hhUp { 0%, 48% { opacity: 0; translate: 0 6px; } 60%, 70% { opacity: 1; translate: 0 0; } 80%, 100% { opacity: 0; translate: 0 -6px; } }
 .hand {
   --hand-card-w: clamp(112px, 12vw, 148px);
   display: flex;

@@ -709,7 +709,7 @@ function beginPlayerTurn() {
   surface();
   if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry, a card surfacing
   b.busy = false;
-  if (b.turn === 1 && !b.safari) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
+  if (b.turn === 1 && !b.safari && (getSave().handSwipes ?? 0) < HAND_TAUGHT) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
   else if (b.turn === HINT_TURNS + 1) hideHandHint();
   $('swap-hint').hidden = !b.duo || b.turn > HINT_TURNS || b.duo.held;   // a duo's "hold to swap", the hand hint's way
   if (!$('swap-hint').hidden) centreSwapHint();
@@ -768,9 +768,11 @@ function lockDeal(n) {
 }
 const dealing = () => performance.now() < dealLockUntil;
 
-/* Every battle teaches the hand's slide and swipe (the user's ask, 2026-10-04): two lines take turns fading in just
-   above the cards, behind them, through the first HINT_TURNS turns (.hand-hint's animations), then it goes. */
+/* Battles teach the hand's slide and swipe (the user's ask, 2026-10-04): a wordless fingertip loops just above the cards,
+   behind them, through the first HINT_TURNS turns (.hand-hint's animations). It goes the moment you slide or swipe, and
+   stops for good once you've swiped HAND_TAUGHT cards up to play (the user's ask, 2026-10-28: less of it). */
 const HINT_TURNS = 2;
+const HAND_TAUGHT = 3;
 let hintTimer = 0;
 function showHandHint(delay) {
   hideHandHint();
@@ -3842,6 +3844,7 @@ function initScrub() {
     if (!drag.on) {
       if (Math.abs(dx) < 12 && dy > -12) return;
       drag.on = true;
+      hideHandHint();
       if (Math.abs(dx) < -dy && drag.uid != null) pick(drag.uid);   // straight up: lift the card it started on
     }
     e.preventDefault();
@@ -3869,7 +3872,10 @@ function initScrub() {
     document.addEventListener('click', swallow, { capture: true });
     setTimeout(() => document.removeEventListener('click', swallow, { capture: true }), 400);
     const uid = current();
-    if (armed && battle && !battle.busy && uid != null) return tapCard(uid);
+    if (armed && battle && !battle.busy && uid != null) {
+      if ((getSave().handSwipes ?? 0) < HAND_TAUGHT) updateSave(save => { save.handSwipes = (save.handSwipes ?? 0) + 1; });
+      return tapCard(uid);
+    }
     settle();
   };
   document.addEventListener('pointerup', release);
