@@ -3767,3 +3767,11 @@ cards read **Bury** and leave the turn going; no dodge. Wild Safari Pokémon who
 `docs/reference/cards.md` ("Dig vs Bury"); probe `tools/ground-probe.mjs`. Bot (pokeDB-sim README): ending the turn cost
 the Ground pairs ~6, so Dig 11 block / 16, Tunnel 10, Burrow 14 (300 a pair: mean 69.2 vs 69.4 before). Not picked
 (Ideas): your own Fly and Dive cards, Diglett's signature Dig, a dodge underground.
+
+### Comic-book evolution intro (2026-10-28, cloud; on `main`)
+Before "What? X is evolving!", manga panels slam in over the white (`js/evo-comic.js`): alone, an eyes strip over a
+face close-up with a "!?" stamp; a Duo Run splits the screen across a slanted gutter (the user's call: across, not
+down), each partner's face with a bubble and a "!!" in both types' colours. A tap slashes them away onto the morph, and a
+duo's pair now morph side by side (`evolutionScene(..., mate)`). Faces are guessed from SPRITE_FIT's pose box; an odd
+shape may need its own face point. Playtested on branch `comic-evolution`; the user: "I like it all". `?evolve=<starter>`
+(`&stage=1`, `&mate=<id>`) plays it after PRESS START.
