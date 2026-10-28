@@ -79,6 +79,7 @@ let hemi, sun, lampLights = [], winMats = [], shafts = [], motes = [], ring;
 let roomGroup, pieceGroup, ghost, foot, selBox;
 let mon, walker = { x: 0, y: 0, z: 0, path: [], facing: 'front', flip: false, hop: 0 };
 let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
+let pal = null;    // in your own base your buddy roams free while you walk as your trainer: { id, mon, w }, a guest's shape
 let blocked = new Set(), base, calm = false, time = '';
 let holding = null, aimAt = null, sel = -1, pressing = false, pointer = null, swallowClick = false, tab = 'furniture';
 let grab = null;   // a press on a placed piece, until it turns into a drag (it's picked up) or a tap
@@ -927,7 +928,7 @@ const present = () => guests.filter(g => g.w && homeHere(g));
 /** Tiles someone stands on or is heading for, so two never pick the same one. */
 function taken(skip) {
   const out = new Set();
-  for (const w of [walker, ...present().map(g => g.w), visit?.w]) {
+  for (const w of [walker, pal?.w, ...present().map(g => g.w), visit?.w]) {
     if (!w || w === skip || !w.tile) continue;
     out.add(key(w.tile.x, w.tile.y));
     const end = w.path.at(-1);
@@ -994,7 +995,7 @@ function seatSpots(it) {
 
 /** Every free place to sit in the room: { it, k } for spot k of piece it, none someone's on or heading for. */
 function seats() {
-  const used = new Set([walker, ...present().map(g => g.w), visit?.w].map(w => w?.seat ?? w?.seatTo).filter(Boolean).map(s => `${base.items.indexOf(s.it)}:${s.k}`));
+  const used = new Set([walker, pal?.w, ...present().map(g => g.w), visit?.w].map(w => w?.seat ?? w?.seatTo).filter(Boolean).map(s => `${base.items.indexOf(s.it)}:${s.k}`));
   return base.items.flatMap((it, i) => seatOf(it.id) ? seatSpots(it).map((_, k) => ({ it, k })).filter(s => !used.has(`${i}:${s.k}`)) : []);
 }
 
@@ -1036,6 +1037,7 @@ function seatsFor(g) {
 
 /** Walk your partner to a seat on `it` (the free spot nearest it) and sit; false if there's none or no way there. */
 function sitPartner(it) {
+  if (pal) return sendPal(it);
   const free = seats().filter(s => s.it === it);
   if (!free.length) return false;
   const spots = seatSpots(it), dist = (s) => Math.hypot(spots[s.k].x - walker.x, spots[s.k].z - walker.z);
@@ -1050,6 +1052,85 @@ function sitPartner(it) {
   if (walker.seat) getUp(go); else go();
   playSound('confirm');
   return true;
+}
+
+/* Your buddy roams free in your own base (the user's ask, 2026-10-28): with a trainer worn you walk as them, and the buddy
+   lives about the room as the Safari Pokémon do (think()), now and then coming over to you; through a door it comes along
+   and goes on roaming there. A tap on a seat sends it to sit. A friend's base keeps it at your heels. */
+
+const roaming = () => !!lead?.m && !host;
+
+/** The free tile nearest `t` that isn't `t`, for the buddy to stand beside you. */
+function besideTile(t, skip) {
+  const near = freeTiles(skip).filter(c => c.x !== t.x || c.y !== t.y);
+  near.sort((a, b) => Math.abs(a.x - t.x) + Math.abs(a.y - t.y) - Math.abs(b.x - t.x) - Math.abs(b.y - t.y));
+  return near[0] ?? nearestFree(t);
+}
+
+/** Let the buddy off to roam, from beside you, or keeping the seat it's on (you step down off it). */
+function loosen() {
+  const now = performance.now();
+  pal = { id: buddy(getSave()).id, mon, w: { path: [], facing: 'front', flip: false, hop: 0, y: 0, think: now + rand(1500, 3000) } };
+  const w = pal.w;
+  if (walker.seat && !walker.jump) {
+    Object.assign(w, { seat: walker.seat, from: walker.from, tile: walker.seat.tile, x: walker.x, y: walker.y, z: walker.z, think: now + rand(3000, 6000) });
+    const down = walker.from && !blocked.has(key(walker.from.x, walker.from.y)) ? walker.from : nearestFree(walker.seat.tile);
+    Object.assign(walker, { seat: null, y: 0, tile: down, x: tileX(down.x), z: tileZ(down.y) });
+  } else placePal();
+  Object.assign(walker, { goal: null, seatTo: null, jump: null });
+}
+
+/** The buddy stood beside you, as on the way into a room. */
+function placePal() {
+  const w = pal.w, t = besideTile(walker.tile, w);
+  Object.assign(w, { tile: t, x: tileX(t.x), z: tileZ(t.y), y: 0, path: [], seat: null, goal: null, jump: null, sleeping: false, think: performance.now() + rand(1500, 3000) });
+  w.hopUntil = performance.now() + 500;
+}
+
+/** Off its seat if it's on one, then to the free spot on `it` nearest it and up; false if there's no spot free. */
+function sendPal(it) {
+  const w = pal.w, free = seats().filter(s => s.it === it);
+  if (!free.length || w.jump) return false;
+  const spots = seatSpots(it), dist = (s) => Math.hypot(spots[s.k].x - w.x, spots[s.k].z - w.z);
+  const { k } = free.sort((a, b) => dist(a) - dist(b))[0], spot = spots[k];
+  const go = () => {
+    const path = route(w.tile, spot.tile), end = path.at(-1) ?? w.tile;
+    if (!nextTo(end, it)) { w.think = performance.now() + rand(800, 2000); return; }
+    w.path = path; w.goal = it; w.seat = { it, k, ...spot };
+    if (!path.length) climb(w, performance.now());
+  };
+  w.sleeping = false;
+  if (w.seat) {
+    const down = w.from && !blocked.has(key(w.from.x, w.from.y)) ? w.from : nearestFree(w.seat.tile);
+    w.seat = null;
+    leap(w, { x: tileX(down.x), y: 0, z: tileZ(down.y) }, 380, () => { w.tile = down; go(); });
+  } else go();
+  playSound('confirm');
+  return true;
+}
+
+/** A frame of the roaming buddy: now and then, rather than its own thing, it trots over to stand by you. */
+function livePal(dt, now) {
+  const w = pal.w;
+  pal.mon = mon;
+  if (!w.path.length && !w.jump && !w.seat && !w.goal && now > w.think && Math.random() < 0.3) {
+    const by = besideTile(walker.path.at(-1) ?? walker.tile, w);
+    w.path = route(w.tile, by);
+    w.think = now + rand(3000, 6000) + w.path.length * 450;
+  }
+  // a cheer meant for your partner (a piece tapped, the garden tended) is the buddy's hop
+  if (walker.hopUntil > (pal.cheered ?? 0)) { pal.cheered = walker.hopUntil; if (!w.jump && !w.seat) w.hopUntil = walker.hopUntil; }
+  liveGuest(pal, dt, now);
+}
+
+/** A pet: its cry, a hop and an emote over its head; a roaming buddy stops to look at you, a sleeper wakes. */
+function pet(g) {
+  const w = g.w, now = performance.now();
+  playCry(g.mon.id);
+  if (!w.jump && !w.seat) w.hopUntil = now + 500;
+  if (g === pal && !w.goal && !w.jump) { w.path = []; w.facing = 'front'; w.think = now + rand(2000, 3500); }
+  if (w.sleeping) w.think = now + 500;
+  emote(g.mon);
 }
 
 /** Up onto the seat it walked to, if it's still there. */
@@ -1117,7 +1198,7 @@ function splash(w) {
 /** The swings: one with a Pokémon on swings higher and carries it, an empty one comes to rest. */
 function liveSwings(dt, now) {
   const on = new Map();
-  for (const w of [walker, ...present().map(g => g.w)]) if (w?.seat?.part && !w.jump) on.set(`${base.items.indexOf(w.seat.it)}:${w.seat.part}`, w);
+  for (const w of [walker, pal?.w, ...present().map(g => g.w)]) if (w?.seat?.part && !w.jump) on.set(`${base.items.indexOf(w.seat.it)}:${w.seat.part}`, w);
   for (const pg of pieceGroup.children) {
     const parts = pg.userData.model?.userData.parts;
     if (!parts) continue;
@@ -1148,7 +1229,7 @@ function settleGuests() {
     const down = nearestFree(vw.seat.tile);
     Object.assign(vw, { seat: null, y: 0, tile: down, x: tileX(down.x), z: tileZ(down.y) });
   }
-  for (const { w } of present()) {
+  for (const { w } of [...present(), ...(pal ? [pal] : [])]) {
     if (w.jump) continue;
     if (w.goal) { w.goal = null; w.seat = null; }
     w.path = [];
@@ -1579,9 +1660,57 @@ function puff(kind, w, m, { size: big, life, top = 0 } = {}) {
   puffs.push({ s, t0: performance.now(), life: life ?? (kind === 'heart' ? 1100 : kind === 'drop' ? 600 : 2200), x: w.x + rand(-0.2, 0.2), y: w.y + m.top + top, z: w.z + 0.05, sway: rand(0, 6), drift: kind === 'z' ? 0.25 : 0 });
 }
 
+/* A pet's emote (the user's ask, 2026-10-28: "cute little emojis over their head when we pet them"): a white speech
+   bubble over its head with a heart, a smile, a note or a twinkle in it, as HeartGold's followers show. */
+const BUBBLE = ['..#########..', '.#.........#.', '#...........#', '#...........#', '#...........#', '#...........#', '#...........#',
+  '#...........#', '#...........#', '.#.........#.', '..###..####..', '....#.#......', '.....#.......'];
+const EMOTES = {
+  heart: ['.rr.rr.', 'rrrrrrr', 'rwrrrrr', 'rrrrrrr', '.rrrrr.', '..rrr..', '...r...'],
+  smile: ['..yyy..', '.yyyyy.', 'yykykyy', 'yyyyyyy', 'ykyyyky', '.ykkky.', '..yyy..'],
+  note: ['..kkkkk', '..k...k', '..k...k', '..k...k', 'kkk.kkk', 'kkk.kkk', '.......'],
+  twinkle: ['...y...', '...y...', '..yoy..', 'yyoooyy', '..yoy..', '...y...', '...y...'],
+};
+const EMOTE_INK = { '#': '#2a2a3a', r: '#ff4f7a', w: '#ffd0dc', y: '#ffd23a', o: '#fff6c0', k: '#2a2a3a' };
+
+function emoteTexture(kind) {
+  const id = `emote-${kind}`;
+  if (puffTex[id]) return puffTex[id];
+  const c = new OffscreenCanvas(13, 13), x = c.getContext('2d');
+  BUBBLE.forEach((r, y) => {
+    const l = r.indexOf('#'), rr = r.lastIndexOf('#');
+    if (y > 0 && y < 10) { x.fillStyle = '#fff'; x.fillRect(l + 1, y, rr - l - 1, 1); }
+    if (y === 10) { x.fillStyle = '#fff'; x.fillRect(5, 10, 2, 1); }
+    if (y === 11) { x.fillStyle = '#fff'; x.fillRect(5, 11, 1, 1); }
+    [...r].forEach((ch, i) => { if (ch === '#') { x.fillStyle = EMOTE_INK['#']; x.fillRect(i, y, 1, 1); } });
+  });
+  EMOTES[kind].forEach((r, y) => [...r].forEach((ch, i) => { if (EMOTE_INK[ch]) { x.fillStyle = EMOTE_INK[ch]; x.fillRect(3 + i, 2 + y, 1, 1); } }));
+  return (puffTex[id] = tex(c));
+}
+
+/** An emote over Pokémon `m`, riding along over its head; a new one replaces the one it has up. */
+function emote(m) {
+  for (const p of puffs.filter(p => p.over === m)) p.life = 0;
+  const kinds = ['heart', 'heart', 'smile', 'note', 'twinkle'], kind = kinds[Math.floor(Math.random() * kinds.length)];
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: emoteTexture(kind), transparent: true, depthWrite: false, depthTest: false }));
+  s.raycast = () => {};
+  s.renderOrder = 10;
+  scene.add(s);
+  puffs.push({ s, t0: performance.now(), life: 1500, over: m });
+}
+
 function livePuffs(now) {
   puffs = puffs.filter(p => {
     const k = (now - p.t0) / p.life;
+    if (p.over && k < 1) {
+      // pops up with a little overshoot, rides over the head, fades at the end
+      const t = Math.min(1, (now - p.t0) / 160), pop = calm ? 1 : t < 1 ? 1 + Math.sin(t * Math.PI) * 0.25 - (1 - t) * 0.6 : 1;
+      const at = p.over.group.position, size = 0.42 * pop;
+      p.s.scale.set(size, size, 1);
+      p.s.position.set(at.x, at.y + p.over.board.position.y + p.over.top + 0.3 + (calm ? 0 : k * 0.08), at.z + 0.05);
+      p.s.material.opacity = k < 0.8 ? 1 : 1 - (k - 0.8) / 0.2;
+      p.s.visible = p.over.group.visible;
+      return true;
+    }
     if (p.arc && k < 1) {
       const [a, b] = p.arc;
       p.s.position.set(a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k + Math.sin(k * Math.PI) * 0.3, a[2] + (b[2] - a[2]) * k);
@@ -1763,12 +1892,13 @@ function onTap(e) {
   walker.through = null;
   if (first?.userData.door) return goThrough(first.userData.door);
   if (first === mon.board) {
+    if (pal) return pet(pal);
     playCry(mon.id);
     walker.hopUntil = performance.now() + 500;
-    return;
+    return emote(mon);
   }
   if (visit?.phase === 'stand' && first === visit.mon.board) return leaderTalk();
-  if (first?.userData.who) return cheer(first.userData.who);
+  if (first?.userData.who) return pet(first.userData.who);
   let g = first;
   while (g && g.userData.index === undefined) g = g.parent;
   if (g && g.parent === pieceGroup && PIECES[base.items[g.userData.index].id].gift) return unwrap(g.userData.index);
@@ -2204,11 +2334,18 @@ function frame(now) {
   if (!calm) for (const m of doorMats) m.material.emissiveIntensity = mode === 'walk' ? 0.12 + Math.sin(now / 420) * 0.1 : 0;
   const happy = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : happy ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  mon.group.position.set(walker.x, (walker.y ?? 0) + stairY(walker.x, walker.z), walker.z);
-  mon.board.position.y = bob;
-  const pose = lead?.lead(walker, mon, dt, !!(walker.seat || walker.jump)) ?? walker;   // on a seat, or leaping to one: the buddy's spot
-  mon.board.scale.x = pose.flip ? -1 : 1;
-  drawMon(mon, pose, dt);
+  if (roaming() && !pal) loosen();
+  else if (pal && !roaming()) pal = null;
+  if (pal) {
+    lead.solo({ x: walker.x, y: stairY(walker.x, walker.z), z: walker.z }, dt);
+    livePal(dt, now);
+  } else {
+    mon.group.position.set(walker.x, (walker.y ?? 0) + stairY(walker.x, walker.z), walker.z);
+    mon.board.position.y = bob;
+    const pose = lead?.lead(walker, mon, dt, !!(walker.seat || walker.jump)) ?? walker;   // on a seat, or leaping to one: the buddy's spot
+    mon.board.scale.x = pose.flip ? -1 : 1;
+    drawMon(mon, pose, dt);
+  }
   // the Pokémon living here are about whichever room you're in, or out in the yard if they were let out
   liveSwings(dt, now);
   for (const g of guests) if (g.mon && g.w) { g.mon.group.visible = homeHere(g); if (homeHere(g)) liveGuest(g, dt, now); }
@@ -2327,6 +2464,7 @@ function showRoom(spot = () => null) {
   walker.tile = nearestFree(spot(doors) ?? startTile());
   walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
   walker.facing = 'back';
+  if (pal) placePal();
   for (const g of guests) {
     const w = g.w;
     if (!w) continue;

@@ -3829,3 +3829,10 @@ Timburr's card crossed with Meowth's prize screen) opens at a mannequin, the mir
 Wear only. A grand-opening ribbon (`tailorRibbon`), Oak / Sonia once in the Clearing (`toldHeld('tailor')`),
 `?mall=tailor`. Headless: the tailor 239 draws a frame and 129 MB (the hall 322, budget 332).
 
+
+### Your buddy roams free in your Secret Base, and pets show an emote (2026-10-28, cloud; on `main`)
+The user's ask: the buddy roams free in their own base, comes room to room with them and roams on there, and a pet shows a
+cute emoji. Built as `pal` in `js/base-3d.js` (a guest-shaped roamer, `lead.solo()` for the trainer) and `emote()` (a
+HeartGold-style bubble: heart, smile, note or twinkle). A friend's base keeps the follow. Detail in
+`docs/reference/trainer-follow.md`. Not yet elsewhere: the Clearing, towns and rooms still have the buddy at your heels
+and a plain hop on a tap (an idea for later, on the roadmap).

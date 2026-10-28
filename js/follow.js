@@ -42,6 +42,15 @@ export async function makeLead({ group, pitch, dress }) {
 
   const settle = (o, to, dt) => { const k = Math.min(1, dt / EASE); o.x += (to.x - o.x) * k; o.y += (to.y - o.y) * k; o.z += (to.z - o.z) * k; };
 
+  /** The trainer drawn where `me` is now, facing where it walked from `mineWas`, and keeping that way when it stops. */
+  function stride(mineWas, dt, visible) {
+    const dx = me.x - mineWas.x, dz = me.z - mineWas.z, moving = Math.hypot(dx, dz) > STILL;
+    if (moving) dir = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? 'right' : 'left') : (dz < 0 ? 'up' : 'down');
+    m.group.position.set(me.x, me.y, me.z);
+    m.group.visible = visible;
+    drawMon(m, { dir, moving }, dt);
+  }
+
   return {
     m, look: look.id,
     /** Call once the place has set the buddy's group where the walker stands (its bob on the board, not the group):
@@ -68,12 +77,7 @@ export async function makeLead({ group, pitch, dress }) {
         if (Math.hypot(me.x - here.x, me.z - here.z) < 0.25) Object.assign(me, here); else settle(me, here, dt);   // back from a swap
         settle(mate, behind(here, GAP), dt);
       }
-      // the trainer faces where it walks, and keeps facing that way when it stops
-      const dx = me.x - mineWas.x, dz = me.z - mineWas.z, moving = Math.hypot(dx, dz) > STILL;
-      if (moving) dir = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? 'right' : 'left') : (dz < 0 ? 'up' : 'down');
-      m.group.position.set(me.x, me.y, me.z);
-      m.group.visible = mon.group.visible;
-      drawMon(m, { dir, moving }, dt);
+      stride(mineWas, dt, mon.group.visible);
       const bx = mate.x - mateWas.x, bz = mate.z - mateWas.z;
       if (Math.hypot(bx, bz) > STILL) {
         if (Math.abs(bx) > 0.002) mateFlip = bx > 0;
@@ -81,6 +85,16 @@ export async function makeLead({ group, pitch, dress }) {
       }
       mon.group.position.set(mate.x, mate.y, mate.z);
       return acting ? walker : { facing: mateFacing, flip: mateFlip, sleeping: walker.sleeping, x: mate.x, z: mate.z };   // x, z: an overworld sheet faces the way it moves
+    },
+    /** The trainer alone on `at` ({ x, y, z }), the buddy off on its own (the Secret Base, where it roams free). */
+    solo(at, dt) {
+      const mineWas = { ...me };
+      if (!started || Math.hypot(at.x - me.x, at.z - me.z) > JUMP) { Object.assign(me, { x: at.x, y: at.y ?? 0, z: at.z }); mineWas.x = me.x; mineWas.z = me.z; }
+      else settle(me, { x: at.x, y: at.y ?? 0, z: at.z }, dt);
+      started = true;
+      trail.length = 0;
+      trail.push({ ...me });
+      stride(mineWas, dt, true);
     },
     /** Back at the walker's spot, the trail forgotten (a new room, a jump across the map). */
     reset() { trail.length = 0; started = false; },
@@ -108,5 +122,6 @@ export function leadFor(opts) {
     get m() { return lead?.m ?? null; },
     async ready() { sync(); await loading; lead?.reset(); },
     lead(walker, mon, dt, acting) { sync(); return lead ? lead.lead(walker, mon, dt, acting) : walker; },
+    solo(at, dt) { sync(); lead?.solo(at, dt); },
   };
 }

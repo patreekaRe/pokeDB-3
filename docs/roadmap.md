@@ -1215,7 +1215,12 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 1.0). People stood in rooms and the hub (Kurt, the Center's nurse, the Mart's clerks, ? room trainers, Gym Leaders at home
 and in the Secret Base) are battle sprites at `NPC_PX` (`js/hd2d.js`, 1/34), never shrunk: Kurt stands about 2.1 units to
 your trainer's 1.45. `?npc=N` (N times it, for a page load) is live to try, e.g. `?npc=0.8`; about 0.7 matches your
-trainer's height. Once they pick, make it the default and add the size to the `look` patch line already in `NEXT`.
+trainer's height. They also noticed Kurt's Workshop is zoomed in beside the Base: a plain house's shot is 6.2 tiles
+across (`homeSize()` in `js/event-3d.js`), the Base's 8, so everything there is drawn ~29% bigger; `?across=N` tries another
+(e.g. `?across=8`, on its own or with `?npc=`). Once they pick, make it the default and add the size to the `look` patch line already in `NEXT`.
+
+**Pet emotes beyond the Secret Base** (an idea, 2026-10-28): the Base's pet emote (`emote()` in `js/base-3d.js`) could
+show on a tap of your buddy in the Clearing, towns and rooms too. Not asked for yet.
 
 **The Trainer Tailor** was built 2026-10-28 (cloud, on `main`; archive). **Next: the user playtests it** ▶ PLAYTEST ON
 THE LIVE SITE: `?mall&coins=2000` (the hall's four fronts, the tailor's ribbon with Kecleon), then in: walk up to a

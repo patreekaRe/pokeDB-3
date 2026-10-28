@@ -52,6 +52,7 @@ export const NEXT = [
   ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card.'],
   ['mall', 'The Trainer Tailor opens in the Poké Mall: Kecleon sells every outfit, and walking up to a mannequin tries it on. Switch outfits on your Trainer Card.'],
   ['look', 'Your trainer and the townspeople are drawn a little smaller, so they no longer tower over rooms, and your buddy trails a touch further back.'],
+  ['base', 'In your own Secret Base your buddy roams free, follows you from room to room, and shows a little heart or smile when you pet it.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 
