@@ -5,7 +5,8 @@
  * cry (a tap skips the flashing to that flash, "Tap to skip" in the corner: the user's call, 2026-10-18, undoing
  * 2026-10-13's play-it-in-full). The chime and "Congratulations!" follow, and the next tap fades the white out onto whatever was set up under it.
  * Cosmetic only: run.js has already changed the stage, HP and deck. Under reduced motion the cries, song and chime stay,
- * but nothing flashes or wipes.
+ * but nothing flashes or wipes. Before "is evolving!", comic panels slam in with the Pokémon's face (js/evo-comic.js;
+ * a playtest, 2026-10-28), and a Duo Run's pair evolve side by side.
  */
 import { $, sleep } from './ui.js';
 import { playMusic, playCry, playSound, preloadMusic, preloadSounds, preloadCries } from './audio.js';
@@ -13,6 +14,7 @@ import { sayLines } from './rewards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { calmFx } from './prefs.js';
+import { comicIntro } from './evo-comic.js';
 
 const still = () => calmFx();   // reduced motion or Reduced flashing: the whole show is flashes, so it's skipped
 const CRY_WAIT_MAX = 1500;   // a long cry mustn't hold the scene up
@@ -30,63 +32,89 @@ export function preloadEvolution(starter, stage) {
 }
 
 /**
- * Play the scene for `starter` evolving out of `from`. `after` are lines said after "Congratulations!". Resolves on
- * the last tap with the screen still white, with a function that fades the white away (set the next screen up first).
+ * Play the scene for `starter` (and a Duo Run's `mate` beside it) evolving out of `from`. `after` are lines said after
+ * "Congratulations!". Resolves on the last tap with the screen still white, with a function that fades the white away
+ * (set the next screen up first).
  */
-export async function evolutionScene(starter, from, after = []) {
+export async function evolutionScene(starter, from, after = [], mate = null) {
   const to = from + 1;
   const scene = $('evolve-scene');
-  const mon = $('evolve-mon');
-  const [oldImg, newImg] = [$('evolve-from'), $('evolve-to')];
-  const fromName = stageName(starter, from), toName = stageName(starter, to);
-  preloadEvolution(starter, from);
+  const cast = [starter, mate].filter(Boolean).map((s, i) => monFor(scene, s, i));
+  const names = (stage) => cast.map(c => stageName(c.starter, stage)).join(' and ');
+  cast.forEach(c => preloadEvolution(c.starter, from));
 
-  oldImg.src = spriteUrl(starter, 'front', from);
-  newImg.src = spriteUrl(starter, 'front', to);
-  oldImg.alt = fromName;
-  newImg.alt = toName;
-  newImg.style.visibility = 'hidden';
-  oldImg.style.visibility = '';
-  mon.className = 'evo-mon';
+  for (const { starter: s, mon, oldImg, newImg } of cast) {
+    oldImg.src = spriteUrl(s, 'front', from);
+    newImg.src = spriteUrl(s, 'front', to);
+    oldImg.alt = stageName(s, from);
+    newImg.alt = stageName(s, to);
+    newImg.style.visibility = 'hidden';
+    oldImg.style.visibility = '';
+    mon.className = 'evo-mon';
+    mon.hidden = false;
+  }
   $('evolve-log').hidden = true;
 
   playMusic(null);   // the victory fanfare fades out under the white
   scene.classList.remove('out', 'shown');
   scene.classList.toggle('still', still());
+  scene.classList.toggle('duo', !!mate);
   scene.hidden = false;
-  await Promise.all([loaded(oldImg), loaded(newImg), sleep(still() ? 400 : 900)]);
-  const refit = () => fit(starter, [oldImg, from], [newImg, to]);
+  await Promise.all([...cast.flatMap(c => [loaded(c.oldImg), loaded(c.newImg)]), sleep(still() ? 400 : 900)]);
+  const refit = () => cast.forEach(c => fit(c.starter, mate ? 0.32 : 0.6, [c.oldImg, from], [c.newImg, to]));
   refit();
   addEventListener('resize', refit);
 
-  mon.classList.add('shown');
-  await sleep(600);
-  await Promise.race([playCry(starter.line[from].id), sleep(CRY_WAIT_MAX)]);
-  await say([`What? ${fromName} is evolving!`]);
+  const cut = await comicIntro(scene, cast.map(c => [c.starter, from]), { still: still(), flash: whiteFlash });
+  await say([`What? ${names(from)} ${mate ? 'are' : 'is'} evolving!`]);
+  await cut();
+  cast.forEach(c => { c.mon.style.transition = 'none'; c.mon.classList.add('shown'); });
+  await sleep(still() ? 300 : 700);
+  cast.forEach(c => { c.mon.style.transition = ''; });
 
   playMusic('evolution', { restart: true, cut: true });
   const skip = skipper(scene);
-  await Promise.race([still() ? sleep(STILL_SONG_MS) : morph(mon, oldImg, newImg, skip.gone), skip.tapped]);
+  await Promise.race([still() ? sleep(STILL_SONG_MS) : morph(cast, skip.gone), skip.tapped]);
   skip.done();
   if (skip.gone() && !still()) await whiteFlash();
 
   playMusic(null, { cut: true });
-  oldImg.style.visibility = 'hidden';
-  newImg.style.visibility = '';
-  mon.classList.remove('dark', 'white');
-  const cry = playCry(starter.line[to].id);
-  await Promise.race([cry, sleep(CRY_WAIT_MAX)]);
+  for (const { mon, oldImg, newImg } of cast) {
+    oldImg.style.visibility = 'hidden';
+    newImg.style.visibility = '';
+    mon.classList.remove('dark', 'white');
+  }
+  for (const c of cast) await Promise.race([playCry(c.starter.line[to].id), sleep(CRY_WAIT_MAX)]);
   playSound('evolved');
-  await say([`Congratulations! Your ${fromName} evolved into ${toName}!`, ...after]);
+  await say([`Congratulations! Your ${names(from)} evolved into ${names(to)}!`, ...after]);
 
   return async () => {
     scene.classList.add('out');
     await sleep(600);
     removeEventListener('resize', refit);
     scene.hidden = true;
-    scene.classList.remove('out');
-    mon.className = 'evo-mon';
+    scene.classList.remove('out', 'duo');
+    for (const c of cast) c.mon.className = 'evo-mon';
   };
+}
+
+/** The scene's Pokémon `i`: the first in the HTML; a duo's partner a copy of it made once, hidden when alone. */
+function monFor(scene, starter, i) {
+  let mon = $('evolve-mon');
+  let second = mon.nextElementSibling?.classList.contains('evo-mon') ? mon.nextElementSibling : null;
+  if (i === 0) {
+    if (second) second.hidden = true;
+  } else {
+    if (!second) {
+      second = mon.cloneNode(true);
+      second.removeAttribute('id');
+      second.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+      mon.after(second);
+    }
+    mon = second;
+  }
+  const [oldImg, newImg] = mon.querySelectorAll('img');
+  return { starter, mon, oldImg, newImg };
 }
 
 const say = (lines) => sceneSay('evolve-scene', 'evolve-log', lines);
@@ -140,8 +168,13 @@ function skipper(scene) {
 }
 
 /** It flashes white three times and goes dark, then the silhouette switches forms faster and faster, flashing at the end.
-    Stops where it is once `gone()` (skipped), leaving the scene to show the new form. */
-async function morph(mon, oldImg, newImg, gone) {
+    Stops where it is once `gone()` (skipped), leaving the scene to show the new form. A duo's pair switch together. */
+async function morph(cast, gone) {
+  const mon = { classList: {
+    add: (c) => cast.forEach(m => m.mon.classList.add(c)),
+    remove: (c) => cast.forEach(m => m.mon.classList.remove(c)),
+    toggle: (c, on) => cast.forEach(m => m.mon.classList.toggle(c, on)),
+  } };
   for (let i = 0; i < 3; i++) {
     mon.classList.add('white');
     await sleep(170);
@@ -156,8 +189,10 @@ async function morph(mon, oldImg, newImg, gone) {
   let showNew = false, flips = 0;
   const flip = () => {
     showNew = !showNew;
-    newImg.style.visibility = showNew ? '' : 'hidden';
-    oldImg.style.visibility = showNew ? 'hidden' : '';
+    for (const { oldImg, newImg } of cast) {
+      newImg.style.visibility = showNew ? '' : 'hidden';
+      oldImg.style.visibility = showNew ? 'hidden' : '';
+    }
   };
   for (let gap = 560; gap > 50; gap *= 0.85) {
     flip();
@@ -187,17 +222,17 @@ const loaded = (img) => img.complete && img.naturalWidth ? null
   : new Promise(resolve => { img.onload = img.onerror = resolve; });
 
 /**
- * Both forms share one scale, set so the bigger one's resting pose fills about 60% of the width or 40% of the height,
- * and stand centred on the same feet (SPRITE_FIT, like battle). Legendaries reuse one sprite, so they grow by stage.
+ * Both forms share one scale, set so the bigger one's resting pose fills about `room` (60%) of the width or 40% of the
+ * height, and stand centred on the same feet (SPRITE_FIT, like battle). Legendaries reuse one sprite, so they grow by stage.
  */
-function fit(starter, ...forms) {
+function fit(starter, room, ...forms) {
   const oneSprite = starter.line.every(form => form.id.replace(/-shiny$/, '') === starter.line[0].id);
   const grow = (stage) => oneSprite ? [0.78, 0.9, 1][stage] : 1;
   const pose = (img) => {
     const [top, bottom, left, right] = spriteFit(img.src);
     return Math.max(img.naturalWidth - left - right, img.naturalHeight - top - bottom) || 64;
   };
-  const scale = Math.min(4, Math.min(innerWidth * 0.6, innerHeight * 0.4) / Math.max(...forms.map(([img, s]) => pose(img) * grow(s))));
+  const scale = Math.min(4, Math.min(innerWidth * room, innerHeight * 0.4) / Math.max(...forms.map(([img, s]) => pose(img) * grow(s))));
   for (const [img, stage] of forms) {
     const s = scale * grow(stage);
     const [, bottom, left, right] = spriteFit(img.src);

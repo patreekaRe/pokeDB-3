@@ -233,6 +233,7 @@ const SOUNDS = {
   'heal-hp':    { url: 'assets/audio/sfx/potion.mp3' },       // a card or power heals you in battle: the potion's file (the user's call); never the Center's heal
   power:        { url: 'assets/audio/sfx/power.mp3' },        // a power card is played (the Power Lens pop-up)
   burn:         { url: 'assets/audio/sfx/burn.mp3' },         // burn damage ticks on the enemy
+  swoosh:       { synth: panelSwoosh, gain: 0.8 },            // a comic panel slams in over the evolution scene (evo-comic.js)
   sleeve:       { synth: sleeveFlip },                        // a record flipped past in a trader's crate (recordCrate() in js/jukebox.js)
   stick:        { synth: stickTick },                         // the Game Corner's joystick moves the cursor: made in code (the user's call)
   'dex-on':     { synth: ac => dexBlip(ac, true) },           // the Pokédex's lid swings open on a biome's page (pokedex.js)...
@@ -1149,6 +1150,23 @@ function sleeveFlip(ac) {
     out[i] = low * Math.exp(-t / 0.028) * Math.min(1, t / 0.005);
   }
   return normalize(buffer, 0.1);
+}
+
+/** A comic panel whipping in: a burst of air whose pitch rises then falls, ending on a soft thump as it lands. */
+function panelSwoosh(ac) {
+  const rate = ac.sampleRate, seconds = 0.32, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  let low = 0, phase = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, x = t / seconds;
+    low += (0.05 + 0.5 * Math.sin(Math.PI * Math.min(1, x * 1.3))) * ((Math.random() * 2 - 1) - low);
+    const air = low * Math.sin(Math.PI * Math.min(1, x * 1.25)) ** 2;
+    phase += 80 / rate;
+    const thump = x > 0.7 ? Math.sin(2 * Math.PI * phase) * Math.exp(-(t - 0.7 * seconds) / 0.03) : 0;
+    out[i] = (air + thump * 0.8) * Math.min(1, (length - i) / (rate * 0.01));
+  }
+  return normalize(buffer, 0.2);
 }
 
 /** A soft footfall on stone: a dull low thud under a short scuff of grit, a little different each time. */

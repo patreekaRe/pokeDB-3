@@ -1908,7 +1908,7 @@ function enterNode(node) {
 
 async function fight(node, { talked = false } = {}) {
   const last = !isTower() && run.biome === finalBiome(run.starter);   // a climb has no last boss
-  if (node.type === 'boss' && !last && canEvolve()) preloadEvolution(run.starter, run.stage);
+  if (node.type === 'boss' && !last && canEvolve()) for (const s of run.duo ? duoStarters(run.duo) : [run.starter]) preloadEvolution(s, run.stage);
   if (node.type === 'boss' && last) {
     preloadWinScene(run.starter, isMewtwoRun(run.starter) || isChampion(run.level));
   }
@@ -5427,7 +5427,7 @@ async function evolve(next) {
   if (run !== r) return;   // left for the menu meanwhile
   const mate = r.duo && STARTERS_BY_ID[r.duo.ids[1 - r.duo.out]];   // a duo evolves together: the one out on screen
   const fadeOut = await evolutionScene(outStarter(r), from,
-    [...(mate ? [`${stageName(mate, from)} evolved too, into ${stageName(mate, r.stage)}!`] : []), `Max HP +${HP_PER_STAGE} and ${healed}. All your moves are now ${STAGE_POWER * 100 * r.stage}% stronger.`]);
+    [`Max HP +${HP_PER_STAGE} and ${healed}. All your moves are now ${STAGE_POWER * 100 * r.stage}% stronger.`], mate);
   if (run !== r) return fadeOut();   // left for the menu meanwhile
   playMusic(bossWin());   // only a boss evolves you
   next();

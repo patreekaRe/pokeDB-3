@@ -462,6 +462,9 @@ function init() {
     if (params.has('crossroads')) return peekCrossroads(params);
     // ?climb (&starter=id) plays the Sky Pillar's opening film after PRESS START, then a throwaway climb from floor 1
     if (params.has('climb')) return peekClimb(params);
+    // ?evolve=charmander (&stage=1 from the middle form, &mate=pichu a Duo Run's pair) plays the evolution scene after
+    // PRESS START, again and again through the line; nothing is saved
+    if (params.get('evolve')) return peekEvolve(params);
   });
 }
 
@@ -522,6 +525,19 @@ function peekStrike(params) {
       }
       close?.(); playMusic('title');   // back to the title's song after the seal's
     });
+}
+
+/** The ?evolve= playtest: the evolution scene on its own, its comic intro included, each tap at the end the next form. */
+async function peekEvolve(params) {
+  const starter = STARTERS_BY_ID[params.get('evolve')] ?? STARTERS.find(s => s.free);
+  const mate = STARTERS_BY_ID[params.get('mate')] ?? null;
+  const last = Math.min(starter.line.length, mate?.line.length ?? 9) - 2;
+  if (last < 0) return;
+  const { evolutionScene } = await import('./evolution.js');
+  for (let from = Math.min(last, Number(params.get('stage')) || 0); ; from = from >= last ? 0 : from + 1) {
+    const fadeOut = await evolutionScene(starter, from, ['(Playtest: it plays again from the next form.)'], mate);
+    await fadeOut();
+  }
 }
 
 /** The ?travel= playtest: a journey film on its own, nothing saved. `?travel=ruins` comes from the Clearing; `&from=ruins`
