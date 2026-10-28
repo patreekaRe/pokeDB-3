@@ -1231,7 +1231,10 @@ Neo-Spriteman, Vanilla Sunshine, PurpleZaffre & Maicerochico, AtomicReactor", an
 commit only the sheets the game uses, never the whole folder). No limit on how many beyond what a place shows: today the
 towns' and Clearing's folk are all Pokémon, and no fight is against a trainer, so humans would be new. Where they could
 go, asked 2026-10-28: trainers standing on the run map / route rooms, humans among each town's folk, or the Gym Leaders
-and Kurt / Oak walking on sheets. Re-upload the zip when building.
+and Kurt / Oak walking on sheets. **The user's call (2026-10-28): people in the towns, for sure.** Claude's lean on the
+rest: Oak / Sonia and Kurt keep their portraits (they stand still and talk through `gymTalk()`, so a walking sheet adds
+nothing), and Team Rocket's ? room keeps its animated grunt GIFs; the pack's Rocket Grunt M/F (`trchar157` / `158`) only
+if grunts ever lurk in a town. Re-upload the zip when building.
 
 - **More "leave for a turn" moves** (2026-10-28, the user's Dig fix; done part in the archive): offered and **not picked**
   for now: your own Fly card (Flying) and Dive card (Water, in Squirtle's deck) flying / diving out of reach and ending the
