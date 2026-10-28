@@ -568,8 +568,9 @@ export async function monBoard(mate, back = true) {
 
 /* An overworld walking sheet (the towns' people, 2026-10-28): Pokémon Essentials' layout, one row per way it faces
    (down, left, right, up), four steps each, the first and third standing. Its pixels are drawn a quarter bigger than a
-   Pokémon GIF's, or a grown-up stood no taller than Eevee. */
-export const WALKER_PX = MON_PX * 1.25;
+   Pokémon GIF's, or a grown-up stood no taller than Eevee. `?walker=N` tries another size for a page load (2026-10-28:
+   the user found the trainer big indoors, and is trying 1.06, about 15% smaller, trainer and townspeople alike). */
+export const WALKER_PX = MON_PX * (Number(new URLSearchParams(location.search).get('walker')) || 1.25);
 const FACES = ['down', 'left', 'right', 'up'], STEP_MS = 150;
 const cut = new Map();
 async function walkFrames(src) {
