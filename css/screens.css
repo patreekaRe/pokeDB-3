@@ -2197,10 +2197,11 @@ body.battle-intro { pointer-events: none; }
 }
 #player-energy .pp-pill {
   display: grid; grid-template-columns: auto 1fr; grid-template-areas: "label count" "pips count";
-  align-items: center; align-content: center; column-gap: 12px; row-gap: 5px;
+  align-items: center; align-content: center; column-gap: 12px; row-gap: 5px; padding-block: 4px;
 }
 #player-energy .pp-label { grid-area: label; color: #ffe9a6; font-size: 1rem; }
-#player-energy .pp-pips { grid-area: pips; display: flex; gap: 3px; }
+/* a fixed 5 a row, so 6-10 PP wrap to a second row rather than widen the plate as PP is gained (2026-10-28, the user's question) */
+#player-energy .pp-pips { grid-area: pips; display: grid; grid-template-columns: repeat(5, 8px); gap: 3px; }
 #player-energy .pp-pips:empty { display: none; }
 #player-energy .pp-pips i {
   width: 8px; height: 7px; border-radius: 2px; transform: skewX(-14deg);
@@ -2211,7 +2212,7 @@ body.battle-intro { pointer-events: none; }
 #player-energy .pp-count b {
   font: italic 700 2.1rem/0.8 "Chakra Petch", var(--pixel-font); color: #ffd84a;
   text-shadow: 2px 2px 0 #0c0b12, -1px -1px 0 #0c0b12, 1px -1px 0 #0c0b12, -1px 1px 0 #0c0b12, 0 0 10px rgba(255, 196, 60, 0.6);
-  padding-right: 2px;
+  padding-right: 2px; font-variant-numeric: tabular-nums;
 }
 #player-energy .pp-count small { font-size: 0.85rem; color: #a8a4c4; }
 #player-energy.empty .pp-count b { color: #ff6a5a; text-shadow: 2px 2px 0 #0c0b12, -1px -1px 0 #0c0b12, 1px -1px 0 #0c0b12, -1px 1px 0 #0c0b12, 0 0 10px rgba(255, 80, 60, 0.6); }
@@ -2243,6 +2244,7 @@ body.battle-intro { pointer-events: none; }
   .battle-controls .pp-pill { min-width: 6.4rem; height: 2.6rem; padding: 4px 12px; }
   #player-energy .pp-pill { column-gap: 8px; row-gap: 4px; }
   #player-energy .pp-label { font-size: 0.75rem; }
+  #player-energy .pp-pips { grid-template-columns: repeat(5, 6px); gap: 3px 3px; }
   #player-energy .pp-pips i { width: 6px; height: 5px; }
   #player-energy .pp-count b { font-size: 1.6rem; }
   #player-energy .pp-count small { font-size: 0.75rem; }
