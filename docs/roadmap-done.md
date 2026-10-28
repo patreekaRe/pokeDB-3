@@ -3815,4 +3815,4 @@ so a save that tapped Later before is asked again. Checked headless: asked, Late
 The user found the trainer big indoors (the Secret Base, the Clearing, Kurt's Workshop). Their call: shrink trainer and
 townspeople alike, Pokémon untouched. They tried `?walker=` sizes on the live site (the first deploy of the flag failed on
 a GitHub network error and was re-run) and picked 1.0: `WALKER_PX` is now a GIF's pixels, down from 1.25. `?gap=N` was
-added to try the buddy further back; they kept 0.85. The old branch `trainer-shrink` (a plain 1.06) is no longer needed.
+added to try the buddy further back; they asked for a tiny bit more, so `GAP` went 0.85 to 0.95. The old branch `trainer-shrink` (a plain 1.06) is no longer needed.
