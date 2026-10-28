@@ -3840,3 +3840,9 @@ cute emoji. Built as `pal` in `js/base-3d.js` (a guest-shaped roamer, `lead.solo
 HeartGold-style bubble: heart, smile, note or twinkle). A friend's base keeps the follow. Detail in
 `docs/reference/trainer-follow.md`. Not yet elsewhere: the Clearing, towns and rooms still have the buddy at your heels
 and a plain hop on a tap (an idea for later, on the roadmap).
+
+### Houses framed as the Base, Kurt kept his size (2026-10-28, cloud; on `main`)
+The user still looked big in Kurt's Workshop after the shrink: plain houses framed 6.2 tiles across, the Base 8, so
+`HOME_ACROSS` (`js/event-3d.js`) is 8 now (`?across=N` to try others). Kurt and the people in rooms keep their size
+(`NPC_PX`, 1/34; `?npc=N` to try others): about a head and a half over the trainer read right, and the user didn't pick
+another.
