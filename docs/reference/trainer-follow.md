@@ -34,3 +34,7 @@ look off). `lookArt()` in `js/ui.js` draws a look's front frame from its sheet, 
 
 **Checked** headless in every place with a look worn (`?look=dawn`): within the phone budget (2-3 more draws and under
 1 MB a place), and the Clearing -> Secret Base trips keep nothing.
+
+**A save from before trainers** (the user's pick, 2026-10-28): once, as the device powers on, the setup's trainer step on
+its own, Later in place of Back (`askTrainer()` in `js/title.js`); `save.lookAsked` keeps it to once (the setup sets it
+too), and a lent `?look=` skips it.
