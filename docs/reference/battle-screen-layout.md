@@ -171,7 +171,7 @@ Static and Frostbite show on it all fight (`ambience()`, from `renderStatus()`; 
 that is left, and stops off screen). The flying card leaves a tapering ribbon (`ribbon()`), and a risen card glows its
 type's colour (`.lift-glow`, opacity only). Settings' **Effects look** (`cardFx`: Smooth / Pixel / Off) picks the canvas:
 Pixel draws everything, the new effects too, in pixels; Off skips them (Battle animations Off skips them too).
-`tests/move-fx.test.mjs` checks every `MOVE_FX` line names a card and an effect that exists. **Kept cheap** (2026-10-28, the
+**PP and End Turn** (2026-10-28, the user's ask, to match): a turn's refill swirls gold motes into the PP pill, then a ring, a flash and stars as they land (`ppFx()` in js/movefx.js, from `ppChanged()` in js/battle.js, flagged by `b.refilled` in `beginPlayerTurn()` so it plays even when PP comes back to the same number), while the capsule charges gold (`.energy-orb.refill`), a shine sweeps it (`::after`, a background-position sweep) and the number pops gold (`b.fill`); a card's +PP gathers a few motes and the shine (`.gain`); spending PP puffs gold sparks off the number. Pressing End Turn (`askEndTurn()`, not a switch or throw that ends the turn) flashes it, throws a ring, speed lines and sparks up toward the arena (`endTurnFx()`) and sweeps the shine (`.pressed`); the shine also runs with End Turn's hop when nothing is left to play (`.nudge`). Changes within one fight only (`ppShownFor`), so a new fight doesn't puff. `tests/move-fx.test.mjs` checks every `MOVE_FX` line names a card and an effect that exists. **Kept cheap** (2026-10-28, the
 user's ask before main): the canvas draws at 1.5x CSS pixels at most (2x dropped frames headless in a busy fight and
 held 5.6 MB; 1.5x holds 3.2 and dropped none), is cleared when quiet and freed after 5 s of it (freeing it at once made
 the next card's first frame cost ~4 ms), particles are capped at `MAX_PARTS` (450), drawn in two passes by blend (the
@@ -342,7 +342,6 @@ starts calm.
 Before adding a
 generic class name, grep `css/` and `js/` for it.
 
-<<<<<<< HEAD
 **Turn banner** (2026-10-25, the user's ask, from Slay the Spire's): `turnBanner()` in `js/battle.js` lays a dark stripe
 across the middle of `.arena` (`#turn-banner`, `.turn-banner` in `css/screens.css`) at the start of each of your turns,
 "Battle Start!" (gold, with its own synth sting, `battleSting()` in `js/audio.js`) first on turn 1 with turn 1's own banner queued behind it (`turnNext`, dropped if End Turn comes first),
@@ -350,7 +349,6 @@ across the middle of `.arena` (`#turn-banner`, `.turn-banner` in `css/screens.cs
 enemy. Your Turn and Enemy Turn each get Game Boy menu blips (`turnBlips()` in `js/audio.js`: three up, or two low ones down over a swish; 2026-10-25, the user's pick over soft bell chimes; a stat sound at turn start can cover them, which the user is fine with). It never blocks a tap; off with Settings' battle effects (`battleFx()`), a fade only under `calmFx()`, half as
 long at 2x. Turn 1's Ability banner (Torrent, Pressure, Snow Warning) waits for both to go (`afterTurnBanner()`). The
 Enemy Turn wait after End Turn went from 500 to 750 ms to let it read.
-=======
 
 **A duo's switch** (2026-10-20, the user's calls from their phone): hold your Pokémon (`#player-zone`, `holdStart()` /
 `holdEnd()` in `js/battle.js`, 450 ms; a conic ring fills round it, `.player-zone.duo.holding::after`) and the Go pill
@@ -360,7 +358,6 @@ full sentence is its title. A tap gives "Hold your Pokémon to switch partners."
 hint's look; gone after the first hold), centred on its pose's middle (`centreSwapHint()`, by `SPRITE_FIT`). A tap anywhere else puts the pill away. The bench portrait
 on the plate's corner (and `HEAD_FIT`) came and went the same day: the Pokémon moved too much to read at that size. The
 plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.
->>>>>>> origin/main
 **Lethal warning, relic flash, Victory / Defeat** (2026-10-25, the user's picks from the battle-juice list): when the
 enemy's next attack would get through your block (`incoming()`: Evasion, Protective Pads, Assault Vest) for your HP or
 more, the intent gets `.lethal` (a red throb and a 💀) and `#player-plate.danger` blinks your HP bar red (`battleFx()`

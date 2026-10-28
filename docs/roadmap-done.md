@@ -3713,3 +3713,6 @@ every `ball3d()` was blank, the battle send-out included; it now sets an absolut
   the foe and the 3D arena with a jolt, 3-PP and rare cards get a cut-in, blocks a shield bubble, heals motes, the foe's
   statuses their ambience, the flying card a ribbon and a risen card its type's glow; Settings' Effects look (Smooth /
   Pixel / Off). Optimized before the merge (1.1 ms a frame, the canvas at 1.5x and freed when quiet; `tools/fx-probe.mjs`).
+- **PP and End Turn effects** (2026-10-28, the user's ask, to match the move effects; straight to `main`): PP's refill
+  swirls gold motes into the pill with a gold charge and shine, spending puffs sparks, End Turn bursts and shines when
+  pressed and as it hops (`ppFx()` / `endTurnFx()` in `js/movefx.js`). Budget check (gym, tower) within budget.

@@ -512,6 +512,62 @@ export function healFx(node) {
   }
 }
 
+/* ---------- PP and End Turn ---------- */
+
+const GOLD = PALETTES.electric;
+function drawGather(p, f) {   // a mote drawn in to (tx, ty), swirling, with a short tail behind it
+  const at = (g) => { const k = g * g, a = p.a + (1 - g) * p.swirl, d = p.d * (1 - k); return [p.tx + Math.cos(a) * d, p.ty + Math.sin(a) * d * 0.6]; };
+  const [x, y] = at(f), [bx, by] = at(Math.max(0, f - 0.12)), ctx = kit.ctx;
+  ctx.globalAlpha = Math.min(1, f * 5) * 0.8;
+  ctx.strokeStyle = p.col; ctx.lineWidth = p.r * 0.7; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(x, y); ctx.stroke();
+  ctx.globalAlpha = Math.min(1, f * 5);
+  put(glow(p.col), x, y, p.r * 2.6, p.r * 2.6);
+}
+
+/**
+ * PP coming back: gold motes swirl in to the PP pill from round it, then a ring, a flash and a twinkle of stars as they
+ * land. A turn's refill (`refill`) gathers more from further out; a card's +PP a few. Spending PP (`spent`) puffs sparks
+ * up off its number.
+ */
+export function ppFx(node, { gain = 0, spent = 0, refill = false, fast = false } = {}) {
+  if (!node || !kit.open()) return;
+  const A = kit.box(node), C = kit.box(node.querySelector('.pp-count b') || node), ts = fast ? 0.5 : 1;
+  if (spent) {
+    for (let i = 0; i < Math.min(spent, 4) * 5; i++) {
+      const a = rand(-2.8, -0.35), s = rand(0.9, 2.2);
+      part({ x: C.x, y: C.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, g: 0.05, drag: 0.92, r: U(rand(3, 6)), col: GOLD[i % 3 ? 1 : 2], life: rand(16, 26) * ts, add: true, draw: drawMote });
+    }
+    ringPart(C.x, C.y, GOLD[1], A.h * 0.8, 12 * ts, 1);
+    return;
+  }
+  if (!refill && !gain) return;
+  const n = refill ? 22 : 6 + Math.min(gain, 3) * 3, R = Math.max(A.w, A.h * 2) * (refill ? 0.95 : 0.65), ms = (refill ? 420 : 300) * ts;
+  for (let i = 0; i < n; i++) {
+    part({ x: A.x, y: A.y, tx: A.x, ty: A.y, a: (i / n) * Math.PI * 2 + rand(-0.2, 0.2), d: R * rand(0.75, 1.2), swirl: rand(0.8, 1.4),
+      r: U(rand(3, 5.5)), col: GOLD[i % 4 ? 1 : 0], life: (ms / 16.67) * rand(0.8, 1), add: true, draw: drawGather });
+  }
+  later(ms * 0.9, () => {
+    if (!node.isConnected) return;
+    ringPart(A.x, A.y, GOLD[1], A.w * (refill ? 0.85 : 0.6), 18 * ts, 1.6);
+    part({ x: A.x, y: A.y, r: A.w * 0.6, sy: 0.6, col: GOLD[1], alpha: 0.7, life: 14 * ts, add: true, draw: drawGlow, shrink: -0.3 });
+    burst('electric', C.x, C.y, refill ? 10 : 5, 2);
+  });
+}
+
+/** End Turn pressed: a flash on the button, a ring off it, and speed lines and sparks thrown up toward the arena. */
+export function endTurnFx(node, { fast = false } = {}) {
+  if (!node || !kit.open()) return;
+  const A = kit.box(node), ts = fast ? 0.5 : 1;
+  part({ x: A.x, y: A.y, r: A.w * 0.7, sy: 0.55, col: '#fff0e0', alpha: 0.9, life: 12 * ts, add: true, draw: drawGlow, shrink: -0.4 });
+  ringPart(A.x, A.y, '#ffffff', A.w * 0.85, 16 * ts, 1.6);
+  for (let i = 0; i < 12; i++) {
+    const a = rand(-2.7, -1.0), s = rand(3, 6), x = A.x + rand(-0.35, 0.35) * A.w, y = A.y + rand(-0.3, 0.3) * A.h;
+    part({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, drag: 0.88, len: U(rand(16, 32)), w: U(rand(2, 3.5)), col: i % 3 ? '#ffffff' : '#ffc8b8', life: rand(12, 18) * ts, add: true, draw: drawStreak });
+  }
+  burst('fighting', A.x, A.y, 8, 2.4);
+}
+
 /* ---------- a status's ambience on the foe ---------- */
 
 let amb = null;

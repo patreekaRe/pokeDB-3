@@ -1120,6 +1120,33 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .energy-orb b.bump { animation: ppBump 0.35s ease-out; }
 .energy-orb.empty .pp-count { color: #e03828; text-shadow: 2px 2px 0 #f8b8a8; }
 @keyframes ppBump { 50% { transform: translateY(-4px) scale(1.15); } }
+/* PP's refill (ppChanged() in js/battle.js, with js/movefx.js's gold motes): the capsule charges gold, a shine sweeps it
+   and the number pops gold; a card's +PP gets the shine alone. End Turn wears the same shine as it hops and when pressed. */
+:is(.energy-orb, #end-turn-btn)::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 232, 128, 0.75) 47%, rgba(255, 255, 255, 0.95) 50%, rgba(255, 232, 128, 0.75) 53%, transparent 62%) no-repeat;
+  background-size: 300% 100%; background-position: 100% 0; opacity: 0;
+}
+@keyframes pillShine { from { background-position: 100% 0; opacity: 1; } 90% { opacity: 1; } to { background-position: 0 0; opacity: 0; } }
+.energy-orb.refill { animation: ppCharge 0.9s ease-out 0.3s; }
+.energy-orb.refill::after { animation: pillShine 0.55s ease-out 0.4s both; }
+.energy-orb.gain::after { animation: pillShine 0.45s ease-out 0.25s both; }
+@keyframes ppCharge {
+  30% { box-shadow: 0 0 0 2px #303038, inset 0 0 0 2px #c84840, 0 0 0 5px #f8d030, 0 0 22px 8px rgba(248, 208, 48, 0.7), 4px 4px 0 2px rgba(0, 0, 0, 0.45); }
+}
+.energy-orb b.fill { animation: ppFill 0.7s ease-out 0.35s both; }
+@keyframes ppFill {
+  0% { transform: none; }
+  35% { transform: translateY(-5px) scale(1.3); color: #e8a800; text-shadow: 2px 2px 0 #fff0a0, 0 0 10px #ffe060; }
+  100% { transform: none; }
+}
+#end-turn-btn.nudge::after { animation: pillShine 1.4s ease-out infinite; }
+#end-turn-btn.pressed { animation: turnPress 0.35s ease-out; }
+#end-turn-btn.pressed::after { animation: pillShine 0.4s ease-out both; }
+@keyframes turnPress { 30% { filter: brightness(1.5); scale: 0.94; } }
+@media (prefers-reduced-motion: reduce) {
+  :is(.energy-orb, #end-turn-btn)::after, .energy-orb.refill, .energy-orb b.fill, #end-turn-btn.pressed { animation: none; }
+}
 .energy-orb.shake { animation: ppShake 0.36s linear; }   /* tried to play a card without enough PP */
 @keyframes ppShake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
 .turn-side { grid-area: side; display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -5192,7 +5219,7 @@ body.scene-peek #backdrop { display: none; }
 
 /* ---------- Settings' Flashing & shake: Reduced (calmFx() in js/prefs.js, html.calm-fx) ----------
    nothing shakes or strobes, and every white-out is one soft fade; the painted scenes do the same in js/scene.js */
-.calm-fx :is(.energy-orb.shake, #battle-screen.big-hit .arena, #battle-screen.ko-shake .arena, .hof-scene.boom .hof-layout,
+.calm-fx :is(.energy-orb.shake, #end-turn-btn.pressed, .energy-orb.refill, #battle-screen.big-hit .arena, #battle-screen.ko-shake .arena, .hof-scene.boom .hof-layout,
   .hof-scene.boom .hof-fx, .hof-scene.party .hof-title, .gate-plate.jolt, .gate-strike.held .card, .gate-strike.full .card,
   .gate-scene.charging .gate-mon, .gate-free.flash img, .descent-scene.shaking .descent-world, .tower-fx.shake .tw-canvas,
   .tower-fx.shake .tw-fx-mon, .gc-pick.won, .gc-pick.flash) { animation: none !important; }

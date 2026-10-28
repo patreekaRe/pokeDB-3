@@ -47,7 +47,7 @@ import { ball3d, setBall3d } from './ball-looks.js';
 import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows, safariBallsLeft } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 import { flyTrail, burnAway } from './cardfx.js';
-import { attackFx, shieldFx, healFx, ambience, cutIn, lightOf } from './movefx.js';
+import { attackFx, shieldFx, healFx, ambience, cutIn, lightOf, ppFx, endTurnFx } from './movefx.js';
 import { typeText } from './type-badge.js';
 
 const ENERGY_PER_TURN = 3;
@@ -614,6 +614,7 @@ function beginPlayerTurn() {
     + (b.turn === 1 && fired('lemonade') ? 1 : 0) + (b.turn === 1 ? a.turn1Energy || 0 : 0) + (a.energyEachTurn || 0) + b.abyss
     + (a.lowEnergy && b.hp < b.maxHp / 4 ? a.lowEnergy : 0);
   b.turnEnergy = b.energy;
+  b.refilled = true;
   b.nextEnergy = 0;
   b.played = b.attacks = b.discarded = b.switchesTurn = 0;
   b.lastKind = null;
@@ -2410,6 +2411,13 @@ async function askEndTurn() {
     const ok = await confirmDialog(`You still have ${b.energy} PP and ${cards} you can play. End your turn anyway? (The Pokédex's Settings can turn this off.)`, 'End turn');
     if (!ok || battle !== b) return;
   }
+  if (battleFx()) {
+    const btn = $('end-turn-btn');
+    btn.classList.remove('pressed');
+    void btn.offsetWidth;
+    btn.classList.add('pressed');
+    endTurnFx(btn, { fast: speed() > 1 });
+  }
   endTurn();
 }
 
@@ -3452,8 +3460,11 @@ function renderBars() {
   // Energy is shown as the games' PP: "PP 2/3", out of what this turn started with. The number bumps when it changes.
   const orb = $('player-energy');
   const max = Math.max(b.turnEnergy ?? ENERGY_PER_TURN, b.energy);
-  const shown = orb.dataset.shown === undefined ? b.energy : Number(orb.dataset.shown);
-  const count = el('b', b.energy !== shown ? 'bump' : '', String(b.energy));
+  const shown = ppShownFor !== b || orb.dataset.shown === undefined ? b.energy : Number(orb.dataset.shown);
+  ppShownFor = b;
+  const refill = b.refilled;
+  b.refilled = false;
+  const count = el('b', refill ? 'bump fill' : b.energy !== shown ? 'bump' : '', String(b.energy));
   const numbers = el('span', 'pp-count');
   numbers.append(count, `/${max}`);
   const pill = el('span', 'pp-pill');
@@ -3461,6 +3472,7 @@ function renderBars() {
   orb.replaceChildren(pill);
   orb.dataset.shown = String(b.energy);
   orb.classList.toggle('empty', b.energy === 0);
+  if ((refill || b.energy !== shown) && battleFx() && orb.getClientRects().length) ppChanged(orb, b.energy - shown, refill);
   $('draw-count').replaceChildren(el('span', 'pile-icon', '📚'), el('b', '', String(b.drawPile.length)));
   $('discard-count').replaceChildren(el('span', 'pile-icon', '🗂️'), el('b', '', String(b.discard.length)));
   // like StS, the exhaust pile only shows once a card has been exhausted (played powers aren't; they just leave)
@@ -3483,6 +3495,18 @@ function renderBars() {
   }
   // nothing left to play: End Turn hops and blinks so it's clear that's the move (items don't count, they're optional)
   $('end-turn-btn').classList.toggle('nudge', !b.busy && !b.over && b.hand.every(h => whyNotPlayable(h.card)));
+}
+
+/** PP's effects (js/movefx.js): a turn's refill charges the pill gold and sweeps a shine over it, +PP gathers a little, and spending puffs sparks. */
+let ppShownFor = null;
+function ppChanged(orb, delta, refill) {
+  const fast = speed() > 1;
+  if (refill || delta > 0) {
+    orb.classList.remove('refill', 'gain');
+    void orb.offsetWidth;
+    orb.classList.add(refill ? 'refill' : 'gain');
+    ppFx(orb, { refill, gain: delta, fast });
+  } else ppFx(orb, { spent: -delta, fast });
 }
 
 /** The little bubble that says what the enemy will do next. */
