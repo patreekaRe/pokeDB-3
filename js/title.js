@@ -272,7 +272,7 @@ async function start(e) {
   const dex = $('title-dex');
   if (setup) await onboard(dex);
   else if (!still()) await powerOn(dex);
-  if (!setup && !peek && !wornLook(getSave()) && !getSave().lookAsked) await askTrainer(dex);
+  if (!setup && !peek && !wornLook(getSave()) && !getSave().lookChosen) await askTrainer(dex);
   const hub = await hubReady;   // as a rule long since there; till then the device stays on
   if (setup && hub) await refreshBuddy();
   if (first) {
@@ -353,7 +353,7 @@ async function onboard(dex) {
     if (step < 0) step = 0;
   }
   setTrainerName(name);
-  updateSave(d => { d.buddy = `starter:${mate}`; d.look = look; d.lookAsked = true; d.setupDone = true; });
+  updateSave(d => { d.buddy = `starter:${mate}`; d.look = look; d.lookChosen = true; d.setupDone = true; });
   showBuddy();
   box.remove();
   dex.classList.remove('setup', 'instant');
@@ -365,7 +365,8 @@ async function onboard(dex) {
 }
 
 /* A save from before trainers (2026-10-28, the user's pick): once, as the device powers on, the setup's trainer step on
-   its own, Later in place of Back. Either way it's asked only the once; the Trainer Card's Trainer key picks any time. */
+   its own, Later in place of Back. Later asks again on the next launch, till one is picked (the user's call, 2026-10-28);
+   the Trainer Card's Trainer key picks any time, and its Walk alone counts as a pick. */
 async function askTrainer(dex) {
   const screen = dex.querySelector('.tdx-screen');
   const box = el('div', 'tdx-setup');
@@ -373,7 +374,7 @@ async function askTrainer(dex) {
   dex.classList.add('setup');
   let look = null;
   const took = await askLook(box, null, (l) => { look = l; }, { later: true });
-  updateSave(d => { d.lookAsked = true; if (took > 0) d.look = look; });
+  if (took > 0) updateSave(d => { d.look = look; d.lookChosen = true; });
   box.remove();
   dex.classList.remove('setup');
   screen.querySelectorAll(':scope > *').forEach(n => { n.style.animation = 'none'; void n.offsetWidth; n.style.animation = ''; });

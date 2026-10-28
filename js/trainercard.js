@@ -653,7 +653,7 @@ function lookPicker(body, done) {
   const grid = el('div', 'tc-pick-grid tc-ball-grid tc-look-grid');
   let asked = null;
   const wear = (id) => {
-    updateSave(d => { d.look = id; });
+    updateSave(d => { d.look = id; d.lookChosen = true; });
     grid.querySelectorAll('.tc-pick').forEach(b => b.classList.toggle('on', b.dataset.look === id));
     say();
   };

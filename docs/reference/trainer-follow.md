@@ -37,5 +37,6 @@ look off). `lookArt()` in `js/ui.js` draws a look's front frame from its sheet, 
 1 MB a place), and the Clearing -> Secret Base trips keep nothing.
 
 **A save from before trainers** (the user's pick, 2026-10-28): once, as the device powers on, the setup's trainer step on
-its own, Later in place of Back (`askTrainer()` in `js/title.js`); `save.lookAsked` keeps it to once (the setup sets it
-too), and a lent `?look=` skips it.
+its own, Later in place of Back (`askTrainer()` in `js/title.js`). Later asks again at every launch till a trainer is
+picked (the user's call, 2026-10-28, replacing once only): `save.lookChosen` stops it, set by the setup, an OK here, or
+wearing a look or Walk alone on the Trainer Card. A lent `?look=` skips it.
