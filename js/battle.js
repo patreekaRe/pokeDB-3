@@ -3212,6 +3212,7 @@ function setupEnemy() {
   $('enemy-zone').dataset.type = type;
   $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.shiny ? '✨ ' : '') + b.def.name;
   $('enemy-plate').classList.toggle('rare', b.rare);
+  $('enemy-rare').hidden = !b.rare;
   $('enemy-plate').classList.toggle('shiny', b.shiny);
   $('enemy-shiny').hidden = !b.shiny;
   box.querySelector('.shiny-aura')?.remove();
@@ -3669,8 +3670,7 @@ function renderStatus() {
   if (en.bait)     enemyBadges.push(['🍓', en.bait, `Bait ${en.bait}: easier to catch, but its attacks deal ${en.bait * BAIT.damage} more`, 'bad']);
   if (en.rock)     enemyBadges.push(['🪨', en.rock, b.rare ? `Rock ${en.rock}: it runs off ${en.rock} turn${en.rock > 1 ? 's' : ''} sooner` : `Rock ${en.rock}: ${Math.round(ROCK_FLEE * en.rock * 100)}% chance it runs off on its turn`]);
   if (b.def.trait) enemyBadges.push([TRAITS[b.def.trait.id].icon, '', TRAITS[b.def.trait.id].text(b.def.trait), 'bad']);
-  $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
-  fleePill(b);
+  $('enemy-status').replaceChildren(...[fleeBadge(b), ...enemyBadges.map(badgeFor)].filter(Boolean));
   const alive = en.hp > 0 && !b.over && battleFx();
   ambience($('enemy-img'), alive ? { burn: en.burn, seed: en.seed, stat: en.static, frost: en.frostbite } : {});
 
@@ -3702,19 +3702,15 @@ function renderStatus() {
   $('player-status').replaceChildren(...playerBadges.map(badgeFor));
 }
 
-/** A rare spawn's RARE pill under its HP bar: a figure running and the turns of yours before it runs off. It replaced
-    a grass tuft by its name, read as a Grass type on an Electric Pokémon, and a 💨 badge that didn't say what it counted
-    (the user's ask, 2026-10-28). The figure is built once, so a re-render doesn't restart its run. */
-function fleePill(b) {
-  const pill = $('enemy-flee');
-  pill.hidden = !b.rare || b.over;
-  if (pill.hidden) return;
+/** A rare spawn's run-off count, first in its status row: a figure running and the turns of yours before it runs off.
+    It sat in the nameplate's RARE pill until the user moved it out to leave room for a caught mark (2026-10-28); the
+    plate keeps the word. */
+function fleeBadge(b) {
+  if (!b.rare || b.over) return null;
   const left = Math.max(0, RARE.turns - b.enemy.rock - b.turn + 1);
-  if (!pill.firstChild) pill.append(el('span', 'rare-flee-tag', 'RARE'), smoothIcon('run', 'rare-flee-run'), el('span', 'rare-flee-n'));
-  pill.querySelector('.rare-flee-n').textContent = left;
-  pill.classList.toggle('last', left <= 1);
-  pill.title = `A rare Pokémon: it runs off after ${left} more turn${left === 1 ? '' : 's'} of yours. Catch it or knock it out first!`;
-  pill.setAttribute('aria-label', pill.title);
+  const node = badgeFor(['', left, `A rare Pokémon: it runs off after ${left} more turn${left === 1 ? '' : 's'} of yours. Catch it or knock it out first!`, left <= 1 ? 'bad flee' : 'flee']);
+  node.prepend(smoothIcon('run', 'flee-run'));
+  return node;
 }
 
 /** A floating status icon above a sprite, with its number in a corner bubble. */
