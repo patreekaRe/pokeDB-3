@@ -2188,8 +2188,8 @@ body.battle-intro { pointer-events: none; }
   box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px var(--rim), inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 4px 0 2px rgba(0, 0, 0, 0.45), 0 0 14px var(--glow);
   transform: skewX(-8deg);
 }
-.battle-controls .throw-btn { --rim: #6cd048; --glow: rgba(108, 208, 72, 0.3); }
-.battle-controls .mulligan-btn { --rim: #a880f0; --glow: rgba(168, 128, 240, 0.3); }
+.battle-controls #throw-btn { --rim: #6cd048; --glow: rgba(108, 208, 72, 0.3); }
+.battle-controls #mulligan-btn { --rim: #a880f0; --glow: rgba(168, 128, 240, 0.3); }
 #player-energy.empty { --rim: #e85040; --glow: rgba(232, 80, 64, 0.3); }
 .battle-controls :is(#player-energy, #end-turn-btn, .throw-btn) .pp-pill {
   background: none; box-shadow: none; transform: skewX(8deg);
@@ -2237,7 +2237,7 @@ body.battle-intro { pointer-events: none; }
   .battle-controls :is(#player-energy:not(.shake), #end-turn-btn:not(:disabled):not(.nudge)):hover { animation: none; filter: brightness(1.12); }
   .battle-controls :is(#player-energy, #end-turn-btn:not(:disabled)):hover:not(:active) {
     box-shadow: 0 0 0 2px #0c0b12, inset 0 0 0 2px #fff0a0, inset 0 4px 0 2px rgba(255, 255, 255, 0.1), 0 7px 0 2px rgba(0, 0, 0, 0.4), 0 0 20px var(--glow);
-  }
+  }  .battle-controls :is(#throw-btn, #mulligan-btn):not(.spent):not(:disabled):hover { filter: brightness(1.12); }
 }
 @media (max-width: 720px) {
   .battle-controls :is(#player-energy, #end-turn-btn, .throw-btn) { padding: 0; border-radius: 10px; }
@@ -2248,6 +2248,9 @@ body.battle-intro { pointer-events: none; }
   #player-energy .pp-count small { font-size: 0.75rem; }
   .battle-controls :is(#end-turn-btn, .throw-btn) .pp-pill { font-size: 0.95rem; }
   .et-arrow { margin-left: 5px; }
+  /* the Safari's row of three: the capsules' rules for it (above) outrank the plates', :has counting its argument */
+  .battle-controls:has(.throw-btn:not([hidden])) :is(#player-energy, #throw-btn, #mulligan-btn, #end-turn-btn) { padding: 0; }
+  .battle-controls:has(.throw-btn:not([hidden])) .pp-pill { height: 2.6rem; padding: 4px 8px; }
 }
 @media (prefers-reduced-motion: reduce) { #end-turn-btn.nudge .et-arrow { animation: none; } }
 .reward-option.picked { transform: translateY(-10px) scale(1.04); }
