@@ -3786,3 +3786,12 @@ Hiker in Cinder Springs, Tubers and a Captain at Driftwood Landing, Rangers in H
 Sunwell Bazaar...), each with lines of its own. They walk on four-way sheets from Vanilla Sunshine's Gen 4 OW pack
 (`walkFrames()` / `drawStep()` in `js/hd2d.js`), turn to talk, credited in About and the roll. Walked headless in all
 five towns (`&people`), within the phone budget. Details in `towns.md`.
+
+**Overworld walking sprites, Gen 1-7** (2026-10-28, merged to `main` from `overworld-sprites`). The user's pack (Pokémon
+Essentials follower sheets, 4 rows down / left / right / up x 4 steps) imported by `tools/overworld-import.py` into
+`assets/overworld/` (601 Pokémon, normal + shiny, halved to 1x) and `js/data/overworld.js`; `overworldSrc()` in
+`js/overworld.js`. Every 3D walker draws its Pokémon from it (`overworldSheet()` / `drawOverworld()` in `js/hd2d.js`, as
+tall as the battle GIF, facing the way it moves, un-mirroring the board), and the run map's token too (`.map-trainer.ow`,
+9 tiles: "WAY too small" at 4). The Pokédex cover tried it and went back to the GIF (the user's call). Battles, portraits
+and powered-up legendaries keep GIFs; `?ow=0` turns it off. Offered, not picked: the place intros' walk up the path, the
+journey films, the Safari intro.
