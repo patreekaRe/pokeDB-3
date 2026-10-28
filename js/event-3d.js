@@ -11408,7 +11408,8 @@ function townCrowd(town, chats) {
     THREE, group: R.group, monBoard: async (...a) => { const m = await monBoard(...a); bendAll(m.group); return m; }, drawMon, dispose, PITCH, spots: [], door: DOOR, cols: COLS, rows: ROWS,
     route, free, tileX, tileZ, camera, view, stage: folkLayer, drawn,
     say: ({ line, who }) => opts?.onSay?.(who, line), partner: () => walker, keeper: () => null, calm: () => calm,
-    cast: town.folk, shared: town.shared, chats, seed: `town-${town.id}`, size: 7, castSize: 10, castHours: 6,
+    cast: new URLSearchParams(location.search).has('people') ? town.folk.filter(f => f.person) : town.folk,   // ?people: only its people, to playtest them
+    shared: town.shared, chats, seed: `town-${town.id}`, size: 7, castSize: 10, castHours: 6,
     stations: town.stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
     wants: ['stand', 'stand', 'stand', 'stand', null, null, null], swap: [30000, 60000],
     walkers: 2,   // most stand at their spots, one or two about at a time (the user's ask, 2026-10-14)

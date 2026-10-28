@@ -14,7 +14,10 @@ test('every town stands at a real biome, with its own Gym Leaders and folk who c
     assert.ok(BIOMES_BY_ID[town.biome], `${id}: no biome ${town.biome}`);
     assert.deepEqual(Object.keys(town.leaders).sort(), leadersOf(town.biome).map(l => l.id).sort(), `${id}: its leaders are the biome's`);
     for (const lid of Object.keys(town.leaders)) assert.ok(GYM_BY_ID[lid] && town.leaders[lid].length >= 3);
-    for (const f of [...town.folk, { id: town.trader.id }]) assert.ok(existsSync(new URL(`../assets/pokemon/${f.id}-front.gif`, import.meta.url)), `${id}: ${f.id} has no front GIF`);
+    for (const f of [...town.folk, { id: town.trader.id }]) {
+      const art = f.person ? `../assets/overworld/${f.id}.png` : `../assets/pokemon/${f.id}-front.gif`;
+      assert.ok(existsSync(new URL(art, import.meta.url)), `${id}: ${f.id} has no ${f.person ? 'walking sheet' : 'front GIF'}`);
+    }
     for (const home of Object.values(town.homes)) for (const id of Object.keys(home.cast || {})) assert.ok(existsSync(new URL(`../assets/pokemon/${id}-front.gif`, import.meta.url)), `${id}: no front GIF`);
     for (const f of town.folk) for (const k of ['quips', 'play', 'you']) assert.ok(f[k]?.length, `${f.id}.${k}`);
     for (const k of ['deciding', 'stand', 'arriving', 'leaving', 'nearYou']) assert.ok(town.shared[k]?.length, `${id}: shared.${k}`);

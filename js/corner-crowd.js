@@ -101,7 +101,8 @@ export function makeCrowd(H) {
   /* ---------- coming and going ---------- */
 
   async function arrive(def, at = null) {
-    const m = await H.monBoard({ src: `assets/pokemon/${def.id}-front.gif`, name: def.name, cry: def.id }, false);
+    const m = await H.monBoard(def.person ? { sheet: `assets/overworld/${def.id}.png`, name: def.name }
+      : { src: `assets/pokemon/${def.id}-front.gif`, name: def.name, cry: def.id }, false);
     if (gone) return H.dispose(m.group);
     m.board.rotation.x = -H.PITCH;
     m.board.userData.patron = true;
@@ -307,6 +308,7 @@ export function makeCrowd(H) {
     if (!next) return reach(p);
     const tx = H.tileX(next.x), tz = H.tileZ(next.y), dx = tx - w.x, dz = tz - w.z, d = Math.hypot(dx, dz), move = dt / 1000 * p.def.speed;
     if (Math.abs(dx) > 0.01) w.flip = dx > 0;
+    if (d > 0.001) w.dir = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? 'right' : 'left') : (dz < 0 ? 'up' : 'down');
     if (d <= move) { w.x = tx; w.z = tz; if (Number.isInteger(next.y)) w.tile = { ...next }; w.path.shift(); if (!w.path.length) reach(p); }
     else { w.x += dx / d * move; w.z += dz / d * move; }
     w.hop += dt;
@@ -358,9 +360,10 @@ export function makeCrowd(H) {
           } else if (now > p.until) { p.station = null; p.goal = null; p.state = 'ponder'; p.until = now + between(PONDER); }
         } else if (p.state === 'ponder' && (yours(w.tile) || inLane(w.tile))) go(p, spotAround(), 'ponder');   // out of your way, and off a table's front
         else if ((p.state === 'ponder' || p.state === 'counter') && now > p.until) decide(p);
-        const t = now / 1000 + p.phase, moving = w.path.length > 0 && p.state === 'walk', mv = p.def.move;
+        const t = now / 1000 + p.phase, moving = w.path.length > 0 && p.state === 'walk', mv = p.def.move, walks = p.m.walks;
         let y = 0;
-        if (!calm) {
+        if (walks) { if (!calm && p.hopUntil > now) y = Math.abs(Math.sin((p.hopUntil - now) / 500 * Math.PI * 2)) * 0.2; }   // its steps are drawn: no bob
+        else if (!calm) {
           if (p.hopUntil > now) y = Math.abs(Math.sin((p.hopUntil - now) / 500 * Math.PI * 2)) * 0.3;
           else if (mv === 'float') y = 0.35 + Math.sin(t * 2) * 0.12;
           else if (mv === 'hop') y = moving ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 3)) * 0.22 : Math.abs(Math.sin(t * 1.4)) * 0.03;
@@ -368,9 +371,11 @@ export function makeCrowd(H) {
         } else if (mv === 'float') y = 0.35;
         p.m.group.position.set(w.x, 0, w.z);
         p.m.board.position.y = y;
-        p.m.board.scale.x = w.flip ? -1 : 1;
+        p.m.board.scale.x = w.flip && !walks ? -1 : 1;
         p.m.group.children[1].scale.setScalar(mv === 'float' ? 0.7 : 1);
-        H.drawMon(p.m, { facing: 'front' }, dt);
+        // a person stands facing you, and turns to whoever it's talking with (its flip, as a Pokémon's)
+        const turned = p.state === 'talk' || p.state === 'counter' || chat?.with.includes(p);
+        H.drawMon(p.m, walks ? { dir: moving ? w.dir : turned ? (w.flip ? 'right' : 'left') : 'down', moving } : { facing: 'front' }, dt);
       }
 
       // comings and goings: one heads home, another walks in a few seconds later

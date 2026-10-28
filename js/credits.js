@@ -33,6 +33,7 @@ function sections(entry) {
     ['Cries', 'PokeAPI'],
     ['Item and relic sprites', 'PokéSprite by msikma'],
     ['Trainer sprites', 'justin8964 (Team Rocket)', 'kyledove on Pokéngine (event NPCs)', 'Jext on Pokéngine (the Move Tutor)'],
+    ['Townspeople', 'Gen 4 OW Sprites by Neo-Spriteman, Vanilla Sunshine,', 'PurpleZaffre & Maicerochico, AtomicReactor'],
     ['Music', 'The Pokémon games\' soundtracks', 'uploads credited in About & credits'],
     { cast: BIOMES.map(b => ENEMY_DEFS[b.bosses.at(-1)].image), caption: 'And everyone who stood in the way' },
     ['Inspired by', 'Slay the Spire, by Mega Crit', 'Pokémon Gold & Silver\'s Hall of Fame'],

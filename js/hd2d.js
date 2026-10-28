@@ -516,21 +516,29 @@ export function bendFine(o) {
 /** A point as the bend draws it, back to where it stands in the world (the inverse of bend() for a point). */
 export const unbend = (p, u) => { p.y += u.k.value * (p.z - u.z.value) ** 2; return p; };
 
-/** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest);
-    `back` loads its back GIF too, for walking away from the camera. Not yet in any scene. */
+/** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest),
+    or `{ sheet, name }` for a person on a walking sheet; `back` loads its back GIF too, for walking away from the
+    camera. Not yet in any scene. */
 export async function monBoard(mate, back = true) {
-  const front = mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif');
-  const [ff, bf] = await Promise.all([gifFrames(front), back && backSrc !== front ? gifFrames(backSrc) : null]);
-  const sheets = { front: { frames: ff || [] } };
-  if (bf) sheets.back = { frames: bf };
-  const first = ff?.[0].bmp;
+  const front = mate.sheet ?? mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif');
+  let sheets, first;
+  if (mate.sheet) {
+    const rows = await walkFrames(mate.sheet);
+    sheets = rows ? { ...rows, front: rows.down } : { front: { frames: [] } };
+    first = rows?.down.frames[0].bmp;
+  } else {
+    const [ff, bf] = await Promise.all([gifFrames(front), back && backSrc !== front ? gifFrames(backSrc) : null]);
+    sheets = { front: { frames: ff || [] } };
+    if (bf) sheets.back = { frames: bf };
+    first = ff?.[0].bmp;
+  }
   const w = first?.width || 96, h = first?.height || 96;
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const t = tex(c);
   const m = new THREE.MeshStandardMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
   feetDepth(m);
-  const px = mate.px || MON_PX;
+  const px = mate.px || (mate.sheet ? WALKER_PX : MON_PX);
   const board = new THREE.Mesh(new THREE.PlaneGeometry(w * px, h * px), m);
   board.castShadow = true;
   const [top, bottom, left, right] = first && /\.png$/.test(front) ? gaps(first) : spriteFit(front);
@@ -545,8 +553,41 @@ export async function monBoard(mate, back = true) {
   return {
     group, board, c, g: c.getContext('2d', { willReadFrequently: true }), t, sheets, frame: 0, clock: 0, src: front,
     id: mate.cry ?? front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name, top: (h - bottom - top) * px,
-    crowned: mate.crown, aura: mate.aura, wide, px,
+    crowned: mate.crown, aura: mate.aura, wide, px, walks: !!mate.sheet,
   };
+}
+
+/* An overworld walking sheet (the towns' people, 2026-10-28): Pokémon Essentials' layout, one row per way it faces
+   (down, left, right, up), four steps each, the first and third standing. Its pixels are drawn a quarter bigger than a
+   Pokémon GIF's, or a grown-up stood no taller than Eevee. */
+export const WALKER_PX = MON_PX * 1.25;
+const FACES = ['down', 'left', 'right', 'up'], STEP_MS = 150;
+const cut = new Map();
+async function walkFrames(src) {
+  const had = cut.get(src)?.deref();
+  if (had) return had;
+  const whole = (await gifFrames(src))?.[0].bmp;
+  if (!whole) return null;
+  const w = whole.width / 4, h = whole.height / 4;
+  const rows = Object.fromEntries(FACES.map((face, y) => [face, { frames: [0, 1, 2, 3].map(x => {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d', { willReadFrequently: true }).drawImage(whole, x * w, y * h, w, h, 0, 0, w, h);
+    return { bmp: c, ms: STEP_MS };
+  }) }]));
+  cut.set(src, new WeakRef(rows));
+  return rows;
+}
+
+/** A walking sheet's frame: `w.dir` the way it faces, stepping while `w.moving`, else stood still. */
+function drawStep(m, w, dt) {
+  const s = m.sheets[w.dir] || m.sheets.down;
+  if (w.moving) {
+    m.clock += dt;
+    if (m.clock >= STEP_MS) { m.clock %= STEP_MS; m.frame = (m.frame + 1) % 4; }
+  } else { m.clock = 0; m.frame = 0; }
+  const now = s.frames[m.frame];
+  if (m.shown !== now) { m.g.clearRect(0, 0, m.c.width, m.c.height); m.g.drawImage(now.bmp, 0, 0); m.t.needsUpdate = true; m.shown = now; }
 }
 
 /** A still's empty rows and columns round what is painted, [top, bottom, left, right], as SPRITE_FIT keeps a GIF's. */
@@ -561,6 +602,7 @@ function gaps(bmp) {
 
 /** The GIF's next frame on its billboard; a sleeping Pokémon breathes at a third of the speed. */
 export function drawMon(m, w, dt) {
+  if (m.walks) return drawStep(m, w, dt);
   if (m.crowned) wearCrown(m);
   if (m.aura) wearAura(m);
   const s = m.sheets[w.facing] || m.sheets.front;

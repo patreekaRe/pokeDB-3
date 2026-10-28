@@ -37,6 +37,20 @@ leaders get a grand home in that town's style at its clean-up (the handoff's ite
 `walkers: 2` to `makeCrowd()` (the cap that generalises the Game Corner's `oneWalker`); the rest wait at their `stands` or
 where they last stopped until a walker arrives.
 
+**People among the folk** (2026-10-28, the user's ask: trainer walking sprites, "people in town for sure"): 4-5 a town
+in each `folk` list with `person: true`, dealt into the cast like the Pokémon (15 a town, 10 dealt each 6 hours, 7
+out). Lantern Village: Kimono Girl, Sage, Elder, Granny. Cinder Springs: Hiker, Worker, Black Belt, Firebreather.
+Driftwood Landing: two Tubers, Sailor, Ruin Maniac, Captain. Highbough: Bug Catcher, two Rangers, Medium. Sunwell
+Bazaar: Rancher, Cowgirl, Waitress, Cameraman, Gambler. Each walks on `assets/overworld/<id>.png`, a sheet from
+Vanilla Sunshine's Gen 4 OW pack (Eevee Expo resource 404; credit in About and the credits roll; **never commit the
+whole pack**, its terms forbid redistributing it). `monBoard({ sheet })` in `js/hd2d.js` cuts it (Essentials' layout:
+rows down / left / right / up, four steps, `walkFrames()`), drawn at `WALKER_PX` (a quarter bigger than a GIF's
+pixels, or a grown-up stood Eevee's height) and stepped by `drawStep()`. The crowd (`js/corner-crowd.js`) gives a
+person the way it walks (`w.dir`), faces you standing, turns to whoever it talks with, never flips its board and
+doesn't bob. No cry (`playCry()` skips an id it has none for). `?town=<biome>&towns&people` deals only the people. Another person: pick a sheet from the pack (the
+user's upload; Claude's contact sheets named the `trcharNNN` / `NPC NN` files), copy it in as `<id>.png`, add the
+folk line.
+
 **Cinder Springs cleaned up** (2026-10-14, the user's ask: fix what the map review found plus the handoff's checklist):
 the switchback kept, its right legs a tile left (`gate.x` 28) so the right strip has room; four locked houses (a, k, n,
 e; j, d, g and p gone), the crag stubs and the stray two-tile pool in the middle taken out, the outcrops kept only
