@@ -3831,7 +3831,10 @@ Wear only. A grand-opening ribbon (`tailorRibbon`), Oak / Sonia once in the Clea
 Swapped the same day (the user wasn't sure about the mannequins and picked, of four ideas, fitting rooms): six curtained
 booths across the floor, step in and the curtain draws, each look tried on behind a swish, step out in what you wear;
 rails and tables baked into one mesh a material (158 draws). The mall's shopkeepers stand as their battle GIFs again
-(`gif: true` in `monBoard()`).
+(`gif: true` in `monBoard()`). Then the user's design for the inside: a booth walked into changes the scene to inside it
+(`buildBooth()`, place `tb`): a gilt mirror with your reflection, you alone in the middle, the window only Kecleon's
+small card and ◀ / ▶ either side (a zoom-in on the booth from outside was tried first and turned down: the user wanted
+to be "inside"). 58 draws a frame in there.
 
 
 ### Your buddy roams free in your Secret Base, and pets show an emote (2026-10-28, cloud; on `main`)
@@ -3846,6 +3849,9 @@ The user still looked big in Kurt's Workshop after the shrink: plain houses fram
 `HOME_ACROSS` (`js/event-3d.js`) is 8 now (`?across=N` to try others). Kurt and the people in rooms keep their size
 (`NPC_PX`, 1/34; `?npc=N` to try others): about a head and a half over the trainer read right, and the user didn't pick
 another.
+
+- **Trainer Plaza board as a low kiosk, Oak nudged right** (2026-10-28): the tall board hid the PC; the user picked the kiosk of three ideas (a clothesline of Polaroids and a PC-like screen not built). `js/hub-plaza.js`.
+- **Trainer Plaza board full screen** (2026-10-28, a mock the user loved, made real the same day): the kiosk's Look opens `js/plaza-view.js` (styles `.pv-*` in `css/hub.css`): Polaroids, + Add (`addTrainer()`), Trainer Card (the Trainers app's page), your code and add-by-code (`addByCode()`); `?plazaview` pins up made-up trainers.
 
 ### The Clearing on set paths, side-on flyers (2026-10-28, cloud; on `main`)
 The user's asks: legendaries flying over showed their front; Halloween's ghosts flew over too; too many people moving,

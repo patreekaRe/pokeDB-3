@@ -1226,9 +1226,11 @@ show on a tap of your buddy in the Clearing, towns and rooms too. Not asked for 
 
 **The Trainer Tailor** was built 2026-10-28 (cloud, on `main`; archive), its mannequins swapped the same day for a row
 of fitting rooms (the user's pick of four ideas; the others: shoppers wearing the outfits, a photo wall, Kecleon's
-catwalk). The mall's shopkeepers stand as their battle GIFs (`gif: true`, the user's call: "they're merchants").
+catwalk). The mall's shopkeepers stand as their battle GIFs (`gif: true`, the user's call: "they're merchants"). Timburr at its stand too (2026-10-28, branch `claude/timbur-gif-first-load-freeze-o51ml4`, on `main` too), now animated, and the catalogue's first open no longer freezes before the camera pans: the Clearing's shaders and every house card's still are made while Timburr's card is up (`warmKiosk()`), the stills a frame apart. **The user checks**: the stand on a phone, first open after a fresh load.
+Then, the user's design: a booth walked into changes the scene to its inside (a mirror with your reflection, you alone
+in the middle, ◀ / ▶ either side, Kecleon's small card; a zoom-in on the booth was tried first and turned down).
 **Next: the user playtests it** ▶ PLAYTEST ON THE LIVE SITE: `?mall=tailor&coins=2000`: walk into a fitting room, browse
-with ◀ / ▶ (the curtain swishes, you come back in each look), buy one, close and step out; the Trainer Card's Trainer key
+with ◀ / ▶, buy one, close and step out; the Trainer Card's Trainer key
 (Wear only); Oak (or Sonia at night) once in the Clearing; the hall's four fronts and the tailor's ribbon (`?mall`).
 
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the

@@ -348,10 +348,16 @@ clothes rails and a shelf either side, a gilt mirror (`kind: 'mirror'`). **The f
 mannequins, the same day; mannequins were built first and taken out): six curtained booths in a row across the floor
 (`BOOTHS`, `kind: 'booth'`), rails and tables of folded clothes nearer the door, all baked into one mesh a material
 (`mergeStatic`; 332 draws a frame before, 158 after). Always open; a grand-opening ribbon (`RIBBONS.tailor`,
-`tailorRibbon`). **The window**: a booth walked into (`boothTap()` in `js/mall-3d.js`: you step in and turn to face
-out) draws its curtain and opens `lookWindow()` (`js/look-window.js`) low on the screen (`openLooks()`); each look shown
-is tried on behind a swish of the curtain (`swish()`, `tryLook()`), and closing (✕, Escape, a tap on the room) swishes
-once more and you step out in what you wear (`closeLooks()`). The mirror and Kecleon open the window where you stand.
+`tailorRibbon`). **Inside a booth** (the user's design, 2026-10-28, after a zoom-in on the booth was tried and turned down): a booth walked
+into (`boothTap()` in `js/mall-3d.js`) draws its curtain and the scene changes to its inside, place `tb`
+(`buildBooth()`, `BOOTH_AT`): a 5 x 3 room, plum damask, a carpet with a round rug, a tall gilt mirror behind you with
+your reflection (the look from behind, cool and smaller, rebuilt as it changes), wall lamps, hooks with shirts and a cap,
+a stool of folded clothes and a bag, velvet drapes framing the front. Your trainer stands alone in the middle (`solo`:
+your buddy waits outside), the camera on the room's own shot (`view`, the place's own over `fitShot()`), and the window
+comes up in its booth form (`lookWindow({ booth: true })`: only Kecleon's card low down with the line, price or OWNED /
+WORN, the count and the key, ◀ / ▶ either side of the screen). Each look shown is tried on (`tryLook()`) with a hop; closing
+(✕, Escape, a tap on the room) takes you back out in front of the booth, its curtain open (`closeLooks()`). 58 draws a
+frame inside. The mirror and Kecleon open the window where you stand.
 Buy asks `confirmDialog()` and wears it. `?mall=tailor` walks straight in. Headless (2026-10-28): 158 draws a frame and 119 MB.
 
 ### The Safari Outfitter (2026-10-15)
@@ -914,8 +920,11 @@ is saved like any other. With it off the Clearing is exactly as before (the Anci
   tree's doorstep column; every house stays inside the fence, clear of the garden arch (half-width ≤ 2.25).
 - **Timburr & Co.'s stand** (`KIOSK_AT` 17,4, just outside the fence's left, its step on the ring road; place `kiosk`,
   only with houses on): `makeKiosk()` (counter, orange-and-cream awning, the crew's name board, a FOR SALE panel before
-  the base is bought, HOUSES after, a hard hat and a cone) and Timburr behind the counter as a still board that hops now
-  and then (`kiosk.tick()`). Its card's Catalogue opens `js/house-kiosk.js`.
+  the base is bought, HOUSES after, a hard hat and a cone) and Timburr behind the counter as its battle GIF, animated, that hops now
+  and then (`kiosk.tick()`; `gif: true` over the overworld sheet, the user's call 2026-10-28). Its card's Catalogue opens `js/house-kiosk.js`.
+  **First open** (2026-10-28, the user: it froze, then panned; smooth the second time): showing the stand's card warms the
+  Clearing's shaders (`warmShaders()`) and draws every card's still ahead (`warmKiosk()` in `js/house-kiosk.js`), each still
+  a frame apart; the catalogue's own stills wait 750 ms for the camera's pan. Headless, the first open's new shaders 8 -> 1.
 - **The catalogue** (`openKiosk()` in `js/house-kiosk.js`, `.hk-*` in `css/hub.css`; restyled the same day, the user:
   "doesn't look that great", it was a red Pokédex sheet with a list): a merchant's card in the shops' look (the garden
   catalogue's `.gmerch`: cream, gold rim, white keyline), the crew's orange (`--ink`), low on the screen; Timburr's name
@@ -1140,6 +1149,13 @@ they are): six neighbours on Gen 4 walking sheets (Youngster, Lass, Picnicker, G
 `js/corner-crowd.js`): in and out through the north gate (the crowd's `enter`), standing at `FOLK_STANDS` (a spot taken
 by a place, its doorstep or the season's decorations dropped), two walking at most. A tap on one: its line in the
 crowd's bubble over its head (no `say` handed in). You walk as your trainer here too: `docs/reference/trainer-follow.md`.
+
+- **The Trainer Plaza's board became a low kiosk** (2026-10-28, the user's pick of three): the cork laid back 0.7 rad on a
+  waist-high counter (TRAINER PLAZA on its front), a short striped awning on two back posts, kept high and back so no
+  line from the cork to the camera's pitch (0.6) is blocked; scale 1.05, Oak nudged right (`dx` in `PROFS`).
+- **The Plaza's board full screen** (2026-10-28): Look on the kiosk opens `openPlazaView()` (`js/plaza-view.js`, `.pv-*` in
+  `css/hub.css`) instead of the Trainers app: up to 9 Polaroids from `plazaTop()`, one tapped lifted into its card (+ Add,
+  Trainer Card to the app's page), your code and an add-by-code note below; signed out, a Sign in note. `?plazaview`: made-up trainers, nothing sent.
 
 **Set paths, nobody overlapping** (2026-10-28, the user's ask: "make sure no sprites on the ground are ever overlapping
 each other, keep some stationary too ... individual set paths like on the Pokemon games"). The folk no longer come and go

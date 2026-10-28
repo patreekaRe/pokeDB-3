@@ -645,8 +645,7 @@ function lookPicker(body, done) {
   head.append(back);
   const win = lookWindow({ onClose: done });
   back.addEventListener('click', () => win.close());
-  const note = el('p', 'tc-pick-note', 'You walk as your trainer in the Clearing, your Secret Base, the mall, the towns and a run\'s rooms, your partner a step behind. More outfits are sold at the Trainer Tailor in the Poké Mall.');
-  body.replaceChildren(head, note, win.node);
+  body.replaceChildren(head, el('p', 'tc-pick-note', 'More outfits at the Poké Mall!'), win.node);   // one line only (the user's call, 2026-10-28)
   head.querySelector('h2').tabIndex = -1;
   body.scrollTop = 0;
 }

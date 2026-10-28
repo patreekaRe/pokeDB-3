@@ -2522,15 +2522,15 @@ function makePlaces() {
     },
   ];
   if (cloudConfigured()) list.push({
-    id: 'plaza', name: 'Trainer Plaza', step: PLAZA_AT.step, tiles: PLAZA_AT.tiles, tag: [PLAZA_AT.at[0], 3.8, PLAZA_AT.at[1]], open: true,
-    line: cloudRemembered() ? 'The Trainer Plaza\'s board: Polaroids of trainers who\'ve played lately. Add one from your Pokédex\'s Trainers app.'
+    id: 'plaza', name: 'Trainer Plaza', step: PLAZA_AT.step, tiles: PLAZA_AT.tiles, tag: [PLAZA_AT.at[0], 2.9, PLAZA_AT.at[1]], open: true,
+    line: cloudRemembered() ? 'The Trainer Plaza\'s board: Polaroids of trainers who\'ve played lately. Look to add one.'
       : 'The Trainer Plaza\'s board, where trainers pin themselves up. Sign in at the PC to join them.',
-    buttons: [['Look', () => acts.onApp('trainers', 'plaza')]],
+    buttons: [['Look', () => import('./plaza-view.js').then(m => m.openPlazaView({ onCard: (uid) => acts.onApp('trainers', uid ?? 'plaza') }))]],
     build: (g) => {
       plazaFx = plazaBoard(THREE, { glows: glowMats, merge: mergeStill });
       plazaFx.group.position.set(tileX(PLAZA_AT.at[0]), 0, tileZ(PLAZA_AT.at[1]));
       plazaFx.group.rotation.y = facePlaza(PLAZA_AT.at);
-      plazaFx.group.scale.setScalar(1.1);   // between the avenue's edge and the PC
+      plazaFx.group.scale.setScalar(1.05);   // a low kiosk, so it can stand full size without hiding the PC
       g.add(plazaFx.group);
       const fx = plazaFx;
       plazaTop(6).then(list => { if (plazaFx === fx) fx.paint(list); });
@@ -2771,9 +2771,9 @@ async function standGuest(g, l) {
 
 const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
-  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, refresh: 'And remember: tap the red refresh button up in the corner often! The game gets updates all the time.',
+  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, dx: 0.4, refresh: 'And remember: tap the red refresh button up in the corner often! The game gets updates all the time.',
     hello: 'Ah, there you are! Good to see you back. Let me share something from my research...' },
-  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.35, refresh: 'Oh, and tap the red refresh button up in the corner often, okay? New updates land all the time!',
+  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.55, refresh: 'Oh, and tap the red refresh button up in the corner often, okay? New updates land all the time!',
     hello: 'Oh, hi! Up late too? Perfect timing, I just jotted this one down in my notes...' },
 ];
 const HINTS = [
@@ -3728,18 +3728,21 @@ function rebuildLot() {
 
 const KIOSK_CREW = 'assets/pokemon/timburr-front.gif', KIOSK_CRATE = 0.22;
 
-/** The builders' stand, and Timburr behind its counter, hopping now and then to be noticed. */
+/** The builders' stand, and Timburr behind its counter as its battle GIF, hopping now and then to be noticed. */
 function buildKiosk(g) {
   const x = tileX(KIOSK_AT.tx), z = tileZ(KIOSK_AT.ty) + 0.05;
   g.add(makeKiosk(THREE, { x, z, sale: !baseOwned(), fine, texOf, merge: mergeStill }).group);
-  const k = kiosk = { mon: null, next: 0, hop: 0, tick(now) {
-    if (!k.mon || calm) return;
+  const k = kiosk = { mon: null, next: 0, hop: 0, last: 0, tick(now) {
+    if (!k.mon) return;
+    drawMon(k.mon, { facing: 'front' }, k.last ? Math.min(100, now - k.last) : 0);
+    k.last = now;
+    if (calm) return;
     if (!k.next) k.next = now + 4000;
     if (now > k.next) { k.hop = now; k.next = now + 6000 + Math.random() * 5000; }
     const t = (now - k.hop) / 450;
     k.mon.board.position.y = t < 1 ? Math.sin(t * Math.PI) * 0.18 : 0;
   } };
-  monBoard({ src: KIOSK_CREW, name: 'Timburr', cry: 'timburr' }, false).then(m => {
+  monBoard({ src: KIOSK_CREW, name: 'Timburr', cry: 'timburr', gif: true }, false).then(m => {
     if (!g.parent || kiosk !== k) { dispose(m.group); return; }
     m.board.rotation.x = -PITCH;
     m.group.scale.setScalar(0.85);
@@ -4073,6 +4076,12 @@ function liveLeaving(now) {
 
 function showCard(p) {
   here = p;
+  // the catalogue's first open swung the view to the lot and froze on the way: shaders for what comes into view there,
+  // and every house card's still, all made at once (the user, 2026-10-28). Made while this card is up instead.
+  if (p.id === 'kiosk') {
+    warmShaders(renderer, scene, camera);
+    import('./house-kiosk.js').then(m => m.warmKiosk(houseStill), () => {});
+  }
   if (p.waystone) return showWaystone(p);
   if (p.id === 'prof') return profTalk();
   if (p.guest?.welcome) welcomeHome(p.guest.town);

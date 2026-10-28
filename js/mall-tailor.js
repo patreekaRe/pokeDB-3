@@ -10,6 +10,9 @@
 import { fine, texOf, words, star, mergeStatic } from './hub-3d.js';
 import { hallKit } from './mall-hall.js';
 import { calmFx } from './prefs.js';
+import { monBoard, drawMon, dispose } from './hd2d.js';
+import { wornLook, lookSheet } from './data/looks.js';
+import { getSave } from './storage.js';
 
 const T = {
   plum: '#7a3478', plumDark: '#4e1e4c', plumLite: '#a85aa4', cream: '#fbf1e2', gold: '#e2b648', goldDark: '#a8801e',
@@ -414,3 +417,133 @@ export function buildTailor(THREE, size) {
     },
   };
 }
+
+/* ---------- inside a fitting room ---------- */
+
+/* The user's design (2026-10-28): stepping into a booth changes the scene to its inside, your trainer alone in the middle
+   (your buddy waits outside) before a tall gilt mirror, the trainer window's ◀ / ▶ either side. Its own 5 x 3 tiles, you
+   on the middle one; the camera's shot is its own (`view`), the room filling the screen's width over the window's card. */
+const BOOTH = { cols: 5, rows: 3 };
+export const BOOTH_AT = { x: 2, y: 1 };
+
+/** The booth's carpet: plum, a scatter of small gold diamonds, a round cream rug where you stand. */
+function boothFloorArt() {
+  const P = 16, W = BOOTH.cols * P, H = BOOTH.rows * P, f = fine(W, H, 6), { g } = f;
+  g.fillStyle = T.plumDark; g.fillRect(0, 0, W, H);
+  g.fillStyle = 'rgba(226,182,72,0.35)';
+  for (let y = 4; y < H; y += 8) for (let x = (y / 8) % 2 ? 4 : 8; x < W; x += 8) { g.beginPath(); g.moveTo(x, y - 1.4); g.lineTo(x + 1.4, y); g.lineTo(x, y + 1.4); g.lineTo(x - 1.4, y); g.closePath(); g.fill(); }
+  const cx = (BOOTH_AT.x + 0.5) * P, cy = (BOOTH_AT.y + 0.5) * P;
+  g.fillStyle = T.gold; g.beginPath(); g.ellipse(cx, cy, P * 1.05, P * 0.8, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = T.cream; g.beginPath(); g.ellipse(cx, cy, P * 0.98, P * 0.74, 0, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#c86aa8'; g.lineWidth = 0.7;
+  for (const r of [0.8, 0.55]) { g.beginPath(); g.ellipse(cx, cy, P * r, P * r * 0.76, 0, 0, Math.PI * 2); g.stroke(); }
+  return f.c;
+}
+
+/** The big mirror's glass: dim and cool, so the reflection in it reads, a streak or two of light. */
+function mirrorArt() {
+  const f = fine(32, 48, 6), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, 48, ['#5a5470', '#7a7898', '#9a90b0', '#6a5a7a']); g.fillRect(0, 0, 32, 48);
+  g.fillStyle = 'rgba(255,255,255,0.18)';
+  for (const [x, w] of [[5, 4], [12, 1.4], [24, 2.4]]) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + w, 0); g.lineTo(x + w - 10, 48); g.lineTo(x - 10, 48); g.closePath(); g.fill(); }
+  return f.c;
+}
+
+export function buildBooth(THREE, size) {
+  const { top: TOP } = size, { cols, rows } = BOOTH;
+  const tileX = (tx) => tx + 0.5 - cols / 2, tileZ = (ty) => ty + 0.5 - rows / 2, wallZ = -rows / 2;
+  const group = new THREE.Group(), blocked = new Set(), redraws = [];
+  for (let x = 0; x < cols; x++) for (let y = 0; y < rows; y++) if (x !== BOOTH_AT.x || y !== BOOTH_AT.y) blocked.add(`${x},${y}`);
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const put = (parent, geo, mat, x = 0, y = 0, z = 0, shadow = true) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z); m.castShadow = shadow; m.receiveShadow = true; m.raycast = () => {};
+    parent.add(m);
+    return m;
+  };
+  const edge = std({ color: '#2e1a2c' }), cap = std({ color: T.plumDark });
+  const wood = std({ color: T.wood, roughness: 0.6 }), woodDark = std({ color: T.woodDark, roughness: 0.7 });
+  const gold = std({ color: T.gold, metalness: 0.8, roughness: 0.28 }), brass = std({ color: '#d8b050', metalness: 0.75, roughness: 0.3 });
+  const still = new THREE.Group();   // everything that never moves, baked by material at the end
+
+  put(still, new THREE.BoxGeometry(cols, 0.6, rows), [edge, edge, std({ map: texOf(boothFloorArt()), roughness: 0.95 }), edge, std({ color: '#3a1838' }), edge], 0, -0.3, 0, false);
+  put(still, new THREE.BoxGeometry(cols + 0.8, 7, rows + 0.4), [edge, edge, edge, edge, std({ color: '#2a1228' }), edge], 0, -0.6 - 3.5, -0.2, false);
+  const wall = wallArt(size, cols + 0.8, false), side = std({ map: texOf(wallArt(size, rows, false)), roughness: 0.9 });
+  put(still, new THREE.BoxGeometry(cols + 0.8, TOP, 0.4), [cap, cap, cap, cap, std({ map: texOf(wall), roughness: 0.9 }), cap], 0, TOP / 2, wallZ - 0.2, false);
+  for (const s of [-1, 1]) put(still, new THREE.BoxGeometry(0.4, TOP, rows), s < 0 ? [side, cap, cap, cap, cap, cap] : [cap, side, cap, cap, cap, cap], s * (cols / 2 + 0.2), TOP / 2, 0, false);
+  put(still, new THREE.BoxGeometry(cols + 0.8, 0.08, 0.12), gold, 0, 3.0, wallZ + 0.06, false);
+
+  // the mirror: tall in a gilt frame on the back wall, behind where you stand, a crest on top and a lamp either side
+  const MW = 1.5, MH = 2.5, mz = wallZ + 0.08;
+  put(still, new THREE.BoxGeometry(MW + 0.2, MH + 0.2, 0.08), gold, 0, 0.12 + MH / 2, mz);
+  put(still, new THREE.SphereGeometry(0.16, 16, 10), gold, 0, MH + 0.36, mz);
+  for (const s of [-1, 1]) put(still, new THREE.SphereGeometry(0.08, 12, 8), gold, s * (MW / 2 + 0.1), MH + 0.22, mz);
+  const glass = put(group, new THREE.PlaneGeometry(MW, MH), new THREE.MeshStandardMaterial({ map: texOf(mirrorArt()), roughness: 0.1, metalness: 0.3, emissive: new THREE.Color('#2a2438') }), 0, 0.12 + MH / 2, mz + 0.045, false);
+  glass.receiveShadow = false;
+  const lampGlow = std({ color: '#ffe6b0', emissive: new THREE.Color('#ffc870'), emissiveIntensity: 1.4, roughness: 0.4 });
+  for (const s of [-1, 1]) {
+    const lx = s * (MW / 2 + 0.55);
+    put(still, new THREE.BoxGeometry(0.06, 0.06, 0.24), brass, lx, 2.05, wallZ + 0.14, false);
+    put(still, new THREE.CylinderGeometry(0.1, 0.07, 0.24, 12), lampGlow, lx, 2.1, wallZ + 0.26, false);
+    put(still, new THREE.CylinderGeometry(0.11, 0.11, 0.03, 12), brass, lx, 1.97, wallZ + 0.26, false);
+  }
+
+  // hooks on the back wall left of the mirror with two shirts and a cap; right, a stool of folded clothes and a bag
+  const tones = ['#3a74e0', '#e84838', '#f8d040', '#58a848', '#e870b0'];
+  for (const [i, x] of [[0, -1.75], [1, -1.4]].map(([i, x]) => [i, x])) {
+    put(still, new THREE.CylinderGeometry(0.02, 0.02, 0.14, 8), brass, x, 1.75, wallZ + 0.07, false).rotation.x = Math.PI / 2;
+    const sh = put(still, new THREE.BoxGeometry(0.4, 0.62, 0.05), std({ color: tones[i], roughness: 0.9 }), x, 1.4, wallZ + 0.12);
+    sh.rotation.z = i ? -0.06 : 0.05;
+  }
+  put(still, new THREE.CylinderGeometry(0.02, 0.02, 0.14, 8), brass, -2.1, 2.0, wallZ + 0.07, false).rotation.x = Math.PI / 2;
+  put(still, new THREE.SphereGeometry(0.17, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#e84838', roughness: 0.8 }), -2.1, 1.84, wallZ + 0.2);
+  put(still, new THREE.BoxGeometry(0.34, 0.03, 0.2), std({ color: '#f4f4f4', roughness: 0.8 }), -2.1, 1.85, wallZ + 0.38, false);
+  put(still, new THREE.CylinderGeometry(0.24, 0.22, 0.42, 16), wood, 1.8, 0.21, wallZ + 0.55);
+  put(still, new THREE.CylinderGeometry(0.26, 0.26, 0.06, 16), std({ color: T.plum, roughness: 0.6 }), 1.8, 0.45, wallZ + 0.55, false);
+  for (let i = 0; i < 3; i++) put(still, new THREE.BoxGeometry(0.34, 0.06, 0.26), std({ color: tones[(i + 2) % tones.length], roughness: 0.9 }), 1.8 + (i % 2) * 0.03, 0.51 + i * 0.065, wallZ + 0.55);
+  put(still, new THREE.BoxGeometry(0.34, 0.4, 0.16), std({ color: T.cream, roughness: 0.8 }), 2.1, 0.2, wallZ + 0.95).rotation.y = -0.4;
+  put(still, new THREE.TorusGeometry(0.08, 0.012, 6, 14, Math.PI), std({ color: T.plum, roughness: 0.6 }), 2.1, 0.4, wallZ + 0.95, false).rotation.y = -0.4;
+
+  // the curtain behind you, drawn, and gathered velvet either side at the front, framing the booth
+  const velvet = std({ map: texOf(curtainArt()), side: THREE.DoubleSide, roughness: 1 });
+  for (const s of [-1, 1]) {
+    const d = put(still, new THREE.PlaneGeometry(0.7, 3.1), velvet, s * (cols / 2 - 0.3), 1.55, rows / 2 - 0.25, false);
+    d.rotation.y = -s * 0.5;
+  }
+  put(still, new THREE.CylinderGeometry(0.03, 0.03, cols, 10), brass, 0, 3.1, rows / 2 - 0.2, false).rotation.z = Math.PI / 2;
+  mergeStatic(still, () => false, true);
+  group.add(still);
+
+  // your reflection: the look worn (or tried on) from behind, as a mirror behind you shows it, smaller and cool in the
+  // glass; built again when the look changes
+  let mirrored = null, want = null, loading = false;
+  const reflect = async (id) => {
+    loading = true;
+    const m = id ? await monBoard({ sheet: lookSheet(id), name: '' }, false) : null;
+    loading = false;
+    if (mirrored) { group.remove(mirrored.group); dispose(mirrored.group); }
+    mirrored = m;
+    if (!m) return;
+    m.board.castShadow = false;
+    m.board.material.color.set('#a8b0d0');
+    m.group.children[1].visible = false;   // no shadow blob on the glass
+    m.group.scale.setScalar(0.74);
+    m.group.position.set(0, 0.3, mz + 0.06);
+    group.add(m.group);
+  };
+
+  return {
+    group, blocked, spots: [], top: 3.2, title: 'Fitting Room', cols, rows, solo: true, light: 0.95,
+    view: (aspect, card) => {
+      const halfTan = Math.tan(15 * Math.PI / 180);
+      return { x: 0, z: -0.15, y: 1.05, dist: Math.max(2.7 / (2 * halfTan * aspect), 3.4 / (2 * halfTan)), shift: card * 0.42 };   // close: the mirror and you, the lamps at the edges
+    },
+    refresh: () => redraws.forEach(r => r()),
+    tick(now, dt) {
+      const id = wornLook(getSave())?.id ?? null;
+      if (id !== want && !loading) { want = id; reflect(id); }
+      if (mirrored) drawMon(mirrored, { dir: 'up', moving: false }, dt);
+    },
+  };
+}
+
