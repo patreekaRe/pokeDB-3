@@ -3464,11 +3464,20 @@ function renderBars() {
   const count = el('b', refill ? 'bump fill' : b.energy !== shown ? 'bump' : '', String(b.energy));
   const numbers = el('span', 'pp-count');
   numbers.append(count, el('small', '', `/${max}`));
-  const pips = el('span', 'pp-pips');   // one per PP this turn, lit while unspent: two rows of 5 at most, past that the number alone
-  if (max <= 10) for (let i = 0; i < max; i++) { const pip = el('i', i < b.energy ? 'on' : ''); pip.style.setProperty('--i', i); pips.append(pip); }
   const pill = el('span', 'pp-pill');
-  pill.append(el('span', 'pp-label', 'PP'), pips, numbers);
-  orb.replaceChildren(pill);
+  pill.append(el('span', 'pp-label', 'PP'), numbers);
+  // the plate fills like a glass to the PP left of the turn's; kept, not rebuilt, so its level eases rather than jumps
+  let fill = orb.querySelector('.pp-fill');
+  if (!fill) {
+    const liquid = el('span', 'pp-liquid');
+    liquid.append(el('span', 'pp-bubbles'));
+    fill = el('span', 'pp-fill');
+    fill.append(liquid);
+    orb.replaceChildren(fill);
+  }
+  fill.style.setProperty('--lvl', max ? Math.min(1, b.energy / max) : 0);
+  orb.querySelector('.pp-pill')?.remove();
+  orb.append(pill);
   orb.dataset.shown = String(b.energy);
   orb.classList.toggle('empty', b.energy === 0);
   if ((refill || b.energy !== shown) && battleFx() && orb.getClientRects().length) ppChanged(orb, b.energy - shown, refill);
