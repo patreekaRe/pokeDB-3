@@ -51,7 +51,7 @@ const HELD = [
 export const NEXT = [
   ['hub', 'Gym Leaders and friends no longer drop by your Secret Base or wait by the Clearing\'s Waystone.'],
   ['look', 'Evolution opens like a comic: manga panels slam in on your Pokémon\'s face, and a Duo Run\'s pair split the screen, then evolve side by side.'],
-  ['look', 'Pokémon walk on their own overworld sprites in the Clearing, towns, rooms, base, mall and run map, stepping in four directions, shinies included.'],
+  ['look', 'Pokémon walk on their own overworld sprites in the Clearing, towns, rooms, base, mall and run map, stepping in four directions, shinies included (four shinies no longer stand on a white square).'],
   ['battle', 'Every attack plays its own move: jets, bolts, bites, beams and quakes. Blocks raise a shield, heals glow, big cards get a cut-in, and PP and End Turn are new gold plates, PP filling like a glass, the Safari\'s Throw in green and gone against Alphas and bosses.'],
   ['look', 'Kurt\'s Workshop, the Berry Garden and Kenmatta\'s dojo close with a ✕ at the top right, clear of the ▼ MORE tag, and Kurt\'s bench is compact, its shelf twice as tall on a phone.'],
   ['dex', 'The Moves app\'s type tabs are bigger, swipe sideways with arrows showing more past the edge, and the picked type\'s name and count top its cards.'],
