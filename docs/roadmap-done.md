@@ -3849,3 +3849,5 @@ The user still looked big in Kurt's Workshop after the shrink: plain houses fram
 `HOME_ACROSS` (`js/event-3d.js`) is 8 now (`?across=N` to try others). Kurt and the people in rooms keep their size
 (`NPC_PX`, 1/34; `?npc=N` to try others): about a head and a half over the trainer read right, and the user didn't pick
 another.
+
+- **Trainer Plaza board as a low kiosk, Oak nudged right** (2026-10-28): the tall board hid the PC; the user picked the kiosk of three ideas (a clothesline of Polaroids and a PC-like screen not built). `js/hub-plaza.js`.

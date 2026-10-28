@@ -2521,7 +2521,7 @@ function makePlaces() {
     },
   ];
   if (cloudConfigured()) list.push({
-    id: 'plaza', name: 'Trainer Plaza', step: PLAZA_AT.step, tiles: PLAZA_AT.tiles, tag: [PLAZA_AT.at[0], 3.8, PLAZA_AT.at[1]], open: true,
+    id: 'plaza', name: 'Trainer Plaza', step: PLAZA_AT.step, tiles: PLAZA_AT.tiles, tag: [PLAZA_AT.at[0], 2.9, PLAZA_AT.at[1]], open: true,
     line: cloudRemembered() ? 'The Trainer Plaza\'s board: Polaroids of trainers who\'ve played lately. Add one from your Pokédex\'s Trainers app.'
       : 'The Trainer Plaza\'s board, where trainers pin themselves up. Sign in at the PC to join them.',
     buttons: [['Look', () => acts.onApp('trainers', 'plaza')]],
@@ -2529,7 +2529,7 @@ function makePlaces() {
       plazaFx = plazaBoard(THREE, { glows: glowMats, merge: mergeStill });
       plazaFx.group.position.set(tileX(PLAZA_AT.at[0]), 0, tileZ(PLAZA_AT.at[1]));
       plazaFx.group.rotation.y = facePlaza(PLAZA_AT.at);
-      plazaFx.group.scale.setScalar(0.9);   // between the avenue's edge and the PC, clear of it (the user's ask, 2026-10-28)
+      plazaFx.group.scale.setScalar(1.05);   // a low kiosk, so it can stand full size without hiding the PC
       g.add(plazaFx.group);
       const fx = plazaFx;
       plazaTop(6).then(list => { if (plazaFx === fx) fx.paint(list); });

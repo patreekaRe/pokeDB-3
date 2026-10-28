@@ -1149,3 +1149,7 @@ they are): six neighbours on Gen 4 walking sheets (Youngster, Lass, Picnicker, G
 `js/corner-crowd.js`): in and out through the north gate (the crowd's `enter`), standing at `FOLK_STANDS` (a spot taken
 by a place, its doorstep or the season's decorations dropped), two walking at most. A tap on one: its line in the
 crowd's bubble over its head (no `say` handed in). You walk as your trainer here too: `docs/reference/trainer-follow.md`.
+
+- **The Trainer Plaza's board became a low kiosk** (2026-10-28, the user's pick of three): the cork laid back 0.7 rad on a
+  waist-high counter (TRAINER PLAZA on its front), a short striped awning on two back posts, kept high and back so no
+  line from the cork to the camera's pitch (0.6) is blocked; scale 1.05, Oak nudged right (`dx` in `PROFS`).

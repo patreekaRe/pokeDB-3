@@ -49,6 +49,7 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['hub', 'The Trainer Plaza\'s board is a low kiosk now, its Polaroids laid back on a counter under a striped awning, so it no longer hides the PC.'],
   ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card, the mall\'s shopkeepers and Timburr\'s stand show their animated sprites again, and Timburr\'s catalogue no longer stutters the first time it opens.'],
   ['mall', 'The Trainer Tailor opens in the Poké Mall: Kecleon sells every outfit, and its fitting rooms let you try each one on first. Switch outfits on your Trainer Card.'],
   ['look', 'Your trainer and the townspeople are drawn a little smaller and houses are framed wider, so you no longer tower over rooms; your buddy trails a touch further back.'],
