@@ -1223,7 +1223,7 @@ ids, and credit the pack's artists (fan-made, community sprites) on a credits pa
 session: re-upload the .7z when building. Waiting on the user's pick. (Re-checked 2026-10-28: it holds only 5 people,
 RPG Maker XP's own fantasy characters, so it's no source for trainers.)
 
-**Town people on Gen 4 walking sprites: built, not yet on main** (2026-10-28; the user's call: "people in town for
+**Town people on Gen 4 walking sprites: built on branch `duo-types` (commit 675a843), not yet on main** (2026-10-28; the user's call: "people in town for
 sure"; Oak / Sonia, Kurt and Team Rocket's grunts stay as they are). 22 people, 4-5 a town, in the towns' `folk` lists
 (`person: true`, `assets/overworld/`, `walkFrames()` / `drawStep()` in `js/hd2d.js`; details in `towns.md`), credits
 in About and the roll, a patch note. Tests pass. **Held off main**: this session couldn't load any 3D place headless
