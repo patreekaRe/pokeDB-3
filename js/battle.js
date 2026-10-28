@@ -2412,11 +2412,8 @@ async function askEndTurn() {
     if (!ok || battle !== b) return;
   }
   if (battleFx()) {
-    const btn = $('end-turn-btn');
-    btn.classList.remove('pressed');
-    void btn.offsetWidth;
-    btn.classList.add('pressed');
-    endTurnFx(btn, { fast: speed() > 1 });
+    replay($('end-turn-btn'), 'pressed', 450);
+    endTurnFx($('end-turn-btn'), { fast: speed() > 1 });
   }
   endTurn();
 }
@@ -3502,11 +3499,19 @@ let ppShownFor = null;
 function ppChanged(orb, delta, refill) {
   const fast = speed() > 1;
   if (refill || delta > 0) {
-    orb.classList.remove('refill', 'gain');
-    void orb.offsetWidth;
-    orb.classList.add(refill ? 'refill' : 'gain');
+    replay(orb, refill ? 'refill' : 'gain', 1300, 'refill', 'gain');
     ppFx(orb, { refill, gain: delta, fast });
   } else ppFx(orb, { spent: -delta, fast });
+}
+/** Restarts a one-shot CSS animation class, and takes it off after, so it can't replay when the battle screen next shows
+ * (a hidden screen's animations start over) or outrank one that loops (End Turn's .nudge). */
+const replayAt = new WeakMap();
+function replay(node, cls, ms, ...all) {
+  clearTimeout(replayAt.get(node));
+  node.classList.remove(...(all.length ? all : [cls]));
+  void node.offsetWidth;
+  node.classList.add(cls);
+  replayAt.set(node, setTimeout(() => node.classList.remove(cls), ms));
 }
 
 /** The little bubble that says what the enemy will do next. */
