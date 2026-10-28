@@ -50,6 +50,7 @@ const HELD = [
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card.'],
+  ['look', 'Your trainer and the townspeople are drawn a little smaller, so they no longer tower over rooms and furniture.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

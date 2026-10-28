@@ -1211,14 +1211,6 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**Your trainer looks big indoors** (the user's question, 2026-10-28, with phone shots of the Secret Base, the Clearing
-and Kurt's Workshop). The user picked an overall shrink over indoor only (trainer and townspeople alike, Pokémon
-untouched). The githack link didn't load for them, so the live site has `?walker=N` (`WALKER_PX` in `js/hd2d.js`, 1.25x
-a Pokémon's pixels by default) and they're trying `?walker=1.06` (about 15% smaller) on their own save. Once they pick
-a size, make it the default and add a `look` patch note. After seeing 1.06 in the Clearing they asked to try 0.95 with the
-buddy a little further back: `?gap=N` (`GAP` in `js/follow.js`, 0.85 by default) is live for that, e.g. `?walker=0.95&gap=1.1`;
-make their pick of both the defaults. (Branch `trainer-shrink` holds the plain 1.06 change; delete it.)
-
 **A trainer tailor shop: the user picked option 1** (2026-10-28): a fourth front in the Poké Mall hall, the Trainer
 Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/kecleon.png` are in). Ready to build:
 

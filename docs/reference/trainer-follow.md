@@ -25,7 +25,8 @@ Mart caps the trainer's height as it does the buddy's (`fit`); the base tilts it
 with its own list; the rooms re-add it to the scene and set their tilt on each mount.
 
 **The sheets** (`monBoard({ sheet })` in `js/hd2d.js`): Pokémon Essentials' layout, rows down / left / right / up, four
-steps each (`walkFrames()`), drawn at `WALKER_PX` (a quarter bigger than a GIF's pixels) and stepped by `drawStep()`
+steps each (`walkFrames()`), drawn at `WALKER_PX` (a GIF's pixels: the user's pick of 2026-10-28 over a quarter bigger, which looked big indoors; `?walker=N`
+tries another size for a page load), the buddy trailing `GAP` behind (`js/follow.js`, 0.85; `?gap=N` tries another) and stepped by `drawStep()`
 from `{ dir, moving }`. The same sheets walk the towns' and the Clearing's townspeople (`person: true` in the crowd's
 cast, `js/corner-crowd.js`).
 
