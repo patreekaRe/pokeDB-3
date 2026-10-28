@@ -1212,12 +1212,19 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 ## Ideas, not agreed yet (ask the user before building)
 
 
-**A trainer tailor shop** (2026-10-28, the user's question: where would a tailor for the trainer looks go). Offered:
-(1, Claude's pick) a fourth front in the Poké Mall hall (the back wall respaced from 3 to 4; `FRONTS` in `js/mall-3d.js`),
-a Trainer Tailor with racks, a mannequin per look to walk up to and try on, a mirror, Kecleon keeping it; (2) a changing
-corner in the Safari Outfitter (no new front, but shut till the Safari Zone opens); (3) a real shop on the hall's
-painted mezzanine (stairs needed, the most work); (4) a stall in Sunwell Bazaar (runs only). The Trainer Card's picker
-stays for switching; buying in the shop only or both, to ask. Waiting on the user's pick.
+**A trainer tailor shop: the user picked option 1** (2026-10-28): a fourth front in the Poké Mall hall, the Trainer
+Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/kecleon.png` are in). Ready to build:
+
+> ▶ Run in: CLOUD · effort: high. Read `docs/reference/hub-base-mall.md` (the mall, and the Safari Outfitter's section as
+> the model: `js/mall-outfitter.js` paints its front, sign and awning and builds its lodge) and
+> `docs/reference/trainer-follow.md` (the looks, `LOOK_PRICE`, `lookPicker()`). Build the Trainer Tailor as the mall's
+> fourth front: respace the hall's back wall from three fronts to four (`FRONTS` in `js/mall-3d.js`, `dressFronts()` in
+> `js/mall-hall.js`), paint its front and sign in the others' style, and build its inside in `js/mall-tailor.js`: clothes
+> racks, a mirror, Kecleon at the counter, and a mannequin per look (its walking sheet's front frame on a stand), owned
+> ones marked. Walk up to a mannequin to try it on (you and your buddy walk out wearing it); one you don't own asks to buy
+> it at `LOOK_PRICE` in the shops' buy window. Keep the Trainer Card's picker for switching (and buying, unless the user
+> says shop only). A `?mall=tailor` flag, a `NEWS` line if the PC should tell of it, a patch note, the budget check on the
+> mall places. No names on the mannequins (the user's call). Ask the user first only whether buying stays on the card too.
 
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking
