@@ -33,7 +33,8 @@ import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems, syncDecks } from './data/duo.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
-import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog, rareMark } from './ui.js';
+import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
+import { smoothIcon } from './smooth-icons.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS } from './data/enemies.js';
 import { REAL_TYPES, realMultiplier, speciesTypes, moveType } from './data/real-types.js';
@@ -3003,7 +3004,6 @@ function setupEnemy() {
   const type = typeless() ? 'normal' : b.def.type;   // elites and bosses ignore the chart, so show them as Neutral
   $('enemy-zone').dataset.type = type;
   $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.shiny ? '✨ ' : '') + b.def.name;
-  if (b.rare) $('enemy-name').prepend(rareMark('inline'), ' ');   // rustling grass, not a shiny's ✨ (the user mixed them up, 2026-10-20)
   $('enemy-plate').classList.toggle('rare', b.rare);
   $('enemy-plate').classList.toggle('shiny', b.shiny);
   $('enemy-shiny').hidden = !b.shiny;
@@ -3381,9 +3381,9 @@ function renderStatus() {
   if (en.strength < 0) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: ${-en.strength} less damage on every attack`, 'good']);
   if (en.bait)     enemyBadges.push(['🍓', en.bait, `Bait ${en.bait}: easier to catch, but its attacks deal ${en.bait * BAIT.damage} more`, 'bad']);
   if (en.rock)     enemyBadges.push(['🪨', en.rock, b.rare ? `Rock ${en.rock}: it runs off ${en.rock} turn${en.rock > 1 ? 's' : ''} sooner` : `Rock ${en.rock}: ${Math.round(ROCK_FLEE * en.rock * 100)}% chance it runs off on its turn`]);
-  if (b.rare && !b.over) { const left = Math.max(0, RARE.turns - en.rock - b.turn + 1); enemyBadges.push(['💨', left, `A rare Pokémon: it runs off after ${left} more turn${left === 1 ? '' : 's'} of yours. Catch it or knock it out first!`, 'bad']); }
   if (b.def.trait) enemyBadges.push([TRAITS[b.def.trait.id].icon, '', TRAITS[b.def.trait.id].text(b.def.trait), 'bad']);
   $('enemy-status').replaceChildren(...enemyBadges.map(badgeFor));
+  fleePill(b);
 
   const playerBadges = [];
   if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage ${b.powers.keepBlock ? 'and stays between turns' : 'until your next turn'}`, 'block']);
@@ -3411,6 +3411,21 @@ function renderStatus() {
     if (b.powers[key]) playerBadges.push([power.icon, power.flag ? '' : b.powers[key], power.text(b.powers[key]), 'good']);
   }
   $('player-status').replaceChildren(...playerBadges.map(badgeFor));
+}
+
+/** A rare spawn's RARE pill under its HP bar: a figure running and the turns of yours before it runs off. It replaced
+    a grass tuft by its name, read as a Grass type on an Electric Pokémon, and a 💨 badge that didn't say what it counted
+    (the user's ask, 2026-10-28). The figure is built once, so a re-render doesn't restart its run. */
+function fleePill(b) {
+  const pill = $('enemy-flee');
+  pill.hidden = !b.rare || b.over;
+  if (pill.hidden) return;
+  const left = Math.max(0, RARE.turns - b.enemy.rock - b.turn + 1);
+  if (!pill.firstChild) pill.append(el('span', 'rare-flee-tag', 'RARE'), smoothIcon('run', 'rare-flee-run'), el('span', 'rare-flee-n'));
+  pill.querySelector('.rare-flee-n').textContent = left;
+  pill.classList.toggle('last', left <= 1);
+  pill.title = `A rare Pokémon: it runs off after ${left} more turn${left === 1 ? '' : 's'} of yours. Catch it or knock it out first!`;
+  pill.setAttribute('aria-label', pill.title);
 }
 
 /** A floating status icon above a sprite, with its number in a corner bubble. */

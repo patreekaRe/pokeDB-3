@@ -3372,3 +3372,8 @@ Clearing within its phone budget. Detail in `docs/reference/hub-base-mall.md` an
 ### Safari lobby: the Duo key at the gate's top right (2026-10-20, cloud)
 The user's call from a phone screenshot: the Duo key moved from the bottom row into the gate window's top right corner
 (`.sp-duo-key`), grey until the day's Daily run is done; the bottom row has four keys.
+
+### Safari battle: a RARE pill under a rare spawn's HP bar (2026-10-28, cloud)
+The user's call from a phone screenshot (a rare Jolteon's grass tuft read as a Grass type): the tuft by the name and the
+💨 badge are gone; a RARE pill under the HP bar shows the Run key's running figure and the turns left, red on the last
+(`fleePill()` in `js/battle.js`). The map keeps its rustling grass.
