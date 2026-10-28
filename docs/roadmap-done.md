@@ -3721,6 +3721,9 @@ every `ball3d()` was blank, the battle send-out included; it now sets an absolut
 - **PP and End Turn effects** (2026-10-28, the user's ask, to match the move effects; straight to `main`): PP's refill
   swirls gold motes into the pill with a gold charge and shine, spending puffs sparks, End Turn bursts and shines when
   pressed and as it hops (`ppFx()` / `endTurnFx()` in `js/movefx.js`). Budget check (gym, tower) within budget.
+- **New PP and End Turn look** (2026-10-28, branch `button-look`, merged to `main` on the user's yes): dark glass plates
+  with the turn banner's gold rim, leaning; PP's number in slanted Chakra Petch over a gold fill to the PP left (pips
+  came first, then a wave and bubbles, both dropped on the user's calls); "END TURN »"; Throw / Mulligan in green / violet.
 - **Kurt's bench, compact** (2026-10-28, the user's ask: "that middle section is huge"; on `main`): slimmer tabs, a 52px
   picture, no MATERIALS label, a smaller Make, Kurt's line on a pick only says what's still needed. On a 390x760 phone the
   shelf went from 120px to 253px. CSS scoped to `.dialog.craft.kurt`; the Garden could take the same pass.

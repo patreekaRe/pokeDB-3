@@ -1583,21 +1583,7 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
   fight, block and end a turn; say if either should be different (heavier, shorter, more 8-bit, or a file of their own).
   ▶ Run in: PLAYTEST ON THE LIVE SITE.
 
-**New look for PP and End Turn** (2026-10-28, the user's ask: "I wanted the buttons to look different"; branch
-`button-look`, commit `cee0429c`): dark glass plates with the turn banner's gold rim, leaning; PP's number in the banner's
-slanted gold Chakra Petch with a gold pip per PP left (lit one by one on a refill); "END TURN »" with the » running and
-the rim breathing while it's the move; Throw / Mulligan in the same plates with their green / violet rims. One CSS block
-after the hover rules in `css/screens.css` overrides the old salmon capsules. Playtest:
-`https://rawcdn.githack.com/patreekaRe/pokeDB-3/cee0429c4132bf948ceab72520da0d625aa36f99/index.html?arena=wild&starter=charmander`. On a yes: merge,
-fold the old capsule rules out, add a patch note (edit the battle line in `NEXT`), note it in battle-screen-layout.md.
 
-**New look for PP and End Turn** (2026-10-28, the user's ask: "I wanted the buttons to look different"; branch
-`button-look`, commit `cee0429c`): dark glass plates with the turn banner's gold rim, leaning; PP's number in the banner's
-slanted Chakra Petch; "END TURN »" with the » running and
-the rim breathing while it's the move; then (the user's idea) the plate fills like a glass, gold liquid to the PP left of the turn's, right to the top when full and flat (a wave and bubbles came off on the user's call), rising as the refill lands and dropping as PP is spent; it replaced pips (one per PP), which widened the plate past 5 and overflowed Safari's row at 8; Throw / Mulligan in the same plates with their green / violet rims. One CSS block
-after the hover rules in `css/screens.css` overrides the old salmon capsules. Playtest:
-`https://rawcdn.githack.com/patreekaRe/pokeDB-3/cee0429c4132bf948ceab72520da0d625aa36f99/index.html?arena=wild&starter=charmander`. On a yes: merge,
-fold the old capsule rules out, add a patch note (edit the battle line in `NEXT`), note it in battle-screen-layout.md.
 
 - **3D balls, the Trainer Card's Ball key, the Outfitter's Apricorn** (2026-10-27, branch
   `claude/pokeball-appearance-customization-4ww68i`, on `main` too; archive): every ball thrown in battle (the send-out,
