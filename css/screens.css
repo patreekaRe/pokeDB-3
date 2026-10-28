@@ -2405,6 +2405,65 @@ body.battle-intro { pointer-events: none; }
 .evo-skip { position: absolute; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom));
   font-size: 12px; color: rgba(0, 0, 0, 0.45); pointer-events: none; visibility: hidden; }
 .evo-scene.skippable .evo-skip { visibility: visible; }
+/* The evolution scene's comic intro (js/evo-comic.js): manga panels cut out of the white, each a clipped full-page
+   layer with a halftone in its type's colour, focus lines, a zoomed face and a black frame; the gutters are the white. */
+.evc { position: absolute; inset: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); overflow: hidden; pointer-events: none; }
+.evc-panel {
+  position: absolute; inset: 0; overflow: hidden;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.17) 30%, transparent 34%) 0 0 / 7px 7px,
+    radial-gradient(ellipse at var(--at), #fffdf4 0%, #fffdf4 22%, var(--tone) 80%);
+  translate: -106% 0;
+  transition: translate 0.34s cubic-bezier(0.2, 1.25, 0.4, 1);
+}
+.evc-panel.from-right { translate: 106% 0; }
+.evc-panel.in { translate: 0 0; }
+.evc-lines, .evc-frame { position: absolute; inset: 0; width: 100%; height: 100%; }
+.evc-frame { overflow: visible; }
+.evc-frame polygon { fill: none; stroke: #111; stroke-width: 10px; vector-effect: non-scaling-stroke; stroke-linejoin: miter; }
+.evc-face { position: absolute; width: 0; height: 0; }
+.evc-face.flip { scale: -1 1; }
+.evc-face img { position: absolute; left: 0; top: 0; max-width: none; image-rendering: pixelated; }
+.evc-panel.in .evc-face { animation: evcPush 5s ease-out both; }
+@keyframes evcPush { from { transform: scale(1); } to { transform: scale(1.1); } }
+.evc-bubble {
+  position: absolute; max-width: min(46%, 260px); padding: 10px 14px;
+  background: #fff; color: #111; border: 3px solid #111; border-radius: 50% / 46%;
+  font-size: 16px; line-height: 1.35; text-align: center;
+  animation: evcPop 0.28s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+.evc-bubble::before, .evc-bubble::after { content: ''; position: absolute; border-style: solid; border-color: transparent; }
+.evc-bubble::before { bottom: -19px; left: 38%; border-width: 18px 6px 0 10px; border-top-color: #111; }
+.evc-bubble::after { bottom: -12px; left: calc(38% + 4px); border-width: 12px 3px 0 6px; border-top-color: #fff; }
+.evc-bubble.b0 { left: 5%; top: 33%; }
+.evc-bubble.duo.b0 { left: 3%; top: 9%; }
+.evc-bubble.duo.b1 { right: 3%; top: 15%; }
+.evc-bubble.duo.b1::before { left: auto; right: 38%; border-width: 18px 10px 0 6px; }
+.evc-bubble.duo.b1::after { left: auto; right: calc(38% + 4px); border-width: 12px 6px 0 3px; }
+@keyframes evcPop { from { opacity: 0; transform: scale(0.3); } }
+.evc-sfx {
+  position: absolute; right: 5%; top: 17%; rotate: -10deg;
+  font-size: clamp(56px, 15vw, 120px); line-height: 1; letter-spacing: -0.05em;
+  text-shadow: 4px 0 #111, -4px 0 #111, 0 4px #111, 0 -4px #111, 4px 4px #111, -4px -4px #111, 4px -4px #111, -4px 4px #111, 9px 9px 0 rgba(0, 0, 0, 0.3);
+  animation: evcStamp 0.3s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+.evc.duo .evc-sfx { right: auto; left: 50%; top: 58%; translate: -50% 0; }
+@keyframes evcStamp { from { opacity: 0; scale: 2.6; } }
+.evc.shake { animation: evcShake 0.32s linear; }
+@keyframes evcShake { 20% { translate: -7px 4px; } 40% { translate: 6px -5px; } 60% { translate: -4px -3px; } 80% { translate: 3px 3px; } }
+.evc::after { content: ''; position: absolute; left: -20%; top: 50%; width: 140%; height: 10px; background: #fff; box-shadow: 0 0 12px #fff;
+  rotate: -24deg; scale: 0 1; transform-origin: left; opacity: 0; }
+.evc.slash::after { opacity: 1; scale: 1 1; transition: scale 0.18s ease-in; }
+.evc.slash .evc-panel { transition: translate 0.3s cubic-bezier(0.6, 0, 0.9, 0.4) 0.1s; }
+.evc.slash .evc-panel.from-left { translate: -110% -8%; }
+.evc.slash .evc-panel.from-right { translate: 110% 8%; }
+.evc.slash .evc-bubble, .evc.slash .evc-sfx { opacity: 0; transition: opacity 0.12s; }
+.evc.still .evc-panel { translate: 0 0; opacity: 0; transition: opacity 0.3s; }
+.evc.still .evc-panel.in { opacity: 1; }
+.evc.still .evc-face, .evc.still .evc-bubble, .evc.still .evc-sfx { animation: none; }
+.evc.gone { opacity: 0; transition: opacity 0.35s; }
+/* a duo evolves side by side, each on its own feet */
+.evo-scene.duo .evo-mon:first-of-type { left: 30%; }
+.evo-scene.duo .evo-mon + .evo-mon { left: 70%; }
 /* The Hall of Fame (js/halloffame.js), after a Level 5 win: a white flash, then a starry night; your Pokémon slides onto
    a pedestal under a spotlight, its plate pops up, and its final deck rises along the bottom above the text box. */
 .hof-scene { position: fixed; inset: 0; z-index: 950; overflow: hidden; background: radial-gradient(ellipse at 50% 38%, #34489a, #18205a 55%, #0a0e2c); }
