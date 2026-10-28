@@ -3728,6 +3728,7 @@ every `ball3d()` was blank, the battle send-out included; it now sets an absolut
   plates' `:is(#player-energy, …)` outranked Throw's green and Mulligan's violet rim (both came out gold), and on a phone
   the capsule era's `:has(.throw-btn:not([hidden]))` rules outranked the plates (5-6px of padding round the PP fill,
   2.2rem tall). Rims now keyed by id, the Safari row's plates reset in the phone block, and Throw / Mulligan brighten on hover.
+  Then (the user's ask): Throw no longer shows at all in Safari Alpha and boss fights (it showed greyed since 2026-10-20).
 - **Kurt's bench, compact** (2026-10-28, the user's ask: "that middle section is huge"; on `main`): slimmer tabs, a 52px
   picture, no MATERIALS label, a smaller Make, Kurt's line on a pick only says what's still needed. On a 390x760 phone the
   shelf went from 120px to 253px. CSS scoped to `.dialog.craft.kurt`; the Garden could take the same pass.
