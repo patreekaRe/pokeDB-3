@@ -1223,6 +1223,18 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**You walk as a trainer, your buddy following** (2026-10-28, the user, after the overworld sprites: "adding actual
+trainers like this and have our buddy follow us?", with a Gen 4 trainer sheet: Red, Ethan, Lyra, Lucas, Dawn, Brendan,
+May and others, 3 steps a direction, green backdrop). Today there is no player body: the buddy is you. Claude's lean: you
+pick a trainer look (new-player setup, changeable on the Trainer Card; more unlockable later), the trainer walks where you
+tap and the buddy follows a tile behind on your footsteps (HeartGold-style); tapping the buddy still talks to it. Needs:
+(1) a clean sheet, best a Pokémon Essentials trainer pack (the same 4 x 4 format the Pokémon use, so it drops into
+`drawOverworld()`); the picture the user sent is a small preview; (2) a size call: the Pokémon are drawn as tall as their
+battle GIFs on `overworld-sprites`, so a trainer would stand shorter than Charizard but also shorter than its Pikachu; true
+overworld proportions (one size a pixel for all) would fix that but shrink small Pokémon in the world; (3) one shared
+follower module, since every place has its own walker (Clearing, towns, Center, Mart, rooms, base, mall, crossroads):
+Clearing and towns first. Waiting on the user's go and the sheet.
+
 - **More "leave for a turn" moves** (2026-10-28, the user's Dig fix; done part in the archive): offered and **not picked**
   for now: your own Fly card (Flying) and Dive card (Water, in Squirtle's deck) flying / diving out of reach and ending the
   turn, Diglett's signature Dig card working like Ground's Dig, and a dodge while underground (the enemy's attack missing,
