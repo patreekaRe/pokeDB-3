@@ -1578,18 +1578,6 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 
 ## Waiting on the user
 
-- **More card effects** (2026-10-28, branch `more-card-fx`, NOT on `main` yet; the user's ask: "can we do all of it"):
-  every idea from the list is built: a move's own effect for 160-odd attacks plus a type's for the rest
-  (`js/movefx.js`, `js/data/move-fx.js`), hits lighting the foe and the 3D arena with a jolt, a cut-in for 3-PP and
-  rare cards, a shield bubble on block, heal motes, status ambience (Burn, Leech Seed, Static, Frostbite), the card's
-  ribbon and a risen card's type glow, and Settings' Effects look (Smooth / Pixel / Off). Notes in
-  `docs/reference/battle-screen-layout.md`. ▶ Run in: PLAYTEST ON THE LIVE SITE (the branch's githack link). If the user
-  likes it: merge to `main` (its patch line is in `NEXT` already). To ask: whether the cut-in is too slow, and any move
-  whose effect looks wrong (one `MOVE_FX` line moves it).
-  Optimized 2026-10-28 on the user's ask (fps and leaks before main): effects 1.7 -> 1.1 ms a frame, no dropped frames
-  in the stress run, the canvas at 1.5x and freed when quiet, nothing left behind (`tools/fx-probe.mjs`). Last commit:
-  see `git log origin/more-card-fx`.
-
 - **3D balls, the Trainer Card's Ball key, the Outfitter's Apricorn** (2026-10-27, branch
   `claude/pokeball-appearance-customization-4ww68i`, on `main` too; archive): every ball thrown in battle (the send-out,
   a Gym Leader's, a Safari catch) is the Center's 3D ball as a pre-rendered spinning sheet, your partner comes out of the

@@ -3708,3 +3708,8 @@ every `ball3d()` was blank, the battle send-out included; it now sets an absolut
 - **Smooth card effects** (2026-10-28, branch `clean-card-fx`, merged to `main` on the user's yes, patch 1.31 "Balls &
   Records" cut with it): played cards' trails, landing bursts and the exhaust burn drawn smooth from sprites instead of
   whole pixels (`drawClean()` / `burnClean()` in `js/cardfx.js`); `?pixelfx` shows the old look for a page load.
+- **More card effects** (2026-10-28, branch `more-card-fx`, merged to `main` on the user's "I love it"): every attack
+  plays its move's effect (`js/movefx.js`, `js/data/move-fx.js`: 24 effects, 160-odd moves, the rest by type), hits light
+  the foe and the 3D arena with a jolt, 3-PP and rare cards get a cut-in, blocks a shield bubble, heals motes, the foe's
+  statuses their ambience, the flying card a ribbon and a risen card its type's glow; Settings' Effects look (Smooth /
+  Pixel / Off). Optimized before the merge (1.1 ms a frame, the canvas at 1.5x and freed when quiet; `tools/fx-probe.mjs`).
