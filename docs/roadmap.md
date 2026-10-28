@@ -1578,6 +1578,14 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 
 ## Waiting on the user
 
+**Kurt's bench, compact** (2026-10-28, the user's ask: "that middle section is huge"; branch
+`claude/kurt-window-compact`, commit `d6081765`): slimmer tabs, a 52px picture, no MATERIALS label, a smaller Make, and
+Kurt's line on a pick only says what's still needed (the card already holds the text). On a 390x760 phone the shelf went
+from 120px to 253px tall. CSS scoped to `.dialog.craft.kurt` (the end of the six-tabs block in `css/screens.css`), so
+the Garden and the dojo are untouched. Patch note: folded into the ✕ look line in `NEXT`. Playtest:
+`https://rawcdn.githack.com/patreekaRe/pokeDB-3/d6081765c64b0df5cf826cb14f8096afdd348084/index.html?mended&satchel`
+(Kurt's on the Clearing's east avenue). On a yes: merge to `main`; the Garden could take the same pass.
+
 **New look for PP and End Turn** (2026-10-28, the user's ask: "I wanted the buttons to look different"; branch
 `button-look`, commit `cee0429c`): dark glass plates with the turn banner's gold rim, leaning; PP's number in the banner's
 slanted gold Chakra Petch with a gold pip per PP left (lit one by one on a refill); "END TURN »" with the » running and
