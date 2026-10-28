@@ -13,6 +13,7 @@ import { newFinds, showBadgeNews } from './trainercard.js';
 import { el, makeCard, zoomable } from './ui.js';
 import { kindOf, costRank } from './deckpreview.js';
 import { smoothIcon } from './smooth-icons.js';
+import { typeBadge } from './type-badge.js';
 
 const TAB_LOOK = { mystery: { label: '???' } };
 const RARITIES = [['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare']];
@@ -97,7 +98,7 @@ function moveList(type) {
   }
   const cards = ALL_CARDS.filter(c => c.type === type);
   const seen = new Set(getSave().seen.cards);
-  const body = RARITIES.flatMap(([rarity, label]) => moveGroup(label, cards.filter(c => !c.evoOnly && (c.rarity || 'common') === rarity), seen));
+  const body = RARITIES.flatMap(([rarity, label]) => moveGroup(label, cards.filter(c => !c.evoOnly && !c.noOffer && (c.rarity || 'common') === rarity), seen));
   body.push(...moveGroup('Evolution: 1st form', evolutionCardsFor(type, 1), seen, 'Offered when your starter first evolves.'),
     ...moveGroup('Evolution: final form', evolutionCardsFor(type, 2), seen, 'Offered when it reaches its final form.'));
   return body;
@@ -157,7 +158,8 @@ export function movesApp(type) {
         btn.type = 'button';
         btn.dataset.type = t;
         btn.setAttribute('role', 'tab');
-        btn.append(smoothIcon(t === 'mystery' ? 'lock' : t), el('span', 'mv-tab-label', (TAB_LOOK[t] || TYPES[t]).label));
+        // the names are back now the row scrolls (they cut to "F…", "G…" when eleven shared one row)
+        btn.append(t === 'mystery' ? smoothIcon('lock') : typeBadge(t), el('span', 'mv-tab-label', (TAB_LOOK[t] || TYPES[t]).label));
         btn.addEventListener('click', () => show(t));
         return btn;
       }));

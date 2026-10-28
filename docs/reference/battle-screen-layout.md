@@ -150,8 +150,34 @@ in view (the user found it too much in the way).
 Once played it flies off to where it acts (`flyCard()` -> `flyTrail()` in js/cardfx.js, the user's call 2026-09-28, 0.4 s,
 0.2 s at 2x, never awaited): an attack arcs high, spinning, into the enemy as the hit lands, anything else drops glowing into your
 Pokémon, both shedding a trail in the card's type (Fire embers, Water droplets, Grass leaves, Psychic sparkles, Neutral white;
-roadmap 8, 2026-10-03) with a burst where it lands. The particles are whole pixels on one low-res canvas (`.card-fx`, 3 CSS px
-a pixel on phones, 4 wider), faded by stepping down a palette. The card is a clone flown by a Web Animation of transform and opacity (2026-10-18:
+roadmap 8, 2026-10-03) with a burst where it lands. The particles live on one canvas (`.card-fx`). Since 2026-10-28 (branch
+`clean-card-fx`, the user's ask: the pixels looked messy) they're drawn smooth at the screen's sharpness (at most 2x, the canvas
+emptied to 0x0 once idle, it's megabytes): soft glowing embers cooling white to red, turned and stretched water droplets,
+spinning, tumbling leaves, twinkling four-point stars (Psychic, Electric), snowflakes (Ice), soft specks, and a ring where it
+lands, from sprites painted once per type (`drawClean()` in js/cardfx.js); the exhaust burn's edge is a smooth wavering glow
+over a char band (`burnClean()`). The physics is shared: particles move in units of 3 CSS px on phones, 4 wider. `?pixelfx`
+shows the old look for a page load: whole pixels on a low-res canvas, faded by stepping down a palette. **More effects** (2026-10-28, branch `more-card-fx`, the
+user's ask, all of the ideas at once; `js/movefx.js`, drawn on the same canvas and loop through `kit` in js/cardfx.js):
+each attack's hit plays its move's effect (`MOVE_FX` in js/data/move-fx.js, else its type's `TYPE_FX`: a stream, wave,
+beam, bolt, bubbles, blades, petals, vines, flames / inferno, orb, frost / blizzard / shards, rings, punch, slash,
+fangs, rocks / quake, gust / twister, void; a multi-hit move's later hits only punch and flash), the hit's light over the
+scene, the foe's sprite flashing its colour (`tintFoe()`, masked like `statFx()`), the 3D arena's sky light leaning to it
+(`glowArena()` in js/arena-3d.js: no new light, so no shader rebuilds) and a jolt as big as the hit (`.fx-jolt`, `--jolt`;
+not under `calmFx()`, and a big hit keeps `bigHit()`'s); all of it from `strikeFx()` in js/battle.js. A 3-PP (or X of 3+)
+or rare card's cut-in plays first (`cutIn()`, 0.6 s, 0.3 at 2x: the screen dims and a band in its type's colours sweeps
+across with its name) and its first hit holds a beat (`.hitstop`). Block gained forms a hex shield bubble round your
+Pokémon (`shieldFx()`, at most one each 0.4 s), a heal raises green motes (`healFx()`), and the foe's Burn, Leech Seed,
+Static and Frostbite show on it all fight (`ambience()`, from `renderStatus()`; the loop drops to half rate once only
+that is left, and stops off screen). The flying card leaves a tapering ribbon (`ribbon()`), and a risen card glows its
+type's colour (`.lift-glow`, opacity only). Settings' **Effects look** (`cardFx`: Smooth / Pixel / Off) picks the canvas:
+Pixel draws everything, the new effects too, in pixels; Off skips them (Battle animations Off skips them too).
+**PP and End Turn** (2026-10-28, the user's ask, to match): a turn's refill swirls gold motes into the PP pill, then a ring, a flash and stars as they land (`ppFx()` in js/movefx.js, from `ppChanged()` in js/battle.js, flagged by `b.refilled` in `beginPlayerTurn()` so it plays even when PP comes back to the same number), while the capsule charges gold (`.energy-orb.refill`), a shine sweeps it (`::after`, a background-position sweep) and the number pops gold (`b.fill`); a card's +PP gathers a few motes and the shine (`.gain`); spending PP puffs gold sparks off the number. Pressing End Turn (`askEndTurn()`, not a switch or throw that ends the turn) flashes it, throws a ring, speed lines and sparks up toward the arena (`endTurnFx()`) and sweeps the shine (`.pressed`); the shine also runs with End Turn's hop when nothing is left to play (`.nudge`). Each one-shot class comes off once played (`replay()` in js/battle.js): left on, `.pressed` outranked `.nudge`'s looping shine, and a hidden screen's animations replay when it next shows. Changes within one fight only (`ppShownFor`), so a new fight doesn't puff. **The plates' look** (2026-10-28, the user's ask, merged from branch `button-look`): PP, End Turn, Throw and Mulligan are dark glass plates with a rim (`--rim`: the turn banner's gold, Throw green, Mulligan violet, PP red when empty), skewed -8deg with their contents skewed back, in one block after the hover rules in css/screens.css that overrides the older salmon DS-capsule rules above it (ids in its selectors, since the hover rules match through `#end-turn-btn`). PP's number is slanted white Chakra Petch (gold on the gold fill didn't read) over `.pp-fill`: gold liquid to `--lvl` (the PP left of the turn's), kept across renders so its height eases, rising after the refill's motes (`.refill` delays it) and full to the plate's top; no wave or bubbles (the user's call: pips, then a wave, were tried). End Turn reads "END TURN »" (`.et-arrow`, running and the rim breathing under `.nudge`). `tests/move-fx.test.mjs` checks every `MOVE_FX` line names a card and an effect that exists. **Kept cheap** (2026-10-28, the
+user's ask before main): the canvas draws at 1.5x CSS pixels at most (2x dropped frames headless in a busy fight and
+held 5.6 MB; 1.5x holds 3.2 and dropped none), is cleared when quiet and freed after 5 s of it (freeing it at once made
+the next card's first frame cost ~4 ms), particles are capped at `MAX_PARTS` (450), drawn in two passes by blend (the
+glowing ones in one run) with `put()` setting the transform outright rather than a save/restore each, the dead dropped
+in place, and every gradient a sprite painted once (a hit's light, the shield, a scorch, the void). `tools/fx-probe.mjs`
+measures it: 1.1 ms a frame on average, 2.2 at the 95th percentile, and nothing left behind or growing. The card is a clone flown by a Web Animation of transform and opacity (2026-10-18:
 moved by hand every frame it restyled ~60 elements a frame and stuttered whenever the 3D arena, the text box or the hand's
 redraw ran long; a block's glow is `.fly-glow`'s opacity, not a filter). `renderHand()` keeps a hand card's node while it
 would look the same (its HTML, less the art's numbered SVG ids), so a tap no longer rebuilds and re-fits the whole hand; a
@@ -316,3 +342,39 @@ starts calm.
 Before adding a
 generic class name, grep `css/` and `js/` for it.
 
+**Turn banner** (2026-10-25, the user's ask, from Slay the Spire's): `turnBanner()` in `js/battle.js` lays a dark stripe
+across the middle of `.arena` (`#turn-banner`, `.turn-banner` in `css/screens.css`) at the start of each of your turns,
+"Battle Start!" (gold, with its own synth sting, `battleSting()` in `js/audio.js`) first on turn 1 with turn 1's own banner queued behind it (`turnNext`, dropped if End Turn comes first),
+"Your Turn:" with the turn's number beside it (2026-10-25, the user's call: one line; a slanted gold Chakra Petch numeral that slams in), and "Enemy Turn" (a red rim) after End Turn, unless Time Warp or Eye of the Storm skips the
+enemy. Your Turn and Enemy Turn each get Game Boy menu blips (`turnBlips()` in `js/audio.js`: three up, or two low ones down over a swish; 2026-10-25, the user's pick over soft bell chimes; a stat sound at turn start can cover them, which the user is fine with). It never blocks a tap; off with Settings' battle effects (`battleFx()`), a fade only under `calmFx()`, half as
+long at 2x. Turn 1's Ability banner (Torrent, Pressure, Snow Warning) waits for both to go (`afterTurnBanner()`). The
+Enemy Turn wait after End Turn went from 500 to 750 ms to let it read.
+
+**A duo's switch** (2026-10-20, the user's calls from their phone): hold your Pokémon (`#player-zone`, `holdStart()` /
+`holdEnd()` in `js/battle.js`, 450 ms; a conic ring fills round it, `.player-zone.duo.holding::after`) and the Go pill
+comes up just over your plate, small (the user's call, 2026-10-20: not a centred window, so the enemy and its intent stay
+in view): "⇄ Bulbasaur", then "1 PP · ends turn" and, when it matters, "▲ Ice Punch" / "▼ Ice Punch" in red / blue; the
+full sentence is its title. A tap gives "Hold your Pokémon to switch partners." Through a duo fight's first two turns, "hold to swap" fades in and out over your Pokémon (`#swap-hint`, the hand
+hint's look; gone after the first hold), centred on its pose's middle (`centreSwapHint()`, by `SPRITE_FIT`). A tap anywhere else puts the pill away. The bench portrait
+on the plate's corner (and `HEAD_FIT`) came and went the same day: the Pokémon moved too much to read at that size. The
+plates' type marks are round badges (`typeText()` in `js/type-badge.js`), not emoji.
+**Lethal warning, relic flash, Victory / Defeat** (2026-10-25, the user's picks from the battle-juice list): when the
+enemy's next attack would get through your block (`incoming()`: Evasion, Protective Pads, Assault Vest) for your HP or
+more, the intent gets `.lethal` (a red throb and a 💀) and `#player-plate.danger` blinks your HP bar red (`battleFx()`
+only; still under `calmFx()`; red arena edges were tried first and looked like a frame on a phone, the user's call); a hit your block fully covers gets a blue ✔. Relics doing something call `fired(id)` (hasRelic() plus
+`relicFlash()`): the first time a relic fires in a fight it gets a stripe in the turn banner's style (`#relic-banner`, `relicBanner()`:
+queued after any turn banner via `turnBusy`, one relic a stripe, one after another (the user's call), a new turn banner
+replaces it), with what it did in green beside its name (`RELIC_GAIN`, "+2 HP"; `fired(id, gain)` for one that varies:
+Enigma Berry, Spelon Berry; a new relic trigger needs a `RELIC_GAIN` line); no icons on turn 1, which has its banners; after that its icon, in Torrent's window (the user's call, after trying it bare), slides in from the arena's left edge
+like Torrent's pop-up (`bannerIn`, above
+where Torrent's shows), one at a time, the next sliding in as the last slides out (the user's calls:
+chips with names every time were too fast and busy) (keyframes
+`relicFlashRise`: `relicRise` is the reward screen's); passive
+modifiers (damage, draw counts) use plain `hasRelic()` since they're read in previews too. `finish()` shows
+`turnBanner('win')` (gold "Victory!", the fanfare is its sound) or `'lose'` ("Defeat…", grey, a falling `defeat` blip);
+Overgrow's banner waits for it.
+**Abilities in the same style** (2026-10-25, the user's call, every starter): `abilityBanner()` gives an Ability's first
+use in a fight a stripe like a relic's, with what it did (`ABILITY_GAIN`: "🌊 Torrent +2 Tide"), and the Gen 5 window
+sliding in from the left only from turn 2 on (with battle effects off, the window as before). Static (each enemy attack)
+and Guts (lighting up as a status card comes in) now call it too; Overgrow's after a win queues behind Victory!
+(`relicBanner(..., late)`). `afterTurnBanner()` is gone: the stripe queue (`turnBusy`) does its job.

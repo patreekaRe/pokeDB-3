@@ -1533,7 +1533,12 @@ function frame(now) {
   const t = now / 1000;
   stormK += ((stormOn ? 1 : 0) - stormK) * Math.min(1, dt * 1.5);
   const look = A.look;
-  hemi.intensity = look.hemi[2] * (1 - stormK * 0.45) + flashK * 2;
+  hemi.intensity = look.hemi[2] * (1 - stormK * 0.45) + flashK * 2 + glowK * 1.4;
+  if (glowK > 0 || glowed) {   // an attack's light: the sky light leans to its colour for a moment (no new light, no new shaders)
+    hemi.color.copy(look.hemiCol ||= new THREE.Color(look.hemi[0])).lerp(glowCol, Math.min(1, glowK) * 0.6);
+    glowed = glowK > 0;
+    glowK = Math.max(0, glowK - dt * 3);
+  }
   sun.intensity = look.sun[1] * (1 - stormK * 0.75);
   if (stormOn && Math.random() < dt * 0.25) flashK = 1;   // lightning, now and then
   flashK = Math.max(0, flashK - dt * 3);
@@ -1730,6 +1735,14 @@ export function unmountArena() {
   sceneBare({ dais: false, medal: false });
   view?.classList.remove('on', 'fade');
   if (A) { dispose(A.group); scene.remove(A.group); A = null; }
+}
+
+let glowK = 0, glowed = false, glowCol = null;
+/** An attack lands: the arena takes on its colour for a moment, `k` (about 0.4-1) how strongly (js/movefx.js). */
+export function glowArena(colour, k = 0.6) {
+  if (!THREE || !A) return;
+  (glowCol ||= new THREE.Color()).set(colour);
+  glowK = Math.max(glowK, k);
 }
 
 /** A boss close to fainting brings the weather in (rain, lightning), like the pixel scene's storm. */

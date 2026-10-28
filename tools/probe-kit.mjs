@@ -37,13 +37,13 @@ export async function threeCopy(named) {
   }
   const dir = join(tmpdir(), 'pokedb-three');
   await mkdir(dir, { recursive: true });
-  execFileSync('npm', ['pack', 'three@0.160.0', '--silent'], { cwd: dir });
+  execFileSync('npm', ['pack', 'three@0.160.0', '--silent'], { cwd: dir, shell: process.platform === 'win32' });   // npm is npm.cmd on Windows
   execFileSync('tar', ['xzf', 'three-0.160.0.tgz'], { cwd: dir });
   return join(dir, 'package/build/three.module.min.js');
 }
 
 export const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1';
-export const launch = () => playwright().chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--js-flags=--expose-gc', '--autoplay-policy=no-user-gesture-required'] });
+export const launch = () => playwright().chromium.launch({ executablePath: process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium', args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--js-flags=--expose-gc', '--autoplay-policy=no-user-gesture-required'] });
 
 /** A fresh phone: instrumented, three.js served locally, Firebase turned away, errors collected in `errors`. */
 export async function phone(browser, three) {
@@ -211,3 +211,18 @@ export function instrument() {
 
 /* The Clearing's doors, for a probe walking between places in one page: served with js/hub-3d.js only, never shipped. */
 export const HUB_PEEK = (path, body) => path === '/js/hub-3d.js' ? body.toString() + '\nwindow.__hub = { enterBase, enterMall };\n' : body;
+
+/** A Duo Run from the Safari lobby (tools/duo-probe.mjs's steps): `page` already on `?duorun&duopool...`, settled. */
+export async function startDuo(page, pair) {
+  const click = (sel) => page.evaluate(s => { const n = document.querySelector(s); if (!n) return false; n.click(); return true; }, sel);
+  await page.evaluate(() => import('/js/safariprep.js').then(m => m.openSafariPrep()));
+  await page.waitForTimeout(1500);
+  await click('#sp-duo');
+  await page.waitForTimeout(800);
+  for (const t of pair) await click(`.duo-pick.type-${t} .duo-face`);
+  await page.waitForTimeout(400);
+  await click('#sp-start');
+  await page.waitForTimeout(1200);
+  for (let i = 0; i < 3; i++) { await click('#confirm-yes'); await page.waitForTimeout(800); }
+  await page.waitForTimeout(9000);
+}

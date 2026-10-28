@@ -35,12 +35,11 @@ test('every Safari Pokémon has a def, a sprite on disk, a sprite fit, a signatu
   }
 });
 
-test('no signature card shares cost and text with another card a run can meet', () => {
-  const sigs = Object.values(CARDS_BY_ID).filter(c => c.id.startsWith('sig-') && !c.upgraded);
-  const others = Object.values(CARDS_BY_ID).filter(c => !c.upgraded && !c.status && c.type !== 'psychic');   // Mewtwo never walks the Safari
-  const key = (c) => `${c.cost}|${describe(c)}|${!!c.exhaust}|${!!c.retain}|${!!c.innate}`;
-  const twins = sigs.flatMap(s => others.filter(c => c !== s && key(c) === key(s)).map(c => `${s.id} reads like ${c.id}`));
-  assert.deepEqual(twins, []);
+// the twin rule (tools/card-twins.mjs, docs/card-twins.md): a signature card is caught in any Safari run, a Duo Run too, so
+// none may read like a card any run meets, or like another signature card (the user's call, 2026-10-27)
+test('no signature card reads like a card a run can meet, or like another signature card', async () => {
+  const { sigReport } = await import('../tools/card-twins.mjs');
+  assert.deepEqual(sigReport().map(p => `${p.kind}: ${p.a.id} / ${p.b.id}`), []);
 });
 
 test('a template Pokémon grows with its area\'s place in the run', () => {

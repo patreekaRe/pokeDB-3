@@ -128,7 +128,10 @@ context small. Where two notes disagree, the later date wins.
 These used to be buried in the notes. Each one has its detail in the reference file named.
 
 - **Never remove a card id.** A saved run holding it would be thrown away. Count copies with `baseId()`. (`cards.md`)
-- **No two cards one run can meet may share a cost and text.** `noOffer: true` keeps a card out of the pools. (`cards.md`)
+- **No two cards one run can meet may read alike**: the same lines with other numbers (whatever they cost), or one plus a
+  line at the same cost, and "5 damage twice" is "Deal 10" (`node tools/card-twins.mjs`; the user's call, 2026-10-26 / 27,
+  `docs/card-twins.md`). Never reword a card just to pass: a look-alike with no real idea of its own leaves the pools. Only each type's
+  plain Strike and Defend may match. `noOffer: true` keeps a card out of the pools. (`cards.md`)
 - A new card gets an `ART` line in `js/card-art.js`. A new mechanic gets a `describe()` line and a `cardTerms()` line.
   A battle rule change is mirrored in pokeDB-sim's `sim/engine.js`. (`cards.md`)
 - Keep Mewtwo's type and all its cards masked as `???` until it's unlocked. The gate's achievement stays last in
@@ -141,7 +144,7 @@ These used to be buried in the notes. Each one has its detail in the reference f
 - What a new thing needs:
   - **Starter**: front / back / shiny GIFs per stage, `SPRITE_FIT` and `BODY_X` lines, and a cry in `CRIES`. A
     legendary also needs `tools/legendary-aura.py`. (`starters.md`)
-  - **Safari Pokémon**: a signature card, its GIF and a `SPRITE_FIT` line. (`safari.md`)
+  - **Safari Pokémon**: a signature card that reads like no other (`sigReport()`), its GIF and a `SPRITE_FIT` line. (`safari.md`)
   - **Badge**: a `LOOK` line in `js/trainercard.js`. (`badges-and-trainer-card.md`)
   - **Augment**: an `ICONS` line, plus a mirror in the sim for a new fight key. (`sky-pillar.md`)
   - **Biome**: a crossroads `ARMS` line, and a `LANDS` kit for a pool biome. (`biomes-and-journeys.md`)
@@ -158,18 +161,18 @@ These used to be buried in the notes. Each one has its detail in the reference f
 
 Flags on the live site or a githack link. Most are never saved. Details are in the file named.
 
-- **Save and unlocks**: `?levels` (every Trainer Level), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
+- **Save and unlocks**: `?levels` (every Trainer Level), `?master` (a Pokémon Master's title, crown, crystal pedestal and Gilded / Clear shells for a page load), `?aura=6..10` (that Level's Super Saiyan aura on the walking buddy and the Trainer Card for a page load; 10 brings the crown; skips the new-player setup), `?foil=6..10` (that Level's foil cards on any run), `?coins=N`, `?runback` (a saved run that failed to load put back, `docs/reference/saved-runs.md`), `?safari`, `?mewtwo` / `?lockmewtwo`,
   `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?holiday=<id>` (a seasonal furniture set on sale, `js/data/holidays.js`), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp), `?addnotice=N` (N sample TRAINER LINK pop-ups, the last one an add-back; nothing sent), `?mycard` (your own Trainers page as a friend sees it, a banner in the Trainers app; nothing fetched or sent), `?lbsample=tower|safari|arcade` (the leaderboard on made-up trainers; nothing fetched or posted), `?sparkle=N` (every Safari signature card at Sparkle ★N; nothing saved), `?graves=N` (N made-up friends' graves on any run's map and their buddies in the Trainer Plaza; nothing fetched or saved), `?hearts=N` (every friend at N hearts at home and in the Secret Base, their heart lines unheard; nothing saved; `?base&hearts=5&visit` a best friend sitting).
 - **Look**: `?time=dawn|day|dusk|night`, `?season=halloween|winter|none`, `?hybrid` / `?pixel` / `?smooth`,
   `?pixelcards`, `?sharp=soft|sharp|max` (the Sharpness setting for a page load), `?phone` (a phone frame on a wide screen), `?standalone` (3D drawn as in a Home Screen app), `?signs` / `?walk` (old title / walkable Clearing).
 - **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`
   (`&center2d`), `?mart` (`&money=`), `?crossroads` (`&slot=2&from=`, `&road=`, `&meowth`; `?xr2d` the painted one),
   `?bossfight=<area>|depths` (`&hp=`), `?tower=25` (`&hp=`, `&aug=`), `?climb`, `?gym=<id>` (`&n=2`, `&hp=`),
-  `?arena=ken`, `?wildshiny` (every Safari wild shiny; a catch saves nothing), `?safaridex` (the Shiny Exchange counts every Safari Pokémon caught; pulls save), `?duorun` (the Safari lobby's Duo Run open without finishing the day's Daily run; a Duo Run never spends the free try; `&duopool` lends every new type built so far, `&powerplant` puts the Power Plant first, `&icecave` the Ice Cave, `&dojomountain` Dojo Mountain, `&quarry` the Quarry, `&windycliffs` the Windy Cliffs, `&nightalley` Night Alley). Any of these takes `&relics=a,b`, `&cards=a,b+` and `&items=a` (`playtestKit()` in `js/run.js`).
+  `?arena=ken`, `?wildshiny` (every Safari wild shiny; a catch saves nothing), `?safaridex` (the Shiny Exchange counts every Safari Pokémon caught; pulls save), `?duorun` (the Safari lobby's Duo Run open without finishing the day's Daily run; a Duo Run never spends the free try; `&duopool` lends every new type built so far, `&powerplant` puts the Power Plant first, `&icecave` the Ice Cave, `&dojomountain` Dojo Mountain, `&quarry` the Quarry, `&windycliffs` the Windy Cliffs, `&nightalley` Night Alley). Any of these takes `&relics=a,b`, `&cards=a,b+`, `&items=a` and `&berries=oran,lum` (a Berry Pouch, the first held) (`playtestKit()` in `js/run.js`).
 - **Films and scenes**: `?travel=<biome>` (`&from=`, `&at=`, `&flyer=`), `?descent=mewtwo`, `?gate=N`, `?strike=N`
   (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).
 - **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`, `&asfriend` your base as a friend visiting sees it), `?yard` (out in the Secret Base's backyard, lent for the page load; `?yard=big` the bigger one), `?mall=furniture|2f|3f|corner|arcade|outfitter` (3f the Grand Ballroom, lent open)
-  (`&stock=id,...`), `?shopopen`, `?ribbon`, `?meowth` (shuts the Game Corner again), `?visit`, `?towns`,
+  (`&stock=id,...`), `?houses` (live since 2026-10-23, so a no-op; `?houses=all` every earned house lent and the seasonal ones on sale, `&livein=<id>` a base living in that house; `?base&asfriend&houses` a friend's visit from their front lawn), `?records=all` (every record lent for the page load; records are live since 2026-10-25), `?smeargle` (Smeargle's jukebox talk again, its gifts kept), `?shopopen`, `?ribbon`, `?meowth` (shuts the Game Corner again), `?visit`, `?towns`,
   `?mended` / `?mended=shrine,ruins` (towns mended for a page load, to test Waystone travel), `?town=<biome>` (`&home=`, `&aerial` the whole town from above, `&fest=lantern|moon|fireworks` John's festival in Lantern Village, mended; with `&mend` it appears as you mend the stone), `?nietos`, `?dojo` (straight into Kenmatta's dojo; its stars are real; `&trials` opens every trial), `?aerial`, `?hubat=x,y`, `?curve=N` (the Clearing's and the towns' Animal Crossing bend at another strength; 3 by default, 0 flat).
 
 ## Reference
@@ -245,8 +248,8 @@ There's no automated test suite. Before committing:
    just reading the code.
 3. **The phone's budgets** (a cloud session, 2026-10-19, the user's ask: the reload and lag fixes kept by a check): any
    change to a 3D place, a screen's animations or what the game keeps in memory runs
-   `NODE_PATH=$(npm root -g) node tools/budget-check.mjs` (`--only=name,...` for the places touched; the full run takes
-   several minutes) before pushing. Over budget is a bug to fix, not to record; a change meant to cost more reruns it with
+   `NODE_PATH=$(npm root -g) node tools/budget-check.mjs` (on the Windows PC: `npm i playwright` in a scratch folder, its `node_modules` as `NODE_PATH`, and `PW_CHROMIUM` set to Chrome's `chrome.exe`; 2026-10-23) (`--only=name,...` for the places touched; the full run takes
+   several minutes) before pushing. `tools/fps-probe.mjs` times a place's JS, style and GC a frame (`--only=`; the Safari areas and Duo Run included). Over budget is a bug to fix, not to record; a change meant to cost more reruns it with
    `--update` and says so in its commit. Its header says what it counts.
 4. If it's a balance change (card damage, achievement difficulty, drop
    rates), use the headless-bot harness in `../pokeDB-sim/` (a sibling

@@ -6,7 +6,8 @@
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
-import { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles, shopPrice } from './base-furniture.js';
+import { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles } from './base-furniture.js';
+import { WALLPAPERS, FLOORS, papers, LOOKS, paperPrice } from './base-papers.js';
 import { RES } from './base-paint.js';
 import { safariDay } from './data/safari.js';
 import { holidaysOn } from './data/holidays.js';
@@ -18,6 +19,7 @@ import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES, BASE_LINES } from './data/towns.js';
 import { workshopOf, heartsOf, baseFriends, HEARTS, FRIENDS } from './data/workshop.js';
 import { todaysGuest } from './towns.js';
+import { RECORDS_BY_ID } from './data/records.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, shapeOf, ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
@@ -25,42 +27,6 @@ const T = 16, WALL = 48;
 // its floor tiles, the top row of each column (where its back wall stands) and the tiles its doorways keep clear
 let COLS = 11, ROWS = 8, W = COLS * T, H = WALL + ROWS * T, FLOOR = null, TOPS = [], DOORS = new Set();
 
-const WALLPAPERS = [
-  { id: 'cream', name: 'Cream stripes', look: 'stripe', a: '#f4e6c4', b: '#ead6a8', trim: '#a8794a' },
-  { id: 'mint', name: 'Mint dots', look: 'dots', a: '#cdebd4', b: '#9fd2ad', trim: '#4f8a63' },
-  { id: 'sky', name: 'Sky panels', look: 'panel', a: '#c8dcf4', b: '#9dbbe4', trim: '#4a6aa0' },
-  { id: 'brick', name: 'Red brick', look: 'brick', a: '#b5573e', b: '#8e3f2c', trim: '#5a2a1e' },
-  // for sale (a `price`): bought once in the Wallpaper tab, tried on first
-  { id: 'plaid', name: 'Plaid', look: 'plaid', a: '#e8d0a0', b: '#c0503c', c: '#3c5a8c', trim: '#6a3a24', price: 400 },
-  { id: 'waves', name: 'Sea waves', look: 'wave', a: '#d4eef4', b: '#5aa8d0', trim: '#2a6a94', price: 450 },
-  { id: 'stars', name: 'Night stars', look: 'star', a: '#2a2c5a', b: '#f8e070', c: '#8a90d0', trim: '#14163a', price: 600 },
-  { id: 'boards', name: 'Log cabin', look: 'boards', a: '#b07a48', b: '#8a5a32', c: '#d09a60', trim: '#4a2c18', price: 500 },
-  { id: 'leaves', name: 'Leafy', look: 'leaf', a: '#e4f0c8', b: '#6aa84a', c: '#3e7a34', trim: '#3e5a2a', price: 450 },
-  { id: 'hearts', name: 'Sweet hearts', look: 'heart', a: '#fbe0ea', b: '#e8608c', trim: '#a83a60', price: 500 },
-  { id: 'harlequin', name: 'Harlequin', look: 'diamond', a: '#f0d878', b: '#d8a830', c: '#8a5a10', trim: '#6a4410', price: 550 },
-  { id: 'pokeballs', name: 'Poké Balls', look: 'ball', a: '#cfe0ec', b: '#e04040', c: '#303030', trim: '#a02828', price: 800 },
-  { id: 'stone', name: 'Castle stone', look: 'stone', a: '#9a9a90', b: '#7a7a72', c: '#b8b8ac', trim: '#4a4a44', price: 650 },
-  { id: 'sunset', name: 'Sunset', look: 'fade', a: '#f8c070', b: '#e86a60', c: '#8a4a90', trim: '#5a2a5a', price: 900 },
-];
-const FLOORS = [
-  { id: 'wood', name: 'Wood', look: 'wood', a: '#c48a52', b: '#a8723f', c: '#8a5a30' },
-  { id: 'tile', name: 'Tiles', look: 'tile', a: '#e8e4dc', b: '#cfc8bb', c: '#a49c8e' },
-  { id: 'carpet', name: 'Carpet', look: 'carpet', a: '#7a5aa8', b: '#6a4c96', c: '#8c6cba' },
-  { id: 'grass', name: 'Grass', look: 'grass', a: '#6cbf58', b: '#58a848', c: '#86d46e' },
-  { id: 'checker', name: 'Checkerboard', look: 'checker', a: '#f0ece4', b: '#3a3a44', c: '#22222a', price: 500 },
-  { id: 'darkwood', name: 'Dark wood', look: 'wood', a: '#6a4228', b: '#583620', c: '#3e2414', price: 450 },
-  { id: 'parquet', name: 'Parquet', look: 'parquet', a: '#d0a060', b: '#b08040', c: '#8a5e2c', price: 650 },
-  { id: 'flagstone', name: 'Flagstones', look: 'flag', a: '#a8a498', b: '#8e8a7e', c: '#6a665c', price: 550 },
-  { id: 'tatami', name: 'Tatami', look: 'tatami', a: '#cfd08a', b: '#b8b874', c: '#4a5a2a', price: 600 },
-  { id: 'sand', name: 'Beach sand', look: 'sand', a: '#ecd8a0', b: '#d8c080', c: '#f8ecc4', price: 400 },
-  { id: 'ice', name: 'Ice', look: 'ice', a: '#cfe8f4', b: '#a8d0e8', c: '#ffffff', price: 700 },
-  { id: 'marble', name: 'Marble', look: 'marble', a: '#f4f0ea', b: '#d8d0c4', c: '#b0a898', price: 900 },
-  { id: 'redcarpet', name: 'Red carpet', look: 'carpet', a: '#b02838', b: '#98202e', c: '#d04050', price: 500 },
-  { id: 'mosaic', name: 'Mosaic', look: 'mosaic', a: '#e8dcc4', b: '#4a8ac0', c: '#e0a030', price: 800 },
-];
-// wallpapers and floors on the same cheap curve as the furniture (shopPrice())
-for (const s of [...WALLPAPERS, ...FLOORS]) s.price = shopPrice(s.price);
-const papers = (field) => field === 'wall' ? WALLPAPERS : FLOORS;
 
 let g;   // the room's 2D context while painting
 const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
@@ -180,11 +146,43 @@ export function buyDoor(b, a, pa, c, pc) {
   return { moved };
 }
 
-/** Take a room down; its furniture goes back into storage (storage is what you own less what stands in a room). If
-    you're standing in it, you're back in the main room. False if other rooms are only reached through it. */
+/* The Safari catches living here (`mons`, or before a pick the first residentCap() caught, all in the main room) each
+   live in one room (`at`, by id; none for the main room), the backyard too. Every room picks from the whole Safari
+   list, up to residentCap() a room (the user's call, 2026-10-23: the yard listed only the six indoors, which made no
+   sense), and a Pokémon is never in two rooms at once. `out`, the old list of the ones let out in the yard, moves over. */
+// a resident of a room that isn't there (a lent yard taken back) is in none, not crowding the main room past its cap
+export const monRoom = (b, id) => b.at?.[id] || 'main';
+/** Who lives in room `room`, of `shown` (every resident, js/pc.js's residents()). */
+export const monsIn = (b, shown, room) => shown.filter(id => monRoom(b, id) === room);
+/** A tap on `id` in room `room`'s picker: one living there goes back in the box ('out'), any other moves in from
+    wherever it was ('in'), unless the room has `cap` already ('full'). Mutates the base; the caller saves. */
+export function placeMon(b, shown, id, room, cap) {
+  if (shown.includes(id) && monRoom(b, id) === room) {
+    b.mons = shown.filter(x => x !== id);
+    if (b.at) delete b.at[id];
+    return 'out';
+  }
+  if (monsIn(b, shown, room).length >= cap) return 'full';
+  b.mons = shown.includes(id) ? shown : [...shown, id];
+  b.at ||= {};
+  if (room === 'main') delete b.at[id]; else b.at[id] = room;
+  return 'in';
+}
+const movedOut = (b) => {
+  if (b.at && typeof b.at !== 'object') delete b.at;
+  if (Array.isArray(b.out)) for (const id of b.out) if (typeof id === 'string') (b.at ||= {})[id] ??= 'yard';
+  delete b.out;
+};
+
+/** Take a room down; its furniture goes back into storage (storage is what you own less what stands in a room), and its
+    Pokémon back in the box. If you're standing in it, you're back in the main room. False if other rooms are only
+    reached through it. */
 export function takeDown(b, id) {
   if ((b.here || 'main') === id) goRoom(b, 'main');
   if (!removeRoom(b.house, id)) return false;
+  const gone = Object.keys(b.at || {}).filter(m => b.at[m] === id);
+  if (gone.length && b.mons) b.mons = b.mons.filter(m => !gone.includes(m));
+  for (const m of gone) delete b.at[m];
   saveBase(b);
   return true;
 }
@@ -277,6 +275,7 @@ export function loadBase() {
   if (lendYard() && !b.house?.yard) { b.house ||= freshHouse(); b.house.yard = { ...freshYard(), size: lendSize(), lent: 1 }; }
   if (b !== saved) return b;
   b.owned ||= {};
+  movedOut(b);
   // furniture was once owned colour by colour (`bed-fire`), then kind by kind; now a kind or a whole set (`own`) is owned, every colour and style with it
   for (const id of Object.keys(b.owned)) {
     const kind = PIECES[id]?.own;
@@ -311,8 +310,10 @@ export function readGuestBase(json) {
     if (!roomById(b.house, 'main')?.shape) return null;
     b.owned = b.owned && typeof b.owned === 'object' ? b.owned : {};
     b.mons = Array.isArray(b.mons) ? b.mons.filter(id => typeof id === 'string') : [];
-    b.out = Array.isArray(b.out) ? b.out.filter(id => typeof id === 'string') : [];
+    movedOut(b);
+    b.at = b.at ? Object.fromEntries(Object.entries(b.at).filter(([, r]) => typeof r === 'string')) : {};
     b.liveSeen = b.liveSeen && typeof b.liveSeen === 'object' ? b.liveSeen : {};
+    if (!RECORDS_BY_ID[b.song]) delete b.song;
     return b;
   } catch { return null; }
 }
@@ -540,12 +541,14 @@ export function seeShop(b) { b.shopSeen = safariDay(); }
 /** A wallpaper or floor is free (no price), bought (`b.papers`, as `wall:id` / `floor:id`), or lent by ?allfurniture. */
 export const ownsPaper = (b, field, s) => !s.price || lendAll() || (b.papers || []).includes(`${field}:${s.id}`);
 
-/** Buy a wallpaper or floor and put it up. False if the coins aren't there. */
-export function buyPaper(b, field, s) {
-  if ((getSave().coins ?? 0) < s.price) return false;
+/** Buy a wallpaper or floor (at today's price) and put it up, unless `putUp` is false (Smeargle's catalogue). False if the
+    coins aren't there. */
+export function buyPaper(b, field, s, putUp = true) {
+  const price = paperPrice(b, field, s);
+  if ((getSave().coins ?? 0) < price) return false;
   b.papers = [...(b.papers || []), `${field}:${s.id}`];
-  b[field] = s.id;
-  keep(d => { d.coins -= s.price; d.secretBase = b; });
+  if (putUp) b[field] = s.id;
+  keep(d => { d.coins -= price; d.secretBase = b; });
   return true;
 }
 
@@ -606,7 +609,7 @@ function paintWall() {
       // a 12-pixel ball, staggered every other 16-pixel cell, outlined so its white half shows on the pale paper
       const d = (i - 5.5) ** 2 + (j - 5.5) ** 2, mid = (i - 5.5) ** 2 + (j - 5.5) ** 2 <= 6;
       if (d > 36) continue;
-      const col = d > 25 ? wp.c : mid ? (d > 3 ? wp.c : '#fff') : j === 5 || j === 6 ? wp.c : j < 5 ? (i < 4 && j < 3 ? '#f88' : wp.b) : '#fff';
+      const col = d > 25 ? wp.c : mid ? (d > 3 ? wp.c : '#fff') : j === 5 || j === 6 ? wp.c : j < 5 ? (i < 4 && j < 3 ? wp.h || '#f88' : wp.b) : '#fff';
       R(x + 2 + i, y + 2 + j, 1, 1, col);
     }
     if (wp.look === 'stone') { R(x, y + 7, 8, 1, wp.b); if ((cx + (cy % 2) * 1) % 2 === 0) R(x, y, 1, 7, wp.b); if ((cx * 7 + cy * 3) % 5 === 0) R(x + 2, y + 2, 3, 2, wp.c); }
@@ -617,6 +620,7 @@ function paintWall() {
         R(x + i, y + j, 1, 1, [wp.a, wp.b, wp.c, wp.a][band + (mix > 0.6 + dith * 0.4 ? 1 : 0)]);
       }
     }
+    LOOKS[wp.look]?.(R, wp, x, y, cx, cy);
   }
   R(0, WALL - 5, W, 5, wp.trim); R(0, WALL - 5, W, 1, '#00000030');
 }
@@ -655,6 +659,7 @@ function paintFloor() {
       if (k === 0) R(x + 2, y + 2, 4, 4, f.b); if (k === 3) R(x + 2, y + 2, 4, 4, f.c);
       if ((tx % 4 === 2) && (ty % 4 === 2)) { R(x + 1, y + 3, 6, 2, f.c); R(x + 3, y + 1, 2, 6, f.c); R(x + 3, y + 3, 2, 2, f.b); }
     }
+    LOOKS[f.look]?.(R, f, x, y, tx, ty);
   }
   R(0, WALL, W, 2, '#00000028');
 }

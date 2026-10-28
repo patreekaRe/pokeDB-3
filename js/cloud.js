@@ -11,12 +11,20 @@
      - the cloud's rev moved, this device didn't change -> take the cloud's (a reload)
      - this device changed, the cloud's rev didn't move  -> upload
      - both moved                                        -> ask which to keep
+   Play time aside (it ticks without a save write), a cloud copy this browser wrote
+   itself, or with the progress it last agreed with, never asks: an iPhone can freeze
+   the page between an upload landing and its rev being noted here, and the next save
+   then met its own upload as a stranger's.
    The first sign-in on a device uploads its save when the cloud has none,
    takes the cloud's when this device has no progress, and asks otherwise.
    ============================================================ */
 
-import { FIREBASE_CONFIG } from './cloud-config.js';
-import { SAVE_KEYS, onSaveWrite } from './storage.js';
+import { FIREBASE_CONFIG as REAL_CONFIG } from './cloud-config.js';
+
+// only the live site (and a local server) talks to the cloud: a playtest link on githack has a throwaway save of its own,
+// and signing in there would sync it over the player's real one (2026-10-23, the houses playtest)
+const FIREBASE_CONFIG = typeof location === 'undefined' || /^(patreekare\.github\.io|localhost|127\.0\.0\.1)$/.test(location.hostname) ? REAL_CONFIG : null;
+import { SAVE_KEYS, onSaveWrite, stashLostRun } from './storage.js';
 import { STARTERS, STARTERS_BY_ID, stageName } from './data/starters.js';
 import { biomeAt } from './data/enemies.js';
 import { $, el, openDialog, closeDialog } from './ui.js';
@@ -25,6 +33,7 @@ import { playSound, preloadSounds } from './audio.js';
 const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
 const STATE_KEY = 'pokedb.cloud.v1';
 const EMAIL_KEY = 'pokedb.cloud.email';
+const DEVICE_KEY = 'pokedb.cloud.device';
 const UPLOAD_DELAY = 4000;
 const CONFLICT = new Error('conflict');
 
@@ -48,6 +57,12 @@ const readState = () => { try { return JSON.parse(store.get(STATE_KEY)) || {}; }
 const writeState = (state) => store.set(STATE_KEY, JSON.stringify(state));
 const readLocal = () => ({ save: store.get(SAVE_KEYS.save), run: store.get(SAVE_KEYS.run) });
 const newRev = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+/** This browser's own id, kept beside the save, not in it: a Safari tab and a Home Screen app on one iPhone are two. */
+function myDevice() {
+  let id = store.get(DEVICE_KEY);
+  if (!id) store.set(DEVICE_KEY, id = newRev());
+  return id;
+}
 
 async function sdk() {
   if (fb) return fb;
@@ -61,9 +76,11 @@ const docRef = () => fb.F.doc(fb.db, 'saves', user.uid);
 
 function deviceName() {
   const ua = navigator.userAgent;
-  if (/iPhone/.test(ua)) return 'iPhone';
-  if (/iPad|Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return 'iPad';
-  if (/Android/.test(ua)) return /Mobile/.test(ua) ? 'Android phone' : 'Android tablet';
+  // the Home Screen app keeps a save of its own, apart from the browser's on the same phone
+  const app = navigator.standalone || matchMedia?.('(display-mode: standalone)')?.matches ? "'s Home Screen app" : '';
+  if (/iPhone/.test(ua)) return `iPhone${app}`;
+  if (/iPad|Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return `iPad${app}`;
+  if (/Android/.test(ua)) return (/Mobile/.test(ua) ? 'Android phone' : 'Android tablet') + app;
   if (/Windows/.test(ua)) return 'Windows PC';
   if (/Macintosh/.test(ua)) return 'Mac';
   return 'a browser';
@@ -87,6 +104,26 @@ function isBlank({ save, run }) {
     return !s.coins && !(s.unlocked || []).length && !s.stats?.runsStarted && !(s.dex?.seen || []).length;
   } catch (err) { return true; }
 }
+
+/** A fingerprint of a save's progress, play time aside (it ticks on every device without a save write, storage.js's
+    addPlayTime()). */
+function progressOf({ save, run }) {
+  let text;
+  try {
+    const s = JSON.parse(save);
+    if (s?.stats) delete s.stats.playMs;
+    text = JSON.stringify([s, run]);
+  } catch (err) { return null; }
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return `${text.length}-${(h >>> 0).toString(36)}`;
+}
+const sameProgress = (a, b) => progressOf(a) !== null && progressOf(a) === progressOf(b);
+
+/** The cloud's copy holds nothing this device lacks: the one it last agreed with (play time aside), or its own upload
+    whose rev never got noted here. Only once this device has agreed with the cloud: a first sign-in still asks. */
+const holdsNothingNew = (cloud, { rev, sum }) => cloud.rev === rev
+  || (rev != null && (cloud.from === myDevice() || (!!sum && progressOf(cloud) === sum)));
 
 /* ---------- syncing ---------- */
 
@@ -112,13 +149,17 @@ async function reconcile() {
   const local = readLocal();
   const now = readState();
   if (!cloud) return upload();
-  if (cloud.save === local.save && cloud.run === local.run) {
-    writeState({ ...now, rev: cloud.rev, dirty: false });
+  if (sameProgress(cloud, local)) {   // play time rides along with the next real save
+    writeState({ ...now, rev: cloud.rev, sum: progressOf(cloud), dirty: false });
     return setStatus('saved', cloud.savedAt);
   }
-  const cloudMoved = cloud.rev !== now.rev;
-  if (!cloudMoved) return upload();
-  if (!now.dirty && (first || onTitle())) return takeCloud(cloud);
+  if (holdsNothingNew(cloud, now)) {
+    writeState({ ...now, rev: cloud.rev, dirty: true });
+    return upload();
+  }
+  // never quietly over a run the cloud's copy lacks (2026-10-23: the user's run vanished after Menu while signed in)
+  const keepsRun = !local.run || local.run === cloud.run;
+  if (!now.dirty && keepsRun && (first || onTitle())) return takeCloud(cloud);
   ask(cloud);
 }
 
@@ -128,18 +169,19 @@ async function upload() {
   if (uploading) { again = true; return; }
   uploading = (async () => {
     setStatus('saving');
-    const { rev: agreed, localAt } = readState();
+    const before = readState(), { localAt } = before;
     const rev = newRev();
     const savedAt = Date.now();
-    let theirs = null;
+    let theirs = null, sent = null;
     try {
       await fb.F.runTransaction(fb.db, async (t) => {
         const snap = await t.get(docRef());
-        if (snap.exists() && snap.data().rev !== agreed) { theirs = snap.data(); throw CONFLICT; }
-        t.set(docRef(), { ...readLocal(), rev, savedAt, device: deviceName() });
+        if (snap.exists() && !holdsNothingNew(snap.data(), before)) { theirs = snap.data(); throw CONFLICT; }
+        sent = readLocal();
+        t.set(docRef(), { ...sent, rev, savedAt, device: deviceName(), from: myDevice() });
       });
       const state = readState();
-      writeState({ ...state, rev, dirty: state.localAt !== localAt });
+      writeState({ ...state, rev, sum: progressOf(sent), dirty: state.localAt !== localAt });
       setStatus('saved', savedAt);
     } catch (err) {
       if (err === CONFLICT || theirs) ask(theirs);
@@ -152,9 +194,11 @@ async function upload() {
 }
 
 function takeCloud(cloud) {
+  const mine = store.get(SAVE_KEYS.run);   // a run the cloud's copy replaces can come back with ?runback
+  if (mine && mine !== cloud.run) { try { stashLostRun(JSON.parse(mine), 'replaced by the cloud save'); } catch (err) { /* unreadable */ } }
   store.set(SAVE_KEYS.save, cloud.save);
   store.set(SAVE_KEYS.run, cloud.run);
-  writeState({ uid: user.uid, rev: cloud.rev, dirty: false, localAt: cloud.savedAt });
+  writeState({ uid: user.uid, rev: cloud.rev, sum: progressOf(cloud), dirty: false, localAt: cloud.savedAt });
   location.reload();
 }
 
