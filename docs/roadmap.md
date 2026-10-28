@@ -20,7 +20,10 @@ plaza buddies, spooks, crowds, Center/Mart/rooms/base/mall) uses it with no chan
 stay for battles, portraits and powered-up legendaries (aura). `?ow=0` turns it off to compare. Budgets within (Clearing
 112 MB, base 54.5, Center 68.5). The run map's token walks on it too (2026-10-28: `.map-trainer.ow` in `js/map.js`, a div whose `.ow-steps` CSS steps
 the row's four frames, `walkTo()` turning `data-dir` with each leg of the road; `js/overworld.js` holds `overworldSrc()`
-for both). Run map 30.2 MB, Shrine town 151.2 MB, within budget. Not yet: Gen 8+ (Eternatus etc.) has no sheet; a credits
+for both). Run map 30.2 MB, Shrine town 151.2 MB, within budget. The user's playtest (2026-10-28): the map token was "WAY too
+small" at 4 tiles, now 9 (`.map-trainer.ow`, about a room square tall); the Pokédex cover's window went to the overworld
+sprite and back: **the cover keeps the battle GIF** (the user's call). Next offered, not built: the place intros' walk
+up the dirt path (`placeIntro()` in `js/biome-intro.js`, the sheet's up row), the journey films, the Safari intro. Not yet: Gen 8+ (Eternatus etc.) has no sheet; a credits
 page for the pack's artists. The raw pack lived in the session only.
 
 **▶ PLAYTEST ON THE LIVE SITE. No twin cards: done 2026-10-26, on `main`** (the user's ask: Bubble and Bubble Beam in one

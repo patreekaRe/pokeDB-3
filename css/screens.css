@@ -2116,7 +2116,7 @@ body.battle-intro { pointer-events: none; }
 @keyframes trainerHop { 50% { translate: 0 -2px; } }   /* translate, not a margin: no layout on every frame of the map */
 .map-trainer.at-start { transform: translate(-50%, -62%); }   /* at the foot of the start road, so the road shows above it */
 .map-trainer.walking { animation: none; will-change: translate; }   /* walkTo() in js/map.js glides it along the route */
-.map-trainer.ow { aspect-ratio: 1; transform: translate(-50%, -94%); width: calc(var(--tile) * 4); }   /* an overworld sheet's frame is square, its feet nearer its edge than a GIF's */
+.map-trainer.ow { aspect-ratio: 1; transform: translate(-50%, -94%); width: calc(var(--tile) * 9); }   /* an overworld sheet paints about half its square frame, so it needs a bigger box than a GIF to stand a room tall */
 .map-trainer.ow.at-start { transform: translate(-50%, -60%); }
 .ow-steps {
   position: absolute;
