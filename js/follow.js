@@ -9,7 +9,8 @@ import { monBoard, drawMon } from './hd2d.js';
 import { wornLook, lookSheet } from './data/looks.js';
 import { getSave } from './storage.js';
 
-const GAP = 0.85;       // how far behind the buddy walks, in world units (about a tile)
+// how far behind the buddy walks, in world units (about a tile); `?gap=N` tries another for a page load (2026-10-28)
+const GAP = Number(new URLSearchParams(location.search).get('gap')) || 0.85;
 const EASE = 90;        // ms: how quickly each board settles on where it should be
 const STILL = 0.004;    // moved less than this in a frame: stood still
 const JUMP = 2.5;       // the walker moved further than this in a frame: it was put somewhere new, not walked
