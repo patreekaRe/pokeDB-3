@@ -3797,3 +3797,5 @@ and powered-up legendaries keep GIFs; `?ow=0` turns it off. Offered, not picked:
 journey films, the Safari intro. Fixed the same day (the user's playtest: shiny Snivy on a white square): four shiny
 sheets came on solid white (`clear_backdrop()`), and Gen 5 on is drawn at 1x, not 2x, so halving it had broken its outlines
 (`doubled()` halves only true 2x sheets; 283 re-imported at full detail).
+Then (the user: shiny Snivy "missing some of his black outline"): 17 of the pack's shinies are rough recolours, so the
+importer rebuilds a rough one from its normal sheet in the shiny's colours, the black outline kept (`rebuild_shiny()`).
