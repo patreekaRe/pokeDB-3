@@ -56,6 +56,7 @@ export const NEXT = [
   ['battle', 'A rare Safari spawn wears a RARE tag, and a running figure in its status row counts the turns before it runs off.'],
   ['modes', 'A Safari map no longer holds the same rare spawn twice until each of its area\'s rares has turned up.'],
   ['battle', 'Dig, Tunnel and Burrow take your Pokémon underground and end your turn; Ground\'s other delayed cards are now Bury. Wild Diglett, Salamence and friends really Dig, Fly, Dive and Bounce out of reach.'],
+  ['fixes', 'A battle can no longer freeze on a big card\'s cut-in after a move effect misfires.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

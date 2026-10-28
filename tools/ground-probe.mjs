@@ -161,13 +161,13 @@ await open();
 await B(() => window.__play('hunker-down'));
 await B(() => window.__play('hunker-down'));
 check(await gain('trench') === 6 + 3 * 2, 'Trench with 2 cards underground: 6 + 3 x2');
-check(await gain('bunker') === 6 + 4 * 2, 'Bunker with 2 cards underground: 6 + 4 x2, then it digs in too');
+check(await gain('bunker') === 5 + 4 * 2, 'Bunker with 2 cards underground: 5 + 4 x2, then it goes under too');
 await B(() => window.__play('foxhole'));
 check(await gain('hunker-down') === 2 + 3, 'Foxhole: 3 block as Hunker Down goes under, on its own 2');
 await B(() => window.__play('hibernate'));
 await B(() => window.__endTurn());
 s = await B(() => { const b = window.__battle(); return { block: b.block, hand: b.hand.length, under: b.underground.length }; });
-check(s.block === 4 + 15 && s.hand === 5 + 1 && s.under === 0, `next turn Hunker Down's 4 and Hibernate's 15 surface, Bunker draws 1 (${JSON.stringify(s)})`);
+check(s.block === 4 * 3 + 6 + 10 && s.hand === 5 && s.under === 0, `next turn three Hunker Downs' 4, Bunker's 6 and Hibernate's 10 surface (${JSON.stringify(s)})`);
 
 await fresh();
 check(await gain('earth-wall') === 8, 'Earth Wall with no Fault: 8');

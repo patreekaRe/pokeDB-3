@@ -80,7 +80,13 @@ function frame(now) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   S = CLEAN ? DPR * PX : 1;
   ctx.setTransform(S, 0, 0, S, 0, 0);
-  for (let i = jobs.length - 1; i >= 0; i--) if (jobs[i](now) === false) jobs.splice(i, 1);
+  for (let i = jobs.length - 1; i >= 0; i--) {
+    // one effect throwing must not stop the loop: raf would stay set, start() would never run it again, and a cut-in
+    // waiting on its last frame would hang the battle
+    let done;
+    try { done = jobs[i](now) === false; } catch (e) { done = true; queueMicrotask(() => { throw e; }); }
+    if (done) jobs.splice(i, 1);
+  }
   let kept = 0;
   lit.length = 0;
   for (let i = 0; i < parts.length; i++) {   // moved, and the dead dropped in place (a splice each was quadratic)
@@ -372,7 +378,7 @@ export function flyTrail(src, target, { type = 'normal', attack = true, fast = f
   let lastX = x0, lastY = y0, landed = false;
   const trail = [], pal = PALETTES[type] || PALETTES.normal;
   jobs.push((now) => {
-    const t = Math.min(1, (now - t0) / total);
+    const t = Math.max(0, Math.min(1, (now - t0) / total));
     const { u, x, y, scale } = at(t);
     if (u < 1) trail.push([x / PX, y / PX, now]);
     ribbon(trail, now, pal, (r.width * Math.min(1, scale)) / PX * 0.32);
@@ -433,7 +439,7 @@ export function burnAway(src, pile, { fast = false } = {}) {
   if (CLEAN) return burnClean({ ghost, wrap, r, pile, home, total, fast, t0 });
   return new Promise(resolve => {
     jobs.push((now) => {
-      const t = Math.min(1, (now - t0) / total);
+      const t = Math.max(0, Math.min(1, (now - t0) / total));
       const reach = r.height * 1.25 * t;   // how far up from the bottom the fire has eaten, jag included
       const pts = [];
       for (let i = 0; i < cols; i++) {
@@ -486,7 +492,7 @@ function burnClean({ ghost, wrap, r, pile, home, total, fast, t0 }) {
   };
   return new Promise(resolve => {
     jobs.push((now) => {
-      const t = Math.min(1, (now - t0) / total);
+      const t = Math.max(0, Math.min(1, (now - t0) / total));
       const reach = r.height * 1.25 * t;
       const pts = [], clip = [];
       for (let i = 0; i <= cols; i++) {

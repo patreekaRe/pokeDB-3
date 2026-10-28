@@ -32,10 +32,10 @@ function part(o) {
 function job(ms, f, { ambient = false } = {}) {
   const t0 = performance.now();
   jobs.push((now) => {
-    const t = now - t0;
+    const t = Math.max(0, now - t0);   // a frame's timestamp can come before the job was queued: a negative f drew negative radii
     kit.ctx.save();
-    const more = f(t, Math.min(1, t / ms), now);
-    kit.ctx.restore();
+    let more;
+    try { more = f(t, Math.min(1, t / ms), now); } finally { kit.ctx.restore(); }
     if (more === false || (ms && t >= ms)) return false;
   });
   kit.start(ambient);
