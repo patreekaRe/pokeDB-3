@@ -11,6 +11,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway, dispose } from './hd2d.js';
+import { freshLead } from './follow.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -43,6 +44,7 @@ const C = { orange: ['#f8a060', '#f08040', '#e06830'], panel: '#f8b070', red: '#
 let THREE, renderer, scene, camera, post, view, hemi, sun;
 let room, mon, nurse, monitor, machine, plays = [], anchors = {}, blocked = new Set(), mat = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
+let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
 let opts = null, aim = null, busy = false, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0;
 let vitals = { now: 0, coming: 0, blink: 0, drawn: '' }, healing = null, flashing = null, going = null, popping = null, leftAt = 0, runId = null;
 
@@ -726,12 +728,13 @@ function frame(now) {
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, 0, walker.z);
   const size = walker.size ?? 1;   // shrunk into its ball while it heals
-  mon.board.scale.set((walker.flip ? -1 : 1) * size, size, 1);
+  const pose = lead?.lead(walker, mon, dt, size < 1) ?? walker;   // healing: the buddy's spot, you stood back
+  mon.board.scale.set((pose.flip ? -1 : 1) * size, size, 1);
   mon.board.position.y = bob + (1 - size) * 0.4;
   mon.board.material.emissive.setRGB(1, 0.25, 0.2);
   mon.board.material.emissiveIntensity = size < 1 ? (1 - size) * 1.6 + 0.4 : 0;
   mon.group.children[1].visible = size > 0.3;
-  drawMon(mon, walker, dt);
+  drawMon(mon, pose, dt);
   drawMon(nurse, { facing: 'front' }, dt);
   nurse.board.scale.x = walker.x > nurse.group.position.x + 0.3 ? -1 : 1;
   const left = (nurse.hopUntil || 0) - now;
@@ -913,6 +916,7 @@ async function enterCenter(o) {
     scene.add(mon.group);
     monitor.face = null;
   }
+  lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
   if (!alive()) return null;
   if (!back) {
     walker = { x: tileX(DOOR.x), z: tileZ(DOOR.y), tile: { ...DOOR }, path: [], facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };

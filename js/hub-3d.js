@@ -22,6 +22,7 @@ import { cloudConfigured, cloudRemembered } from './cloud.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours } from './hd2d.js';
+import { freshLead } from './follow.js';
 import { gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -184,6 +185,7 @@ const RINGS = [{ x: POND.x, y: POND.y, r: POND.r + 0.75, w: 0.42 }];
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
+let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let safariFx = null;
 let plazaFx = null;   // the Trainer Plaza's board: its lanterns, its Poké Ball and its cork of Polaroids (js/hub-plaza.js)   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
@@ -4621,8 +4623,9 @@ function frame(now) {
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, 0, walker.z);
   mon.board.position.y = bob;
-  mon.board.scale.x = walker.flip ? -1 : 1;
-  drawMon(mon, walker, dt);
+  const pose = lead?.lead(walker, mon, dt) ?? walker;
+  mon.board.scale.x = pose.flip ? -1 : 1;
+  drawMon(mon, pose, dt);
   liveWarp(now);
   liveStones(now);
   liveNietos(now);
@@ -4775,6 +4778,7 @@ async function openHub(titleScreen, actions, hold) {
     scene.add(mon.group);
     mon.board.userData.who = { mon, w: walker };
   }
+  lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
   held = hold;
   root.classList.toggle('held', held);
   mon.group.visible = !held;

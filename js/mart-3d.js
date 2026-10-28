@@ -9,6 +9,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway } from './hd2d.js';
+import { freshLead } from './follow.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
 import { pcModel, livePc } from './hub-pc.js';
@@ -39,6 +40,7 @@ const TYPE = { fire: ['#ff8f4d', '#b8321a'], water: ['#5cbcff', '#1d58b8'], gras
 let THREE, renderer, scene, camera, post, view;
 let room, wares = null, mon, clerk, plays = [], blocked = new Set(), mat = null, signEl = null, pcAt = null, shine = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
+let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
 let opts = null, aim = null, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0, leftAt = 0, runId = null;
 let look = 0;
 let flying = [];
@@ -901,9 +903,10 @@ function frame(now) {
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, 0, walker.z);
-  mon.board.scale.set(walker.flip ? -1 : 1, 1, 1);
+  const pose = lead?.lead(walker, mon, dt) ?? walker;
+  mon.board.scale.set(pose.flip ? -1 : 1, 1, 1);
   mon.board.position.y = bob;
-  drawMon(mon, walker, dt);
+  drawMon(mon, pose, dt);
   clerk.board.scale.x = walker.x > clerk.group.position.x + 0.3 ? -1 : 1;
   const left = (clerk.hopUntil || 0) - now;
   clerk.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
@@ -1030,6 +1033,8 @@ async function enterMart(o) {
   await wakeGL(renderer);
   if (!alive()) return null;
   await ensureMon(o.mate);
+  lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
+  lead?.m.group.scale.setScalar(Math.min(1, MON_MAX / lead.m.top));
   if (!alive()) return null;
   if (again) await restock(o.wares, true);
   else {   // a new Mart shows at once, its shelves filling the moment their pictures are ready (they're usually ready already)

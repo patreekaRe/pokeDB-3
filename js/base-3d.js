@@ -15,6 +15,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { residentCap, openPC, resident } from './pc.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, bakeColours, smallNoShadow } from './hd2d.js';
+import { freshLead } from './follow.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
 import { leavesOf, groundLook, snowCap, tintOf } from './hub-season.js';
@@ -77,6 +78,7 @@ let post;
 let hemi, sun, lampLights = [], winMats = [], shafts = [], motes = [], ring;
 let roomGroup, pieceGroup, ghost, foot, selBox;
 let mon, walker = { x: 0, y: 0, z: 0, path: [], facing: 'front', flip: false, hop: 0 };
+let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
 let blocked = new Set(), base, calm = false, time = '';
 let holding = null, aimAt = null, sel = -1, pressing = false, pointer = null, swallowClick = false, tab = 'furniture';
 let grab = null;   // a press on a placed piece, until it turns into a drag (it's picked up) or a tap
@@ -2135,7 +2137,7 @@ function placeCamera(dt, now) {
   aimCamera(camX, mix('dist') / zoomK, pitch, camZ);
   BEND.z.value = camZ;
   // Pokémon lean back by the tilt, as in the Clearing, so they face the camera unsquashed
-  for (const m of [mon, ...guests.map(g => g.mon), visit?.mon]) if (m) m.board.rotation.x = -pitch;
+  for (const m of [mon, lead?.m, ...guests.map(g => g.mon), visit?.mon]) if (m) m.board.rotation.x = -pitch;
   // and so do the pieces that stand as their painting
   // (turned back against their piece's own turn, so a statue's figure faces you whichever way its plinth does)
   for (const s of standees) { if (!s.parent) standees.delete(s); else { s.rotation.order = 'YXZ'; s.rotation.y = -s.parent.rotation.y; s.rotation.x = -pitch; } }
@@ -2205,13 +2207,14 @@ function frame(now) {
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : happy ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, (walker.y ?? 0) + stairY(walker.x, walker.z), walker.z);
   mon.board.position.y = bob;
-  mon.board.scale.x = walker.flip ? -1 : 1;
-  drawMon(mon, walker, dt);
+  const pose = lead?.lead(walker, mon, dt, !!(walker.seat || walker.jump)) ?? walker;   // on a seat, or leaping to one: the buddy's spot
+  mon.board.scale.x = pose.flip ? -1 : 1;
+  drawMon(mon, pose, dt);
   // the Pokémon living here are about whichever room you're in, or out in the yard if they were let out
   liveSwings(dt, now);
   for (const g of guests) if (g.mon && g.w) { g.mon.group.visible = homeHere(g); if (homeHere(g)) liveGuest(g, dt, now); }
   if (walker.seat?.part && !walker.jump) mon.group.position.set(walker.x, walker.y, walker.z);
-  if (BEND.k.value) for (const o of [mon.group, ring, ...present().map(g => g.mon?.group).filter(Boolean)]) o.traverse(c => { if (c.isMesh) for (const m of [c.material].flat()) bend(m, BEND); });
+  if (BEND.k.value) for (const o of [mon.group, ...(lead ? [lead.m.group] : []), ring, ...present().map(g => g.mon?.group).filter(Boolean)]) o.traverse(c => { if (c.isMesh) for (const m of [c.material].flat()) bend(m, BEND); });
   if (snow) liveSnow(now);
   liveVisit(dt, now);
   livePuffs(now);
@@ -2454,6 +2457,7 @@ async function reopen(first) {
   await wakeGL(renderer);
   const mate = buddy(getSave());
   if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
+  lead = await freshLead(lead, { group: scene, pitch: 0.6, free: dispose });
   mode = 'walk'; blend = 0; sel = -1;
   showRoom();
   setTime(true);
@@ -2565,6 +2569,7 @@ export async function openBase3d({ onLeave = null, start = 'main', guest = null 
   buildPieces();
   mon = await makeMon();
   mon.board.userData.who = { mon, w: walker };
+  lead = await freshLead(lead, { group: scene, pitch: 0.6, free: dispose });
   walker.tile = nearestFree(startTile());
   walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
   camX = panX = walker.x;

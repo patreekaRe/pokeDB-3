@@ -12,6 +12,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours, unload, putAway } from './hd2d.js';
+import { freshLead } from './follow.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic, byFace } from './hub-3d.js';
 import { makeSealedGate } from './hub-sealed.js';
@@ -43,6 +44,7 @@ export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar
 let THREE, renderer, scene, camera, post, view, hemi, sun;
 let built = {}, R = null, mon = null, mat = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
+let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
 let frozen = false;   // a Gym Leader is about to talk or talking: you can't walk (freezeEvent())
 let opts = null, aim = null, busy = false, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0, camZ = NaN;
 let leftAt = 0, visit = null, acting = null, queued = [];
@@ -11757,10 +11759,11 @@ function frame(now) {
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x + (walker.ox || 0), (R.rise?.(walker.x, walker.z) || 0) + (walker.oy || 0), walker.z - (walker.lunge || 0) + (walker.oz || 0));   // up on a ring's deck (`rise`)
-  mon.board.scale.set(walker.flip ? -1 : 1, 1, 1);
   mon.board.position.y = bob;
+  const pose = lead?.lead(walker, mon, dt, !!acting) ?? walker;   // an act at a choice: the buddy's own spot
+  mon.board.scale.set(pose.flip ? -1 : 1, 1, 1);
   if (warp) liveWarp(now);
-  drawMon(mon, walker, dt);
+  drawMon(mon, pose, dt);
   tickFigures(now, dt);
   for (const p of R.plays) tickPlay(p, now, dt);
   for (const t of R.ticks) t(now, dt);
@@ -12000,6 +12003,8 @@ async function enterEvent(o) {
   }
   beltOn(mon, R.dojo ? o.belt ?? 0 : null);   // in Kenmatta's dojo your partner wears your belt
   mon.board.rotation.x = -PITCH;   // leaning back to the camera, whose tilt is this room's
+  lead = await freshLead(lead, { group: scene, pitch: PITCH, dress: bendAll, free: dispose });
+  if (lead) { scene.add(lead.m.group); lead.m.board.rotation.x = -PITCH; }
   if (!showing() || opts !== o) return null;
   if (!back || o.at) {   // `at`: back out of a town's house, on its doorstep
     const at = o.at ?? DOOR;

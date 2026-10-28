@@ -18,6 +18,7 @@ import { buddy, deviceNews } from './trainercard.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { openPokedex, openHowto } from './collection.js';
 import { loadThree, dispose, unload, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon, smallNoShadow } from './hd2d.js';
+import { freshLead } from './follow.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -60,6 +61,7 @@ const FRONTS = [
 
 let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, shopEl, turn, hemi, sun;
 let mon, walker = { x: 0, z: 0, tile: { ...HALL_DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
+let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
 let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = null;
 // where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
 // each its own group, tiles and spots
@@ -1492,8 +1494,9 @@ function frame(now) {
     lift.needle.rotation.z += (turn - lift.needle.rotation.z) * (calm ? 1 : Math.min(1, dt / 1000 * 2.5));
   }
   mon.board.position.y = bob;
-  mon.board.scale.x = walker.flip ? -1 : 1;
-  drawMon(mon, walker, dt);
+  const pose = lead?.lead(walker, mon, dt) ?? walker;
+  mon.board.scale.x = pose.flip ? -1 : 1;
+  drawMon(mon, pose, dt);
   const k = P.keeper?.mon;
   if (k) {   // the shopkeeper turns to face your partner, and hops when it's pleased
     drawMon(k, { facing: 'front' }, dt);
@@ -1593,6 +1596,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
     await wakeGL(renderer);
     const mate = buddy(getSave());
     if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await monBoard(mate); mon.board.rotation.x = -PITCH; scene.add(mon.group); }
+    lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
     env = hallEnv();   // drawn into a render target, which a context lost while asleep doesn't keep
     syncShop();
     atDoors();
@@ -1666,6 +1670,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   mon = await monBoard(buddy(getSave()));
   mon.board.rotation.x = -PITCH;
   scene.add(mon.group);
+  lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
   atDoors();
   resize();
   for (let i = 0; i < lowered; i++) if (!stepDown()) break;
