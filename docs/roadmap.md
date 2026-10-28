@@ -1211,6 +1211,8 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**The Trainer Plaza board, smaller or restyled** (2026-10-28): the user loves that it shows real trainers, but at 1.1x it covered the PC. Shrunk to 0.9x and Oak nudged right (`dx` in `PROFS`, `js/hub-3d.js`), live. Ideas offered, none picked: (a) a low signboard / kiosk, the Polaroids on a slanted face at waist height, so it stops blocking the view; (b) a photo wall or clothesline of Polaroids on pegs between two lamp posts; (c) a lit noticeboard screen like the PC, faces scrolling. Wait for the user.
+
 **Houses show a lot of empty wall** (an idea, 2026-10-28): with houses framed 8 tiles across, Kurt's Workshop sits low
 with a third of the screen plank wall above it. A slightly lower camera tilt in houses would fill the screen without
 changing any sizes. The user wasn't sure ("I dunno"); not asked for yet.

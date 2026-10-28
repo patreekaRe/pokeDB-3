@@ -2529,7 +2529,7 @@ function makePlaces() {
       plazaFx = plazaBoard(THREE, { glows: glowMats, merge: mergeStill });
       plazaFx.group.position.set(tileX(PLAZA_AT.at[0]), 0, tileZ(PLAZA_AT.at[1]));
       plazaFx.group.rotation.y = facePlaza(PLAZA_AT.at);
-      plazaFx.group.scale.setScalar(1.1);   // between the avenue's edge and the PC
+      plazaFx.group.scale.setScalar(0.9);   // between the avenue's edge and the PC, clear of it (the user's ask, 2026-10-28)
       g.add(plazaFx.group);
       const fx = plazaFx;
       plazaTop(6).then(list => { if (plazaFx === fx) fx.paint(list); });
@@ -2770,9 +2770,9 @@ async function standGuest(g, l) {
 
 const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
-  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, refresh: 'And remember: tap the red refresh button up in the corner often! The game gets updates all the time.',
+  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, dx: 0.4, refresh: 'And remember: tap the red refresh button up in the corner often! The game gets updates all the time.',
     hello: 'Ah, there you are! Good to see you back. Let me share something from my research...' },
-  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.35, refresh: 'Oh, and tap the red refresh button up in the corner often, okay? New updates land all the time!',
+  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.55, refresh: 'Oh, and tap the red refresh button up in the corner often, okay? New updates land all the time!',
     hello: 'Oh, hi! Up late too? Perfect timing, I just jotted this one down in my notes...' },
 ];
 const HINTS = [
