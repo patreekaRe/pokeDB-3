@@ -3775,3 +3775,10 @@ down), each partner's face with a bubble and a "!!" in both types' colours. A ta
 duo's pair now morph side by side (`evolutionScene(..., mate)`). Faces are guessed from SPRITE_FIT's pose box; an odd
 shape may need its own face point. Playtested on branch `comic-evolution`; the user: "I like it all". `?evolve=<starter>`
 (`&stage=1`, `&mate=<id>`) plays it after PRESS START.
+
+### People in the gateway towns, on Gen 4 walking sprites (2026-10-28, cloud; on `main`)
+22 people, 4-5 a town, dealt into each town's crowd beside its Pokémon (Kimono Girl and Sage in Lantern Village, a
+Hiker in Cinder Springs, Tubers and a Captain at Driftwood Landing, Rangers in Highbough, a Rancher and Gambler in
+Sunwell Bazaar...), each with lines of its own. They walk on four-way sheets from Vanilla Sunshine's Gen 4 OW pack
+(`walkFrames()` / `drawStep()` in `js/hd2d.js`), turn to talk, credited in About and the roll. Walked headless in all
+five towns (`&people`), within the phone budget. Details in `towns.md`.

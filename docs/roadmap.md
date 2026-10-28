@@ -1223,16 +1223,10 @@ ids, and credit the pack's artists (fan-made, community sprites) on a credits pa
 session: re-upload the .7z when building. Waiting on the user's pick. (Re-checked 2026-10-28: it holds only 5 people,
 RPG Maker XP's own fantasy characters, so it's no source for trainers.)
 
-**Town people on Gen 4 walking sprites: built on branch `duo-types` (commit 675a843), not yet on main** (2026-10-28; the user's call: "people in town for
-sure"; Oak / Sonia, Kurt and Team Rocket's grunts stay as they are). 22 people, 4-5 a town, in the towns' `folk` lists
-(`person: true`, `assets/overworld/`, `walkFrames()` / `drawStep()` in `js/hd2d.js`; details in `towns.md`), credits
-in About and the roll, a patch note. Tests pass. **Held off main**: this session couldn't load any 3D place headless
-(cdn.jsdelivr.net, three.js, and npm, which the probe tools use for a copy, were blocked after a network change), so
-no town walk-through or `budget-check --only=town-shrine,town-wastes,town-ruins,town-thornwood,town-savanna` yet.
-Next: with those hosts allowed, walk each town headless (`?town=<biome>&towns`, a person in the crowd, no console
-errors), run the budget check, then push to main. The pack (Vanilla Sunshine's "Gen 4 OWs v1.5", Eevee Expo 404:
-234 sheets, credit "Gen 4 OW Sprites by Neo-Spriteman, Vanilla Sunshine, PurpleZaffre & Maicerochico, AtomicReactor",
-no redistributing) has to be re-uploaded only to add more people.
+**More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
+run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking
+in a town. Oak / Sonia, Kurt and the ? room's grunts stay as they are (the user agreed). Needs the Gen 4 pack
+re-uploaded (Vanilla Sunshine's "Gen 4 OWs v1.5", Eevee Expo 404; never commit the whole pack).
 
 - **More "leave for a turn" moves** (2026-10-28, the user's Dig fix; done part in the archive): offered and **not picked**
   for now: your own Fly card (Flying) and Dive card (Water, in Squirtle's deck) flying / diving out of reach and ending the
