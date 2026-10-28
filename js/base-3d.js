@@ -14,7 +14,7 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { residentCap, openPC, resident } from './pc.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, bakeColours, smallNoShadow } from './hd2d.js';
+import { loadThree, tex, crop, trim, NPC_PX as TRAINER_PX, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, bakeColours, smallNoShadow } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
@@ -1286,7 +1286,6 @@ async function startVisit() {
 /* A Gym Leader or a friend dropping by (leaderVisitor() in js/secret-base.js): they stand about in the room until you
    tap them, say their piece in the same speech window, and walk out over the doormat. A best friend (`sit`, 5 hearts)
    walks in over it and sits on one of your seats instead, and gets down to leave. */
-const TRAINER_PX = 1 / 34;   // a trainer's sprite pixel, as in the walk-in rooms (js/event-3d.js)
 
 async function leaderVisit() {
   const l = leaderVisitor(base);

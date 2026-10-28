@@ -23,7 +23,7 @@ import { makeBuddies } from './hub-buddies.js';
 import { cloudConfigured, cloudRemembered } from './cloud.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, NPC_PX as TRAINER_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
@@ -2741,7 +2741,6 @@ function makePlaces() {
 
 /** Where a visiting Gym Leader stands: on the plaza, left of the Waystone. */
 const GUEST_AT = { x: START.x - 2, y: START.y };
-const TRAINER_PX = 1 / 34;   // a trainer's sprite pixel, as in the walk-in rooms (js/event-3d.js)
 async function standGuest(g, l) {
   const m = await monBoard({ src: spriteOf(l), name: l.name, cry: '', px: TRAINER_PX }, false);
   if (!g.parent) { dispose(m.group); return; }   // the places were built again while it loaded

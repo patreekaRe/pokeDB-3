@@ -1211,6 +1211,12 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Kurt and the people in rooms look big beside the smaller trainer** (the user, 2026-10-28, after `WALKER_PX` went to
+1.0). People stood in rooms and the hub (Kurt, the Center's nurse, the Mart's clerks, ? room trainers, Gym Leaders at home
+and in the Secret Base) are battle sprites at `NPC_PX` (`js/hd2d.js`, 1/34), never shrunk: Kurt stands about 2.1 units to
+your trainer's 1.45. `?npc=N` (N times it, for a page load) is live to try, e.g. `?npc=0.8`; about 0.7 matches your
+trainer's height. Once they pick, make it the default and add the size to the `look` patch line already in `NEXT`.
+
 **A trainer tailor shop: the user picked option 1** (2026-10-28): a fourth front in the Poké Mall hall, the Trainer
 Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/kecleon.png` are in). Ready to build:
 

@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours, unload, putAway } from './hd2d.js';
+import { loadThree, tex, crop, NPC_PX, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours, unload, putAway } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic, byFace } from './hub-3d.js';
@@ -38,7 +38,6 @@ const TOP = 8;
 const ACROSS = 6.4, LOOK_Y = 0.8;
 let PITCH = 0.42;   // the camera's tilt: a town's is higher, to show its layout (useSize())
 let DOOR = { x: 5, y: ROWS - 1 };
-const NPC_PX = 1 / 34;        // a trainer's sprite pixel, a touch under a Pokémon's, so they stand about a head taller
 export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home'];
 
 let THREE, renderer, scene, camera, post, view, hemi, sun;

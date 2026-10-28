@@ -571,6 +571,10 @@ export async function monBoard(mate, back = true) {
    GIF's (2026-10-28: a quarter bigger looked big indoors; the user tried sizes on the live site and picked 1.0, trainer
    and townspeople alike). `?walker=N` tries another size for a page load. */
 export const WALKER_PX = MON_PX * (Number(new URLSearchParams(location.search).get('walker')) || 1);
+/** A trainer's battle sprite stood in a room or the hub (Kurt, a clerk, a Gym Leader), a touch under a Pokémon's pixel so
+    they stand about a head taller. `?npc=N` tries N times it for a page load (2026-10-28: the user found Kurt big beside
+    their smaller trainer). */
+export const NPC_PX = (Number(new URLSearchParams(location.search).get('npc')) || 1) / 34;
 const FACES = ['down', 'left', 'right', 'up'], STEP_MS = 150;
 const cut = new Map();
 async function walkFrames(src) {
