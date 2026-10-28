@@ -422,7 +422,8 @@ function askLook(box, look, keep, { later = false } = {}) {
     for (const hero of HEROES) {
       const btn = el('button', `tdx-mate tdx-look${hero.id === look ? ' on' : ''}`);
       btn.type = 'button';
-      btn.append(lookArt(lookSheet(hero.id)), el('span', 'tdx-mate-name', hero.name));
+      btn.setAttribute('aria-label', hero.name);
+      btn.append(lookArt(lookSheet(hero.id)));
       btn.addEventListener('click', () => {
         look = hero.id;
         row.querySelectorAll('.on').forEach(b => b.classList.remove('on'));

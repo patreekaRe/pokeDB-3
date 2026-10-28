@@ -1,6 +1,7 @@
 /* The trainer you walk as (2026-10-28, the user's ask: "choose a trainer so our buddy can follow us"): Gen 4 walking
    sheets from Vanilla Sunshine's OW pack (credited in About), in assets/overworld/. The four heroes are free and offered
-   in the new-player setup; the classes are bought with PokéCoins on the Trainer Card. `save.look` is the one worn (null:
+   in the new-player setup; the rest are bought on the Trainer Card, all at one price (LOOK_PRICE; the user's call, 2026-10-28).
+   No names show (the user's call: you're you, not Ethan): `name` is for screen readers and the bubbles. `save.look` is the one worn (null:
    your buddy walks alone, as before), `save.looks` those bought. */
 
 export const LOOKS = [
@@ -8,36 +9,37 @@ export const LOOKS = [
   { id: 'lyra', name: 'Lyra', free: true },
   { id: 'lucas', name: 'Lucas', free: true },
   { id: 'dawn', name: 'Dawn', free: true },
-  { id: 'bug-catcher', name: 'Bug Catcher', price: 300 },
-  { id: 'cowgirl', name: 'Cowgirl', price: 300 },
-  { id: 'hiker', name: 'Hiker', price: 300 },
-  { id: 'black-belt', name: 'Black Belt', price: 400 },
-  { id: 'kimono-girl', name: 'Kimono Girl', price: 400 },
-  { id: 'ranger-m', name: 'Ranger', price: 500 },
-  { id: 'ranger-f', name: 'Ranger', price: 500 },
-  { id: 'gentleman', name: 'Gentleman', price: 600 },
-  { id: 'beauty', name: 'Beauty', price: 600 },
-  { id: 'rocket-grunt-m', name: 'Rocket Grunt', price: 800 },
-  { id: 'rocket-grunt-f', name: 'Rocket Grunt', price: 800 },
-  { id: 'youngster', name: 'Youngster', price: 300 },
-  { id: 'lass', name: 'Lass', price: 300 },
-  { id: 'picnicker', name: 'Picnicker', price: 300 },
-  { id: 'schoolkid', name: 'School Kid', price: 300 },
-  { id: 'poke-fan', name: 'Poké Fan', price: 300 },
-  { id: 'waitress', name: 'Waitress', price: 400 },
-  { id: 'cameraman', name: 'Cameraman', price: 400 },
-  { id: 'sailor', name: 'Sailor', price: 400 },
-  { id: 'worker', name: 'Worker', price: 400 },
-  { id: 'ruin-maniac', name: 'Ruin Maniac', price: 400 },
-  { id: 'firebreather', name: 'Firebreather', price: 500 },
-  { id: 'gambler', name: 'Gambler', price: 500 },
-  { id: 'ninja-boy', name: 'Ninja Boy', price: 500 },
-  { id: 'scientist', name: 'Scientist', price: 500 },
-  { id: 'bird-keeper', name: 'Bird Keeper', price: 500 },
-  { id: 'dragon-tamer', name: 'Dragon Tamer', price: 700 },
-  { id: 'veteran', name: 'Veteran', price: 700 },
-  { id: 'captain', name: 'Captain', price: 800 },
+  { id: 'bug-catcher', name: 'Bug Catcher' },
+  { id: 'cowgirl', name: 'Cowgirl' },
+  { id: 'hiker', name: 'Hiker' },
+  { id: 'black-belt', name: 'Black Belt' },
+  { id: 'kimono-girl', name: 'Kimono Girl' },
+  { id: 'ranger-m', name: 'Ranger' },
+  { id: 'ranger-f', name: 'Ranger' },
+  { id: 'gentleman', name: 'Gentleman' },
+  { id: 'beauty', name: 'Beauty' },
+  { id: 'rocket-grunt-m', name: 'Rocket Grunt' },
+  { id: 'rocket-grunt-f', name: 'Rocket Grunt' },
+  { id: 'youngster', name: 'Youngster' },
+  { id: 'lass', name: 'Lass' },
+  { id: 'picnicker', name: 'Picnicker' },
+  { id: 'schoolkid', name: 'School Kid' },
+  { id: 'poke-fan', name: 'Poké Fan' },
+  { id: 'waitress', name: 'Waitress' },
+  { id: 'cameraman', name: 'Cameraman' },
+  { id: 'sailor', name: 'Sailor' },
+  { id: 'worker', name: 'Worker' },
+  { id: 'ruin-maniac', name: 'Ruin Maniac' },
+  { id: 'firebreather', name: 'Firebreather' },
+  { id: 'gambler', name: 'Gambler' },
+  { id: 'ninja-boy', name: 'Ninja Boy' },
+  { id: 'scientist', name: 'Scientist' },
+  { id: 'bird-keeper', name: 'Bird Keeper' },
+  { id: 'dragon-tamer', name: 'Dragon Tamer' },
+  { id: 'veteran', name: 'Veteran' },
+  { id: 'captain', name: 'Captain' },
 ];
+export const LOOK_PRICE = 500;
 export const LOOKS_BY_ID = Object.fromEntries(LOOKS.map(l => [l.id, l]));
 export const HEROES = LOOKS.filter(l => l.free);
 

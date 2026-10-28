@@ -29,7 +29,7 @@ import { tipAt } from './tips.js';
 import { calmFx } from './prefs.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog, crownArt, auraArt, lookArt } from './ui.js';
-import { LOOKS, LOOKS_BY_ID, lookSheet, ownsLook, wornLook } from './data/looks.js';
+import { LOOKS, LOOK_PRICE, lookSheet, ownsLook, wornLook } from './data/looks.js';
 import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
@@ -634,8 +634,8 @@ function ballPicker(body, done) {
 }
 
 /** The trainer picker (2026-10-28, the user's ask: pick a trainer your buddy follows): the four heroes, free, then the
-    classes, bought with PokéCoins (a first tap says the price, a second buys); a tap on one you have wears it. Walk alone
-    takes it off: your partner walks by itself, as before. */
+    rest at LOOK_PRICE each (a first tap says the price, a second buys); a tap on one you have wears it. No names (the
+    user's call: you're you). Walk alone takes it off: your partner walks by itself, as before. */
 function lookPicker(body, done) {
   const head = el('div', 'tc-head');
   head.append(el('h2', 'tc-title', 'YOUR TRAINER'));
@@ -648,7 +648,7 @@ function lookPicker(body, done) {
   alone.type = 'button';
   alone.title = 'No trainer: your partner walks by itself';
   now.append(line, alone);
-  const say = () => { const w = wornLook(getSave()); line.textContent = w ? `Walking as ${w.name}.` : 'Your partner walks alone.'; alone.hidden = !w; };
+  const say = () => { const w = wornLook(getSave()); line.textContent = w ? 'Your partner walks a step behind you.' : 'Your partner walks alone.'; alone.hidden = !w; };
   say();
   const grid = el('div', 'tc-pick-grid tc-ball-grid tc-look-grid');
   let asked = null;
@@ -663,16 +663,16 @@ function lookPicker(body, done) {
     const btn = el('button', `tc-pick tc-ball tc-look${save.look === look.id ? ' on' : ''}${owned ? '' : ' locked'}`);
     btn.type = 'button';
     btn.dataset.look = look.id;
-    btn.setAttribute('aria-label', owned ? `Walk as ${look.name}` : `${look.name}, ${look.price} PokéCoins`);
-    const price = el('span', 'tc-look-price', `🪙${look.price}`);
-    btn.append(lookArt(lookSheet(look.id)), el('span', 'tc-ball-name', look.name), ...(owned ? [] : [price]));
+    btn.setAttribute('aria-label', owned ? `Walk as ${look.name}` : `${look.name}, ${LOOK_PRICE} PokéCoins`);
+    const price = el('span', 'tc-look-price', `🪙${LOOK_PRICE}`);
+    btn.append(lookArt(lookSheet(look.id)), ...(owned ? [] : [price]));
     btn.addEventListener('click', () => {
       if (ownsLook(getSave(), look.id)) { playSound('confirm'); return wear(look.id); }
-      if (asked !== look.id) { asked = look.id; playSound('confirm'); line.textContent = `${look.name}: ${look.price.toLocaleString()} PokéCoins. Tap again to buy.`; return; }
+      if (asked !== look.id) { asked = look.id; playSound('confirm'); line.textContent = `This one is ${LOOK_PRICE} PokéCoins. Tap again to buy.`; return; }
       asked = null;
-      if ((getSave().coins ?? 0) < look.price) { playSound('cancel'); line.textContent = `${look.name} is ${look.price.toLocaleString()} PokéCoins. You're a little short.`; return; }
+      if ((getSave().coins ?? 0) < LOOK_PRICE) { playSound('cancel'); line.textContent = `This one is ${LOOK_PRICE} PokéCoins. You're a little short.`; return; }
       playSound('buy');
-      updateSave(d => { d.coins -= look.price; d.looks = [...new Set([...(d.looks || []), look.id])]; });
+      updateSave(d => { d.coins -= LOOK_PRICE; d.looks = [...new Set([...(d.looks || []), look.id])]; });
       btn.classList.remove('locked');
       price.remove();
       btn.setAttribute('aria-label', `Walk as ${look.name}`);
@@ -680,7 +680,7 @@ function lookPicker(body, done) {
     });
     return btn;
   };
-  grid.append(...[...LOOKS].sort((a, b) => (a.price ?? 0) - (b.price ?? 0)).map(tile));   // the free heroes, then cheapest first
+  grid.append(...LOOKS.map(tile));
   const note = el('p', 'tc-pick-note', `You walk as your trainer in the Clearing, your Secret Base, the mall, the towns and a run's rooms, your partner a step behind. You have ${(getSave().coins ?? 0).toLocaleString()} PokéCoins.`);
   body.replaceChildren(head, note, now, grid);
   head.querySelector('h2').tabIndex = -1;
@@ -837,7 +837,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   lookKey.type = 'button';
   lookKey.title = 'The trainer you walk as, your partner a step behind: tap to choose';
   lookKey.setAttribute('aria-label', `Trainer: ${worn?.name ?? 'none'}. Choose one`);
-  lookKey.append(...(worn ? [lookArt(lookSheet(worn.id))] : []), worn?.name ?? 'Trainer');
+  lookKey.append(...(worn ? [lookArt(lookSheet(worn.id))] : []), 'Trainer');
   lookKey.addEventListener('click', () => { playSound('confirm'); lookPicker(body, redraw); });
   frame.append(lookKey);
   if (mate.twin) {
