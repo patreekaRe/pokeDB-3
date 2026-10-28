@@ -298,6 +298,13 @@ body.titling { overflow: hidden; }
 .tdx-mate.on img { animation: tdxHop 0.5s ease-out; }
 @keyframes tdxHop { 40% { transform: translateY(-8px); } }
 @media (prefers-reduced-motion: reduce) { .tdx-mate.on img { animation: none; } }
+/* the setup's trainer step (askLook() in js/title.js): the four heroes, the picked one walking on the spot */
+.tdx-looks { grid-template-columns: repeat(4, 1fr); }
+.tdx-look { --c1: #8f8fbf; --c2: #2a2a4a; }
+.tdx-look .look-art { --s: 100%; max-width: 64px; height: auto; aspect-ratio: 1; }
+.tdx-look.on .look-art { animation: look-walk 0.6s steps(4) infinite; }
+@media (prefers-reduced-motion: reduce) { .tdx-look.on .look-art { animation: none; } }
+:root.calm-fx .tdx-look.on .look-art { animation: none; }
 .press-cursor { font-size: 0.7em; color: var(--gold); }
 
 /* the flying legendaries cross the sky in turn (nextFlyer() in js/title.js): a silhouette until unlocked, like Ho-Oh in the

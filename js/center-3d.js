@@ -11,7 +11,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway, dispose } from './hd2d.js';
-import { freshLead } from './follow.js';
+import { leadFor } from './follow.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -916,7 +916,8 @@ async function enterCenter(o) {
     scene.add(mon.group);
     monitor.face = null;
   }
-  lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
+  lead ??= leadFor({ group: scene, pitch: PITCH, free: dispose });
+  await lead.ready();
   if (!alive()) return null;
   if (!back) {
     walker = { x: tileX(DOOR.x), z: tileZ(DOOR.y), tile: { ...DOOR }, path: [], facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };

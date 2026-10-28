@@ -15,7 +15,8 @@
    animates while the title is up.
    ============================================================ */
 
-import { $, el, setHpBar, infGlyph, showScreen } from './ui.js';
+import { $, el, setHpBar, infGlyph, showScreen, lookArt } from './ui.js';
+import { HEROES, lookSheet } from './data/looks.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
 import { playSound, playCry, closeSoundPops, setHomeTrack } from './audio.js';
 import { timeOfDay } from './daytime.js';
@@ -342,11 +343,16 @@ async function onboard(dex) {
   let name = pickedName();
   let mate = getSave().buddy?.replace(/^starter:|:shiny$/g, '');
   if (!SETUP_BUDDIES.includes(mate)) mate = null;
-  for (let step = 0; step < 2;) {
-    step += (step === 0 ? await askName(box, name, (n) => { name = n; }) : await askBuddy(box, mate, (m) => { mate = m; }));
+  let look = getSave().look;
+  if (!HEROES.some(h => h.id === look)) look = null;
+  for (let step = 0; step < 3;) {
+    step += step === 0 ? await askName(box, name, (n) => { name = n; })
+      : step === 1 ? await askLook(box, look, (l) => { look = l; })
+        : await askBuddy(box, mate, (m) => { mate = m; });
+    if (step < 0) step = 0;
   }
   setTrainerName(name);
-  updateSave(d => { d.buddy = `starter:${mate}`; d.setupDone = true; });
+  updateSave(d => { d.buddy = `starter:${mate}`; d.look = look; d.setupDone = true; });
   showBuddy();
   box.remove();
   dex.classList.remove('setup', 'instant');
@@ -382,14 +388,44 @@ function askName(box, name, keep) {
     const go = () => { field.blur(); keep(field.value.trim()); playSound('confirm'); done(1); };
     ok.addEventListener('click', go);
     field.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
-    box.replaceChildren(el('span', 'tdx-step', '1 / 2'), el('span', 'tdx-ask', "WHAT'S YOUR NAME?"), field, ok);
+    box.replaceChildren(el('span', 'tdx-step', '1 / 3'), el('span', 'tdx-ask', "WHAT'S YOUR NAME?"), field, ok);
     box.dataset.step = 'name';
     // a phone only brings its keyboard up for a focus inside the tap itself, so a tap on the box does it; wider, it's ready
     if (matchMedia('(pointer: fine)').matches) setTimeout(() => field.focus({ preventScroll: true }), still() ? 0 : 1000);
   });
 }
 
-/** Step 2: one of the three starters, a tap picks (with its cry), OK takes it, Back goes to the name. Resolves +1 / -1. */
+/** Step 2: the trainer you walk as (2026-10-28), one of the four heroes, its front frame walking once picked; more are
+    bought on the Trainer Card. A tap picks, OK takes it, Back goes to the name. Resolves +1 / -1. */
+function askLook(box, look, keep) {
+  return new Promise(done => {
+    const ok = pill('OK');
+    const back = pill('Back', 'back');
+    const row = el('div', 'tdx-mates tdx-looks');
+    for (const hero of HEROES) {
+      const btn = el('button', `tdx-mate tdx-look${hero.id === look ? ' on' : ''}`);
+      btn.type = 'button';
+      btn.append(lookArt(lookSheet(hero.id)), el('span', 'tdx-mate-name', hero.name));
+      btn.addEventListener('click', () => {
+        look = hero.id;
+        row.querySelectorAll('.on').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+        ok.disabled = false;
+        playSound('confirm');
+      });
+      row.append(btn);
+    }
+    ok.disabled = !look;
+    ok.addEventListener('click', () => { if (!look) return; keep(look); playSound('confirm'); done(1); });
+    back.addEventListener('click', () => { if (look) keep(look); playSound('cancel'); done(-1); });
+    const keys = el('div', 'tdx-keys');
+    keys.append(back, ok);
+    box.replaceChildren(el('span', 'tdx-step', '2 / 3'), el('span', 'tdx-ask', 'WHO ARE YOU?'), el('span', 'tdx-note', 'Your trainer, with your buddy a step behind.'), row, keys);
+    box.dataset.step = 'look';
+  });
+}
+
+/** Step 3: one of the three starters, a tap picks (with its cry), OK takes it, Back goes to the name. Resolves +1 / -1. */
 function askBuddy(box, mate, keep) {
   return new Promise(done => {
     const ok = pill('OK');
@@ -419,7 +455,7 @@ function askBuddy(box, mate, keep) {
     back.addEventListener('click', () => { if (mate) keep(mate); playSound('cancel'); done(-1); });
     const keys = el('div', 'tdx-keys');
     keys.append(back, ok);
-    box.replaceChildren(el('span', 'tdx-step', '2 / 2'), el('span', 'tdx-ask', 'CHOOSE YOUR BUDDY'), el('span', 'tdx-note', 'It walks with you around the Clearing.'), row, keys);
+    box.replaceChildren(el('span', 'tdx-step', '3 / 3'), el('span', 'tdx-ask', 'CHOOSE YOUR BUDDY'), el('span', 'tdx-note', 'It follows you around the Clearing.'), row, keys);
     box.dataset.step = 'buddy';
   });
 }

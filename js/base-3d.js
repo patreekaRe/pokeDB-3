@@ -15,7 +15,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { residentCap, openPC, resident } from './pc.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, bakeColours, smallNoShadow } from './hd2d.js';
-import { freshLead } from './follow.js';
+import { leadFor } from './follow.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
 import { leavesOf, groundLook, snowCap, tintOf } from './hub-season.js';
@@ -2214,7 +2214,7 @@ function frame(now) {
   liveSwings(dt, now);
   for (const g of guests) if (g.mon && g.w) { g.mon.group.visible = homeHere(g); if (homeHere(g)) liveGuest(g, dt, now); }
   if (walker.seat?.part && !walker.jump) mon.group.position.set(walker.x, walker.y, walker.z);
-  if (BEND.k.value) for (const o of [mon.group, ...(lead ? [lead.m.group] : []), ring, ...present().map(g => g.mon?.group).filter(Boolean)]) o.traverse(c => { if (c.isMesh) for (const m of [c.material].flat()) bend(m, BEND); });
+  if (BEND.k.value) for (const o of [mon.group, ...(lead?.m ? [lead.m.group] : []), ring, ...present().map(g => g.mon?.group).filter(Boolean)]) o.traverse(c => { if (c.isMesh) for (const m of [c.material].flat()) bend(m, BEND); });
   if (snow) liveSnow(now);
   liveVisit(dt, now);
   livePuffs(now);
@@ -2457,7 +2457,7 @@ async function reopen(first) {
   await wakeGL(renderer);
   const mate = buddy(getSave());
   if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
-  lead = await freshLead(lead, { group: scene, pitch: 0.6, free: dispose });
+  await lead.ready();
   mode = 'walk'; blend = 0; sel = -1;
   showRoom();
   setTime(true);
@@ -2569,7 +2569,8 @@ export async function openBase3d({ onLeave = null, start = 'main', guest = null 
   buildPieces();
   mon = await makeMon();
   mon.board.userData.who = { mon, w: walker };
-  lead = await freshLead(lead, { group: scene, pitch: 0.6, free: dispose });
+  lead ??= leadFor({ group: scene, pitch: 0.6, free: dispose });
+  await lead.ready();
   walker.tile = nearestFree(startTile());
   walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
   camX = panX = walker.x;

@@ -18,7 +18,7 @@ import { buddy, deviceNews } from './trainercard.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { openPokedex, openHowto } from './collection.js';
 import { loadThree, dispose, unload, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon, smallNoShadow } from './hd2d.js';
-import { freshLead } from './follow.js';
+import { leadFor } from './follow.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -1596,7 +1596,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
     await wakeGL(renderer);
     const mate = buddy(getSave());
     if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await monBoard(mate); mon.board.rotation.x = -PITCH; scene.add(mon.group); }
-    lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
+    await lead.ready();
     env = hallEnv();   // drawn into a render target, which a context lost while asleep doesn't keep
     syncShop();
     atDoors();
@@ -1670,7 +1670,8 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   mon = await monBoard(buddy(getSave()));
   mon.board.rotation.x = -PITCH;
   scene.add(mon.group);
-  lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
+  lead ??= leadFor({ group: scene, pitch: PITCH, free: dispose });
+  await lead.ready();
   atDoors();
   resize();
   for (let i = 0; i < lowered; i++) if (!stepDown()) break;

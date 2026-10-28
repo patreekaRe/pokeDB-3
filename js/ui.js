@@ -22,6 +22,14 @@ export const $ = (id) => document.getElementById(id);
 export const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /** Build an element in one line: el('div', 'card big', 'Hello'). */
+/** A trainer look's front-facing frame (js/data/looks.js), its walking sheet as the background: `.look-art`'s steps walk it. */
+export function lookArt(sheet) {
+  const art = el('span', 'look-art');
+  art.style.backgroundImage = `url("${sheet}")`;
+  art.setAttribute('aria-hidden', 'true');
+  return art;
+}
+
 export function el(tag, className = '', text = '') {
   const node = document.createElement(tag);
   if (className) node.className = className;

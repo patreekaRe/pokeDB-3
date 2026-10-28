@@ -28,7 +28,8 @@ import { NAME_MAX } from './data/leaderboard.js';
 import { tipAt } from './tips.js';
 import { calmFx } from './prefs.js';
 import { playSound } from './audio.js';
-import { $, el, openDialog, crownArt, auraArt } from './ui.js';
+import { $, el, openDialog, crownArt, auraArt, lookArt } from './ui.js';
+import { LOOKS, LOOKS_BY_ID, lookSheet, ownsLook, wornLook } from './data/looks.js';
 import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
@@ -632,6 +633,60 @@ function ballPicker(body, done) {
   body.scrollTop = 0;
 }
 
+/** The trainer picker (2026-10-28, the user's ask: pick a trainer your buddy follows): the four heroes, free, then the
+    classes, bought with PokéCoins (a first tap says the price, a second buys); a tap on one you have wears it. Walk alone
+    takes it off: your partner walks by itself, as before. */
+function lookPicker(body, done) {
+  const head = el('div', 'tc-head');
+  head.append(el('h2', 'tc-title', 'YOUR TRAINER'));
+  const back = el('button', 'tc-pick-back', 'Back');
+  back.type = 'button';
+  back.addEventListener('click', done);
+  head.append(back);
+  const now = el('div', 'tc-pick-note tc-ball-now'), line = el('span', '');
+  const alone = el('button', 'tc-pick-back tc-ball-away', 'Walk alone');
+  alone.type = 'button';
+  alone.title = 'No trainer: your partner walks by itself';
+  now.append(line, alone);
+  const say = () => { const w = wornLook(getSave()); line.textContent = w ? `Walking as ${w.name}.` : 'Your partner walks alone.'; alone.hidden = !w; };
+  say();
+  const grid = el('div', 'tc-pick-grid tc-ball-grid tc-look-grid');
+  let asked = null;
+  const wear = (id) => {
+    updateSave(d => { d.look = id; });
+    grid.querySelectorAll('.tc-pick').forEach(b => b.classList.toggle('on', b.dataset.look === id));
+    say();
+  };
+  alone.addEventListener('click', () => { playSound('cancel'); wear(null); });
+  const tile = (look) => {
+    const save = getSave(), owned = ownsLook(save, look.id);
+    const btn = el('button', `tc-pick tc-ball tc-look${save.look === look.id ? ' on' : ''}${owned ? '' : ' locked'}`);
+    btn.type = 'button';
+    btn.dataset.look = look.id;
+    btn.setAttribute('aria-label', owned ? `Walk as ${look.name}` : `${look.name}, ${look.price} PokéCoins`);
+    const price = el('span', 'tc-look-price', `🪙${look.price}`);
+    btn.append(lookArt(lookSheet(look.id)), el('span', 'tc-ball-name', look.name), ...(owned ? [] : [price]));
+    btn.addEventListener('click', () => {
+      if (ownsLook(getSave(), look.id)) { playSound('confirm'); return wear(look.id); }
+      if (asked !== look.id) { asked = look.id; playSound('confirm'); line.textContent = `${look.name}: ${look.price.toLocaleString()} PokéCoins. Tap again to buy.`; return; }
+      asked = null;
+      if ((getSave().coins ?? 0) < look.price) { playSound('cancel'); line.textContent = `${look.name} is ${look.price.toLocaleString()} PokéCoins. You're a little short.`; return; }
+      playSound('buy');
+      updateSave(d => { d.coins -= look.price; d.looks = [...new Set([...(d.looks || []), look.id])]; });
+      btn.classList.remove('locked');
+      price.remove();
+      btn.setAttribute('aria-label', `Walk as ${look.name}`);
+      wear(look.id);
+    });
+    return btn;
+  };
+  grid.append(...LOOKS.map(tile));
+  const note = el('p', 'tc-pick-note', `You walk as your trainer in the Clearing, your Secret Base, the mall, the towns and a run's rooms, your partner a step behind. You have ${(getSave().coins ?? 0).toLocaleString()} PokéCoins.`);
+  body.replaceChildren(head, note, now, grid);
+  head.querySelector('h2').tabIndex = -1;
+  body.scrollTop = 0;
+}
+
 const hintFor = (b, save) => {
   if (b.secret && !(save.unlocked || []).includes('mewtwo')) return 'A secret badge. Something sleeps behind the Sealed Gate...';
   return b.locked ? b.text : `Not earned yet. ${b.text}.`;
@@ -777,6 +832,14 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   ballKey.append(ball3d(carried?.sprite ?? 'poke-ball'), carried?.name.replace(/ Ball$/, '') ?? 'Poké');
   ballKey.addEventListener('click', () => { playSound('confirm'); ballPicker(body, redraw); });
   frame.append(ballKey);
+  const worn = wornLook(save);
+  const lookKey = el('button', 'tc-shiny tc-look-key');
+  lookKey.type = 'button';
+  lookKey.title = 'The trainer you walk as, your partner a step behind: tap to choose';
+  lookKey.setAttribute('aria-label', `Trainer: ${worn?.name ?? 'none'}. Choose one`);
+  lookKey.append(...(worn ? [lookArt(lookSheet(worn.id))] : []), worn?.name ?? 'Trainer');
+  lookKey.addEventListener('click', () => { playSound('confirm'); lookPicker(body, redraw); });
+  frame.append(lookKey);
   if (mate.twin) {
     const flip = el('button', `tc-shiny${mate.shiny ? ' on' : ''}`, mate.shiny ? '✨ Shiny' : 'Shiny');
     flip.type = 'button';

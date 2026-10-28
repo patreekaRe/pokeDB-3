@@ -12,7 +12,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours, unload, putAway } from './hd2d.js';
-import { freshLead } from './follow.js';
+import { leadFor } from './follow.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic, byFace } from './hub-3d.js';
 import { makeSealedGate } from './hub-sealed.js';
@@ -12003,8 +12003,9 @@ async function enterEvent(o) {
   }
   beltOn(mon, R.dojo ? o.belt ?? 0 : null);   // in Kenmatta's dojo your partner wears your belt
   mon.board.rotation.x = -PITCH;   // leaning back to the camera, whose tilt is this room's
-  lead = await freshLead(lead, { group: scene, pitch: PITCH, dress: bendAll, free: dispose });
-  if (lead) { scene.add(lead.m.group); lead.m.board.rotation.x = -PITCH; }
+  lead ??= leadFor({ group: scene, pitch: () => PITCH, dress: bendAll, free: dispose });
+  await lead.ready();
+  if (lead.m) { scene.add(lead.m.group); lead.m.board.rotation.x = -PITCH; }
   if (!showing() || opts !== o) return null;
   if (!back || o.at) {   // `at`: back out of a town's house, on its doorstep
     const at = o.at ?? DOOR;

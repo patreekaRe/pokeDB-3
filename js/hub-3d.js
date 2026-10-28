@@ -22,7 +22,7 @@ import { cloudConfigured, cloudRemembered } from './cloud.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours } from './hd2d.js';
-import { freshLead } from './follow.js';
+import { leadFor } from './follow.js';
 import { gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -4778,7 +4778,8 @@ async function openHub(titleScreen, actions, hold) {
     scene.add(mon.group);
     mon.board.userData.who = { mon, w: walker };
   }
-  lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
+  lead ??= leadFor({ group: scene, pitch: PITCH, free: dispose });
+  await lead.ready();
   held = hold;
   root.classList.toggle('held', held);
   mon.group.visible = !held;

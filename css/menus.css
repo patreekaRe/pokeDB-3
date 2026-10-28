@@ -1463,6 +1463,16 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
 .tc-ball.locked .tc-ball-name { opacity: 0.5; }
 .tc-ball-now { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .tc-ball-away[hidden] { display: none; }
+/* the trainer you walk as (lookPicker() in js/trainercard.js): the front frame of its walking sheet, the picked one walking */
+.look-art { display: block; flex: none; width: var(--s, 48px); height: var(--s, 48px); background: 0 0 / 400% 400% no-repeat; image-rendering: pixelated; }
+.tc-look-key { display: inline-flex; align-items: center; justify-content: center; gap: 2px; }
+.tc-look-key .look-art { --s: 24px; margin: -4px 0; }
+.tc-look.locked .look-art { filter: grayscale(1) brightness(0.6); opacity: 0.55; }
+.tc-look-price { font: 0.75rem/1 var(--pixel-font); color: var(--win-ink); }
+.tc-look.on .look-art { animation: look-walk 0.6s steps(4) infinite; }
+@keyframes look-walk { to { background-position-x: 133.333%; } }
+@media (prefers-reduced-motion: reduce) { .tc-look.on .look-art { animation: none; } }
+:root.calm-fx .tc-look.on .look-art { animation: none; }
 /* The Champion's Crown (js/data/difficulty.js's wearsCrown(), a Level 10 win) floating over the partner, bobbing like the
    walking buddy's. */
 .tc-crown { position: absolute; z-index: 2; left: 50%; top: -6px; width: 36px; translate: -50% 0; pointer-events: none;

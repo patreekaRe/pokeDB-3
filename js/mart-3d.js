@@ -9,7 +9,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway } from './hd2d.js';
-import { freshLead } from './follow.js';
+import { leadFor } from './follow.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
 import { pcModel, livePc } from './hub-pc.js';
@@ -1033,8 +1033,8 @@ async function enterMart(o) {
   await wakeGL(renderer);
   if (!alive()) return null;
   await ensureMon(o.mate);
-  lead = await freshLead(lead, { group: scene, pitch: PITCH, free: dispose });
-  lead?.m.group.scale.setScalar(Math.min(1, MON_MAX / lead.m.top));
+  lead ??= leadFor({ group: scene, pitch: PITCH, free: dispose, fit: (m) => m.group.scale.setScalar(Math.min(1, MON_MAX / m.top)) });
+  await lead.ready();
   if (!alive()) return null;
   if (again) await restock(o.wares, true);
   else {   // a new Mart shows at once, its shelves filling the moment their pictures are ready (they're usually ready already)

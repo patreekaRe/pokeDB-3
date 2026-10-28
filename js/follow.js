@@ -14,13 +14,13 @@ const EASE = 90;        // ms: how quickly each board settles on where it should
 const STILL = 0.004;    // moved less than this in a frame: stood still
 const JUMP = 2.5;       // the walker moved further than this in a frame: it was put somewhere new, not walked
 
-/** A trainer for the place, or null when none is worn. `group`: where the buddy's group lives; `pitch`: the boards' lean;
+/** A trainer for the place, or null when none is worn. `group`: where the buddy's group lives; `pitch`: the boards' lean (or a function for it);
     `dress(group)`: the place's own touch (a bend). */
 export async function makeLead({ group, pitch, dress }) {
   const look = wornLook(getSave());
   if (!look) return null;
   const m = await monBoard({ sheet: lookSheet(look.id), name: look.name }, false);
-  m.board.rotation.x = -pitch;
+  m.board.rotation.x = -(typeof pitch === 'function' ? pitch() : pitch);
   dress?.(m.group);
   group.add(m.group);
   const trail = [];
@@ -86,11 +86,25 @@ export async function makeLead({ group, pitch, dress }) {
   };
 }
 
-/** The place's trainer kept to the look worn (call it on each way in): kept, swapped or dropped. `opts` as makeLead()'s,
-    plus `free(group)`, the place's own dispose. */
-export async function freshLead(lead, opts) {
-  const want = wornLook(getSave())?.id ?? null;
-  if ((lead?.look ?? null) === want) { lead?.reset(); return lead; }
-  lead?.dispose(opts.free);
-  return makeLead(opts);
+/** A place's trainer, kept to the look worn: built, swapped or dropped on the next frame after it changes (picked on the
+    Trainer Card while you stand there, say). `opts` as makeLead()'s, plus `free(group)` (the place's dispose) and
+    `fit(m)` (a place's own size cap). `lead()` draws as makeLead()'s does, or hands back the walker while there's none;
+    `ready()` on each way in waits for it and starts its trail afresh. */
+export function leadFor(opts) {
+  let lead = null, loading = null;
+  const sync = () => {
+    const want = wornLook(getSave())?.id ?? null;
+    if (loading || (lead?.look ?? null) === want) return;
+    loading = (async () => {
+      lead?.dispose(opts.free);
+      lead = want ? await makeLead(opts) : null;
+      if (lead) opts.fit?.(lead.m);
+      loading = null;
+    })();
+  };
+  return {
+    get m() { return lead?.m ?? null; },
+    async ready() { sync(); await loading; lead?.reset(); },
+    lead(walker, mon, dt, acting) { sync(); return lead ? lead.lead(walker, mon, dt, acting) : walker; },
+  };
 }
