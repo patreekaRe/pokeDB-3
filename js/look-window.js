@@ -23,12 +23,14 @@ const TURN_MS = 2200;
 /** Builds the window. `shop`: Kecleon's, selling; `start` the look shown first (default the one worn); `onTry(id)` each
     time the one shown changes (the tailor tries it on); `onChange()` after a buy or a wear; `onClose()` from its ✕ (or
     Escape, or Back on the card). Returns `{ node, close }`: the caller puts `node` where it goes (the tailor's stage, the
-    Trainer Card's body). */
-export function lookWindow({ shop = false, start = null, onTry = null, onChange = null, onClose = null } = {}) {
+    Trainer Card's body). `booth`: from a fitting room (the user's ask, 2026-10-28: the camera zooms in on the booth and
+    the booth is the window), so no big trainer box or row of cards, only Kecleon's card low down and ◀ / ▶ either
+    side of the screen, in `sides`, which the caller puts over the view too. */
+export function lookWindow({ shop = false, booth = false, start = null, onTry = null, onChange = null, onClose = null } = {}) {
   const save = getSave();
   let at = Math.max(0, LOOKS.findIndex(l => l.id === (start ?? save.look ?? wornLook(save)?.id)));
   let note = '', shut = false, turnT = 0, way = 0;
-  const node = el('div', `lw-sheet${shop ? ' lw-shop' : ' lw-card'}`);
+  const node = el('div', `lw-sheet${shop ? ' lw-shop' : ' lw-card'}${booth ? ' lw-in-booth' : ''}`);
   node.setAttribute('role', 'dialog');
   node.setAttribute('aria-label', shop ? 'Trainer Tailor' : 'Your trainer');
   const who = el('span', 'hk-who lw-who', shop ? 'KECLEON' : 'WARDROBE'), coins = el('span', 'hk-coins lw-coins'), x = el('button', 'hk-x lw-x', '✕');
@@ -62,7 +64,13 @@ export function lookWindow({ shop = false, start = null, onTry = null, onChange 
   key.type = alone.type = 'button';
   alone.title = 'No trainer: your partner walks by itself';
   keys.append(...(shop ? [] : [alone]), key);
-  node.append(who, ...(shop ? [coins, x] : []), line, stage, row, keys);   // the Trainer Card has its own Back, and sells nothing
+  const count = el('span', 'lw-count'), sides = el('div', 'lw-sides');
+  if (booth) {
+    prev.classList.add('lw-side'); next.classList.add('lw-side');
+    sides.append(prev, next);
+    keys.prepend(tag, count);
+    node.append(who, coins, x, line, keys);
+  } else node.append(who, ...(shop ? [coins, x] : []), line, stage, row, keys);   // the Trainer Card has its own Back, and sells nothing
 
   const tagOf = (look, s) => {
     if (s.look === look.id && wornLook(s)?.id === look.id) return ['WORN', 'home'];
@@ -82,6 +90,7 @@ export function lookWindow({ shop = false, start = null, onTry = null, onChange 
     big.style.backgroundImage = `url("${lookSheet(look.id)}")`;
     big.classList.toggle('locked', !shop && !owned);
     fillTag(tag, look, s);
+    count.textContent = `${at + 1} / ${LOOKS.length}`;
     cards.forEach((b, i) => {
       const l = LOOKS[i], mine = ownsLook(s, l.id);
       b.classList.toggle('on', i === at);
@@ -174,6 +183,6 @@ export function lookWindow({ shop = false, start = null, onTry = null, onChange 
 
   render();
   requestAnimationFrame(() => go(at, true));
-  return { node, close, get look() { return LOOKS[at].id; }, show: (id) => { const i = LOOKS.findIndex(l => l.id === id); if (i >= 0) go(i, true); }, refresh: render };
+  return { node, sides, close, get look() { return LOOKS[at].id; }, show: (id) => { const i = LOOKS.findIndex(l => l.id === id); if (i >= 0) go(i, true); }, refresh: render };
 }
 

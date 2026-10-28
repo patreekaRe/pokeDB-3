@@ -3831,7 +3831,10 @@ Wear only. A grand-opening ribbon (`tailorRibbon`), Oak / Sonia once in the Clea
 Swapped the same day (the user wasn't sure about the mannequins and picked, of four ideas, fitting rooms): six curtained
 booths across the floor, step in and the curtain draws, each look tried on behind a swish, step out in what you wear;
 rails and tables baked into one mesh a material (158 draws). The mall's shopkeepers stand as their battle GIFs again
-(`gif: true` in `monBoard()`).
+(`gif: true` in `monBoard()`). Then the user's design for the inside: a booth walked into changes the scene to inside it
+(`buildBooth()`, place `tb`): a gilt mirror with your reflection, you alone in the middle, the window only Kecleon's
+small card and ◀ / ▶ either side (a zoom-in on the booth from outside was tried first and turned down: the user wanted
+to be "inside"). 58 draws a frame in there.
 
 
 ### Your buddy roams free in your Secret Base, and pets show an emote (2026-10-28, cloud; on `main`)

@@ -348,10 +348,16 @@ clothes rails and a shelf either side, a gilt mirror (`kind: 'mirror'`). **The f
 mannequins, the same day; mannequins were built first and taken out): six curtained booths in a row across the floor
 (`BOOTHS`, `kind: 'booth'`), rails and tables of folded clothes nearer the door, all baked into one mesh a material
 (`mergeStatic`; 332 draws a frame before, 158 after). Always open; a grand-opening ribbon (`RIBBONS.tailor`,
-`tailorRibbon`). **The window**: a booth walked into (`boothTap()` in `js/mall-3d.js`: you step in and turn to face
-out) draws its curtain and opens `lookWindow()` (`js/look-window.js`) low on the screen (`openLooks()`); each look shown
-is tried on behind a swish of the curtain (`swish()`, `tryLook()`), and closing (✕, Escape, a tap on the room) swishes
-once more and you step out in what you wear (`closeLooks()`). The mirror and Kecleon open the window where you stand.
+`tailorRibbon`). **Inside a booth** (the user's design, 2026-10-28, after a zoom-in on the booth was tried and turned down): a booth walked
+into (`boothTap()` in `js/mall-3d.js`) draws its curtain and the scene changes to its inside, place `tb`
+(`buildBooth()`, `BOOTH_AT`): a 5 x 3 room, plum damask, a carpet with a round rug, a tall gilt mirror behind you with
+your reflection (the look from behind, cool and smaller, rebuilt as it changes), wall lamps, hooks with shirts and a cap,
+a stool of folded clothes and a bag, velvet drapes framing the front. Your trainer stands alone in the middle (`solo`:
+your buddy waits outside), the camera on the room's own shot (`view`, the place's own over `fitShot()`), and the window
+comes up in its booth form (`lookWindow({ booth: true })`: only Kecleon's card low down with the line, price or OWNED /
+WORN, the count and the key, ◀ / ▶ either side of the screen). Each look shown is tried on (`tryLook()`) with a hop; closing
+(✕, Escape, a tap on the room) takes you back out in front of the booth, its curtain open (`closeLooks()`). 58 draws a
+frame inside. The mirror and Kecleon open the window where you stand.
 Buy asks `confirmDialog()` and wears it. `?mall=tailor` walks straight in. Headless (2026-10-28): 158 draws a frame and 119 MB.
 
 ### The Safari Outfitter (2026-10-15)

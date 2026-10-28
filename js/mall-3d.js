@@ -33,7 +33,7 @@ import { turner } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { buildArcade } from './mall-arcade.js';
 import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow, apricornWindow } from './mall-outfitter.js';
-import { buildTailor, tailorFront, TAILOR_KEEPER, CURTAIN_OPEN } from './mall-tailor.js';
+import { buildTailor, buildBooth, BOOTH_AT, tailorFront, TAILOR_KEEPER, CURTAIN_OPEN } from './mall-tailor.js';
 import { lookWindow } from './look-window.js';
 import { tryLook } from './data/looks.js';
 import { APRICORN_PRICE, apricornToday, workshopOf, ownsSkin, withBought } from './data/workshop.js';
@@ -787,6 +787,7 @@ const SHOPS = {
   gc: { front: 'corner', build: () => buildCorner(THREE, SIZE) },
   arc: { front: 'corner', out: 'gc', build: () => buildArcade(THREE, SIZE) },
   so: { front: 'outfitter', build: () => buildOutfitter(THREE, SIZE) },
+  tb: { front: 'tailor', out: 'tl', build: () => buildBooth(THREE, SIZE) },
   tl: { front: 'tailor', build: () => { const b = buildTailor(THREE, SIZE); b.keeper.special = () => { openLooks(null); return Promise.resolve(true); }; return b; } },
 };
 
@@ -814,14 +815,16 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     else if (id === 'f1' || id === 'f2') await loadFigures(furnitureStock(undefined, id === 'f1' ? 1 : 2).map(k => PIECES[k].fam));   // and a figurine is its sprite
     const built = SHOPS[id].build();
     const k = built.keeper, spot = built.spots.find(s => s.kind === 'keeper');
-    k.mon = await monBoard(k, false);
-    k.mon.board.rotation.x = -PITCH;
-    k.mon.group.position.set(k.x, k.lift ?? 0.3, k.z);   // on a step behind the counter, so it shows over it
-    k.mon.group.traverse(o => { o.userData.front = spot; });
-    built.group.add(k.mon.group);
-    if (k.sign) k.label = keeperSign(k);
+    if (k) {   // every shop but a fitting room's inside
+      k.mon = await monBoard(k, false);
+      k.mon.board.rotation.x = -PITCH;
+      k.mon.group.position.set(k.x, k.lift ?? 0.3, k.z);   // on a step behind the counter, so it shows over it
+      k.mon.group.traverse(o => { o.userData.front = spot; });
+      built.group.add(k.mon.group);
+      if (k.sign) k.label = keeperSign(k);
+    }
     places[id] = { id, front: SHOPS[id].front, ...built };
-    if (id !== 'f2' && id !== 'f3') addDoor(places[id]);   // upstairs the way out is the lift down
+    if (id !== 'f2' && id !== 'f3' && id !== 'tb') addDoor(places[id]);   // upstairs the way out is the lift down; a booth's, the window
     smallNoShadow(built.group);
     scene.add(built.group);
     if (id === 'gc') places.gc.crowd = makeCrowd({   // the Game Corner's regulars (js/corner-crowd.js)
@@ -834,6 +837,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
   const kl = places[id].keeper?.label;
   if (kl) kl.show(places[id].keeper.sign(loadBase()));   // the yard may have been built since
   setPlace(places[id], (typeof at === 'function' ? at(places[id]) : at) ?? places[id].door ?? DOOR, facing);
+  await lead.ready();   // your trainer stands where you come in, not walking over from where you were (in and out of a fitting room, say)
   if ((id === 'f1' || id === 'f2') && ballroomOpen(loadBase())) loadStatues(statueStands().map(k => PIECES[k].statueOf));   // 3F's, fetched ahead
   if (id === 'hall') syncRibbon();
   await warm();
@@ -892,6 +896,7 @@ function setPlace(p, at, facing = 'back') {
   pick(null);
   closeAsk(false);
   closeLooks(true);
+  if (p.id !== 'tb' && booth) { booth.curtain.want = CURTAIN_OPEN; booth = null; }   // back out of a fitting room
   walker.path = []; aim = null; here = null; riding = null;
   post.final.uniforms.uBlur.value = 0;   // no tilt-shift blur anywhere in the mall (the user's call, 2026-10-12)
   walker.tile = { ...at }; walker.x = tileX(at.x); walker.z = tileZ(at.y);
@@ -1059,29 +1064,20 @@ async function apricornTap(spot) {
 /* ---------- the Trainer Tailor ---------- */
 
 let looksWin = null;   // the trainer window (js/look-window.js), open at the Trainer Tailor
-let booth = null;      // the fitting room you're in: its spot, from walking in till you step out
-let swishT = 0;
+let booth = null;      // the fitting room you stepped into: its spot in the shop, from its curtain drawing till you're back out
 
-/** A fitting room's curtain drawn shut, `then()` done behind it, and drawn open again. */
-function swish(room, then) {
-  clearTimeout(swishT);
-  room.curtain.want = 1;
-  playSound('select');
-  swishT = setTimeout(() => {
-    then();
-    swishT = setTimeout(() => { room.curtain.want = CURTAIN_OPEN; }, calm ? 0 : 420);
-  }, calm ? 0 : 320);
-}
-
-/** Kecleon's trainer window over the boutique, on `start` (a look's id; null the one worn): the one shown is tried on as
-    you browse, in `room`'s booth behind a swish of its curtain, or where you stand (the mirror, the counter). */
-function openLooks(start, room = null) {
-  closeLooks();
+/** Kecleon's trainer window, on `start` (a look's id; null the one worn), each look shown tried on. Inside a fitting
+    room (`inBooth`) it's only Kecleon's card low down and ◀ / ▶ either side, your trainer in the middle of the booth. */
+function openLooks(start, inBooth = false) {
+  closeLooks(true);
   clearTimeout(say.t);
   lineEl.classList.remove('on');
   const w = lookWindow({
-    shop: true, start,
-    onTry: (id) => (room ? swish(room, () => tryLook(id)) : tryLook(id)),
+    shop: true, booth: inBooth, start,
+    onTry: (id) => {
+      tryLook(id);
+      if (inBooth) walker.hopUntil = performance.now() + 450;
+    },
     onChange: () => {
       walker.hopUntil = performance.now() + 500;
       if (P.keeper) P.keeper.hopUntil = performance.now() + 600;
@@ -1091,41 +1087,45 @@ function openLooks(start, room = null) {
     onClose: () => closeLooks(),
   });
   looksWin = w;
-  root.querySelector('.b3-stage').append(w.node);
-  requestAnimationFrame(() => w.node.classList.add('up'));
-  if (room) swish(room, () => tryLook(w.look)); else tryLook(w.look);
+  const stage = root.querySelector('.b3-stage');
+  stage.append(w.node);
+  if (inBooth) stage.append(w.sides);
+  requestAnimationFrame(() => { w.node.classList.add('up'); w.sides.classList.add('up'); });
+  tryLook(w.look);
 }
 
-/** Shuts the window, the try-on off; from a fitting room the curtain swishes and you step out in what you wear.
-    `away`: the place is being left, so nothing waits on a curtain. */
+/** Shuts the window and takes the try-on off; inside a fitting room you step back out into the shop (unless `away`:
+    the place is changing anyway). */
 function closeLooks(away = false) {
-  const w = looksWin, room = booth;
+  const w = looksWin;
+  if (!w) return;
   looksWin = null;
-  if (w) {
-    w.close();
-    w.node.classList.remove('up');
-    setTimeout(() => w.node.remove(), 350);
-  }
-  if (!room || away) {
-    clearTimeout(swishT);
-    if (room) room.curtain.want = CURTAIN_OPEN;
-    booth = null;
-    tryLook(null);
-    return;
-  }
-  swish(room, () => {
-    tryLook(null);
-    setTimeout(() => { if (booth !== room) return; booth = null; walker.path = [{ ...room.step }]; }, calm ? 0 : 300);
-  });
+  w.close();
+  w.node.classList.remove('up');
+  w.sides.remove();
+  setTimeout(() => w.node.remove(), 350);
+  tryLook(null);
+  if (!away && booth && P?.id === 'tb') goPlace('tl', booth.step, 'front', 'select');
 }
 
-/** Into a fitting room from the tile before it, turning to face out, and the window opens as its curtain draws. */
+/** A fitting room (the user's design, 2026-10-28): you step in, its curtain draws, and the scene changes to inside the
+    booth (js/mall-tailor.js's buildBooth()), your trainer alone in the middle before a mirror, the window's ◀ / ▶ on
+    either side. Closing it brings you back out in front of the booth, its curtain open. */
 function boothTap(spot) {
   if (booth) return;
   booth = spot;
   pick(null);
-  walker.path = [{ ...spot.booth }, { x: spot.booth.x, y: spot.booth.y + 0.12 }];
-  walker.exit = () => { if (booth === spot && P.spots.includes(spot)) openLooks(null, spot); };
+  walker.path = [{ ...spot.booth }];
+  walker.exit = () => {
+    if (booth !== spot || P.id !== 'tl') return;
+    spot.curtain.want = 1;
+    playSound('select');
+    setTimeout(async () => {
+      if (booth !== spot || P.id !== 'tl') return;
+      await goPlace('tb', BOOTH_AT, 'front', null);
+      if (P.id === 'tb') openLooks(null, true);
+    }, calm ? 0 : 420);
+  };
   aim = null; here = null;
 }
 
@@ -1507,9 +1507,9 @@ function headOut() {
 
 /* ---------- camera ---------- */
 
-function aimCamera(x, d, z = 0) {
-  camera.position.set(x, LOOK_Y + Math.sin(PITCH) * d, z + Math.cos(PITCH) * d);
-  camera.lookAt(x, LOOK_Y, z);
+function aimCamera(x, d, z = 0, y = LOOK_Y) {
+  camera.position.set(x, y + Math.sin(PITCH) * d, z + Math.cos(PITCH) * d);
+  camera.lookAt(x, y, z);
   camera.updateMatrixWorld();
 }
 
@@ -1549,6 +1549,11 @@ function placeCamera(dt) {
   // a room deeper than the hall slides a hall-deep window along with your partner, so it stays the hall's size
   const deep = Math.max(0, (PR - shot.win) / 2), wantZ = Math.max(-deep, Math.min(deep, walker.z));
   camZ = calm ? wantZ : camZ + (wantZ - camZ) * Math.min(1, dt / 1000 * 4);
+  if (P.view) {   // a place with a fixed shot of its own (inside a fitting room), set over the window's card
+    const v = P.view(viewW / viewH, looksWin?.node.offsetHeight ?? 0);
+    camera.setViewOffset(viewW, viewH, 0, v.shift, viewW, viewH);
+    return aimCamera(v.x, v.dist, v.z, v.y);
+  }
   camera.setViewOffset(viewW, viewH, 0, shot.shift, viewW, viewH);
   aimCamera(camX, shot.dist, camZ);
 }
@@ -1591,7 +1596,9 @@ function frame(now) {
     lift.needle.rotation.z += (turn - lift.needle.rotation.z) * (calm ? 1 : Math.min(1, dt / 1000 * 2.5));
   }
   mon.board.position.y = bob;
+  mon.group.visible = !P.solo;   // inside a fitting room your buddy waits outside
   const pose = lead?.lead(walker, mon, dt) ?? walker;
+  if (P.solo && lead?.m) { lead.m.group.visible = true; lead.m.board.position.y = bob; }
   mon.board.scale.x = pose.flip ? -1 : 1;
   drawMon(mon, pose, dt);
   const k = P.keeper?.mon;
