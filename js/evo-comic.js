@@ -1,8 +1,8 @@
 /*
  * The evolution scene's comic intro (the user's ask, 2026-10-28; a playtest on its own branch first): before the
  * Gold/Silver morph, the white screen is cut into manga panels. Alone, a strip of the Pokémon's eyes whips in from the
- * left over a close-up of its face from the right; a duo splits the screen down a slanted gutter, each partner's face
- * sliding in from its own side to face the other, each with a speech bubble. Halftone in the Pokémon's type colour,
+ * left over a close-up of its face from the right; a duo splits the screen across a slanted gutter (the user's
+ * call: across, not down), one partner's face sliding in on top from the left, the other's below from the right, each with a speech bubble. Halftone in the Pokémon's type colour,
  * focus lines, a "!!" stamped across the page; a tap on the text slashes the panels away onto the morph.
  * Faces are found from SPRITE_FIT's pose box: the head sits in about the top third of it, centred on BODY_X.
  * Under calmFx() the panels fade in and out, with no lines jittering, shake or slash.
@@ -22,8 +22,8 @@ const SOLO = [
   { from: 'left', poly: [[0, 0], [1, 0], [1, 0.22], [0, 0.3]], at: [0.5, 0.135], up: 0.24, zoom: 1.9, room: [1, 0.72] },
 ];
 const DUO = [
-  { from: 'left', poly: [[0, 0], [0.545, 0], [0.465, 1], [0, 1]], at: [0.26, 0.44], up: 0.32, zoom: 1, room: [0.5, 1], flip: true },
-  { from: 'right', poly: [[0.575, 0], [1, 0], [1, 1], [0.495, 1]], at: [0.76, 0.44], up: 0.32, zoom: 1, room: [0.5, 1] },
+  { from: 'left', poly: [[0, 0], [1, 0], [1, 0.44], [0, 0.52]], at: [0.62, 0.25], up: 0.32, zoom: 1, room: [1, 0.48], flip: true },
+  { from: 'right', poly: [[0, 0.555], [1, 0.475], [1, 1], [0, 1]], at: [0.38, 0.7], up: 0.32, zoom: 1, room: [1, 0.48] },
 ];
 const SOLO_SAY = ['What\'s... happening?!'];
 const DUO_SAY = ['Wha-?! What\'s this?!', 'We\'re... evolving?!'];
