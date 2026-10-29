@@ -1215,6 +1215,14 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**The Trainer Card's style keys look messy** (the user's ask, 2026-10-29, a phone screenshot): the five pills under
+the partner (Ball, Trainer, Shiny, Crown teaser, Aura in `openTrainerCard()`, all `.tc-shiny` in `css/menus.css`) mix
+two pickers, two toggles and a lock in four looks (outline, brown, red, grey) and three kinds of label (a value "Moon",
+a category "Trainer", a state "Shiny"). Offered: (A) a 2x3 grid of square icon slots inside the partner's panel, a
+small caption each, one look, gold ring when on, a padlock when locked; (B) the same as a row of round "equipment"
+slots under the sprite; (C) one Style key opening a wardrobe page with all five; (D) just one pill style with
+"Ball · Moon"-type labels and the locked crown/aura greyed to the end. Recommended A. Not picked yet.
+
 **Houses show a lot of empty wall** (an idea, 2026-10-28): with houses framed 8 tiles across, Kurt's Workshop sits low
 with a third of the screen plank wall above it. A slightly lower camera tilt in houses would fill the screen without
 changing any sizes. The user wasn't sure ("I dunno"); not asked for yet.
