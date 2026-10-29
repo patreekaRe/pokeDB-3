@@ -359,6 +359,8 @@ WORN, the count and the key, ◀ / ▶ either side of the screen). Each look sho
 (✕, Escape, a tap on the room) takes you back out in front of the booth, its curtain open (`closeLooks()`). 58 draws a
 frame inside. The mirror and Kecleon open the window where you stand.
 Buy asks `confirmDialog()` and wears it. `?mall=tailor` walks straight in. Headless (2026-10-28): 158 draws a frame and 119 MB.
+Its budget was recorded at that (2026-10-29: it still read the mannequins' 322), and `tools/budget-check.mjs`'s `tailor`
+check tries all 33 outfits on in a fitting room three times and fails on anything kept (`docs/reference/trainer-follow.md`).
 
 ### The Safari Outfitter (2026-10-15)
 

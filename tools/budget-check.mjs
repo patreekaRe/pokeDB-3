@@ -9,7 +9,11 @@
    It fails (exit 1) on a place over its budget in tools/budgets.json: draws or memory more than 10% (and a little) over
    the recorded figure, more 3D places awake than recorded (never over two), a new canvas drawn while hidden, or a page
    error. A change that means to cost more (a bigger town) reruns it with --update, which records today's figures, and
-   says so in its commit. Swiftshader's numbers aren't a phone's: compare against the file, not against an iPhone. */
+   says so in its commit. Swiftshader's numbers aren't a phone's: compare against the file, not against an iPhone.
+   The trips walk as a trainer (?look=dawn), the buddy a step behind and roaming free in the base; two more checks walk
+   that kit (2026-10-29, after the wardrobe leaked every Trainer Card shut while it was open): `wardrobe` opens the
+   Trainer Card, its Trainer key, and shuts the card from outside, four times; `tailor` steps into a fitting room,
+   tries all 33 outfits on with ▶ and steps back out, three times. Each holds no more after the first than its budget. */
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { serve, launch, phone, threeCopy, root, HUB_PEEK } from './probe-kit.mjs';
@@ -23,7 +27,7 @@ const PLACES = {
   'mall-outfitter': '?mall=outfitter', 'mall-furniture': '?mall=furniture', 'mall-tailor': '?mall=tailor',
   'town-shrine': '?town=shrine&towns', 'town-wastes': '?town=wastes&towns', 'town-ruins': '?town=ruins&towns',
   'town-thornwood': '?town=thornwood&towns', 'town-savanna': '?town=savanna&towns',
-  center: '?center', mart: '?mart', 'event-spring': '?event=spring', gym: '?gym=britt', dojo: '?dojo',
+  center: '?center', mart: '?mart', 'event-spring': '?event=hot-spring', gym: '?gym=britt', dojo: '?dojo',
   tower: '?tower=25', 'run-map': '?biome=ruins&starter=charmander',
   'safari-powerplant': '?area=powerplant&intro=0', 'safari-nightalley': '?area=nightalley&intro=0&stage=3&kind=boss',
 };
@@ -92,31 +96,56 @@ for (const [name, q] of Object.entries(PLACES)) {
   await ctx.close();
 }
 
-if (!only || only.includes('trips')) {
-  const { ctx, page, errors } = await phone(browser, three);
-  await ctx.addInitScript(watchCanvases);
-  await page.goto(url('/'));
-  await page.waitForTimeout(SETTLE);
-  const at = [];
-  for (let i = 0; i < TRIPS; i++) {
+/* What a page holds after the first round of `step` and after the last, by the same counts as the trips. */
+const GROWTH = {
+  trips: { q: '?look=dawn', rounds: TRIPS, async step(page) {
     for (const [go, back] of [['__hub.enterMall()', "import('/js/mall-3d.js').then(m => m.leave())"], ['__hub.enterBase()', "import('/js/base-3d.js').then(m => m.leave())"]]) {
       await page.evaluate(go); await page.waitForTimeout(8000);
       await page.evaluate(back); await page.waitForTimeout(6000);
     }
+  } },
+  wardrobe: { q: '?look=dawn', rounds: 4, async step(page) {
+    await page.evaluate(() => import('/js/trainercard.js').then(m => m.openTrainerCard()));
+    await page.waitForTimeout(600);
+    await page.evaluate(() => document.querySelector('#trainer-dialog .tc-look-key')?.click());
+    await page.waitForTimeout(2600);   // a turn of the big trainer
+    await page.evaluate(() => import('/js/ui.js').then(m => m.closeDialog('trainer-dialog')));
+    await page.waitForTimeout(600);
+  } },
+  tailor: { q: '?mall=tailor&look=dawn', rounds: 3, async step(page) {
+    await page.evaluate(() => window.__mall.boothIn());
+    await page.waitForTimeout(2500);
+    for (let k = 0; k < 33; k++) { await page.evaluate(() => document.querySelectorAll('.lw-sides .lw-arrow')[1]?.click()); await page.waitForTimeout(220); }
+    await page.waitForTimeout(1500);
+    await page.evaluate(() => window.__mall.boothOut());
+    await page.waitForTimeout(3000);
+  } },
+};
+const GROWTH_BUDGET = { growthMB: 10, growthHeapMB: 4, growthNodes: 300, growthListeners: 30 };
+
+for (const [name, g] of Object.entries(GROWTH)) {
+  if (only && !only.includes(name)) continue;
+  const { ctx, page, errors } = await phone(browser, three);
+  await ctx.addInitScript(watchCanvases);
+  await page.goto(url(g.q));
+  await page.waitForTimeout(SETTLE);
+  const at = [];
+  for (let i = 0; i < g.rounds; i++) {
+    await g.step(page);
     const p = await page.evaluate(() => window.__probe());
     at.push({ mb: p.totalMB, heap: p.heapMB, ...(await dom(page)) });
   }
   const [a, z] = [at[0], at[at.length - 1]];
-  got.trips = { growthMB: Math.round((z.mb - a.mb) * 10) / 10, growthHeapMB: Math.round((z.heap - a.heap) * 10) / 10, growthNodes: z.nodes - a.nodes, growthListeners: z.listeners - a.listeners };
-  errorsAt.trips = errors;
-  console.log(`trips x${TRIPS}       after the first: ${got.trips.growthMB} MB, heap ${got.trips.growthHeapMB} MB, ${got.trips.growthNodes} DOM nodes, ${got.trips.growthListeners} listeners${errors.length ? `  ERRORS ${errors.length}` : ''}`);
+  got[name] = { growthMB: Math.round((z.mb - a.mb) * 10) / 10, growthHeapMB: Math.round((z.heap - a.heap) * 10) / 10, growthNodes: z.nodes - a.nodes, growthListeners: z.listeners - a.listeners };
+  errorsAt[name] = errors;
+  console.log(`${`${name} x${g.rounds}`.padEnd(15)} after the first: ${got[name].growthMB} MB, heap ${got[name].growthHeapMB} MB, ${got[name].growthNodes} DOM nodes, ${got[name].growthListeners} listeners${errors.length ? `  ERRORS ${errors.length}` : ''}`);
   await ctx.close();
 }
 await browser.close(); server.close();
 
 const saved = JSON.parse(await readFile(BUDGETS, 'utf8').catch(() => '{}'));
 if (opt('update')) {
-  for (const [k, v] of Object.entries(got)) saved[k] = k === 'trips' ? saved.trips ?? { growthMB: 10, growthHeapMB: 4, growthNodes: 300, growthListeners: 30 } : { draws: v.draws, mb: v.mb, awake: v.awake, hidden: v.hidden };
+  for (const [k, v] of Object.entries(got)) saved[k] = GROWTH[k] ? saved[k] ?? GROWTH_BUDGET : { draws: v.draws, mb: v.mb, awake: v.awake, hidden: v.hidden };
   await writeFile(BUDGETS, JSON.stringify(saved, null, 1) + '\n');
   console.log(`\nrecorded ${Object.keys(got).length} figures in tools/budgets.json`);
 }
@@ -126,8 +155,8 @@ for (const [k, v] of Object.entries(got)) {
   for (const e of errorsAt[k] || []) fails.push(`${k}: ${e}`);
   const b = saved[k];
   if (!b) { fails.push(`${k}: no budget recorded (run with --update)`); continue; }
-  if (k === 'trips') {
-    for (const m of Object.keys(b)) if (v[m] > b[m]) fails.push(`trips: ${m} ${v[m]} over ${b[m]} (something left behind on each trip)`);
+  if (GROWTH[k]) {
+    for (const m of Object.keys(b)) if (v[m] > b[m]) fails.push(`${k}: ${m} ${v[m]} over ${b[m]} (something left behind each time round)`);
     continue;
   }
   if (v.draws > b.draws * 1.1 + 10) fails.push(`${k}: ${v.draws} draws a frame, budget ${b.draws}`);

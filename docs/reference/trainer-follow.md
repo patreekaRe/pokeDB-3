@@ -39,6 +39,25 @@ never saved. `lookArt()` in `js/ui.js` draws a look's front frame from its sheet
 **Checked** headless in every place with a look worn (`?look=dawn`): within the phone budget (2-3 more draws and under
 1 MB a place), and the Clearing -> Secret Base trips keep nothing.
 
+**The leak check of 2026-10-29** (the user's ask: "checks and memory leak stuff for the new sprites, tailor shop and
+trainer buddy stuff"). Found and fixed:
+- **The wardrobe** (`lookWindow()`): shutting the Trainer Card from outside (a tap off it, Escape) or closing the
+  Collection's app with the Trainer key open never called its `close()`, so its Escape listener on `window` held that
+  window and the whole card: ~255 listeners, ~690 nodes and (Chrome's count) ~18 MB a time, and a later Escape redrew
+  every card left so. A window off the page now lets go of itself (`detach()`), an Escape while it's hidden does nothing,
+  and the big trainer turns on a 2.2 s timer instead of a frame loop running for good (none in a fitting room).
+- **Walking sheets' cut** (`walkFrames()` in `js/hd2d.js`): its WeakRef cache pointed at an object no board held, so
+  it never hit: every trainer and townsperson re-cut its sheet (16 canvases). A board now holds the shared cut itself.
+- **Pokémon overworld sheets** (`overworldSheet()`): kept for good, every Pokémon a crowd, shop or guest ever brought
+  stayed (12 more after three Clearing -> mall -> base trips, up to 1 MB each). Held weakly now, as `gifFrames()` is.
+- `wornLook()` read the URL every frame in every place; `?look=` is read once.
+Measured fine and left: the trainer costs no JS a frame to speak of (`tools/fps-probe.mjs --only=clearing-look,
+base-look,town-look,mall-tailor` against the same places without one), a town's folk and the Clearing hold flat over
+three minutes, and 4 x 33 outfits tried on in a fitting room keep nothing. `tools/budget-check.mjs` now walks this kit
+for good: the trips wear a look, `wardrobe` shuts the card on the open Trainer key four times, `tailor` tries all 33 on
+in a fitting room three times (`window.__mall`, from `HUB_PEEK` in `tools/probe-kit.mjs`). Before the fix `wardrobe` read
++56 MB, 2041 nodes, 765 listeners; after, 0.
+
 **A save from before trainers** (the user's pick, 2026-10-28): once, as the device powers on, the setup's trainer step on
 its own, Later in place of Back (`askTrainer()` in `js/title.js`). Later asks again at every launch till a trainer is
 picked (the user's call, 2026-10-28, replacing once only): `save.lookChosen` stops it, set by the setup, an OK here, or

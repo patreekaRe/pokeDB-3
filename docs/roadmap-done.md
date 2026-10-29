@@ -3860,3 +3860,16 @@ ghosts left the flyers, and the Clearing's folk, ghosts and Trainer Plaza buddie
 beat) and wait for each other and you (`js/ground-beats.js`; `docs/reference/hub-base-mall.md`, "Set paths, nobody
 overlapping"). Headless: no two closer than a tile over 75 s of walking. Earlier the same day the user had agreed the
 silhouettes could stay GIFs; they then asked for side-on everywhere, so the film's changed too.
+
+### Leak check: the trainer sprites, the Trainer Tailor and the buddy follow (2026-10-29, cloud; branch `claude/sprite-memory-leak-checks-nt12hd`, on `main` too)
+The user's ask: "checks and memory leak stuff for the new sprites we added, new tailor shop and trainer buddy stuff. I
+want the game to run smooth." Probed headless (memory, DOM nodes, listeners, a heap snapshot's retainers, JS a frame).
+Fixed: the wardrobe on the Trainer Card held every card shut while it was open (Escape listener; ~255 listeners and ~18 MB
+a time); walking sheets' cut cache never hit; every Pokémon overworld sheet ever loaded stayed for good; `?look=` was
+read every frame. Measured fine: a trainer worn costs no JS a frame to speak of, towns and the Clearing hold flat over
+three minutes, the fitting room keeps nothing over 4 x 33 outfits. `tools/budget-check.mjs` now wears a look on its trips
+and adds `wardrobe` and `tailor` checks (fail before the fix: +56 MB, 765 listeners); its `event-spring` place had pointed
+at `?event=spring`, which isn't an event, so it measured the Clearing: now `?event=hot-spring` (227 draws, 73 MB). The
+Clearing's budget was re-recorded at 288 draws (the commit it was recorded on reads ~278 today: time of day and the crowd,
+not code) and the tailor's at its fitting rooms' 158 (it still read the mannequins' 322). `tools/fps-probe.mjs` gained
+`clearing-look`, `base-look`, `town-look`, `mall-tailor`. Detail: `docs/reference/trainer-follow.md`.

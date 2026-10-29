@@ -46,10 +46,11 @@ export const HEROES = LOOKS.filter(l => l.free);
 
 export const lookSheet = (id) => `assets/overworld/${id}.png`;
 export const ownsLook = (save, id) => !!LOOKS_BY_ID[id]?.free || (save.looks || []).includes(id);
-const lent = () => (typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('look'));
+// read once: wornLook() runs every frame in every place that walks your trainer
+const LENT = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('look');
 let trying = null;
 /** A look tried on at the Trainer Tailor (js/mall-tailor.js), worn for as long as its window is open, never saved; null
     takes it off. Every place's trainer follows it as it follows the worn look (js/follow.js). */
 export const tryLook = (id) => { trying = LOOKS_BY_ID[id] ? id : null; };
 /** The look worn, or null: none picked, or one no longer listed. `?look=<id>` lends one for the page load. */
-export const wornLook = (save) => LOOKS_BY_ID[trying] ?? LOOKS_BY_ID[lent()] ?? (save.look && ownsLook(save, save.look) ? LOOKS_BY_ID[save.look] : null);
+export const wornLook = (save) => LOOKS_BY_ID[trying] ?? LOOKS_BY_ID[LENT] ?? (save.look && ownsLook(save, save.look) ? LOOKS_BY_ID[save.look] : null);

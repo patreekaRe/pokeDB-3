@@ -29,7 +29,7 @@ const TURN_MS = 2200;
 export function lookWindow({ shop = false, booth = false, start = null, onTry = null, onChange = null, onClose = null } = {}) {
   const save = getSave();
   let at = Math.max(0, LOOKS.findIndex(l => l.id === (start ?? save.look ?? wornLook(save)?.id)));
-  let note = '', shut = false, turnT = 0, way = 0;
+  let note = '', shut = false, turner = 0, way = 0;
   const node = el('div', `lw-sheet${shop ? ' lw-shop' : ' lw-card'}${booth ? ' lw-in-booth' : ''}`);
   node.setAttribute('role', 'dialog');
   node.setAttribute('aria-label', shop ? 'Trainer Tailor' : 'Your trainer');
@@ -113,7 +113,7 @@ export function lookWindow({ shop = false, booth = false, start = null, onTry = 
   function go(i, quiet = false) {
     at = (i + LOOKS.length) % LOOKS.length;
     note = '';
-    way = 0; turnT = performance.now();
+    way = 0; turnSoon();
     big.style.backgroundPositionY = '0%';
     render();
     const on = cards[at];
@@ -157,27 +157,33 @@ export function lookWindow({ shop = false, booth = false, start = null, onTry = 
     onChange?.();
   }
 
-  // the big one walks in place, turning a quarter every TURN_MS (still under calm effects)
+  // the big one walks in place, turning a quarter every TURN_MS (still under calm effects); a timer, not a frame loop
   const calm = calmFx() || matchMedia('(prefers-reduced-motion: reduce)').matches;
   node.classList.toggle('lw-calm', calm);
-  turnT = performance.now();
-  const spin = (now) => {
-    if (shut || !node.isConnected && now - turnT > 1000) return;
-    requestAnimationFrame(spin);
-    if (calm || now - turnT < TURN_MS) return;
-    turnT = now;
+  function turnSoon() { clearTimeout(turner); if (!shut && !booth) turner = setTimeout(turn, TURN_MS); }
+  function turn() {
+    if (shut) return;
+    if (!node.isConnected) return detach();
+    turnSoon();
+    if (calm || !node.getClientRects().length) return;
     way = (way + 1) % WAYS.length;
     big.style.backgroundPositionY = `${WAYS[way] * 100 / 3}%`;
-  };
-  requestAnimationFrame(spin);
+  }
+  turnSoon();
 
+  // The Trainer Card shut from outside (a tap off it, Escape) or the Collection's app closed takes this window with it
+  // without a close(): its Escape listener then held that card and this window, ~250 listeners each (2026-10-29), and an
+  // Escape later redrew every card left so. A window no longer on the page lets go of itself.
+  function detach() { shut = true; clearTimeout(turner); removeEventListener('keydown', onKey); }
   const close = () => {
     if (shut) return;
-    shut = true;
-    removeEventListener('keydown', onKey);
+    detach();
     onClose?.();
   };
-  const onKey = (e) => { if (e.key === 'Escape' && !document.querySelector('dialog[open]')) { e.preventDefault(); playSound('cancel'); close(); } };
+  const onKey = (e) => {
+    if (!node.isConnected) return detach();
+    if (e.key === 'Escape' && node.getClientRects().length && !document.querySelector('dialog[open]')) { e.preventDefault(); playSound('cancel'); close(); }
+  };
   addEventListener('keydown', onKey);
   x.addEventListener('click', () => { playSound('cancel'); close(); });
 

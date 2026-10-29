@@ -1233,6 +1233,12 @@ in the middle, ◀ / ▶ either side, Kecleon's small card; a zoom-in on the boo
 with ◀ / ▶, buy one, close and step out; the Trainer Card's Trainer key
 (Wear only); Oak (or Sonia at night) once in the Clearing; the hall's four fronts and the tailor's ribbon (`?mall`).
 
+**▶ PLAYTEST ON THE LIVE SITE. Leak check of the trainer sprites, Trainer Tailor and buddy follow: done 2026-10-29**
+(branch `claude/sprite-memory-leak-checks-nt12hd`, on `main` too; archive). The Trainer Card's wardrobe no longer keeps
+every card shut while it's open, and walking and overworld sheets are let go once nothing shows them. On a phone: open the
+Trainer Card's Trainer key and shut the card a few times, try outfits on at the tailor, and say if anything still lags or
+reloads (Settings' Save card lists a reload). `tools/budget-check.mjs` checks this kit from now on (`wardrobe`, `tailor`).
+
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking
 in a town. Oak / Sonia, Kurt and the ? room's grunts stay as they are (the user agreed). Needs the Gen 4 pack
