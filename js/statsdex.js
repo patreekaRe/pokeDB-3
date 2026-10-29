@@ -31,7 +31,7 @@ const BOX = 30;   // a PC Box: 6 x 5
 function numbers() {
   const save = getSave();
   const s = save.stats;
-  const inRun = loadRunData() ? 1 : 0;
+  const inRun = (loadRunData('main') ? 1 : 0) + (loadRunData('safari') ? 1 : 0);   // a climb isn't counted as a run started
   const finished = Math.max(0, s.runsStarted - inRun);
   const winsOf = (type) => STARTERS.filter(st => st.type === type).reduce((n, st) => n + (s.winsBy[st.id] || 0), 0);
   const [researched, entries] = researchCount();

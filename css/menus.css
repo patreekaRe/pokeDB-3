@@ -457,6 +457,14 @@
 /* A saved run: its nameplate right under the gems (name, biome, HP, like battle's); the Pokémon waits in Continue's ball */
 .title-run { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .title-run[hidden] { display: none; }
+/* more than one run saved (one of each kind): a key on the LCD's greens beside the sign shows the next */
+.title-run-top { display: flex; align-items: center; gap: 8px; }
+.title-run-next {
+  padding: 5px 9px; border: 0; border-radius: 999px; font-family: var(--pixel-font); font-synthesis-weight: none; font-size: 0.75rem;
+  background: #d6e8b8; color: #1f3a14; box-shadow: inset 0 0 0 2px #1f3a14, 0 3px 0 var(--shell-deep); cursor: pointer;
+}
+.title-run-next[hidden] { display: none; }
+.title-run-next:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px #1f3a14, 0 1px 0 var(--shell-deep); }
 .title-plate, .title-biome { pointer-events: none; }
 /* the biome's own map sign, smaller, with a touch of its place: the Clearing's sways, the Shrine's has mist drifting
    across, the Wastes' rim flickers like embers */

@@ -3873,3 +3873,12 @@ at `?event=spring`, which isn't an event, so it measured the Clearing: now `?eve
 Clearing's budget was re-recorded at 288 draws (the commit it was recorded on reads ~278 today: time of day and the crowd,
 not code) and the tailor's at its fitting rooms' 158 (it still read the mannequins' 322). `tools/fps-probe.mjs` gained
 `clearing-look`, `base-look`, `town-look`, `mall-tailor`. Detail: `docs/reference/trainer-follow.md`.
+
+### One saved run of each kind (2026-10-29, cloud; branch `claude/sprite-memory-leak-checks-nt12hd`, on `main` too)
+The user's ask: "make safari and normal run, and sky pillar have their own continues", to switch without abandoning one.
+Each kind saves under its own key (`runSlot()` in `js/storage.js`; the main run keeps `pokedb.run.v1`, an old shared-key
+Safari run or climb moves over on load). The Clearing's three Pokéstops each continue their own; the bar's run LCD shows
+the one by the Pokéstop you stand at; the signs title shows the latest with a "1/2 ▸" key to step through them. Starting a
+new run asks only over a run of its kind; abandoning names which. The cloud save copies all three. Checked headless (a
+scratchpad probe): three runs saved side by side, each continued and abandoned alone, the old key moved, the signs title's
+key switching Continue. Detail: `docs/reference/saved-runs.md`.

@@ -1233,6 +1233,14 @@ in the middle, ◀ / ▶ either side, Kecleon's small card; a zoom-in on the boo
 with ◀ / ▶, buy one, close and step out; the Trainer Card's Trainer key
 (Wear only); Oak (or Sonia at night) once in the Clearing; the hall's four fronts and the tailor's ribbon (`?mall`).
 
+**▶ PLAYTEST ON THE LIVE SITE. One saved run of each kind: done 2026-10-29** (branch
+`claude/sprite-memory-leak-checks-nt12hd`, on `main` too; archive; `docs/reference/saved-runs.md`). The user asked: switch
+between a Safari run and a normal one without abandoning either. A normal run, a Safari run (Duo Runs too) and a Sky Pillar
+climb each keep their own save. On a phone: start a run, go to the menu, start today's Safari run, go to the menu, and
+check the trail's Pokéstop and the Safari gate's each offer their own Continue; the bar's run LCD follows the Pokéstop you
+stand by. On the signs title (Settings' Title screen: Signs) the "1/2 ▸" key beside the sign switches which run Continue
+picks up. Signed in, the cloud save carries all three.
+
 **▶ PLAYTEST ON THE LIVE SITE. Leak check of the trainer sprites, Trainer Tailor and buddy follow: done 2026-10-29**
 (branch `claude/sprite-memory-leak-checks-nt12hd`, on `main` too; archive). The Trainer Card's wardrobe no longer keeps
 every card shut while it's open, and walking and overworld sheets are let go once nothing shows them. On a phone: open the

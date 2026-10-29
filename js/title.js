@@ -188,7 +188,7 @@ function openHub(hold = false) {
     onGate: () => { playCry(mewtwo.line[0].id); actions.onGate(mewtwo); },
     onBase: actions.onBase,
     onTown: actions.onTown,
-    onAbandon: () => actions.onAbandon(),
+    onAbandon: (sure, slot) => actions.onAbandon(sure, slot),
     dealFlyer,
   }, { hold }).then((ok) => {
     // no WebGL or Three.js offline: the signs and their sky after all
@@ -246,7 +246,8 @@ function open() {
   screen.hidden = false;
   document.body.classList.add('titling');
   paint();
-  renderRun(actions.savedRun());
+  runPick = 0;   // the latest saved run first
+  renderRun(shownRun());
   clearInterval(timer);
   if (!still()) timer = setInterval(tick, 1000 / FPS);
   runTitleLight(!screen.classList.contains('hub-mode'));
@@ -515,11 +516,18 @@ function reveal(hub) {
    Continue, New game, and two that slide the stack sideways to a sub-menu of the same signs with a Back sign, the games'
    way, while the sky, logo and nameplate stay put. Game modes live in theirs, so a new mode never lengthens the title. */
 let page = 'main';      // 'main' or 'modes'
+let runPick = 0;        // which of the saved runs (one a kind, the latest first) Continue and the nameplate show
+
+/** The saved run Continue, the nameplate and its Run key act on, or null. */
+function shownRun() {
+  const runs = actions.savedRuns();
+  return runs.length ? runs[runPick % runs.length] : null;
+}
 let swapping = 0;
 
 function renderMenu(dir = 0, from = null) {
   if (!dir) page = 'main';
-  const run = actions.savedRun();
+  const run = shownRun();
   const gems = {
     main: () => [
       run && gem('continue', 'Continue', () => sendOut(run), runIcon(run)),
@@ -810,17 +818,28 @@ function initRope() {
     $('rope-no').focus({ preventScroll: true });
   });
   $('rope-no').addEventListener('click', () => closeRope(true));
-  $('rope-yes').addEventListener('click', () => { set(false); actions.onAbandon(true); });
+  $('rope-yes').addEventListener('click', () => { set(false); actions.onAbandon(true, shownRun()?.slot); });
+  $('title-run-next').addEventListener('click', () => {
+    playSound('select');
+    runPick++;
+    renderRun(shownRun());
+    if (page === 'main') renderMenu();   // Continue's ball holds the Pokémon shown
+  });
   document.addEventListener('pointerdown', (e) => { if (!rope.contains(e.target)) closeRope(true); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRope(true); });
 }
 let closeRope = () => {};
 
-/** A saved run's nameplate stands on the ledge (the user's call): its name, biome and HP, like battle's. */
+/** A saved run's nameplate stands on the ledge (the user's call): its name, biome and HP, like battle's. With more than one
+    saved (a run, a Safari run, a climb: one of each kind since 2026-10-29), a key beside its sign shows the next. */
 function renderRun(run) {
   closeRope(false);
   $('title-run').hidden = !run;
   if (!run) return;
+  const n = actions.savedRuns().length, next = $('title-run-next');
+  next.hidden = n < 2;
+  next.textContent = `${runPick % n + 1}/${n} ▸`;
+  next.setAttribute('aria-label', `Saved run ${runPick % n + 1} of ${n}: show the next`);
   $('title-run-name').textContent = run.name;
   const floor = $('title-run-floor');
   floor.textContent = `F${run.floor}`;

@@ -2,8 +2,8 @@
    cloud.js  -  the optional cloud save (Firebase), from the Pokédex's Settings.
 
    Signed out, nothing here runs: the Firebase SDK is only downloaded once
-   you've signed in on this device (or tap Sign in). Signed in, both
-   localStorage keys (storage.js's SAVE_KEYS) are copied as they are to one
+   you've signed in on this device (or tap Sign in). Signed in, the save and
+   each kind's saved run (storage.js's SAVE_KEYS) are copied as they are to one
    Firestore document, saves/<uid>, a few seconds after every write.
 
    Each upload gets a random `rev`, and this device remembers the last rev
@@ -55,7 +55,10 @@ const store = {
 };
 const readState = () => { try { return JSON.parse(store.get(STATE_KEY)) || {}; } catch (err) { return {}; } };
 const writeState = (state) => store.set(STATE_KEY, JSON.stringify(state));
-const readLocal = () => ({ save: store.get(SAVE_KEYS.save), run: store.get(SAVE_KEYS.run) });
+const readLocal = () => Object.fromEntries(Object.entries(SAVE_KEYS).map(([k, key]) => [k, store.get(key)]));
+// the saved runs, one a kind: the main game's `run`, and since 2026-10-29 a Safari run's and a climb's (a copy saved
+// before has neither, and read as none)
+const RUNS = ['run', 'runSafari', 'runTower'];
 const newRev = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 /** This browser's own id, kept beside the save, not in it: a Safari tab and a Home Screen app on one iPhone are two. */
 function myDevice() {
@@ -96,8 +99,9 @@ function ago(time) {
 }
 
 /** A save with no progress in it: taking the cloud's over it loses nothing. */
-function isBlank({ save, run }) {
-  if (run) return false;
+function isBlank(data) {
+  const { save } = data;
+  if (RUNS.some(k => data[k])) return false;
   if (!save) return true;
   try {
     const s = JSON.parse(save);
@@ -107,12 +111,12 @@ function isBlank({ save, run }) {
 
 /** A fingerprint of a save's progress, play time aside (it ticks on every device without a save write, storage.js's
     addPlayTime()). */
-function progressOf({ save, run }) {
+function progressOf({ save, run, runSafari, runTower }) {
   let text;
   try {
     const s = JSON.parse(save);
     if (s?.stats) delete s.stats.playMs;
-    text = JSON.stringify([s, run]);
+    text = JSON.stringify(runSafari || runTower ? [s, run, runSafari ?? null, runTower ?? null] : [s, run]);   // as before them, with none
   } catch (err) { return null; }
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
@@ -158,7 +162,7 @@ async function reconcile() {
     return upload();
   }
   // never quietly over a run the cloud's copy lacks (2026-10-23: the user's run vanished after Menu while signed in)
-  const keepsRun = !local.run || local.run === cloud.run;
+  const keepsRun = RUNS.every(k => !local[k] || local[k] === cloud[k]);
   if (!now.dirty && keepsRun && (first || onTitle())) return takeCloud(cloud);
   ask(cloud);
 }
@@ -194,10 +198,11 @@ async function upload() {
 }
 
 function takeCloud(cloud) {
-  const mine = store.get(SAVE_KEYS.run);   // a run the cloud's copy replaces can come back with ?runback
-  if (mine && mine !== cloud.run) { try { stashLostRun(JSON.parse(mine), 'replaced by the cloud save'); } catch (err) { /* unreadable */ } }
-  store.set(SAVE_KEYS.save, cloud.save);
-  store.set(SAVE_KEYS.run, cloud.run);
+  for (const k of RUNS) {   // a run the cloud's copy replaces can come back with ?runback (the last one stashed)
+    const mine = store.get(SAVE_KEYS[k]);
+    if (mine && mine !== cloud[k]) { try { stashLostRun(JSON.parse(mine), 'replaced by the cloud save'); } catch (err) { /* unreadable */ } }
+  }
+  for (const [k, key] of Object.entries(SAVE_KEYS)) store.set(key, cloud[k] ?? null);
   writeState({ uid: user.uid, rev: cloud.rev, sum: progressOf(cloud), dirty: false, localAt: cloud.savedAt });
   location.reload();
 }
@@ -206,7 +211,7 @@ const onTitle = () => !$('title-screen').hidden;
 
 /* ---------- two saves: pick one ---------- */
 
-function describe({ save, run }) {
+function describe({ save, run, runSafari, runTower }) {
   const lines = [];
   let s = {};
   try { s = JSON.parse(save) || {}; } catch (err) { /* unreadable: show it as empty */ }
@@ -215,12 +220,15 @@ function describe({ save, run }) {
   lines.push(`Starters: ${owned}/${STARTERS.length}`);
   lines.push(`Runs won: ${s.stats?.runsWon || 0}`);
   lines.push(`Pokédex: ${(s.dex?.defeated || []).length} defeated`);
-  let r = null;
-  try { r = run && JSON.parse(run); } catch (err) { /* no run */ }
-  const starter = r && STARTERS_BY_ID[r.starter];
-  lines.push(starter
-    ? `Run: ${stageName(starter, r.stage)}, ${biomeAt(r.route, r.biome)?.name ?? `biome ${r.biome + 1}`}, HP ${r.hp}/${r.maxHp}`
-    : 'No run in progress');
+  const runs = [['Run', run], ['Safari run', runSafari], ['Sky Pillar climb', runTower]].map(([kind, raw]) => {
+    let r = null;
+    try { r = raw && JSON.parse(raw); } catch (err) { /* no run */ }
+    const starter = r && STARTERS_BY_ID[r.starter];
+    if (!starter) return null;
+    const where = r.safari || r.tower ? '' : `, ${biomeAt(r.route, r.biome)?.name ?? `biome ${r.biome + 1}`}`;   // a biome's name means nothing there
+    return `${kind}: ${stageName(starter, r.stage)}${where}, HP ${r.hp}/${r.maxHp}`;
+  }).filter(Boolean);
+  lines.push(...(runs.length ? runs : ['No run in progress']));
   return lines;
 }
 

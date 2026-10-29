@@ -55,6 +55,7 @@ export const NEXT = [
   ['look', 'Your trainer and the townspeople are drawn a little smaller and houses are framed wider, so you no longer tower over rooms; your buddy trails a touch further back.'],
   ['hub', 'The Clearing\'s neighbours keep to their own spots and short set paths, never bumping into anyone, and the legendaries overhead fly side-on.'],
   ['base', 'In your own Secret Base your buddy roams free, follows you from room to room, and shows a little heart or smile when you pet it.'],
+  ['runs', 'A normal run, a Safari run and a Sky Pillar climb each keep their own save, so you can switch between them without abandoning one.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

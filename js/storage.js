@@ -24,9 +24,25 @@ import { SAFARI_ROSTER } from './data/safari.js';
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
 const LOST_KEY = 'pokedb.run.lost';
+/* A run saved for each kind of run (2026-10-29, the user's ask: switch between a Safari run and a normal one without
+   abandoning either): the main game's (Mewtwo's too) keeps its old key, a Safari run (the Duo Run's too) and a Sky Pillar
+   climb have their own. */
+const RUN_KEYS = { main: RUN_KEY, safari: 'pokedb.run.safari', tower: 'pokedb.run.tower' };
+export const RUN_SLOTS = Object.keys(RUN_KEYS);
+/** Which kind of run a run (in play, or saved) is: 'main', 'safari' or 'tower'. */
+export const runSlot = (run) => (run?.tower ? 'tower' : run?.safari ? 'safari' : 'main');
 
-/** The two localStorage keys, for the cloud save (js/cloud.js), which copies them as they are. */
-export const SAVE_KEYS = { save: KEY, run: RUN_KEY };
+/** The localStorage keys, for the cloud save (js/cloud.js), which copies them as they are. */
+export const SAVE_KEYS = { save: KEY, run: RUN_KEY, runSafari: RUN_KEYS.safari, runTower: RUN_KEYS.tower };
+
+// till then every run shared the main key: a Safari run or a climb saved there moves to its own
+try {
+  const raw = localStorage.getItem(RUN_KEY), slot = raw && runSlot(JSON.parse(raw));
+  if (slot && slot !== 'main') {
+    if (!localStorage.getItem(RUN_KEYS[slot])) localStorage.setItem(RUN_KEYS[slot], raw);
+    localStorage.removeItem(RUN_KEY);
+  }
+} catch (err) { /* no storage, or an unreadable run: loadRunData() deals with it */ }
 
 const listeners = [];
 /** Call fn after every write to either key (the cloud save uploads a little later). */
@@ -369,26 +385,27 @@ export function resetSave() {
   persist();
 }
 
-/* ---------- the run in progress ----------
-   Kept under its own key so a broken or outdated run save can be thrown
-   away without touching your long-term progress. run.js decides what goes in. */
+/* ---------- the runs in progress ----------
+   Kept under their own keys so a broken or outdated run save can be thrown
+   away without touching your long-term progress. run.js decides what goes in;
+   each run goes under its kind's key (runSlot()). */
 
 export function saveRunData(saved) {
-  try { localStorage.setItem(RUN_KEY, JSON.stringify(saved)); }
+  try { localStorage.setItem(RUN_KEYS[runSlot(saved)], JSON.stringify(saved)); }
   catch (err) { /* storage is full or blocked: ignore */ }
   wrote();
 }
 
-/** The saved run as plain data, or null if there isn't one (or it can't be read). */
-export function loadRunData() {
+/** The run saved in `slot` as plain data, or null if there isn't one (or it can't be read). */
+export function loadRunData(slot = 'main') {
   try {
-    const raw = localStorage.getItem(RUN_KEY);
+    const raw = localStorage.getItem(RUN_KEYS[slot]);
     return raw ? JSON.parse(raw) : null;
   } catch (err) { return null; }
 }
 
-export function clearRunData() {
-  try { localStorage.removeItem(RUN_KEY); }
+export function clearRunData(slot = 'main') {
+  try { localStorage.removeItem(RUN_KEYS[slot]); }
   catch (err) { /* blocked: nothing to clear */ }
   wrote();
 }
@@ -403,7 +420,7 @@ export function stashLostRun(saved, err) {
 export function restoreLostRun() {
   try {
     const lost = JSON.parse(localStorage.getItem(LOST_KEY));
-    if (lost?.saved) saveRunData(lost.saved);
+    if (lost?.saved && !loadRunData(runSlot(lost.saved))) saveRunData(lost.saved);   // never over a run of its kind
     return lost;
   } catch (err) { return null; }
 }

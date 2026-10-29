@@ -192,6 +192,9 @@ let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', f
 let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
 let crowd = null, folk = null;   // the Clearing's townspeople (clearingCrowd())
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
+let stopRuns = {}, barRun = null;   // the run saved at each Pokéstop (makePlaces()), and the one the bar's LCD shows
+// which kind of saved run each place by a Pokéstop belongs to (storage.js's runSlot())
+const STOP_SLOT = { trail: 'main', safari: 'safari', 'safari-board': 'safari', pillar: 'tower', 'pillar-tower': 'tower', 'pillar-board': 'tower' };
 let safariFx = null;
 let plazaFx = null;   // the Trainer Plaza's board: its lanterns, its Poké Ball and its cork of Polaroids (js/hub-plaza.js)   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
 let glowMats = [], lamps = [], bugs = null, flyer = null, flownMat = null, flyShade = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, gardenArch = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base', 'backyard' or 'mall'
@@ -2444,11 +2447,11 @@ const gateOpen = () => gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo)
 /** Every place: where it stands (`tiles` it blocks), its doorstep (`step`), whether it's open, what its card says and
     what it opens, all from the title's own actions (`acts`) and today's save. */
 function makePlaces() {
-  const save = getSave(), saved = acts.savedRun();
+  const save = getSave();
   // a saved run is continued where it was started (the user's call, 2026-10-08): a Safari run at the Safari gate, a
-  // climb at the Sky Pillar, any other at the Pokéstop
-  const kind = !saved ? null : saved.saved.tower ? 'pillar' : saved.safari ? 'safari' : 'trail';
-  const runAt = (id) => (kind === id ? saved : null);
+  // climb at the Sky Pillar, any other at the Pokéstop; each kind keeps its own since 2026-10-29, so all three can wait
+  stopRuns = Object.fromEntries(['main', 'safari', 'tower'].map(slot => [slot, acts.savedRun(slot)]));
+  const runAt = (id) => stopRuns[STOP_SLOT[id]];
   const waits = (r) => `${r.name} waits in the ${r.place}${r.floor ? `, floor ${r.floor}` : ''}. HP ${r.hp}/${r.maxHp}.`;
   const run = runAt('trail');
   const list = [
@@ -2456,7 +2459,7 @@ function makePlaces() {
       id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: STOP_AT.tx - 1, y: STOP_AT.ty }, tiles: [[STOP_AT.tx, STOP_AT.ty]], tag: [STOP_AT.tx, 2.6, STOP_AT.ty],
       open: true,
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
-      buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
+      buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', () => acts.onAbandon(false, 'main')]] : [['New game', acts.onNewGame]],
       // right of the avenue before the gate, the Berry Booth across the road from it
       build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - ROADSIDE, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
     },
@@ -2907,7 +2910,8 @@ function buildPlaces() {
   tree?.open.dispose();
   sign?.fixed?.dispose();
   glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; house = null; kiosk = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; boothMark = null; holo = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
-  places = makePlaces();  saved = acts.savedRun();
+  places = makePlaces();
+  saved = Object.values(stopRuns).filter(Boolean).sort((a, b) => (b.saved.savedAt || 0) - (a.saved.savedAt || 0))[0] ?? null;   // the latest
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
   for (const k of [...yardTiles, ...dressTiles, ...FENCES]) blocked.add(k);
@@ -4254,19 +4258,22 @@ function fitMon(img) {
 function placeBar() {
   const coins = getSave().coins ?? 0;
   if (coins !== barCoins) { barCoins = coins; bar.querySelector('.hbar-coins').textContent = coins.toLocaleString(); }
-  const p = nearest(), k = `${p?.id ?? ''}|${saved ? `${saved.hp}/${saved.maxHp}|${saved.sprite}` : ''}`;
+  // by a Pokéstop, the run saved there; anywhere else the latest saved
+  const p = nearest(), run = stopRuns[STOP_SLOT[p?.id]] ?? saved;
+  const k = `${p?.id ?? ''}|${run ? `${run.slot}|${run.hp}/${run.maxHp}|${run.sprite}` : ''}`;
   if (k === barKey) return;
   barKey = k;
-  bar.classList.toggle('no-run', !saved);
-  bar.querySelector('.hbar-fold').inert = !saved;
-  if (saved) {
-    setHpBar('hub', saved.hp, saved.maxHp);
+  barRun = run;
+  bar.classList.toggle('no-run', !run);
+  bar.querySelector('.hbar-fold').inert = !run;
+  if (run) {
+    setHpBar('hub', run.hp, run.maxHp);
     const mon = bar.querySelector('.hbar-sprite');
-    if (mon.getAttribute('src') !== saved.sprite) mon.src = saved.sprite;
-    mon.dataset.stage = saved.saved.stage;
-    bar.querySelector('.hbar-name').textContent = saved.name;
-    bar.querySelector('.hbar-where').textContent = saved.place;
-    bar.querySelector('.hbar-floor').textContent = saved.floor ? `F${saved.floor}` : '';
+    if (mon.getAttribute('src') !== run.sprite) mon.src = run.sprite;
+    mon.dataset.stage = run.saved.stage;
+    bar.querySelector('.hbar-name').textContent = run.name;
+    bar.querySelector('.hbar-where').textContent = run.place;
+    bar.querySelector('.hbar-floor').textContent = run.floor ? `F${run.floor}` : '';
   }
   const sign = bar.querySelector('.hbar-sign b'), name = p?.name ?? 'The Clearing';
   if (sign.textContent === name) return;
@@ -4784,7 +4791,7 @@ async function build() {
   new ResizeObserver(() => { root.style.setProperty('--hub-bar-h', `${bar.offsetHeight}px`); if (camera) resize(); }).observe(bar);
   bar.querySelector('.hbar-sprite').addEventListener('load', (e) => fitMon(e.target));
   bar.querySelector('.hbar-flee').append(smoothIcon('run'));
-  bar.querySelector('.hbar-flee').addEventListener('click', () => { playSound('confirm'); hideCard(); acts.onAbandon(); });
+  bar.querySelector('.hbar-flee').addEventListener('click', () => { playSound('confirm'); hideCard(); acts.onAbandon(false, barRun?.slot); });
   dexBtn = root.querySelector('.hub-dex');
   dexBtn.append(roundKey('home'));
   dexBtn.addEventListener('click', openDex);
