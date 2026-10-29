@@ -518,10 +518,10 @@ export function bendFine(o) {
 export const unbend = (p, u) => { p.y += u.k.value * (p.z - u.z.value) ** 2; return p; };
 
 /** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest),
-    or `{ sheet, name }` for a person on a walking sheet; `back` loads its back GIF too, for walking away from the
-    camera. Not yet in any scene. */
+    or `{ sheet, name }` for a person on a walking sheet; `gif: true` keeps its battle GIF over an overworld sheet;
+    `back` loads its back GIF too, for walking away from the camera. Not yet in any scene. */
 export async function monBoard(mate, back = true) {
-  const front = mate.sheet ?? mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif'), owSrc = !mate.sheet && overworldSrc(front);
+  const front = mate.sheet ?? mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif'), owSrc = !mate.sheet && !mate.gif && overworldSrc(front);
   let sheets, first, ow = null;
   if (mate.sheet) {
     const rows = await walkFrames(mate.sheet);

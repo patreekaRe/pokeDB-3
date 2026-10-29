@@ -49,7 +49,7 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card.'],
+  ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card; Chansey is back on her animated sprite, and a drag in the Center, Mart or ? rooms no longer slides their signs off.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

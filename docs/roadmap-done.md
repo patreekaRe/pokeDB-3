@@ -3810,3 +3810,9 @@ Within the phone budget with a look worn; the patch cut as v1.32 Trainers & Town
 The user tapped Later on WHO ARE YOU? and was never asked again. Their call: ask at every launch till a trainer is
 picked. `save.lookChosen` (the setup, an OK, or wearing a look or Walk alone on the Trainer Card) replaces `lookAsked`,
 so a save that tapped Later before is asked again. Checked headless: asked, Later, asked again, a pick stops it.
+
+### Chansey's GIF back, the room signs stay put (2026-10-29, cloud; on `main`)
+The Center's Chansey had turned into her overworld sprite with the overworld sheets; `monBoard()` takes `gif: true` to keep
+a battle GIF, and she does. On iPhone a drag could slide the Center's Heal / Forget / Upgrade bubbles off their machines:
+the shared room canvas (`.center3d-view`, the Center, Mart and ? rooms) was `touch-action: manipulation`, letting Safari
+pan the page under a drag-walk; it is `none` now, as the hub's.
