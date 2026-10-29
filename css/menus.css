@@ -1443,12 +1443,11 @@ button.trn-show-tile.on { background: rgba(255, 255, 255, 0.4); border-color: cu
   background: none; cursor: pointer; }
 .tc-partner:hover, .tc-partner:focus-visible { background: rgba(31, 58, 20, 0.18); outline: none; }
 .tc-partner-frame { position: relative; display: grid; gap: 6px; padding-bottom: 6px; border-radius: var(--round-sm); background: rgba(31, 58, 20, 0.1); }
-/* the partner's style slots (openTrainerCard()): sockets in the panel, a toggle's icon faded while off and ringed in the
-   tier's ink while on, a locked one greyed under a padlock; an odd one out at the end sits centred across both columns */
+/* the partner's six slots (openTrainerCard()): sockets in the panel, a toggle's icon faded while off and ringed in the
+   tier's ink while on, a locked one greyed under a padlock */
 .tc-slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 0 6px; }
 .tc-slot { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-width: 0; padding: 0; overflow: hidden; border: 0; border-radius: var(--round-xs);
   font: inherit; color: #1f3a14; background: rgba(31, 58, 20, 0.14); box-shadow: inset 0 2px 0 rgba(31, 58, 20, 0.18); cursor: pointer; }
-.tc-slot:last-child:nth-child(odd) { grid-column: 1 / -1; width: calc(50% - 3px); justify-self: center; }
 button.tc-slot:hover { background: rgba(31, 58, 20, 0.22); }
 .tc-slot:focus-visible { outline: 2px solid var(--tc3); outline-offset: 1px; }
 button.tc-slot[aria-pressed="false"] > * { opacity: 0.4; filter: grayscale(0.8); }
@@ -1457,6 +1456,8 @@ button.tc-slot[aria-pressed="false"] > * { opacity: 0.4; filter: grayscale(0.8);
 .tc-slot.locked > :not(.tc-slot-lock) { opacity: 0.45; filter: grayscale(1); }
 .tc-slot-lock { position: absolute; right: 2px; bottom: 1px; font-size: 0.75rem; line-height: 1; }
 .tc-slot-glyph { font-size: 1.5rem; line-height: 1; }
+.tc-pin-key .tc-pin-art { width: 36px; height: 36px; font: 1rem/1 var(--pixel-font); color: var(--tc3); }
+.tc-pin-key .tc-pin-art img { width: 30px; height: 30px; }
 .tc-slot-lv { position: absolute; right: 2px; bottom: 1px; padding: 1px 2px 0; border-radius: 3px; font-size: 0.75rem; line-height: 1; color: #fff; background: #303038; }
 .tc-partner-edit { padding: 4px 10px 3px; border-radius: 999px; font-size: 0.75rem; color: #fff; background: var(--tc3); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); }
 .tc-pick-back { padding: 5px 12px 4px; border: 0; border-radius: 999px; font: inherit; font-size: 0.75rem; color: #fff; background: var(--tc3); cursor: pointer; }
@@ -1521,8 +1522,6 @@ html.calm-fx .aura-strip { animation: none; }
 .tc-aura-key.on.aura-key-lv8 .tc-slot-lv { background: #2a6ee0; }
 .tc-aura-key.on.aura-key-lv9 .tc-slot-lv { background: #8a3ee0; }
 .tc-aura-key.on.aura-key-lv10 .tc-slot-lv { background: linear-gradient(90deg, #e8484a, #e8a020, #38b048, #2a7ee0, #8a3ee0); }
-.tc-aura-mini { position: relative; flex: none; overflow: hidden; filter: grayscale(1); }
-.tc-aura-key .tc-aura-mini { filter: none; }
 /* A Pokémon Master's title (js/data/difficulty.js's isMaster(), a Level 10 win): a dark chip with a rainbow underline, like the rainbow star. */
 .tc-lines dd.tc-master { justify-self: end; padding: 3px 7px 4px; border-radius: 4px; color: #f8d048;
   background: linear-gradient(90deg, #ff5a5a, #ffd84a, #6ee86e, #5ac8ff, #b07af0) 0 100% / 100% 2px no-repeat, #1f3a14; }
@@ -1620,10 +1619,6 @@ html.calm-fx .aura-strip { animation: none; }
 .tc-cover-btn { padding: 8px 12px 7px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 3px 0 rgba(0, 0, 0, 0.35); }
 .tc-cover-btn:active { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 1px 0 rgba(0, 0, 0, 0.35); }
 .tc-pick-word { font: 0.75rem/1 var(--pixel-font); color: var(--tc3); }
-.tc-pin-btn.empty .tc-pin-art::before { content: '+'; color: var(--tc3); font-size: 1rem; text-shadow: none; }
-.tc-pin-btn.shine::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
-  transform: translateX(-100%); animation: tc-pin-shine 2.8s ease-in-out infinite; pointer-events: none; }
-@keyframes tc-pin-shine { 60%, 100% { transform: translateX(100%); } }
 /* the same badge pinned to the partner's portrait, as friends see it beside them */
 .tc-tack { position: absolute; top: -6px; left: -6px; z-index: 1; display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #fffbe8, #f0e0b0); box-shadow: 0 0 0 2px #ffd040, 0 0 0 4px var(--tc3), 0 3px 4px rgba(0, 0, 0, 0.35);

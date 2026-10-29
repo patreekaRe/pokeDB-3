@@ -3906,5 +3906,6 @@ once a visit, Ekans Trail bought, Voltorb Flip offered by Meowth. Not done (idea
 tag on unowned cabinets.
 
 **The Trainer Card's style slots** (2026-10-29, cloud, on `main`; the user picked A of four ideas): the five mismatched
-pills under the partner are one look now, square icon slots in the partner's panel (ringed on, padlocked until earned).
+pills under the partner are one look now, square icon slots in the partner's panel (ringed on, padlocked until earned);
+the same day the pinned badge moved in as a sixth slot, so it's always an even 2x3.
 Notes: `docs/reference/badges-and-trainer-card.md`. The user checks the look on their phone.

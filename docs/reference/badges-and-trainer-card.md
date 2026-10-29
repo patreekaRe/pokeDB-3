@@ -87,3 +87,8 @@ and its Level in a corner chip. Locked ones (aura before a Level 6 win, crown be
 their title saying how they're earned on a tap. No captions: a 12px pixel letter is 12px wide and a slot about 47px.
 Walk alone shows the first hero as a faint silhouette. The other ideas offered: a row of round slots, one Style key
 opening a wardrobe page, or one pill style with "Ball · Moon" labels.
+**Six slots** (2026-10-29, the user: five looked odd): the pinned badge moved into the grid as the sixth slot
+(`.tc-pin-key`, its cream disc), off the Badge Case's label (only Cover there now); the tack on the partner stays. Every
+slot always shows, so it's always 2x3: shiny is locked when the partner has no shiny of yours, the pin locked while
+signed out (no `myCode()`). The aura slot is the pixel 🔥 with its Level chip, coloured while on (the mini flames read
+as a blob at 47px).

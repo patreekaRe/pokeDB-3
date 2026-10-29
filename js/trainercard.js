@@ -26,7 +26,6 @@ import { safariDexCount } from './safaridex.js';
 import { trainerName, pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { tipAt } from './tips.js';
-import { calmFx } from './prefs.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog, crownArt, auraArt, lookArt } from './ui.js';
 import { HEROES, lookSheet, wornLook } from './data/looks.js';
@@ -818,6 +817,9 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     const flip = slot('tc-shiny-key', mate.shiny ? 'Shiny on: tap for its normal colours' : 'Tap for its shiny colours', 'Shiny partner',
       [el('span', 'tc-slot-glyph', '✨')], () => { updateSave(d => { d.partner = mate.twin; }); redraw(); });
     toggle(flip, !!mate.shiny);
+  } else {
+    locked('tc-shiny-key', 'Shiny colours: own this partner\'s shiny (a shiny starter, or one caught or pulled in the Safari Zone) and switch to them here.',
+      [el('span', 'tc-slot-glyph', '✨')]);
   }
   const earnedAuras = aurasEarned(save);
   if (earnedAuras.length) {
@@ -827,12 +829,12 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     const shown = on || best;
     const key = slot(`tc-aura-key aura-key-lv${shown}`, `${on ? `The ${starName(on)} aura, for a Level ${on} win, is on` : 'Your aura is off'}: tap for ${next ? `the ${starName(next)} aura` : 'none'}`,
       `Super Saiyan aura: ${on ? starName(on) : 'off'}`,
-      [auraArt(shown, { cls: 'tc-aura-mini', s: 40 }).back, el('span', 'tc-slot-lv', String(shown))],
+      [el('span', 'tc-slot-glyph', '🔥'), el('span', 'tc-slot-lv', String(shown))],
       () => { updateSave(d => { if (next === best) delete d.aura; else d.aura = next; }); redraw(); });
     toggle(key, !!on);
   } else {
     locked('tc-aura-key', 'A Super Saiyan aura: win a run on Trainer Level 6 and your partner glows ruby, bigger each Level up to 10.',
-      [auraArt(6, { cls: 'tc-aura-mini', s: 40 }).back]);
+      [el('span', 'tc-slot-glyph', '🔥')]);
   }
   if (isMaster(save)) {
     const on = wearsCrown(save);
@@ -843,6 +845,19 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     // a preview of the crown for everyone not yet a Master, greyed, saying how it's earned (the user's pick, 2026-10-23)
     locked('tc-crown-key', 'The Champion\'s Crown: win a run on Trainer Level 10 and it floats over your partner.', [crownArt('tc-crown-mini')]);
   }
+  // the pinned badge (the user's ask, 2026-10-29: it moved here from the Badge Case's label to make the slots six)
+  const sharing = myCode() || new URLSearchParams(location.search).has('mycard');
+  const pinned = sharing && pinnable(save.pinBadge, save) ? save.pinBadge : null;
+  const pinArt = () => {
+    const art = el('span', 'tc-pin-art');
+    if (pinned) { const im = el('img', ''); im.src = badgeArt(pinned, true); im.alt = ''; art.append(im); } else art.textContent = '+';
+    return art;
+  };
+  const pinTitle = pinned ? 'Your pinned badge, on your Trainers page. Tap to change it' : 'Pin a badge to your Trainers page';
+  const pinLabel = pinned ? `Pinned badge: ${BADGES.find(b => b.id === pinned).name}. Change it` : 'Pin a badge';
+  const openPin = () => pinPicker(body, redraw);
+  if (sharing) slot(`tc-pin-key${pinned ? '' : ' empty'}`, pinTitle, pinLabel, [pinArt()], openPin);
+  else locked('tc-pin-key', 'A pinned badge: sign in to cloud save for a trainer code, and pin a badge to the page your friends see.', [pinArt()]);
   frame.append(slots);
   info.append(list, frame);
 
@@ -872,25 +887,14 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const keys = el('span', 'tc-case-keys');
   keys.append(cover);
   label.append(keys);
-  if (myCode() || new URLSearchParams(location.search).has('mycard')) {
-    // signed in, friends see your page: pin one badge for it (the Trainers app shows it by your partner). The user found
-    // a faint "Pinned" tab easy to miss (2026-10-27): it's a gold plate now, and the badge sits pinned on the partner too
-    const pinned = pinnable(save.pinBadge, save) ? save.pinBadge : null;
-    const openPin = () => { playSound('confirm'); pinPicker(body, redraw); };
-    const pin = el('button', `tc-pin-btn${pinned ? '' : ' empty'}${pinned || calmFx() ? '' : ' shine'}`);
-    pin.type = 'button';
-    pin.title = pinned ? 'Your pinned badge, on your Trainers page. Tap to change it' : 'Pin a badge to your Trainers page';
-    const art = el('span', 'tc-pin-art');
-    if (pinned) { const im = el('img', ''); im.src = badgeArt(pinned, true); im.alt = ''; art.append(im); }
-    pin.append(art, el('span', '', pinned ? 'Pinned badge' : 'Pin a badge'));
-    pin.addEventListener('click', openPin);
-    keys.append(pin);
+  if (sharing) {
+    // the badge pinned on the partner's portrait too, as friends see it beside them (the user's ask, 2026-10-27)
     const tack = el('button', `tc-tack${pinned ? '' : ' empty'}`);
     tack.type = 'button';
-    tack.title = pin.title;
-    tack.setAttribute('aria-label', pinned ? `Pinned badge: ${BADGES.find(b => b.id === pinned).name}. Change it` : 'Pin a badge');
+    tack.title = pinTitle;
+    tack.setAttribute('aria-label', pinLabel);
     if (pinned) { const im = el('img', ''); im.src = badgeArt(pinned, true); im.alt = ''; tack.append(im); } else tack.textContent = '+';
-    tack.addEventListener('click', openPin);
+    tack.addEventListener('click', () => { playSound('confirm'); openPin(); });
     frame.append(tack);
   }
   if (fresh.length > 1) {
