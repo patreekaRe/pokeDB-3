@@ -79,7 +79,7 @@ import { meowthDue } from './meowth.js';
 import { renderTower, hideTower, guardianIntro, towerFall, barReady, setTowerGraves } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
-import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
+import { dexSeen, dexDefeated, dexWeight, dexPerkLevel, dexMark } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, duoRoad, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
@@ -1920,7 +1920,8 @@ async function fight(node, { talked = false } = {}) {
   if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));
   if (isTower() && augs().enemyHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().enemyHp));   // Sudden Death
   if (node.foeHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * node.foeHp));   // an event's foe, smaller than its usual self (the Snorlax)
-  if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
+  if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);
+  encounter.dexMark = !ken && !isSafari() && !isTower() ? dexMark(node.enemyId) : null;   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
   encounter.shiny = isSafari() && node.type === 'fight' && Boolean(node.shiny);

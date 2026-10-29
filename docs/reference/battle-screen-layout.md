@@ -378,3 +378,10 @@ use in a fight a stripe like a relic's, with what it did (`ABILITY_GAIN`: "🌊 
 sliding in from the left only from turn 2 on (with battle effects off, the window as before). Static (each enemy attack)
 and Guts (lighting up as a status card comes in) now call it too; Overgrow's after a win queues behind Victory!
 (`relicBanner(..., late)`). `afterTurnBanner()` is gone: the stripe queue (`turnBusy`) does its job.
+
+## Caught and researched mark on the foe's plate (2026-10-29, the user's ask)
+In a normal run (not the Safari, the Sky Pillar or Kenmatta's dojo), the foe's nameplate shows `#enemy-dex` right of its
+name, like the main games' caught ball: nothing until you've beaten it once, then the Poké Ball (`assets/items/poke-ball.png`),
+and gold with a ★ once its research is complete. `dexMark(id)` in `js/pokedex.js` reads it from the save before the fight
+(`fight()` in `js/run.js` puts it on `encounter.dexMark`), so a first defeat shows it from the next meeting on. A
+Pokémon with no Pokédex page (a gym leader's) gets none.

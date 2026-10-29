@@ -50,6 +50,7 @@ const HELD = [
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card.'],
+  ['battle', 'A wild Pokémon you\'ve beaten before shows a Poké Ball by its name, gold with a star once its research is complete.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

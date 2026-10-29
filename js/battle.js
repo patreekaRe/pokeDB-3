@@ -266,7 +266,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     safari: Boolean(run.safari),   // a Safari Zone daily run: its starter may not be yours, so it earns no achievement goals
     catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown any turn
     rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
-    shiny: Boolean(run.safari) && encounter.kind === 'fight' && Boolean(encounter.shiny),   // a Safari wild in its shiny colours: looks only, the fight is the same (js/data/shinies.js)
+    shiny: Boolean(run.safari) && encounter.kind === 'fight' && Boolean(encounter.shiny),
+    dexMark: encounter.dexMark ?? null,   // a normal run's foe already in the Pokédex: 'caught' or 'researched' (dexMark())   // a Safari wild in its shiny colours: looks only, the fight is the same (js/data/shinies.js)
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
     healMult: run.mods?.healMult ?? 1,   // Trainer Level 6's Bitter Medicine
     hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
@@ -3215,6 +3216,11 @@ function setupEnemy() {
   $('enemy-rare').hidden = !b.rare;
   $('enemy-plate').classList.toggle('shiny', b.shiny);
   $('enemy-shiny').hidden = !b.shiny;
+  const mark = $('enemy-dex');
+  mark.hidden = !b.dexMark;
+  mark.classList.toggle('gold', b.dexMark === 'researched');
+  mark.title = b.dexMark === 'researched' ? 'Research complete' : 'Caught: in your Pokédex';
+  mark.setAttribute('aria-label', mark.title);
   box.querySelector('.shiny-aura')?.remove();
   if (b.shiny && battleFx()) {   // it sparkles all fight
     const aura = el('div', 'shiny-aura');

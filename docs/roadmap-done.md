@@ -3810,3 +3810,6 @@ Within the phone budget with a look worn; the patch cut as v1.32 Trainers & Town
 The user tapped Later on WHO ARE YOU? and was never asked again. Their call: ask at every launch till a trainer is
 picked. `save.lookChosen` (the setup, an OK, or wearing a look or Walk alone on the Trainer Card) replaces `lookAsked`,
 so a save that tapped Later before is asked again. Checked headless: asked, Later, asked again, a pick stops it.
+
+## Caught / researched mark in battle (2026-10-29, the user's ask; branch `claude/run-status-indicators-cqlsda`, on `main` too)
+A normal run's foe shows a Poké Ball by its name once beaten, gold with a ★ once researched (`docs/reference/battle-screen-layout.md`'s last section).
