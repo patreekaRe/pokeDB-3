@@ -1627,6 +1627,12 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - Friends phase 2 (signs, Lost & Found gifts, an Assist; the graves are done): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **A real sprite for the rival in Rival's Return** (2026-10-29, the user's ask: "use one we haven't used yet"; he's
+  still the Gym's unknown-leader silhouette, `assets/trainers/rival.png`). Pick: **Silver** (the Gold/Silver rival, whose
+  Sneasel he already has) by kyledove on Pokéngine, the same artist as the other event NPCs: pokengine.org/trainers/015lhqez,
+  01clxukz or 01uwbfcm (fronts at `pokengine.b-cdn.net/play/images/trainers/fronts/<id>.webp`). **Blocked**: the cloud
+  environment's network policy denies `pokengine.b-cdn.net`; the user adds it under Allowed domains. Then: save it as
+  `rival.png`, paint `rival-blink.png`, refit `NPCS.rival` (`head`, `waist`), credit Silver in About.
 - **New Block and End Turn sounds** (2026-10-28, branch `claude/block-end-turn-sounds-3j8vso`, on `main` too; archive):
   gaining Block plays `shieldUp()` (a Protect-like shimmer), a fully blocked hit keeps the old whump (`blocked`), and
   End Turn plays its own `turnOver()` (a swish and two falling mallet notes) instead of the Game Boy menu blip. Play a
