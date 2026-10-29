@@ -3916,3 +3916,8 @@ your partner walked out to a new run cut its path short but left `outbound` set,
 on like the first walk-in, and `openHub()` clears a half-done walk-in. The Mall had the same trap stepping into a Trainer Tailor
 fitting room (`booth`); its `fromKey()` now waits that step out too. The Secret Base and the towns open it from the run
 bar, which never cuts a walk.
+
+### The caught ball under the HP bar; ? rooms' Pokémon as GIFs (2026-10-29, cloud; on `main`)
+The foe's caught / researched ball moved from beside its name to the row under its HP bar (`#enemy-dex` first in
+`.nameplate-foot`). Every Pokémon stood in a ? room plays its battle GIF again instead of its overworld sheet
+(`figure()` passes `gif: true`; town homes keep the sheet; `docs/reference/walk-in-rooms.md`).
