@@ -13,6 +13,8 @@ const SECS = Number(opt('secs', 6)), SETTLE = 11000;
 const AREAS = ['meadow', 'forest', 'wetland', 'marsh', 'peak', 'desert', 'powerplant', 'icecave', 'dojomountain', 'quarry', 'windycliffs', 'nightalley'];
 const PLACES = {
   clearing: '/', 'clearing-aura': '/?aura=10', 'clearing-night': '/?time=night', 'clearing-graves': '/?graves=8', base: '/?base', 'mall-hall': '/?mall',
+  // walking as a trainer, the buddy a step behind (js/follow.js); in your own base it roams free (2026-10-29)
+  'clearing-look': '/?look=dawn', 'base-look': '/?base&look=dawn', 'town-look': '/?town=ruins&towns&look=dawn', 'mall-tailor': '/?mall=tailor&look=dawn',
   'town-shrine': '/?town=shrine&towns', 'town-ruins': '/?town=ruins&towns', 'run-map': '/?biome=ruins&starter=charmander',
   ...Object.fromEntries(AREAS.map(a => [`safari-${a}`, `/?area=${a}&intro=0`])),
   ...Object.fromEntries(AREAS.map(a => [`boss-${a}`, `/?area=${a}&intro=0&stage=3&kind=boss`])),

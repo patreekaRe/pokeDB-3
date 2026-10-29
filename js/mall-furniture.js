@@ -76,7 +76,7 @@ export const STORE_COLOUR = LOOK[1].trim;
 /* Each floor's shopkeeper, who says every line in the store (the user's ask: "a shopkeeper, one of the Pokémon"):
    Smeargle paints the furniture, Minccino keeps the second floor spotless. */
 export const KEEPERS = {
-  1: { id: 'smeargle', name: 'Smeargle', src: 'assets/pokemon/smeargle-front.gif',
+  1: { id: 'smeargle', name: 'Smeargle', src: 'assets/pokemon/smeargle-front.gif', gif: true,
     hello: ['Welcome to my showroom! I painted every piece in here myself.', 'Fresh pieces in every department today, still wet! Kidding.', 'Have a look round. Tap a piece and I\'ll tell you about it.'],
     chat: ['Every colour of a piece comes with it. I can never pick just one.', 'New stock every day, the moment the clock strikes midnight.', 'A room is a canvas, you know. Your Secret Base is your masterpiece!',
       'Seats and tables on the left, décor on the right. A place for everything!', 'Build a backyard on your PC\'s House Upgrades: my catalogue has garden pieces too!',
@@ -87,11 +87,11 @@ export const KEEPERS = {
     special: (done) => import('./paper-shop.js').then(m => m.paperTap(done)),
     // floats over it while a tap opens a catalogue (2026-10-19, the user's ask: players didn't know to tap it)
     sign: (b) => b.house?.yard ? 'Walls, floors & garden' : 'Wallpaper & floors', signIcon: 'home', ink: '#2a7a5e' },
-  2: { id: 'minccino', name: 'Minccino', src: 'assets/pokemon/minccino-front.gif',
+  2: { id: 'minccino', name: 'Minccino', src: 'assets/pokemon/minccino-front.gif', gif: true,
     hello: ['Welcome to the Rose Salon! Mind the... no, there\'s no dust. I checked.', 'Oh! A customer! Let me just polish that plinth. There.'],
     chat: ['I dust every plinth twice a day. Three times on Sundays.', 'Eight more pieces up here, every day. All spotless.', 'The chandeliers took me all morning. Worth it!'] },
   // the Grand Ballroom's host: a tap opens the whole Grand Catalogue, every statue and the Pokédex shells (js/grand-shop.js)
-  3: { id: 'gardevoir', name: 'Gardevoir', src: 'assets/pokemon/gardevoir-front.gif',
+  3: { id: 'gardevoir', name: 'Gardevoir', src: 'assets/pokemon/gardevoir-front.gif', gif: true,
     hello: ['Welcome to the Grand Ballroom. Only the finest collectors come this high.', 'Good evening. Every statue here is solid gold. Please, take your time.'],
     chat: ['The stands show a few statues. My catalogue has them all, and the Pokédex shells.', 'Each statue is cast from the Pokémon itself. Well, from its likeness.', 'A statue in your Secret Base says you\'ve truly arrived.'],
     special: (done) => import('./grand-shop.js').then(m => m.openGrandShop(done)).then(() => true),

@@ -76,7 +76,7 @@ export const BUG_LOOK = {
 };
 
 // Pokémon who join the flyers' round in their season (lit: they're guests, not unlocks), and their sprites
-export const SEASON_FLYERS = { halloween: ['gastly', 'haunter', 'gengar', 'misdreavus', 'drifloon'], winter: ['delibird', 'vanillite'] };
+export const SEASON_FLYERS = { winter: ['delibird', 'vanillite'] };   // Halloween's ghosts fly over no more (the user's call, 2026-10-28)
 
 /* ---------- painters (smooth, like the Clearing's places: drawn at k canvas pixels a painted pixel) ---------- */
 

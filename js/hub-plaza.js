@@ -1,7 +1,7 @@
 /* hub-plaza.js  -  the Trainer Plaza's board in the Clearing (the user's ask, 2026-10-17: "the physical 3D board"),
-   at the plaza's top right corner, turned to face it: a notice board on two wooden posts under a little teal gable with a Poké Ball on
-   its ridge, a TRAINER PLAZA plank, bunting along the eave and two lanterns that light up after dark, flower pots at its
-   feet. Its cork face shows Polaroids of the trainers on lately (js/trainers.js's plazaTop()), each with their buddy,
+   at the plaza's top right corner, turned to face it: a low kiosk since 2026-10-28 (the user's pick; the tall notice board
+   hid the PC), the cork laid back on a waist-high counter with TRAINER PLAZA on its front, under a striped teal awning
+   with a Poké Ball on top, bunting along its edge and two lanterns that light up after dark, flower pots at its feet. Its cork face shows Polaroids of the trainers on lately (js/trainers.js's plazaTop()), each with their buddy,
    their card's colour and their name, yours with a gold YOU sticker; signed out, a notice to sign in. plazaBoard()
    builds it at the origin, its front towards +z; paint(list) redraws the cork, tick() sways the lanterns. */
 
@@ -157,41 +157,51 @@ export function plazaBoard(THREE, { glows, merge }) {
   const wood = std({ color: '#9a6638' }), woodDark = std({ color: '#6a4222' }), stone = std({ color: '#c8c2b4', flatShading: true });
   const teal = std({ color: '#2a9fb0', roughness: 0.6 }), tealDark = std({ color: '#17707e', roughness: 0.6 }), gold = std({ color: '#f0c040', metalness: 0.5, roughness: 0.35 });
 
-  // a stone step and the two posts, capped
-  add(new T.BoxGeometry(2.3, 0.12, 0.62), stone, 0, 0.06, 0.02);
-  for (const s of [-1, 1]) {
-    add(new T.BoxGeometry(0.14, 2.42, 0.14), wood, s * 0.97, 1.33, 0);
-    add(new T.BoxGeometry(0.2, 0.08, 0.2), woodDark, s * 0.97, 0.16, 0);
-  }
-  // the cork in its frame
+  // a stone step and a waist-high wooden counter, TRAINER PLAZA on its front (a low kiosk since 2026-10-28, the
+  // user's pick: the tall board hid the PC and the plaza behind it)
+  add(new T.BoxGeometry(2.3, 0.12, 0.9), stone, 0, 0.06, -0.1);
+  add(new T.BoxGeometry(2.1, 0.72, 0.8), wood, 0, 0.48, -0.1);
+  add(new T.BoxGeometry(2.16, 0.06, 0.86), woodDark, 0, 0.15, -0.1);
+  const plank = plankArt();
+  const plankTex = canvasTex(plank);
+  add(new T.BoxGeometry(1.5, 0.3, 0.04), tealDark, 0, 0.5, 0.31);
+  add(new T.PlaneGeometry(1.46, 0.27), std({ map: plankTex, roughness: 0.6 }), 0, 0.5, 0.332, root, false);
+  paintPlank(plank).then(() => { plankTex.needsUpdate = true; });
+
+  // the cork in its frame, laid back on the counter like a lectern so it reads from above without standing tall
+  const TILT = 0.7, cy = CORK_H / 2 + 0.08;
+  const desk = new T.Group();
+  desk.position.set(0, 0.84, 0.26);
+  desk.rotation.x = -TILT;
   const cork = canvas(CW, CH);
   corkArt(cork.getContext('2d'));
   const corkTex = canvasTex(cork);
-  add(new T.BoxGeometry(CORK_W + 0.04, CORK_H + 0.04, 0.06), woodDark, 0, 1.42, -0.02);
-  const face = add(new T.PlaneGeometry(CORK_W, CORK_H), std({ map: corkTex, roughness: 0.95 }), 0, 1.42, 0.012, root, false);
+  add(new T.BoxGeometry(CORK_W + 0.04, CORK_H + 0.04, 0.06), woodDark, 0, cy, -0.02, desk);
+  const face = add(new T.PlaneGeometry(CORK_W, CORK_H), std({ map: corkTex, roughness: 0.95 }), 0, cy, 0.012, desk, false);
   face.receiveShadow = true;
-  for (const [w, h, x, y] of [[CORK_W + 0.2, 0.1, 0, 1.42 + CORK_H / 2 + 0.05], [CORK_W + 0.2, 0.1, 0, 1.42 - CORK_H / 2 - 0.05], [0.1, CORK_H, -CORK_W / 2 - 0.05, 1.42], [0.1, CORK_H, CORK_W / 2 + 0.05, 1.42]]) {
-    add(new T.BoxGeometry(w, h, 0.1), wood, x, y, 0.01);
+  for (const [w, h, x, y] of [[CORK_W + 0.2, 0.1, 0, cy + CORK_H / 2 + 0.05], [CORK_W + 0.2, 0.1, 0, cy - CORK_H / 2 - 0.05], [0.1, CORK_H, -CORK_W / 2 - 0.05, cy], [0.1, CORK_H, CORK_W / 2 + 0.05, cy]]) {
+    add(new T.BoxGeometry(w, h, 0.1), wood, x, y, 0.01, desk);
   }
-  add(new T.BoxGeometry(CORK_W + 0.1, 0.05, 0.16), woodDark, 0, 1.42 - CORK_H / 2 - 0.12, 0.06);   // a ledge for chalk
+  root.add(desk);
+  // its sides, two wooden wedges from the counter up to the cork's top edge
+  const topY = Math.cos(TILT) * (CORK_H + 0.18), topZ = 0.26 - Math.sin(TILT) * (CORK_H + 0.18);
+  const wedge = new T.Shape([new T.Vector2(0.3, 0), new T.Vector2(-0.5, 0), new T.Vector2(topZ, topY)]);
+  const wedgeGeo = new T.ExtrudeGeometry(wedge, { depth: 0.07, bevelEnabled: false });
+  for (const s of [-1, 1]) add(wedgeGeo, woodDark, s * (CORK_W / 2 + 0.1) + (s > 0 ? 0.07 : 0), 0.84, 0).rotation.y = -Math.PI / 2;
 
-  // the plank over it
-  const plank = plankArt();
-  const plankTex = canvasTex(plank);
-  add(new T.BoxGeometry(1.5, 0.3, 0.06), tealDark, 0, 2.22, 0);
-  add(new T.PlaneGeometry(1.46, 0.27), std({ map: plankTex, roughness: 0.6 }), 0, 2.22, 0.032, root, false);
-  paintPlank(plank).then(() => { plankTex.needsUpdate = true; });
-
-  // the gable: two teal slopes, a gold ridge with a Poké Ball on it
-  for (const s of [-1, 1]) {
-    const slope = add(new T.BoxGeometry(2.36, 0.07, 0.52), teal, 0, 2.62, s * 0.2);
-    slope.rotation.x = s * 0.55;
-    const trim = add(new T.BoxGeometry(2.4, 0.05, 0.05), gold, 0, 2.48, s * 0.42);
-    trim.castShadow = false;
-  }
-  add(new T.CylinderGeometry(0.045, 0.045, 2.42, 8), gold, 0, 2.77, 0).rotation.z = Math.PI / 2;
+  // a striped awning on two posts at the back, a Poké Ball on top; kept short and high, as any further forward hides
+  // the cork's top row from the camera's pitch
+  for (const s of [-1, 1]) add(new T.BoxGeometry(0.1, 2.1, 0.1), wood, s * 1.0, 1.17, -0.46);
+  const white = std({ color: '#f6f2e6', roughness: 0.6 });
+  const awning = new T.Group();
+  awning.position.set(0, 2.22, -0.36);
+  awning.rotation.x = 0.12;
+  for (let i = 0; i < 8; i++) add(new T.BoxGeometry(0.3, 0.05, 0.62), i % 2 ? white : teal, -1.05 + i * 0.3, 0, 0, awning);
+  add(new T.BoxGeometry(2.44, 0.06, 0.05), gold, 0, -0.02, 0.32, awning, false);
+  merge?.(awning);
+  root.add(awning);
   const ball = new T.Group();
-  ball.position.set(0, 2.94, 0);
+  ball.position.set(0, 2.42, -0.44);
   add(new T.SphereGeometry(0.15, 18, 9, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#e8383a', roughness: 0.4 }), 0, 0, 0, ball);
   add(new T.SphereGeometry(0.15, 18, 9, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std({ color: '#f8f8f8', roughness: 0.4 }), 0, 0, 0, ball);
   add(new T.TorusGeometry(0.15, 0.018, 6, 24), std({ color: '#1c1430' }), 0, 0, 0, ball).rotation.x = Math.PI / 2;
@@ -199,23 +209,23 @@ export function plazaBoard(THREE, { glows, merge }) {
   merge?.(ball);
   root.add(ball);
 
-  // bunting along the front eave, sagging between the posts
+  // bunting between the posts, behind the cork's top edge
   const flagGeo = new T.BufferGeometry().setFromPoints([new T.Vector3(-0.07, 0, 0), new T.Vector3(0.07, 0, 0), new T.Vector3(0, -0.15, 0)]);
   flagGeo.computeVertexNormals();
   const flags = ['#e8383a', '#f0c020', '#3a7ae8', '#38b868', '#f080b0'].map(c => std({ color: c, side: T.DoubleSide }));
   for (let i = 0; i < 11; i++) {
-    const k = i / 10, x = -1.0 + k * 2.0, y = 2.42 - Math.sin(k * Math.PI) * 0.12;
-    add(flagGeo, flags[i % flags.length], x, y, 0.46, still, false);
+    const k = i / 10, x = -1.0 + k * 2.0, y = 2.14 - Math.sin(k * Math.PI) * 0.06;
+    add(flagGeo, flags[i % flags.length], x, y, -0.42, still, false);
   }
 
-  // two lanterns hanging off the eave's ends, lit after dark
+  // two lanterns hanging off the awning's corners, lit after dark
   const glow = std({ color: '#fff0c0', emissive: new T.Color('#ffc860'), roughness: 0.4 });
   glow.userData.glow = 1.3; glow.userData.glowMin = 0.25;
   glows.push(glow);
   const lanterns = [];
   for (const s of [-1, 1]) {
     const l = new T.Group();
-    l.position.set(s * 1.18, 2.44, 0.42);
+    l.position.set(s * 1.16, 2.16, -0.08);
     add(new T.CylinderGeometry(0.008, 0.008, 0.16, 4), woodDark, 0, -0.08, 0, l, false);
     add(new T.BoxGeometry(0.16, 0.04, 0.16), woodDark, 0, -0.17, 0, l);
     add(new T.BoxGeometry(0.13, 0.17, 0.13), glow, 0, -0.27, 0, l, false);

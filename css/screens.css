@@ -6352,7 +6352,9 @@ svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
 /* ---------- the walk-in 3D Pokémon Center (js/center-3d.js, branch pokecenter-3d) ---------- */
 /* its canvas sits where the pixel scene does, under the room's bar and text box; the choices are the room's own
    machine, PC and Chansey, so the pixel room's nurse and monitor go */
-.center3d-view { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s; touch-action: manipulation; }
+/* touch-action none: a drag walks (dragWalk()); manipulation let iPhone Safari pan the page under it too, which carried
+   the floating signs off their machines (the user's report, 2026-10-29) */
+.center3d-view { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s; touch-action: none; }
 .center3d-view.on { opacity: 1; }
 /* a gateway town's folk talk in bubbles over their heads (js/event-3d.js's townCrowd()), under the room's own keys */
 .town-stage { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
