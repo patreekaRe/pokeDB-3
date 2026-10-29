@@ -2654,6 +2654,9 @@ const bossWin = () => (run.map?.boss && gymLeader(run.map.boss) ? 'gym-victory' 
 const rangerInfo = (node, result) => ({ id: node.enemyId, rare: !!node.rare, ball: result.ball, night: timeOfDay() === 'night',
   turn: result.tally?.turns, flawless: !!result.tally && !result.tally.taken, inRun: run.tally.caught, shiny: !!result.shiny && !wildShinyFlag() });
 
+/** The enemy's spot on the battle screen, if the fight is still showing (a Gym Leader stands there to talk after it). */
+const arenaSpot = () => ($('battle-screen').hidden ? null : $('enemy-portrait-box'));
+
 function afterFight(node, result) {
   // a Gym Leader's last words and badge come before the rewards (and before a last boss's ending); a refresh replays
   // the fight, so the win is only counted below with the boss's
@@ -2661,7 +2664,7 @@ function afterFight(node, result) {
   if (leader) {   // their losing words on the battle screen as their Pokémon falls, then the badge in their gym
     const said = talkOf(leader, 'beaten'), thisRun = run;
     const vars = { boss: ENEMY_DEFS[node.enemyId]?.name };
-    return gymTalk(leader, said.slice(0, -1), { vars, lit: true }).then(() => {
+    return gymTalk(leader, said.slice(0, -1), { vars, lit: true, stand: arenaSpot() }).then(() => {
       if (run !== thisRun) return;
       // the boss is beaten: a refresh from the gym (or the rewards after it) comes back to the gym rather than the map
       // before the boss (the user's ask, 2026-10-13)
@@ -2676,7 +2679,11 @@ function afterFight(node, result) {
   const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends
   if (winner && !peeking) updateSave(d => { d.gymLost = { ...(d.gymLost || {}), [winner.id]: (d.gymLost?.[winner.id] || 0) + 1 }; });
   if (node.type === 'ken' && !result.won && !result.fled && !peeking) updateSave(d => { d.kenLost = (d.kenLost || 0) + 1; });
-  if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, lit: true }).then(() => afterFight(node, { ...result, gymSaid: true }));
+  if (winner) {
+    const stand = arenaSpot();
+    stand?.classList.add('recalled');   // their Pokémon goes back in its ball and they step up in its place
+    return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, lit: true, stand }).then(() => afterFight(node, { ...result, gymSaid: true }));
+  }
   addTally(result.tally);
   if (!result.evolved) run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
   if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)

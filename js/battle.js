@@ -3228,7 +3228,7 @@ function setupEnemy() {
     for (let i = 0; i < 5; i++) aura.append(el('span', `shiny-twinkle t${i}`));
     box.append(aura);
   }
-  box.classList.remove('captured', 'ran');
+  box.classList.remove('captured', 'ran', 'recalled');
   closeBallPicker();
   // the Safari shows a wild's real types (one icon each); everywhere else the game's own
   const real = b.safari && !typeless() ? speciesTypes(b.def) : null;

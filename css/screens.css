@@ -1233,7 +1233,7 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .thrown-ball.caught .ball3d { filter: brightness(0.6); transition: filter 0.4s ease; }
 .thrown-ball.burst .ball3d { animation: ballPop 0.3s ease-in both; }
 /* pulled into the ball: a white flash and a shrink into it, like the games */
-.enemy-portrait.captured { transition: transform 0.4s ease-in, opacity 0.4s ease-in, filter 0.2s ease-out; transform: scale(0.05) translateY(40%); opacity: 0; filter: brightness(8); }
+.enemy-portrait:is(.captured, .recalled) { transition: transform 0.4s ease-in, opacity 0.4s ease-in, filter 0.2s ease-out; transform: scale(0.05) translateY(40%); opacity: 0; filter: brightness(8); }
 .enemy-portrait.ran { transition: transform 1s ease-in, opacity 1s ease-in; transform: translateX(140px); opacity: 0; }
 .catch-star { color: #f8d030; }
 /* a rare spawn's nameplate: a gold rim and a slow shimmer on its name */
@@ -6581,6 +6581,10 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .gym-scene.out .gym-trainer.pair { translate: -100vw 0; }
 .gym-scene.paired .gym-trainer { height: min(40vh, 260px); transition: translate 0.6s cubic-bezier(.2, .9, .3, 1.08), filter 0.3s, opacity 0.3s; }
 .gym-scene.paired .gym-trainer.quiet { filter: brightness(0.45) drop-shadow(0 8px 0 rgba(0, 0, 0, 0.35)); opacity: 0.8; animation: none; }
+/* on the battle screen after the fight (gymTalk()'s `stand`): on their fallen (or recalled) Pokémon's spot, the arena
+   only lightly dimmed so they stand in it, as in the games */
+.gym-scene.stand { background: linear-gradient(to bottom, rgba(8, 10, 24, 0.12), rgba(8, 10, 24, 0.5)); }
+.gym-scene.stand .gym-trainer { right: auto; bottom: auto; left: var(--sx); top: var(--sy); height: var(--sh); transform: translate(-50%, -100%); }
 .gym-say {
   position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
   width: min(480px, calc(100% - 32px)); min-height: 110px; margin: 0; padding: 26px 22px 22px; box-sizing: border-box;

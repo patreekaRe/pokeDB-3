@@ -52,13 +52,14 @@ export const NEXT = [
   ['hub', 'The Trainer Plaza\'s board is a low kiosk now, its Polaroids laid back on a counter under a striped awning, so it no longer hides the PC; Look opens the board full screen, where you tap a Polaroid to add that trainer.'],
   ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card, the mall\'s shopkeepers, Timburr\'s stand, the Center\'s Chansey and every Pokémon in a ? room show their animated sprites again, a drag in the Center, Mart or ? rooms no longer slides their signs off, Timburr\'s catalogue no longer stutters the first time it opens, and shutting the Trainer Card with its wardrobe open no longer leaks memory, a 3D room no longer comes back blank after the phone was locked, and opening the Pokédex as your partner sets out, or steps into a fitting room, no longer leaves you unable to walk, tapping the Mart\'s leftmost card no longer picks Britt, and a Gym Leader\'s badge message now closes on any tap.'],
   ['mall', 'The Trainer Tailor opens in the Poké Mall: Kecleon sells every outfit, and its fitting rooms let you try each one on first. Switch outfits on your Trainer Card.'],
-  ['look', 'Your trainer and the townspeople are drawn a little smaller and houses are framed wider, so you no longer tower over rooms; your buddy trails a touch further back.'],
+  ['look', 'Your trainer and the townspeople are drawn a little smaller and houses are framed wider, so you no longer tower over rooms; your buddy trails a touch further back, and you lead it up the crossroads too.'],
   ['hub', 'The Clearing\'s neighbours keep to their own spots and short set paths, never bumping into anyone, and the legendaries overhead fly side-on.'],
   ['base', 'In your own Secret Base your buddy roams free, follows you from room to room, and shows a little heart or smile when you pet it.'],
   ['runs', 'A normal run, a Safari run and a Sky Pillar climb each keep their own save, so you can switch between them without abandoning one.'],
   ['battle', 'A wild Pokémon you\'ve beaten before shows a Poké Ball under its HP bar, gold with a star once its research is complete.'],
   ['mall', 'Finish a game in the Game Corner or Arcade and its machine is offered to take home to your Secret Base, right there.'],
   ['dex', 'The Trainer Card\'s ball, trainer, shiny, aura, crown and pinned badge are six tidy icon slots in your partner\'s panel, ringed when on and padlocked until earned.'],
+  ['battle', 'After a gym fight, won or lost, the Gym Leader steps up onto their Pokémon\'s spot in the arena to talk, like the games.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

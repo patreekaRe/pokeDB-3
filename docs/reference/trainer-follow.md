@@ -2,8 +2,10 @@
 
 The user's ask: "choose a trainer so our buddy can follow us". You walk as a trainer and your buddy walks a step behind,
 **everywhere the buddy walks**: the Clearing (`js/hub-3d.js`), the Secret Base (`js/base-3d.js`), the Poké Mall
-(`js/mall-3d.js`), the towns and every ? room and gym (`js/event-3d.js`), the Pokémon Center (`js/center-3d.js`) and the
-Poké Mart (`js/mart-3d.js`). No look worn (`save.look` null, every save until it picks one): the buddy walks alone, as
+(`js/mall-3d.js`), the towns and every ? room and gym (`js/event-3d.js`), the Pokémon Center (`js/center-3d.js`), the
+Poké Mart (`js/mart-3d.js`) and the crossroads (`js/crossroads-3d.js`, 2026-10-29: the user found it missing there; its
+boards grow with distance, so `makeLead({ gap })` stretches the step by that scale, and you start a step up the path so
+your Pokémon stands where it did alone). No look worn (`save.look` null, every save until it picks one): the buddy walks alone, as
 before.
 
 **The looks** (`js/data/looks.js`): Gen 4 walking sheets from Vanilla Sunshine's OW pack in `assets/overworld/` (credit

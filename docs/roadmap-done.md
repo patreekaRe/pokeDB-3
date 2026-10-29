@@ -3921,3 +3921,8 @@ bar, which never cuts a walk.
 The foe's caught / researched ball moved from beside its name to the row under its HP bar (`#enemy-dex` first in
 `.nameplate-foot`). Every Pokémon stood in a ? room plays its battle GIF again instead of its overworld sheet
 (`figure()` passes `gif: true`; town homes keep the sheet; `docs/reference/walk-in-rooms.md`).
+
+### Gym Leaders stand on their Pokémon's spot after the fight (2026-10-29, cloud; on `main`)
+The user's ask, from a reel of another Pokémon roguelike: the leader's after-fight talk (`beaten` as their Pokémon falls,
+`won` after beating you, its Pokémon recalled first) stands them on the enemy's spot in the arena, lightly dimmed, instead
+of sliding in mid-screen (`stand` / `standOn()` in `js/gym.js`; `docs/reference/gym-leaders.md`).
