@@ -3909,3 +3909,8 @@ tag on unowned cabinets.
 pills under the partner are one look now, square icon slots in the partner's panel (ringed on, padlocked until earned);
 the same day the pinned badge moved in as a sixth slot, so it's always an even 2x3.
 Notes: `docs/reference/badges-and-trainer-card.md`. The user checks the look on their phone.
+
+**Stuck in the Clearing after the Pokédex** (2026-10-29, cloud, on `main`): opening the corner Pokédex (or Help) while
+your partner walked out to a new run cut its path short but left `outbound` set, so every tap was ignored for good
+(reproduced headless). `fromCorner()` in `js/hub-3d.js` now waits out a walk out, lets the walk back from a run carry
+on like the first walk-in, and `openHub()` clears a half-done walk-in.

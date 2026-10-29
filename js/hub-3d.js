@@ -4290,10 +4290,11 @@ const openDex = () => fromCorner(acts.onPokedex, dexBtn);
 
 /** How to play grows out of its own round key beside Home (the user's call, 2026-10-08), and shuts back into it. */
 function fromCorner(open, key) {
-  if (root.querySelector('.room-home.out') || entering || held) return;
+  // already setting out: its path cut short, `outbound` was never cleared and every tap was ignored (the user, 2026-10-29)
+  if (root.querySelector('.room-home.out') || entering || held || outbound) return;
   hideCard();
-  // the walk in carries on once it shuts: cut short, `arriving` never cleared and every tap was ignored
-  if (!arriving) { walker.path = []; aim = null; }
+  // the walks in (and back from a run) carry on once it shuts: cut short, their flag never cleared and every tap was ignored
+  if (!arriving && !returning) { walker.path = []; aim = null; }
   playSound('confirm');
   open(key, () => { key.classList.remove('out'); dexNews(); });
   key.classList.add('out');
@@ -4889,7 +4890,7 @@ async function openHub(titleScreen, actions, hold) {
     walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y); camX = walker.x; camZ = walker.z;
   }
   walker.path = []; aim = null; here = placeAt(walker.tile);
-  outbound = null; returning = false; profGreeted = false;
+  outbound = null; returning = arriving = false; profGreeted = false;
   if (inside) leftPlace();
   else if (!inGrid(walker.tile) && !hold) walkBackIn();
   else if (!inGrid(walker.tile)) { walker.tile = { x: GATE_AT.tx, y: GATE_AT.ty + 4 }; walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y); }
