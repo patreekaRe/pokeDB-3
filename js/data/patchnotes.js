@@ -56,7 +56,7 @@ export const NEXT = [
   ['hub', 'The Clearing\'s neighbours keep to their own spots and short set paths, never bumping into anyone, and the legendaries overhead fly side-on.'],
   ['base', 'In your own Secret Base your buddy roams free, follows you from room to room, and shows a little heart or smile when you pet it.'],
   ['runs', 'A normal run, a Safari run and a Sky Pillar climb each keep their own save, so you can switch between them without abandoning one.'],
-  ['battle', 'A wild Pokémon you\'ve beaten before shows a Poké Ball by its name, gold with a star once its research is complete.'],
+  ['battle', 'A wild Pokémon you\'ve beaten before shows a Poké Ball under its HP bar, gold with a star once its research is complete.'],
   ['mall', 'Finish a game in the Game Corner or Arcade and its machine is offered to take home to your Secret Base, right there.'],
   ['dex', 'The Trainer Card\'s ball, trainer, shiny, aura, crown and pinned badge are six tidy icon slots in your partner\'s panel, ringed when on and padlocked until earned.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
