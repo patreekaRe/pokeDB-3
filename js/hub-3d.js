@@ -23,8 +23,9 @@ import { makeBuddies } from './hub-buddies.js';
 import { cloudConfigured, cloudRemembered } from './cloud.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, NPC_PX as TRAINER_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours } from './hd2d.js';
 import { leadFor } from './follow.js';
+import { same, nearAny } from './ground-beats.js';
 import { gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -56,6 +57,7 @@ import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { asking, favourOf } from './data/favours.js';
 import { workshopOf, heartsOf, boothBeckons, ownedSkins, SKIN_BY_ID } from './data/workshop.js';
 import { toldHeld, tellHeld } from './held-tips.js';
+import { wornLook } from './data/looks.js';
 import { unclaimed, friendMail, houseMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -190,6 +192,9 @@ let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', f
 let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
 let crowd = null, folk = null;   // the Clearing's townspeople (clearingCrowd())
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
+let stopRuns = {}, barRun = null;   // the run saved at each Pokéstop (makePlaces()), and the one the bar's LCD shows
+// which kind of saved run each place by a Pokéstop belongs to (storage.js's runSlot())
+const STOP_SLOT = { trail: 'main', safari: 'safari', 'safari-board': 'safari', pillar: 'tower', 'pillar-tower': 'tower', 'pillar-board': 'tower' };
 let safariFx = null;
 let plazaFx = null;   // the Trainer Plaza's board: its lanterns, its Poké Ball and its cork of Polaroids (js/hub-plaza.js)   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
 let glowMats = [], lamps = [], bugs = null, flyer = null, flownMat = null, flyShade = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, gardenArch = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base', 'backyard' or 'mall'
@@ -2228,17 +2233,19 @@ export function cameHome(from, town) {
     shard in, the stone lights. */
 let homeNewsBusy = false;
 async function homeNews() {
-  if (homeNewsBusy || held || !townsOpen()) return;
-  const save = getSave(), st = townState(save, 'clearing');
-  const greet = !st.quest && !st.called && nietosHome(friendWins(save, 'nietos')) && !clearingLit(save);
-  const mend = !!st.quest?.lit && !st.quest.welcomed;
-  const balls = !greet && !mend && workshopOpen(save) && (workshopOf(save).met || satchelFlag()) && !toldHeld('ball-look');
-  if (!greet && !mend && !balls) return;
+  if (homeNewsBusy || held) return;
+  const save = getSave(), towns = townsOpen(), st = townState(save, 'clearing');
+  const greet = towns && !st.quest && !st.called && nietosHome(friendWins(save, 'nietos')) && !clearingLit(save);
+  const mend = towns && !!st.quest?.lit && !st.quest.welcomed;
+  const balls = towns && !greet && !mend && workshopOpen(save) && (workshopOf(save).met || satchelFlag()) && !toldHeld('ball-look');
+  const tailor = !greet && !mend && !balls && !toldHeld('tailor');
+  if (!greet && !mend && !balls && !tailor) return;
   homeNewsBusy = true;
   try {
     await new Promise(r => setTimeout(r, calm ? 200 : 900));
     if (!running || held) return;
     if (balls) return await ballNews();
+    if (tailor) return await tailorNews();
     playSound('gate-hum');
     if (greet) {   // only a pointer to their notice (the user's ask, 2026-10-14): the board starts the questline
       const { gymTalk } = await import('./gym.js');
@@ -2287,6 +2294,19 @@ async function ballNews() {
   await gymTalk({ id: 'kurt', name: 'KURT', talk: 'assets/trainers/kurt.png' }, lines, { lit: true, title: 'APRICORN SMITH ' });
   const p = running && !held && !entering && places.find(q => q.id === 'workshop');
   if (p) { arriving = false; goTo(p); }
+}
+
+/** The professor slides in, once a save (2026-10-28, the user's ask: "an NPC tells them"), the first time in the
+    Clearing after the trainer is picked (or put off): more outfits are sold at the Trainer Tailor in the Poké Mall. */
+async function tailorNews() {
+  tellHeld('tailor');
+  const who = profNow(), worn = !!wornLook(getSave());
+  const lines = who.night
+    ? [`Oh, hi! ${worn ? 'Love the outfit, by the way!' : 'Your partner looks happy out here.'}`, 'Did you hear? Kecleon opened the Trainer Tailor in the Poké Mall. Step into a fitting room and you can try any outfit on!', 'Buy one and you walk out wearing it. Switch back any time on your Trainer Card.']
+    : [`Ah, there you are! ${worn ? 'A fine trainer you make, with your partner right behind you.' : 'Your partner seems to be enjoying the walk.'}`, 'Now, a new shop has opened in the Poké Mall: the Trainer Tailor, run by Kecleon. Every outfit there is for sale, and you can try them on first!', 'Buy one and you walk out wearing it. You can switch outfits any time on your Trainer Card.'];
+  profGreeted = true;
+  const { gymTalk } = await import('./gym.js');
+  await gymTalk({ id: who.id, name: who.short, sprite: `assets/trainers/${who.id}.png` }, lines, { lit: true, title: 'PROFESSOR ' });
 }
 
 /** Where the quest board stands: `locked` till Law, Britt or the Nietos are beaten, `new` with their notice to read, `on` (`ready` to
@@ -2427,11 +2447,11 @@ const gateOpen = () => gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo)
 /** Every place: where it stands (`tiles` it blocks), its doorstep (`step`), whether it's open, what its card says and
     what it opens, all from the title's own actions (`acts`) and today's save. */
 function makePlaces() {
-  const save = getSave(), saved = acts.savedRun();
+  const save = getSave();
   // a saved run is continued where it was started (the user's call, 2026-10-08): a Safari run at the Safari gate, a
-  // climb at the Sky Pillar, any other at the Pokéstop
-  const kind = !saved ? null : saved.saved.tower ? 'pillar' : saved.safari ? 'safari' : 'trail';
-  const runAt = (id) => (kind === id ? saved : null);
+  // climb at the Sky Pillar, any other at the Pokéstop; each kind keeps its own since 2026-10-29, so all three can wait
+  stopRuns = Object.fromEntries(['main', 'safari', 'tower'].map(slot => [slot, acts.savedRun(slot)]));
+  const runAt = (id) => stopRuns[STOP_SLOT[id]];
   const waits = (r) => `${r.name} waits in the ${r.place}${r.floor ? `, floor ${r.floor}` : ''}. HP ${r.hp}/${r.maxHp}.`;
   const run = runAt('trail');
   const list = [
@@ -2439,7 +2459,7 @@ function makePlaces() {
       id: 'trail', name: run ? 'Continue / New game' : 'New game', step: { x: STOP_AT.tx - 1, y: STOP_AT.ty }, tiles: [[STOP_AT.tx, STOP_AT.ty]], tag: [STOP_AT.tx, 2.6, STOP_AT.ty],
       open: true,
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
-      buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
+      buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', () => acts.onAbandon(false, 'main')]] : [['New game', acts.onNewGame]],
       // right of the avenue before the gate, the Berry Booth across the road from it
       build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - ROADSIDE, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
     },
@@ -2505,15 +2525,15 @@ function makePlaces() {
     },
   ];
   if (cloudConfigured()) list.push({
-    id: 'plaza', name: 'Trainer Plaza', step: PLAZA_AT.step, tiles: PLAZA_AT.tiles, tag: [PLAZA_AT.at[0], 3.8, PLAZA_AT.at[1]], open: true,
-    line: cloudRemembered() ? 'The Trainer Plaza\'s board: Polaroids of trainers who\'ve played lately. Add one from your Pokédex\'s Trainers app.'
+    id: 'plaza', name: 'Trainer Plaza', step: PLAZA_AT.step, tiles: PLAZA_AT.tiles, tag: [PLAZA_AT.at[0], 2.9, PLAZA_AT.at[1]], open: true,
+    line: cloudRemembered() ? 'The Trainer Plaza\'s board: Polaroids of trainers who\'ve played lately. Look to add one.'
       : 'The Trainer Plaza\'s board, where trainers pin themselves up. Sign in at the PC to join them.',
-    buttons: [['Look', () => acts.onApp('trainers', 'plaza')]],
+    buttons: [['Look', () => import('./plaza-view.js').then(m => m.openPlazaView({ onCard: (uid) => acts.onApp('trainers', uid ?? 'plaza') }))]],
     build: (g) => {
       plazaFx = plazaBoard(THREE, { glows: glowMats, merge: mergeStill });
       plazaFx.group.position.set(tileX(PLAZA_AT.at[0]), 0, tileZ(PLAZA_AT.at[1]));
       plazaFx.group.rotation.y = facePlaza(PLAZA_AT.at);
-      plazaFx.group.scale.setScalar(1.1);   // between the avenue's edge and the PC
+      plazaFx.group.scale.setScalar(1.05);   // a low kiosk, so it can stand full size without hiding the PC
       g.add(plazaFx.group);
       const fx = plazaFx;
       plazaTop(6).then(list => { if (plazaFx === fx) fx.paint(list); });
@@ -2741,7 +2761,6 @@ function makePlaces() {
 
 /** Where a visiting Gym Leader stands: on the plaza, left of the Waystone. */
 const GUEST_AT = { x: START.x - 2, y: START.y };
-const TRAINER_PX = 1 / 34;   // a trainer's sprite pixel, as in the walk-in rooms (js/event-3d.js)
 async function standGuest(g, l) {
   const m = await monBoard({ src: spriteOf(l), name: l.name, cry: '', px: TRAINER_PX }, false);
   if (!g.parent) { dispose(m.group); return; }   // the places were built again while it loaded
@@ -2755,9 +2774,9 @@ async function standGuest(g, l) {
 
 const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
-  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, refresh: 'And remember: tap the red refresh button up in the corner often! The game gets updates all the time.',
+  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, dx: 0.4, refresh: 'And remember: tap the red refresh button up in the corner often! The game gets updates all the time.',
     hello: 'Ah, there you are! Good to see you back. Let me share something from my research...' },
-  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.35, refresh: 'Oh, and tap the red refresh button up in the corner often, okay? New updates land all the time!',
+  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.55, refresh: 'Oh, and tap the red refresh button up in the corner often, okay? New updates land all the time!',
     hello: 'Oh, hi! Up late too? Perfect timing, I just jotted this one down in my notes...' },
 ];
 const HINTS = [
@@ -2891,7 +2910,8 @@ function buildPlaces() {
   tree?.open.dispose();
   sign?.fixed?.dispose();
   glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; house = null; kiosk = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; boothMark = null; holo = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; nietosFx = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
-  places = makePlaces();  saved = acts.savedRun();
+  places = makePlaces();
+  saved = Object.values(stopRuns).filter(Boolean).sort((a, b) => (b.saved.savedAt || 0) - (a.saved.savedAt || 0))[0] ?? null;   // the latest
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
   for (const k of [...yardTiles, ...dressTiles, ...FENCES]) blocked.add(k);
@@ -3203,7 +3223,8 @@ function dressSeason() {
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
       // never on or beside a doorstep (the user's ask, 2026-10-13: a ghost stood in front of the Poké Mall's doors)
       byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
-      spawns: [{ x: 11, y: 8 }, { x: 17, y: 12 }, { x: 12, y: 16 }, { x: 26, y: 13 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) } });
+      spawns: [{ x: 11, y: 8 }, { x: 17, y: 12 }, { x: 12, y: 16 }, { x: 26, y: 13 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) },
+      claimed: groundClaimed, busy: groundBusy });
   }
   if (SEASON === 'winter') {
     const b = board(snowmanArt(), tileX(12) + 0.3, tileZ(16) - 0.2, { s: 1.2 });
@@ -3214,23 +3235,34 @@ function dressSeason() {
 }
 
 /** The Clearing's townspeople (2026-10-28, the user's ask: people in the Clearing, people only), on the towns' crowd code
-    (js/corner-crowd.js): four at a time of the day's six (js/data/clearing-folk.js), in and out through the north gate,
-    standing about the lawns, the plaza and the pond (a spot taken by a place, its doorstep or the season's decorations
-    left out), one or two walking at once. A tap on one: its line over its head. */
+    (js/corner-crowd.js): four at a time of the day's six (js/data/clearing-folk.js), each on a post of its own as in the
+    Pokémon games (2026-10-28, the user's ask: no more coming and going, fewer walking, nobody overlapping): two pace a
+    set beat out and back (FOLK_BEATS), the rest stand at a spot turning to look about (FOLK_STANDS), every post a tile
+    clear of the next, of a doorstep, the season's decorations, the ghosts' and buddies' spots and the avenue. A tap on
+    one: its line over its head. */
 const FOLK_STANDS = [[10, 12], [20, 13], [9, 7], [21, 7], [25, 10], [6, 13], [11, 19], [19, 20], [24, 19], [13, 4], [19, 6], [26, 15], [13, 21], [17, 21]];
+const FOLK_BEATS = [[[6, 13], [10, 13]], [[21, 7], [25, 7]], [[19, 20], [24, 20]], [[9, 7], [9, 11]], [[11, 19], [11, 22]], [[26, 11], [26, 15]]];
+let folkPosts = null;   // { posts, tiles }: where the folk stand and pace
 function clearingCrowd() {
   folk = new THREE.Group();
   scene.add(folk);
-  const byStep = (x, y) => places.some(p => Math.abs(p.step.x - x) <= 1 && Math.abs(p.step.y - y) <= 1);
-  const stands = FOLK_STANDS.filter(([x, y]) => free({ x, y }) && !byStep(x, y) && !yardTiles.has(key(x, y)));
+  const byStep = (t) => places.some(p => Math.abs(p.step.x - t.x) <= 1 && Math.abs(p.step.y - t.y) <= 1);
+  const tiles = [], posts = [];
+  const ok = (t) => free(t) && !byStep(t) && !yardTiles.has(key(t.x, t.y)) && !groundClaimed(t) && !nearAny(t, tiles);
+  for (const [[ax, ay], [bx, by]] of FOLK_BEATS) {
+    const a = { x: ax, y: ay }, path = [a, ...route(a, { x: bx, y: by })];
+    if (path.length < 3 || !same(path.at(-1), { x: bx, y: by }) || !path.every(ok)) continue;
+    tiles.push(...path); posts.push({ path });
+  }
+  for (const [x, y] of FOLK_STANDS) if (ok({ x, y })) { tiles.push({ x, y }); posts.push({ at: { x, y } }); }
+  folkPosts = { posts, tiles };
   return makeCrowd({
     THREE, group: folk, monBoard, drawMon, dispose, PITCH, spots: [], cols: COLS, rows: ROWS,
     door: { x: GATE_AT.tx, y: 0 }, enter: { x: GATE_AT.tx, y: GATE_AT.ty - 0.97 },
     route, free, tileX, tileZ, camera, view, stage: root, drawn: (v) => { v.y -= BEND.k.value * (v.z - BEND.z.value) ** 2; return v; },
     partner: () => walker, keeper: () => null, calm: () => calm,
     cast: CLEARING_FOLK, shared: CLEARING_SHARED, chats: CLEARING_CHATS, seed: 'clearing', size: 4, castSize: 6, castHours: 6,
-    stations: stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
-    wants: ['stand', 'stand', 'stand', null], swap: [40000, 80000], walkers: 2,
+    posts, walkers: 2, busy: groundBusy,
   });
 }
 
@@ -3286,8 +3318,9 @@ const inGrid = (c) => (c.x >= -WEST && c.y >= 0 && c.x < COLS && c.y < ROWS) || 
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
-/** Breadth-first over free tiles; if the tapped tile is taken, to the reachable one nearest it. */
-function route(from, to) {
+/** Breadth-first over free tiles; if the tapped tile is taken, to the reachable one nearest it. `avoid(t)`: tiles to go
+    round too (someone standing there). */
+function route(from, to, avoid = null) {
   const prev = new Map([[key(from.x, from.y), null]]), queue = [from];
   let best = from, bestD = Infinity;
   while (queue.length) {
@@ -3297,7 +3330,7 @@ function route(from, to) {
     if (!d) break;
     for (const [dx, dy] of STEPS) {
       const n = { x: c.x + dx, y: c.y + dy }, k = key(n.x, n.y);
-      if (!free(n) || prev.has(k)) continue;
+      if (!free(n) || prev.has(k) || avoid?.(n)) continue;
       prev.set(k, c); queue.push(n);
     }
   }
@@ -3306,9 +3339,32 @@ function route(from, to) {
   return path;
 }
 
+/* Who's on the Clearing's ground (2026-10-28, the user's ask: no two sprites ever on one tile). The folk, the ghosts and
+   friends' buddies each wait at their tile for the next to be clear (js/ground-beats.js): of each other, you, the tile
+   you're stepping to and your buddy a step behind. You walk round them. */
+const tileOf = (x, z) => ({ x: Math.floor(x + X0), y: Math.floor(z + Z0) });
+const npcAt = (t, who = null) => !!(crowd?.holds(t, who) || spooks?.holds(t, who) || buddies?.holds(t, who));
+const yoursAt = (t) => same(walker.tile, t) || same(walker.path[0], t) || (!!mon && same(tileOf(mon.group.position.x, mon.group.position.z), t));
+const groundBusy = (t, who) => yoursAt(t) || npcAt(t, who);
+// the north avenue you walk in and out on, kept clear of anyone's spot or beat (they stand still while you do)
+const onAvenue = (t) => Math.abs(t.x - GATE_AT.tx) <= 1 && t.y <= START.y - 3;
+/** Whether `t` is within a tile of a ghost's or a buddy's spot or beat, or on the avenue, for another to keep off. */
+const groundClaimed = (t) => onAvenue(t) || [-1, 0, 1].some(dx => [-1, 0, 1].some(dy => {
+  const n = { x: t.x + dx, y: t.y + dy };
+  return !!(spooks?.claims(n) || buddies?.claims(n) || folkPosts?.tiles.some(o => same(o, n)));
+}));
+
 function walk(dt) {
-  const w = walker, step = w.path[0];
+  const w = walker;
+  let step = w.path[0];
   if (!step) { w.hop = 0; return false; }
+  // about to step where someone stands: round them to the same end, or stop short
+  if (!arriving && !outbound && !returning && same(w.tile, tileOf(w.x, w.z)) && Math.hypot(w.x - tileX(w.tile.x), w.z - tileZ(w.tile.y)) < 0.01 && npcAt(step)) {
+    const end = w.path.at(-1);
+    w.path = npcAt(end) ? [] : route(w.tile, end, npcAt);
+    if (!w.path.length || !same(w.path.at(-1), end)) { w.path = []; w.hop = 0; return true; }
+    step = w.path[0];
+  }
   const tx = tileX(step.x), tz = tileZ(step.y), dx = tx - w.x, dz = tz - w.z;
   const d = Math.hypot(dx, dz), move = dt / 1000 * (arriving ? 5.2 : 4);
   if (Math.abs(dz) > Math.abs(dx)) w.facing = dz < 0 && mon.sheets.back ? 'back' : 'front';
@@ -3328,7 +3384,7 @@ function goTo(p, enter, i = null) {
   if (p.id === 'pc') import('./pc.js').then(m => m.warmPC(), () => {});
   if (p.id === 'kiosk') import('./house-kiosk.js').catch(() => {});
   if (walker.path.length === 0 && placeAt(walker.tile) === p) return enter ? open(p, i) : showCard(p);
-  walker.path = route(walker.tile, p.step);
+  walker.path = route(walker.tile, p.step, npcAt);
   aim = enter ? { p, i } : null;
   hideCard();
   if (!walker.path.length) open(p, i);
@@ -3676,18 +3732,21 @@ function rebuildLot() {
 
 const KIOSK_CREW = 'assets/pokemon/timburr-front.gif', KIOSK_CRATE = 0.22;
 
-/** The builders' stand, and Timburr behind its counter, hopping now and then to be noticed. */
+/** The builders' stand, and Timburr behind its counter as its battle GIF, hopping now and then to be noticed. */
 function buildKiosk(g) {
   const x = tileX(KIOSK_AT.tx), z = tileZ(KIOSK_AT.ty) + 0.05;
   g.add(makeKiosk(THREE, { x, z, sale: !baseOwned(), fine, texOf, merge: mergeStill }).group);
-  const k = kiosk = { mon: null, next: 0, hop: 0, tick(now) {
-    if (!k.mon || calm) return;
+  const k = kiosk = { mon: null, next: 0, hop: 0, last: 0, tick(now) {
+    if (!k.mon) return;
+    drawMon(k.mon, { facing: 'front' }, k.last ? Math.min(100, now - k.last) : 0);
+    k.last = now;
+    if (calm) return;
     if (!k.next) k.next = now + 4000;
     if (now > k.next) { k.hop = now; k.next = now + 6000 + Math.random() * 5000; }
     const t = (now - k.hop) / 450;
     k.mon.board.position.y = t < 1 ? Math.sin(t * Math.PI) * 0.18 : 0;
   } };
-  monBoard({ src: KIOSK_CREW, name: 'Timburr', cry: 'timburr' }, false).then(m => {
+  monBoard({ src: KIOSK_CREW, name: 'Timburr', cry: 'timburr', gif: true }, false).then(m => {
     if (!g.parent || kiosk !== k) { dispose(m.group); return; }
     m.board.rotation.x = -PITCH;
     m.group.scale.setScalar(0.85);
@@ -4021,6 +4080,12 @@ function liveLeaving(now) {
 
 function showCard(p) {
   here = p;
+  // the catalogue's first open swung the view to the lot and froze on the way: shaders for what comes into view there,
+  // and every house card's still, all made at once (the user, 2026-10-28). Made while this card is up instead.
+  if (p.id === 'kiosk') {
+    warmShaders(renderer, scene, camera);
+    import('./house-kiosk.js').then(m => m.warmKiosk(houseStill), () => {});
+  }
   if (p.waystone) return showWaystone(p);
   if (p.id === 'prof') return profTalk();
   if (p.guest?.welcome) welcomeHome(p.guest.town);
@@ -4193,19 +4258,22 @@ function fitMon(img) {
 function placeBar() {
   const coins = getSave().coins ?? 0;
   if (coins !== barCoins) { barCoins = coins; bar.querySelector('.hbar-coins').textContent = coins.toLocaleString(); }
-  const p = nearest(), k = `${p?.id ?? ''}|${saved ? `${saved.hp}/${saved.maxHp}|${saved.sprite}` : ''}`;
+  // by a Pokéstop, the run saved there; anywhere else the latest saved
+  const p = nearest(), run = stopRuns[STOP_SLOT[p?.id]] ?? saved;
+  const k = `${p?.id ?? ''}|${run ? `${run.slot}|${run.hp}/${run.maxHp}|${run.sprite}` : ''}`;
   if (k === barKey) return;
   barKey = k;
-  bar.classList.toggle('no-run', !saved);
-  bar.querySelector('.hbar-fold').inert = !saved;
-  if (saved) {
-    setHpBar('hub', saved.hp, saved.maxHp);
+  barRun = run;
+  bar.classList.toggle('no-run', !run);
+  bar.querySelector('.hbar-fold').inert = !run;
+  if (run) {
+    setHpBar('hub', run.hp, run.maxHp);
     const mon = bar.querySelector('.hbar-sprite');
-    if (mon.getAttribute('src') !== saved.sprite) mon.src = saved.sprite;
-    mon.dataset.stage = saved.saved.stage;
-    bar.querySelector('.hbar-name').textContent = saved.name;
-    bar.querySelector('.hbar-where').textContent = saved.place;
-    bar.querySelector('.hbar-floor').textContent = saved.floor ? `F${saved.floor}` : '';
+    if (mon.getAttribute('src') !== run.sprite) mon.src = run.sprite;
+    mon.dataset.stage = run.saved.stage;
+    bar.querySelector('.hbar-name').textContent = run.name;
+    bar.querySelector('.hbar-where').textContent = run.place;
+    bar.querySelector('.hbar-floor').textContent = run.floor ? `F${run.floor}` : '';
   }
   const sign = bar.querySelector('.hbar-sign b'), name = p?.name ?? 'The Clearing';
   if (sign.textContent === name) return;
@@ -4286,7 +4354,7 @@ function groundTile(rays) {
 /** Off along a route to `to`, the ring marking where it ends; a step already under way is finished first. */
 function walkTo(to) {
   const next = walker.path[0];
-  walker.path = next ? [next, ...route(next, to)] : route(walker.tile, to);
+  walker.path = next ? [next, ...route(next, to, npcAt)] : route(walker.tile, to, npcAt);
   aim = null;
   hideCard();
   const end = walker.path.at(-1) ?? walker.tile;
@@ -4507,6 +4575,8 @@ function liveFlyer(now, dt) {
   f.m.group.position.y += Math.sin(k * Math.PI) * 0.4 + Math.sin(now / 260) * 0.06;
   f.m.group.quaternion.copy(camera.quaternion);
   f.m.board.scale.set(f.dir > 0 ? -FLY_SCALE : FLY_SCALE, FLY_SCALE, 1);
+  // where it is, so an overworld sheet flies side-on (its left or right row), not facing the camera (the user's ask, 2026-10-28)
+  f.w.x = f.m.group.position.x; f.w.z = f.m.group.position.z;
   drawMon(f.m, f.w, dt);
   // the shadow runs a little ahead, over the ground near you
   const sh = Math.min(1, k * 1.2 + 0.05), up = time !== 'night';
@@ -4721,7 +4791,7 @@ async function build() {
   new ResizeObserver(() => { root.style.setProperty('--hub-bar-h', `${bar.offsetHeight}px`); if (camera) resize(); }).observe(bar);
   bar.querySelector('.hbar-sprite').addEventListener('load', (e) => fitMon(e.target));
   bar.querySelector('.hbar-flee').append(smoothIcon('run'));
-  bar.querySelector('.hbar-flee').addEventListener('click', () => { playSound('confirm'); hideCard(); acts.onAbandon(); });
+  bar.querySelector('.hbar-flee').addEventListener('click', () => { playSound('confirm'); hideCard(); acts.onAbandon(false, barRun?.slot); });
   dexBtn = root.querySelector('.hub-dex');
   dexBtn.append(roundKey('home'));
   dexBtn.addEventListener('click', openDex);
@@ -4853,7 +4923,7 @@ async function friendBuddies() {
   buddies = makeBuddies({ THREE, scene, camera, root, monBoard, drawMon, dispose, route, free, tileX, tileZ, PITCH,
     byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
     centre: START, reach: PLAZA_R + 0.6, spawns: [{ x: 13, y: 11 }, { x: 17, y: 13 }, { x: 13, y: 14 }, { x: 17, y: 10 }],
-    others: (c) => (c.x === walker.tile?.x && c.y === walker.tile?.y), onCard: (uid) => acts.onApp?.('trainers', uid) }, list);
+    others: (c) => (c.x === walker.tile?.x && c.y === walker.tile?.y), claimed: groundClaimed, busy: groundBusy, onCard: (uid) => acts.onApp?.('trainers', uid) }, list);
   buddies.key = key;
 }
 

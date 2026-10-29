@@ -1211,38 +1211,41 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
-**Your trainer looks big indoors** (the user's question, 2026-10-28, with phone shots of the Secret Base, the Clearing
-and Kurt's Workshop). The user picked an overall shrink over indoor only (trainer and townspeople alike, Pokémon
-untouched). The githack link didn't load for them, so the live site has `?walker=N` (`WALKER_PX` in `js/hd2d.js`, 1.25x
-a Pokémon's pixels by default) and they're trying `?walker=1.06` (about 15% smaller) on their own save. Once they pick
-a size, make it the default and add a `look` patch note. (Branch `trainer-shrink` holds the plain 1.06 change; delete it.)
+**Houses show a lot of empty wall** (an idea, 2026-10-28): with houses framed 8 tiles across, Kurt's Workshop sits low
+with a third of the screen plank wall above it. A slightly lower camera tilt in houses would fill the screen without
+changing any sizes. The user wasn't sure ("I dunno"); not asked for yet.
 
-**A trainer tailor shop: the user picked option 1** (2026-10-28): a fourth front in the Poké Mall hall, the Trainer
-Tailor, kept by Kecleon (`assets/pokemon/kecleon-front.gif`, `assets/overworld/kecleon.png` are in). Ready to build:
+**▶ PLAYTEST ON THE LIVE SITE. The Clearing on set paths: done 2026-10-28, on `main`** (archive). In the Clearing
+(`?season=halloween&graves=4` for the ghosts and four buddies too): two neighbours pace short set lines, the rest stand
+and look about, nobody walks through anyone, and you walk round them; a legendary overhead flies side-on, no ghosts
+among the flyers. **Offered, not picked yet**: the same set paths for the towns', mall's and Game Corner's crowds (they
+still come and go).
 
-> ▶ Run in: CLOUD · effort: high. Read `docs/reference/hub-base-mall.md` (the mall, and the Safari Outfitter's section as
-> the model: `js/mall-outfitter.js` paints its front, sign and awning and builds its lodge) and
-> `docs/reference/trainer-follow.md` (the looks, `LOOK_PRICE`, `lookPicker()`). Build the Trainer Tailor as the mall's
-> fourth front: respace the hall's back wall from three fronts to four (`FRONTS` in `js/mall-3d.js`, `dressFronts()` in
-> `js/mall-hall.js`), paint its front and sign in the others' style, and build its inside in `js/mall-tailor.js`: clothes
-> racks, a mirror, Kecleon at the counter, and a mannequin per look (its walking sheet's front frame on a stand), owned
-> ones marked. Walk up to a mannequin to try it on (you and your buddy walk out wearing it); one you don't own asks to buy
-> it at `LOOK_PRICE` in the shops' buy window. Keep the Trainer Card's picker for switching (and buying, unless the user
-> says shop only). A `?mall=tailor` flag, a `NEWS` line if the PC should tell of it, a patch note, the budget check on the
-> mall places. No names on the mannequins (the user's call). **Buying is the tailor's only** (the user's call,
-> 2026-10-28): the Trainer Card's window then switches between looks you own, the rest shown greyed with "At the Trainer
-> Tailor", and nothing is bought there (till the shop ships, the card goes on selling, as now). **Tell the player** (the
-> user's ask: "an NPC tells them via slide-in dialogue or something"): once, in the Clearing after the trainer is first
-> picked (or Later), Professor Oak (Sonia at night) slides in by `gymTalk()` as the leaders and Kurt do, saying more
-> looks are sold at the Trainer Tailor in the Poké Mall (a saved flag keeps it to once), plus a PC `NEWS` line.
-> **The trainer window** (the user's design, 2026-10-28: "a combination of the Timburr house select and the Game Corner
-> prize window", the sprites walking in place as you preview them): Timburr's catalogue card (`openKiosk()` in
-> `js/house-kiosk.js`, `.hk-*`: cream, gold rim, the keeper's name tag askew, the keeper's line, coins and a round ✕, a
-> sideways row of cards, the gold key) crossed with Meowth's prize counter (`js/prizes.js` on `js/showcase.js`: one item
-> big on a screen, ◀ / ▶): one trainer big in a spotlit box walking in place (its four steps, turning through its four
-> ways), ◀ / ▶ to step through them, the row of small trainer cards under it (OWNED / 🪙500) to jump to one, Wear / Buy
-> on the gold key, Kecleon's tag and a line about the one shown. The same window replaces the Trainer Card's
-> `lookPicker()` (no keeper there, Wear only) and the setup's WHO ARE YOU? can stay a row of four.
+**Pet emotes beyond the Secret Base** (an idea, 2026-10-28): the Base's pet emote (`emote()` in `js/base-3d.js`) could
+show on a tap of your buddy in the Clearing, towns and rooms too. Not asked for yet.
+
+**The Trainer Tailor** was built 2026-10-28 (cloud, on `main`; archive), its mannequins swapped the same day for a row
+of fitting rooms (the user's pick of four ideas; the others: shoppers wearing the outfits, a photo wall, Kecleon's
+catwalk). The mall's shopkeepers stand as their battle GIFs (`gif: true`, the user's call: "they're merchants"). Timburr at its stand too (2026-10-28, branch `claude/timbur-gif-first-load-freeze-o51ml4`, on `main` too), now animated, and the catalogue's first open no longer freezes before the camera pans: the Clearing's shaders and every house card's still are made while Timburr's card is up (`warmKiosk()`), the stills a frame apart. **The user checks**: the stand on a phone, first open after a fresh load.
+Then, the user's design: a booth walked into changes the scene to its inside (a mirror with your reflection, you alone
+in the middle, ◀ / ▶ either side, Kecleon's small card; a zoom-in on the booth was tried first and turned down).
+**Next: the user playtests it** ▶ PLAYTEST ON THE LIVE SITE: `?mall=tailor&coins=2000`: walk into a fitting room, browse
+with ◀ / ▶, buy one, close and step out; the Trainer Card's Trainer key
+(Wear only); Oak (or Sonia at night) once in the Clearing; the hall's four fronts and the tailor's ribbon (`?mall`).
+
+**▶ PLAYTEST ON THE LIVE SITE. One saved run of each kind: done 2026-10-29** (branch
+`claude/sprite-memory-leak-checks-nt12hd`, on `main` too; archive; `docs/reference/saved-runs.md`). The user asked: switch
+between a Safari run and a normal one without abandoning either. A normal run, a Safari run (Duo Runs too) and a Sky Pillar
+climb each keep their own save. On a phone: start a run, go to the menu, start today's Safari run, go to the menu, and
+check the trail's Pokéstop and the Safari gate's each offer their own Continue; the bar's run LCD follows the Pokéstop you
+stand by. On the signs title (Settings' Title screen: Signs) the "1/2 ▸" key beside the sign switches which run Continue
+picks up. Signed in, the cloud save carries all three.
+
+**▶ PLAYTEST ON THE LIVE SITE. Leak check of the trainer sprites, Trainer Tailor and buddy follow: done 2026-10-29**
+(branch `claude/sprite-memory-leak-checks-nt12hd`, on `main` too; archive). The Trainer Card's wardrobe no longer keeps
+every card shut while it's open, and walking and overworld sheets are let go once nothing shows them. On a phone: open the
+Trainer Card's Trainer key and shut the card a few times, try outfits on at the tailor, and say if anything still lags or
+reloads (Settings' Save card lists a reload). `tools/budget-check.mjs` checks this kit from now on (`wardrobe`, `tailor`).
 
 **More trainer walking sprites** (2026-10-28, offered with the town people, not picked yet): trainers standing on the
 run map or in route rooms (a trainer-fight room would be new design), or Rocket Grunts (`trchar157` / `158`) lurking

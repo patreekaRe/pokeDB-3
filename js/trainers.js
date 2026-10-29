@@ -176,7 +176,7 @@ export const hasTrainer = (uid) => friendsOf(getSave()).includes(uid);
 export const trainerCount = () => friendsOf(getSave()).length;
 
 /** Adds a trainer from a typed code: a line to show. */
-async function addByCode(text) {
+export async function addByCode(text) {
   const code = parseCode(text);
   if (!code) return 'A code is 8 letters, like ABCD-EFGH.';
   let s;

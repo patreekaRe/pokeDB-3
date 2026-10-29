@@ -209,8 +209,13 @@ export function instrument() {
   };
 }
 
-/* The Clearing's doors, for a probe walking between places in one page: served with js/hub-3d.js only, never shipped. */
-export const HUB_PEEK = (path, body) => path === '/js/hub-3d.js' ? body.toString() + '\nwindow.__hub = { enterBase, enterMall };\n' : body;
+/* The Clearing's doors, and the Trainer Tailor's fitting rooms (in, and back out into the shop), for a probe walking
+   between places in one page: served with js/hub-3d.js and js/mall-3d.js only, never shipped. */
+const PEEKS = {
+  '/js/hub-3d.js': 'window.__hub = { enterBase, enterMall };',
+  '/js/mall-3d.js': "window.__mall = { boothIn: () => goPlace('tb', BOOTH_AT, 'front', null).then(() => openLooks(null, true)), boothOut: () => { closeLooks(true); return goPlace('tl', null, 'front', null); } };",
+};
+export const HUB_PEEK = (path, body) => PEEKS[path] ? `${body}\n${PEEKS[path]}\n` : body;
 
 /** A Duo Run from the Safari lobby (tools/duo-probe.mjs's steps): `page` already on `?duorun&duopool...`, settled. */
 export async function startDuo(page, pair) {

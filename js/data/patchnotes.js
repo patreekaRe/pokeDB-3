@@ -49,7 +49,13 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card; Chansey is back on her animated sprite, and a drag in the Center, Mart or ? rooms no longer slides their signs off.'],
+  ['hub', 'The Trainer Plaza\'s board is a low kiosk now, its Polaroids laid back on a counter under a striped awning, so it no longer hides the PC; Look opens the board full screen, where you tap a Polaroid to add that trainer.'],
+  ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card, the mall\'s shopkeepers, Timburr\'s stand and the Center\'s Chansey show their animated sprites again, a drag in the Center, Mart or ? rooms no longer slides their signs off, Timburr\'s catalogue no longer stutters the first time it opens, and shutting the Trainer Card with its wardrobe open no longer leaks memory.'],
+  ['mall', 'The Trainer Tailor opens in the Poké Mall: Kecleon sells every outfit, and its fitting rooms let you try each one on first. Switch outfits on your Trainer Card.'],
+  ['look', 'Your trainer and the townspeople are drawn a little smaller and houses are framed wider, so you no longer tower over rooms; your buddy trails a touch further back.'],
+  ['hub', 'The Clearing\'s neighbours keep to their own spots and short set paths, never bumping into anyone, and the legendaries overhead fly side-on.'],
+  ['base', 'In your own Secret Base your buddy roams free, follows you from room to room, and shows a little heart or smile when you pet it.'],
+  ['runs', 'A normal run, a Safari run and a Sky Pillar climb each keep their own save, so you can switch between them without abandoning one.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

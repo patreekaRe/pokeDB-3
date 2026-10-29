@@ -71,7 +71,7 @@ const WALL = ['#3a2260', '#2a1648', '#1c0e34'];
 
 /* Meowth keeps the Game Corner (Pay Day: it can't keep its paws off a coin). */
 export const KEEPER = {
-  id: 'meowth', name: 'Meowth', src: 'assets/pokemon/meowth-front.gif',
+  id: 'meowth', name: 'Meowth', src: 'assets/pokemon/meowth-front.gif', gif: true,   // a merchant stands as its GIF (the user's call, 2026-10-28)
   /* A tap on Meowth hands over the day's scratch card once the stamp card is full (js/scratch.js), else opens the prize
      counter (js/prizes.js) with a word on how full the stamp card is. */
   special: (done) => import('./scratch.js').then(async m => {

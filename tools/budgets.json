@@ -1,7 +1,7 @@
 {
  "clearing": {
-  "draws": 249,
-  "mb": 124.1,
+  "draws": 288,
+  "mb": 114.2,
   "awake": 1,
   "hidden": []
  },
@@ -96,8 +96,8 @@
   "hidden": []
  },
  "event-spring": {
-  "draws": 246,
-  "mb": 124.6,
+  "draws": 227,
+  "mb": 72.7,
   "awake": 1,
   "hidden": []
  },
@@ -148,5 +148,23 @@
   "mb": 119.5,
   "awake": 1,
   "hidden": []
+ },
+ "mall-tailor": {
+  "draws": 158,
+  "mb": 123.7,
+  "awake": 1,
+  "hidden": []
+ },
+ "wardrobe": {
+  "growthMB": 10,
+  "growthHeapMB": 4,
+  "growthNodes": 300,
+  "growthListeners": 30
+ },
+ "tailor": {
+  "growthMB": 10,
+  "growthHeapMB": 4,
+  "growthNodes": 300,
+  "growthListeners": 30
  }
 }

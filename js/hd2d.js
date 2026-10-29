@@ -517,15 +517,16 @@ export function bendFine(o) {
 /** A point as the bend draws it, back to where it stands in the world (the inverse of bend() for a point). */
 export const unbend = (p, u) => { p.y += u.k.value * (p.z - u.z.value) ** 2; return p; };
 
-/** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest),
-    or `{ sheet, name }` for a person on a walking sheet; `gif: true` keeps its battle GIF over an overworld sheet;
-    `back` loads its back GIF too, for walking away from the camera. Not yet in any scene. */
+/** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest;
+    `gif: true` keeps its battle GIF over an overworld sheet, as the mall's shopkeepers do, the user's call 2026-10-28),
+    or `{ sheet, name }` for a person on a walking sheet; `back` loads its back GIF too, for walking away from the
+    camera. Not yet in any scene. */
 export async function monBoard(mate, back = true) {
   const front = mate.sheet ?? mate.src, backSrc = front.replace(/-front\.gif$/, '-back.gif'), owSrc = !mate.sheet && !mate.gif && overworldSrc(front);
   let sheets, first, ow = null;
   if (mate.sheet) {
     const rows = await walkFrames(mate.sheet);
-    sheets = rows ? { ...rows, front: rows.down } : { front: { frames: [] } };
+    sheets = rows ?? { front: { frames: [] } };   // the shared cut itself: a copy left the cache's WeakRef nothing to hold
     first = rows?.down.frames[0].bmp;
   } else {
     const [ff, bf, sheet] = await Promise.all([gifFrames(front), back && !owSrc && backSrc !== front ? gifFrames(backSrc) : null, owSrc && overworldSheet(owSrc)]);
@@ -567,10 +568,14 @@ export async function monBoard(mate, back = true) {
 }
 
 /* An overworld walking sheet (the towns' people, 2026-10-28): Pokémon Essentials' layout, one row per way it faces
-   (down, left, right, up), four steps each, the first and third standing. Its pixels are drawn a quarter bigger than a
-   Pokémon GIF's, or a grown-up stood no taller than Eevee. `?walker=N` tries another size for a page load (2026-10-28:
-   the user found the trainer big indoors, and is trying 1.06, about 15% smaller, trainer and townspeople alike). */
-export const WALKER_PX = MON_PX * (Number(new URLSearchParams(location.search).get('walker')) || 1.25);
+   (down, left, right, up), four steps each, the first and third standing. Its pixels are drawn the size of a Pokémon
+   GIF's (2026-10-28: a quarter bigger looked big indoors; the user tried sizes on the live site and picked 1.0, trainer
+   and townspeople alike). `?walker=N` tries another size for a page load. */
+export const WALKER_PX = MON_PX * (Number(new URLSearchParams(location.search).get('walker')) || 1);
+/** A trainer's battle sprite stood in a room or the hub (Kurt, a clerk, a Gym Leader), a touch under a Pokémon's pixel so
+    they stand about a head taller. `?npc=N` tries N times it for a page load (2026-10-28: the user found Kurt big beside
+    their smaller trainer). */
+export const NPC_PX = (Number(new URLSearchParams(location.search).get('npc')) || 1) / 34;
 const FACES = ['down', 'left', 'right', 'up'], STEP_MS = 150;
 const cut = new Map();
 async function walkFrames(src) {
@@ -585,6 +590,7 @@ async function walkFrames(src) {
     c.getContext('2d', { willReadFrequently: true }).drawImage(whole, x * w, y * h, w, h, 0, 0, w, h);
     return { bmp: c, ms: STEP_MS };
   }) }]));
+  rows.front = rows.down;
   cut.set(src, new WeakRef(rows));
   return rows;
 }
@@ -601,24 +607,34 @@ function drawStep(m, w, dt) {
 }
 
 /** A Pokémon Essentials follower sheet: four rows (walking down, left, right, up) of four steps. Kept on a CPU canvas
-    (keep()), with how far its painted feet and head sit from a frame's edges across every step. */
-const owSheets = new Map();
+    (keep()), with how far its painted feet and head sit from a frame's edges across every step. Held weakly, as
+    gifFrames() holds a GIF: kept for good, every Pokémon a crowd, a shop or a guest ever brought stayed for the page's
+    life (2026-10-29: three Clearing -> mall -> base trips kept 12 more, up to 1 MB each). */
+const owSheets = new Map(), owLoading = new Map();
 function overworldSheet(src) {
-  if (!owSheets.has(src)) owSheets.set(src, (async () => {
-    try {
-      const res = await fetch(src);
-      if (!res.ok) return null;
-      const sheet = keep(await createImageBitmap(await res.blob())), size = sheet.width / 4;
-      const d = sheet.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, sheet.width, sheet.height).data;
-      let x0 = size, x1 = -1, y0 = size, y1 = -1;
-      for (let y = 0; y < sheet.height; y++) for (let x = 0; x < sheet.width; x++) {
-        if (d[(y * sheet.width + x) * 4 + 3] <= 8) continue;
-        x0 = Math.min(x0, x % size); x1 = Math.max(x1, x % size); y0 = Math.min(y0, y % size); y1 = Math.max(y1, y % size);
-      }
-      return y1 < 0 ? null : { sheet, size, top: y0, bottom: size - 1 - y1, side: Math.min(x0, size - 1 - x1) };
-    } catch { return null; }
-  })());
-  return owSheets.get(src);
+  const had = owSheets.get(src)?.deref();
+  if (had) return Promise.resolve(had);
+  if (!owLoading.has(src)) owLoading.set(src, readOverworld(src).then(sheet => {
+    owLoading.delete(src);
+    if (sheet) owSheets.set(src, new WeakRef(sheet));
+    else owSheets.delete(src);
+    return sheet;
+  }));
+  return owLoading.get(src);
+}
+async function readOverworld(src) {
+  try {
+    const res = await fetch(src);
+    if (!res.ok) return null;
+    const sheet = keep(await createImageBitmap(await res.blob())), size = sheet.width / 4;
+    const d = sheet.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, sheet.width, sheet.height).data;
+    let x0 = size, x1 = -1, y0 = size, y1 = -1;
+    for (let y = 0; y < sheet.height; y++) for (let x = 0; x < sheet.width; x++) {
+      if (d[(y * sheet.width + x) * 4 + 3] <= 8) continue;
+      x0 = Math.min(x0, x % size); x1 = Math.max(x1, x % size); y0 = Math.min(y0, y % size); y1 = Math.max(y1, y % size);
+    }
+    return y1 < 0 ? null : { sheet, size, top: y0, bottom: size - 1 - y1, side: Math.min(x0, size - 1 - x1) };
+  } catch { return null; }
 }
 
 /** Which way an overworld sprite faces: the way it moved since the last frame, else the way it was told to face (back is
