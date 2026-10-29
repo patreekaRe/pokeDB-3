@@ -1109,6 +1109,14 @@ async function trainerBoard(src) {
   board.castShadow = true;
   board.geometry.translate((w / 2 - (left + right + 1) / 2) * NPC_PX, (bottom + 1 - h / 2) * NPC_PX, 0);
   board.rotation.x = -PITCH;
+  // only her drawn pixels take a tap: the whole sprite sheet's square stole taps meant for the leftmost card (2026-10-29)
+  const solid = (u, v) => d[(Math.min(h - 1, Math.floor((1 - v) * h)) * w + Math.min(w - 1, Math.floor(u * w))) * 4 + 3] > 8;
+  const cast = THREE.Mesh.prototype.raycast;
+  board.raycast = function (ray, out) {
+    const mine = [];
+    cast.call(this, ray, mine);
+    out.push(...mine.filter(i => i.uv && solid(i.uv.x, i.uv.y)));
+  };
   const group = new THREE.Group();
   group.add(board);
   return { group, board };
