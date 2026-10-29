@@ -1997,8 +1997,21 @@ function gymRoom(node, leader, won = null, said = null) {
     const { lines, badge, got } = rematch(leader, again);
     await say([...said.slice(-1), ...lines], { badge, again, lit: true, bubble: true }, evolves);
     if (run !== thisRun) return;
+    if (!evolves) {
+      // like the games, the badge line takes the next tap anywhere, not a walk or Britt's last words again
+      freeze(true);
+      const shut = () => { removeEventListener('click', any, true); if (run === thisRun && !talking) freeze(false); };
+      const any = (e) => {
+        if (run !== thisRun || $('reward-log').hidden) return shut();
+        if (e.target.closest?.('#reward-log, #room-bar, .room-hinge, .top-bar, dialog')) return;
+        e.stopPropagation();
+        $('reward-log').click();
+      };
+      sayLines([got], 'reward-log', shut);
+      setTimeout(() => addEventListener('click', any, true));
+      return;
+    }
     sayLines([got]);
-    if (!evolves) return;
     // evolve from the HP the fight ended on; afterFight() then keeps the evolved HP rather than the fight's
     run.hp = won.hp;
     run.maxHp = won.maxHp ?? run.maxHp;

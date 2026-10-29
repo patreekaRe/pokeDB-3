@@ -418,7 +418,16 @@ export function sayLines(lines, boxId = 'reward-log', onDone, who = '') {
   const box = $(boxId);
   if (who) box.dataset.who = who; else delete box.dataset.who;   // a speaker's name on a tag over the box (Britt at the Mart)
   box.hidden = !lines.length;
+  // iOS sometimes sends no click for a tap over a 3D room (the gym's badge line wouldn't close, 2026-10-29): a lifted
+  // finger with no click after it stands in for one
+  let late = 0, stood = 0;
+  box.onpointerup = () => { clearTimeout(late); late = setTimeout(() => { stood = performance.now(); step(); }, 350); };
   box.onclick = () => {
+    clearTimeout(late);
+    if (performance.now() - stood < 600) return;
+    step();
+  };
+  const step = () => {
     if (say.box !== boxId) return;
     if (say.typing) return finishLine();
     clearTimeout(say.auto);
