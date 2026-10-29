@@ -3810,3 +3810,11 @@ Within the phone budget with a look worn; the patch cut as v1.32 Trainers & Town
 The user tapped Later on WHO ARE YOU? and was never asked again. Their call: ask at every launch till a trainer is
 picked. `save.lookChosen` (the setup, an OK, or wearing a look or Walk alone on the Trainer Card) replaces `lookAsked`,
 so a save that tapped Later before is asked again. Checked headless: asked, Later, asked again, a pick stops it.
+
+### Meowth's games offered after you play (2026-10-29, cloud; on `main`)
+The user: players don't know Meowth's prize counter sells the arcade machines (it was only in Meowth's and Porygon's
+chatter). Now shutting any game whose machine you don't own, in the Game Corner or the Arcade, opens the mall's buy window
+for it (TAKE IT HOME, its 3D model turning, 750, Buy / Not now; `takeHome()` in `js/mall-3d.js`, each game's `prize`
+kind), once per game per mall visit. The first-tap lines and a Meowth hello say it too. Checked headless: Pong offered
+once a visit, Ekans Trail bought, Voltorb Flip offered by Meowth. Not done (ideas if it's still missed): a "!" or price
+tag on unowned cabinets.

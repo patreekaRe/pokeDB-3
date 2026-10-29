@@ -10,12 +10,10 @@ import { getSave } from './storage.js';
 import { playSound } from './audio.js';
 import { el } from './ui.js';
 import { openShowcase, showcaseSource } from './showcase.js';
-import { buyPrize, cashTickets } from './corner-pot.js';
+import { buyPrize, cashTickets, ownsPrize as owned } from './corner-pot.js';
 import { homeGame } from './home-arcade.js';
 import { tex } from './hd2d.js';
 import { turntableStage, drawTurn, TURN_SIZE } from './turntable.js';
-
-const owned = (kind) => (getSave().corner?.prizes || []).includes(kind) || (getSave().secretBase?.owned?.[kind] || 0) > 0;
 
 /** Opens the counter; `stamps` is Meowth's word on today's stamp card. */
 export async function openPrizes(onClose, stamps = '') {

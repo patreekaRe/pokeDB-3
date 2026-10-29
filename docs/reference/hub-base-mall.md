@@ -790,6 +790,10 @@ doormat goes back through it (`out: 'gc'` in `SHOPS`, `back()`), arriving at the
   `frameArt()`) and `machineMaker()`, which stands a Secret Base model as a game. The carpet is its own (`carpetArt()`:
   neon shapes on navy). One side-wall picture serves both walls in each room (two uploads of it were ~4-5 MB).
 - **Porygon** (`ARCADE_KEEPER`) only chats; the leaderboard is the board's tap. The Game Corner's regulars stay next door.
+- **Take it home** (2026-10-29, the user's ask: players never knew the counter sells the games): shutting a game whose
+  machine you don't own, here or in the Game Corner, opens the buy window for it (`takeHome()` in `js/mall-3d.js`, the
+  game's `prize` kind, `ownsPrize()` in `js/corner-pot.js`), once per game per visit (`offered`, emptied by `openMall()`).
+  A new game at either room needs its `prize`.
 
 ## The mall's floors on the GPU (2026-10-17)
 Every floor the mall builds stays in its one scene, hidden when you're elsewhere, but its textures stayed uploaded: the

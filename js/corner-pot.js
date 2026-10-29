@@ -54,6 +54,9 @@ export function stamp(game) {
 /* ---------- the prize counter and records (js/data/corner.js) ---------- */
 
 /** Buys a prize for `coins` PokéCoins; false if there aren't enough. */
+/** Is `kind` (a prize) yours: bought at the counter, or in the Secret Base some other way? */
+export const ownsPrize = (kind) => (getSave().corner?.prizes || []).includes(kind) || (getSave().secretBase?.owned?.[kind] || 0) > 0;
+
 export function buyPrize(coins, kind) {
   if (getSave().coins < coins) return false;
   updateSave(d => { d.coins -= coins; d.corner = { ...d.corner, prizes: [...(d.corner?.prizes || []), kind] }; });

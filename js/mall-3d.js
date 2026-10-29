@@ -37,6 +37,8 @@ import { safariOpen } from './data/pokedex.js';
 import { safariDaily, safariDay } from './data/safari.js';
 import { DAY_PASS } from './data/balls.js';
 import { cabinetUp } from './home-arcade.js';
+import { buyPrize, ownsPrize } from './corner-pot.js';
+import { PRIZES_BY_KIND } from './data/corner.js';
 import { dressHall, dressFronts, FOUNTAINS, FOUNTAIN_SCALE } from './mall-hall.js';
 
 const COLS = 13, ROWS = 7;   // the shops' floors; the hall is bigger (the user's ask, 2026-10-12: it felt small)
@@ -65,6 +67,7 @@ let lead = null;   // you as your trainer, your buddy a step behind (js/follow.j
 let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = null;
 // where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
 // each its own group, tiles and spots
+let offered = new Set();   // the games whose machines takeHome() has offered this visit
 let places = {}, P = null, picked = null, riding = null, rideTo = 1;   // riding: the lift, 'in' stepping into its car, 'out' stepping out
 let mats = [];   // every place's doormat, breathing
 let wallMat = null, painted = null, tapes = {};   // the back wall's painting (its OPEN / CLOSED plaque) and each front's tape
@@ -1188,7 +1191,22 @@ function gameTap(spot) {
   if (picked !== spot && !spot.game.direct) { pick(spot); return talk(spot.game.line, 4600); }
   if (spot.game.talkOnly) return talk(spot.game.line, 4600);
   pick(null);
-  spot.game.open(() => { showCoins(); P?.refresh?.(); });
+  spot.game.open(() => { showCoins(); P?.refresh?.(); takeHome(spot.game); });
+}
+
+/** Shutting a game whose machine you don't own: its buy window, once a visit each (2026-10-29, the user's ask: players
+    never learned from the chatter that Meowth's prize counter sells every game). */
+async function takeHome(game) {
+  const kind = game.prize;
+  if (!kind || offered.has(kind) || ownsPrize(kind) || !PRIZES_BY_KIND[kind]) return;
+  offered.add(kind);
+  const place = P, price = PRIZES_BY_KIND[kind].coins, name = PIECES[kind].name, ink = game.colour ?? '#ff5ab8';
+  if (!await merchant({ ink, dept: 'TAKE IT HOME', name, price, note: 'Free play in your Secret Base, any time',
+    preview: (T) => piecePreview(T, kind, ink) }) || P !== place) return;
+  if (!buyPrize(price, kind)) { playSound('cancel'); return talk(`You're ${(price - (getSave().coins ?? 0)).toLocaleString()} PokéCoins short for that one. It's on Meowth's prize counter any time.`, 4200); }
+  playSound('achievement');
+  showCoins();
+  talk(`Ka-ching! The ${name.toLowerCase()} is in your Secret Base's storage.`, 4200);
 }
 
 /** The shopkeeper: its cry, a little hop and a line. */
@@ -1589,6 +1607,7 @@ export async function leave() {
 /** The Poké Mall's hall. `onLeave` is where its doormat goes (the Clearing hands it the way back out of the doors). */
 export async function openMall({ onLeave = null, store = null } = {}) {
   leaveTo = onLeave;
+  offered = new Set();
   playMusic('mart');   // the Poké Mart's song through the hall and every shop in it; the doormat's showHome() brings 'title' back
   calm = calmFx();
   if (root && renderer) {

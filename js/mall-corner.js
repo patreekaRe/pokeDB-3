@@ -42,9 +42,11 @@ const CYCLE = 3600;   // ms each thing stays on a showcase's screen
 const GAMES = {
   voltorb: { at: { x: 5, y: 5 }, w: 3, name: 'Voltorb Flip', colour: '#58d080',
     line: 'Voltorb Flip! Clear the board for PokéCoins, five paying rounds a day. Tap again to sit down, meow.',
+    prize: 'voltorbflip',
     open: (done) => import('./voltorb.js').then(m => m.openVoltorb(done)) },
   quiz: { at: { x: 13, y: 5 }, w: 3, name: 'Who\'s That Pokémon?', colour: '#4a90f0',
     line: 'Who\'s That Pokémon? Seven silhouettes a day, name \'em for coins. Tap again to play, meow.',
+    prize: 'quizmachine',
     open: (done) => import('./quiz.js').then(m => m.openQuiz(done)) },
 };
 /* The table games, played with Meowth's house chips (2026-10-10; laid out 2026-10-12, the user's ask): slot machines down the left wall facing in
@@ -55,15 +57,19 @@ const CASINO = {
      (2026-10-17): five down the left wall */
   slots: { ats: [6, 7, 8, 9, 10].map(y => ({ x: 0, y, face: 1 })), name: 'Slots', colour: '#ff5a5a',
     line: 'The slots! Five free spins a day, and you stop the reels yourself, so time it for a 7. Tap again to play, meow.',
+    prize: 'slotmachine',
     open: (done) => import('./slots.js').then(m => m.openSlots(done)) },
   plinko: { name: 'Plinko', colour: '#4ae8f0',
     line: 'Plinko! Drop a Poké Ball and watch it bounce. The edges pay ×10, meow. Tap again to play.',
+    prize: 'plinkoboard',
     open: (done) => import('./plinko.js').then(m => m.openPlinko(done)) },
   highlow: { at: { x: 13, y: 9 }, w: 3, name: 'High-Low', colour: '#ffd84a',
     line: 'High-Low: higher or lower, let it ride or cash out. Tap again to play, meow.',
+    prize: 'highlowtable',
     open: (done) => import('./highlow.js').then(m => m.openHighLow(done)) },
   blackjack: { at: { x: 5, y: 9 }, w: 3, name: 'Blackjack', colour: '#ff5ab8',
     line: 'Blackjack! I deal, you try to beat me to 21. Blackjack pays 3 to 2. Tap again to sit down.',
+    prize: 'blackjacktable',
     open: (done) => import('./blackjack.js').then(m => m.openBlackjack(done)) },
 };
 export const NEON = { pink: '#ff5ab8', cyan: '#4ae8f0', gold: '#ffd84a', lime: '#9cf060' };
@@ -82,7 +88,7 @@ export const KEEPER = {
     (await import('./prizes.js')).openPrizes(done, stamps);
     return true;
   }),
-  hello: ['Welcome to the Game Corner, meow! Play 5 different games today to fill your stamp card, and I\'ll give you a scratch card.', 'A customer! Step right up: tap me for my prize counter, things you can\'t buy anywhere else, meow.', 'Big screens on the back wall, games on the floor. Tap anything!'],
+  hello: ['Welcome to the Game Corner, meow! Play 5 different games today to fill your stamp card, and I\'ll give you a scratch card.', 'A customer! Every game in here and in the Arcade is on my prize counter, to take home to your Secret Base. Tap me, meow!', 'Big screens on the back wall, games on the floor. Tap anything!'],
   chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Stop the slot reels yourself. Good timing means more 7s, meow!', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?', 'Every game here\'s on the house: a few plays a day that pay, up to 500 PokéCoins a day all told. After that, play on for fun. Tap me for the prize counter, meow!', 'Blackjack against me? Bold. I like bold. Even when it\'s on the house, meow.'],
 };
 

@@ -25,7 +25,7 @@ const MACHINES = [
 export const ARCADE_KEEPER = {
   id: 'porygon', name: 'Porygon', src: 'assets/pokemon/porygon-front.gif',
   hello: ['Welcome to the Arcade! Every machine is free play. Tap one to hear what it is, tap again to play.', 'Beep! New player detected. Your best scores go up on the board over my desk.', 'Free play on every cabinet, all day. Like one? Meowth\'s prize counter has it to take home.'],
-  chat: ['I run on 1s and 0s. Mostly 1s today.', 'The leaderboard over me resets every week. Tap it to see the whole board.', 'Pinball down the right wall, puzzles on the left. I mapped it myself.', 'Leave a game early and your score still counts. I checked the code.', 'Meowth wanted a prize counter in here too. I said the coins stay next door.', 'Psyduck keeps losing at Pong. To itself. I logged it.'],
+  chat: ['I run on 1s and 0s. Mostly 1s today.', 'The leaderboard over me resets every week. Tap it to see the whole board.', 'Pinball down the right wall, puzzles on the left. I mapped it myself.', 'Leave a game early and your score still counts. I checked the code.', 'Meowth wanted a prize counter in here too. Now I take orders for it when you finish a game.', 'Psyduck keeps losing at Pong. To itself. I logged it.'],
 };
 
 /* ---------- painting ---------- */
@@ -160,7 +160,7 @@ export function buildArcade(THREE, size) {
   const machine = machineMaker({ THREE, group, blocked, spots, cols, rows, std });
   for (const [id, x, y, face] of MACHINES) {
     const name = PIECES[id].name;
-    machine(id, x, y, face, { name, line: `${name}! Free play, just for fun. Meowth's prize counter next door has one to take home.`,
+    machine(id, x, y, face, { name, prize: id, line: `${name}! Free play here. Like it? Meowth's prize counter next door sends one to your Secret Base.`,
       open: (done) => import('./home-arcade.js').then(m => m.playAtHome(id, done)) });
   }
 

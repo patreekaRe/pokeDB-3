@@ -49,6 +49,7 @@ const HELD = [
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['mall', 'Finish a game in the Game Corner or Arcade and its machine is offered to take home to your Secret Base, right there.'],
   ['fixes', 'Tapping Later on WHO ARE YOU? now asks again at the next launch, till you pick a trainer or choose Walk alone on the Trainer Card.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
