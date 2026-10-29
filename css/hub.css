@@ -1327,6 +1327,71 @@ img.shade, .sx-mon.unknown img { filter: brightness(0); opacity: 0.75; }
 .hk-card.locked .hk-pic { filter: saturate(0.3) brightness(0.85); }
 @media (prefers-reduced-motion: reduce) { .hk-sheet, .hk-card, .hk-sw, .hk-more { transition: none; } .hk-more-pill { animation: none; } }
 
+/* The trainer window (js/look-window.js, the user's design, 2026-10-28): Timburr's catalogue card crossed with Meowth's
+   prize screen. Kecleon's at the Trainer Tailor (`.lw-shop`, low on the screen, the shop and your try-on above it), and
+   the Trainer Card's (`.lw-card`, in its body). Kecleon's green, its red stripe on the tag. */
+.lw-sheet {
+  --ink: #3f9a4a; --ink-deep: #23642c;
+  position: relative; box-sizing: border-box; padding: 22px 12px 12px; display: flex; flex-direction: column; gap: 8px;
+  border: 3px solid #e2b648; border-radius: 28px; outline: 2px solid #fff6dc; outline-offset: -9px;
+  background: linear-gradient(#fffaf0, #f4e8cc); color: #6a5440; font-family: var(--pixel-font); text-align: left;
+  box-shadow: 0 4px 0 #b88a2a, 0 14px 34px #0008;
+}
+.lw-shop {
+  position: absolute; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 6; width: min(520px, calc(100% - 20px));
+  translate: -50% calc(100% + 40px); transition: translate 0.35s cubic-bezier(.2, 1.2, .3, 1);
+}
+.lw-shop.up { translate: -50% 0; }
+.lw-card { margin: 20px 2px 4px; box-shadow: 0 4px 0 #b88a2a; }
+.lw-who { background: linear-gradient(#7ad070, var(--ink)); box-shadow: 0 3px 0 var(--ink-deep), inset 0 -4px 0 #d8404888; }
+.lw-say { min-height: 2.9em; }
+.lw-stage { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 8px; }
+.lw-arrow {
+  height: 56px; padding: 0; border: 0; border-radius: 14px; cursor: pointer; font: 18px/1 var(--pixel-font); color: #fff;
+  background: linear-gradient(#7ad070, var(--ink)); box-shadow: 0 3px 0 var(--ink-deep); -webkit-tap-highlight-color: transparent;
+}
+.lw-arrow:active { translate: 0 2px; box-shadow: 0 1px 0 var(--ink-deep); }
+/* the spotlit box: a soft beam from above onto a round floor, the trainer walking in place on it */
+.lw-box {
+  position: relative; display: grid; place-items: end center; height: clamp(120px, 24vh, 176px); border-radius: 18px; overflow: hidden;
+  background: radial-gradient(ellipse 60% 18% at 50% 88%, #ffffffcc, #fff0 70%), linear-gradient(#3a2e48, #5a4a6a 60%, #7a6a80);
+  box-shadow: inset 0 0 0 2px #e2b648, inset 0 6px 16px #0006;
+}
+.lw-spot { position: absolute; inset: 0 22% 0; background: linear-gradient(#fff6d055, #fff6d000 92%); clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%); pointer-events: none; }
+.lw-big { --s: clamp(112px, 22vh, 160px); position: relative; margin-bottom: 2px; animation: look-walk 0.6s steps(4) infinite; }
+.lw-big.locked { filter: grayscale(1) brightness(0.6); opacity: 0.6; }
+.lw-calm .lw-big { animation: none; }
+.lw-tag { position: absolute; top: 8px; right: 8px; }
+.lw-cards { gap: 8px; }
+.lw-mini { width: 64px; }
+.lw-mini-box { display: grid; place-items: center; }
+.lw-mini .look-art { --s: 52px; }
+.lw-mini.locked .look-art { filter: grayscale(1) brightness(0.6); opacity: 0.55; }
+.lw-mini.on .look-art { animation: look-walk 0.6s steps(4) infinite; }
+.lw-calm .lw-mini.on .look-art { animation: none; }
+.lw-keys { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 8px; border-top: 2px dashed #e2cfa0; }
+.lw-go { height: 38px; min-width: 120px; }
+.lw-alone {
+  margin-right: auto; padding: 8px 12px 7px; border: 0; border-radius: 999px; cursor: pointer; font: 12px/1 var(--pixel-font);
+  background: #fffaf0; color: #6a5440; box-shadow: inset 0 0 0 2px #e2b648, 0 3px 0 #c8a04a;
+}
+.lw-alone[hidden] { display: none; }
+/* From a fitting room (2026-10-28, the user's ask): the camera zooms in on the booth, which is the window; Kecleon's card
+   low down holds the line, the price and the key, and ◀ / ▶ stand either side of the screen by the booth */
+.lw-sides { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.lw-side {
+  position: absolute; top: 38%; width: 52px; height: 76px; font-size: 22px; pointer-events: auto;
+  opacity: 0; transition: opacity 0.3s 0.25s; box-shadow: 0 4px 0 var(--ink-deep), 0 8px 18px #0006;
+  --ink: #3f9a4a; --ink-deep: #23642c;
+}
+.lw-side:first-child { left: max(12px, env(safe-area-inset-left)); }
+.lw-side:last-child { right: max(12px, env(safe-area-inset-right)); }
+.lw-sides.up .lw-side { opacity: 1; }
+.lw-in-booth .lw-tag { position: static; }
+.lw-count { margin-right: auto; font-size: 12px; color: #8a6a48; white-space: nowrap; }
+.lw-in-booth .lw-keys { align-items: center; padding-top: 6px; }
+@media (prefers-reduced-motion: reduce) { .lw-shop, .lw-side { transition: none; } .lw-big, .lw-mini.on .look-art { animation: none; } }
+
 /* A friend's front lawn (js/front-lawn.js, houses on): their house over the full screen, a pill with whose place it is,
    Leave, and the merchant's cream card low down with the house's name and Go in. */
 .lawn3d { position: fixed; inset: 0; z-index: 40; background: #000; font-family: var(--pixel-font); }
@@ -1362,3 +1427,66 @@ img.shade, .sx-mon.unknown img { filter: brightness(0); opacity: 0.75; }
 .gcat-tile.pcat-sale { box-shadow: 0 0 0 2px #d83a3a, 0 3px 0 #a82828; }
 .gcat-tile.pcat-sale .gcat-price { color: #c02a2a; }
 .gcat-tile.pcat-picked { box-shadow: 0 0 0 3px #f8c830, 0 3px 0 #d8a20c; }
+
+/* The Trainer Plaza's board full screen (js/plaza-view.js): Polaroids on cork, one lifted into its card, notes below. */
+.pv-veil { position: fixed; inset: 0; z-index: 900; display: flex; align-items: center; justify-content: center; padding: 12px;
+  background: rgba(10, 16, 28, 0.62); animation: pv-in 0.18s ease-out; font-family: "PokeDB Pixel", "Press Start 2P", monospace; }
+@keyframes pv-in { from { opacity: 0; } }
+.pv-board { position: relative; width: min(100%, 640px); max-height: 100%; display: flex; flex-direction: column;
+  border: 14px solid #8a5a2e; border-radius: 10px; box-shadow: inset 0 0 0 3px #5a3418, 0 10px 30px rgba(0,0,0,0.5);
+  background: radial-gradient(ellipse at center, #d4a068 0%, #c8935a 55%, #a87442 100%);
+  background-image: radial-gradient(#a46a38 1px, transparent 1.5px), radial-gradient(#e6bc84 1px, transparent 1.5px),
+    radial-gradient(ellipse at center, #d4a068 0%, #c8935a 55%, #a87442 100%);
+  background-size: 9px 9px, 13px 13px, 100% 100%; background-position: 0 0, 4px 6px, 0 0;
+  animation: pv-up 0.28s cubic-bezier(.2,1.3,.4,1); }
+@keyframes pv-up { from { transform: translateY(30px) scale(0.92); } }
+.pv-head { align-self: center; margin: -26px 0 6px; padding: 8px 22px; color: #ffe070; font-size: 18px; letter-spacing: 1px;
+  text-shadow: 2px 2px 0 #0a3a46; background: linear-gradient(#3cc0cc, #1e8a9c 55%, #125a6a); border: 4px solid #0a3a46;
+  border-radius: 6px; box-shadow: 0 4px 0 rgba(0,0,0,0.25); white-space: nowrap; }
+.pv-head::before, .pv-head::after { content: '●'; color: #ffd84a; font-size: 12px; margin: 0 10px; vertical-align: 3px; }
+.pv-close { position: absolute; top: -22px; right: -22px; z-index: 3; }
+.pv-sub { text-align: center; color: #4a2a10; font-size: 12px; margin: 0 0 4px; }
+.pv-wall { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 10px; padding: 14px 12px 10px; }
+@media (max-width: 520px) { .pv-wall { grid-template-columns: repeat(2, 1fr); } }
+.pv-pol { position: relative; display: block; width: 100%; background: #fbf8f0; padding: 7px 7px 0; border: 0; cursor: pointer; font: inherit;
+  box-shadow: 3px 4px 0 rgba(40,20,5,0.35); transform: rotate(var(--r)); transition: transform 0.15s; }
+.pv-pol:hover, .pv-pol:focus-visible { transform: rotate(0deg) scale(1.05); z-index: 2; outline: none; }
+.pv-pol.lifted { visibility: hidden; }
+.pv-photo { position: relative; aspect-ratio: 1 / 0.82; display: flex; align-items: flex-end; justify-content: center;
+  background: radial-gradient(circle at 50% 58%, #fff 0%, var(--hi) 45%, var(--lo) 100%); overflow: hidden; }
+.pv-photo::after { content: ''; position: absolute; bottom: 8%; left: 30%; right: 30%; height: 8%; border-radius: 50%; background: rgba(0,0,0,0.16); }
+.pv-photo img { position: relative; z-index: 1; width: 78%; height: 92%; object-fit: contain; object-position: bottom; image-rendering: pixelated; margin-bottom: 8%; }
+.pv-photo img.unseen { filter: brightness(0) opacity(0.75); }
+.pv-name { display: block; color: #2a2238; font-size: 12px; padding: 7px 0 9px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pv-pin { position: absolute; top: -6px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; z-index: 2;
+  background: radial-gradient(circle at 35% 35%, #fff 0, var(--pin) 35%, #5a0a10 100%); box-shadow: 1px 2px 0 rgba(0,0,0,0.3); }
+.pv-you { position: absolute; top: 2px; right: 2px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  background: #ffd84a; border: 2px solid #8a5a00; color: #6a3a00; font-size: 12px; transform: rotate(12deg); }
+.pv-notes { display: flex; align-items: flex-start; gap: 10px; padding: 6px 12px 14px; }
+.pv-note { position: relative; flex: 1 1 0; min-width: 0; background: #fffbe8; padding: 16px 10px 10px; color: #2a2238; font-size: 12px;
+  box-shadow: 3px 4px 0 rgba(40,20,5,0.3); border-top: 10px solid #e8383a; }
+.pv-note:nth-child(1) { transform: rotate(-1.5deg); }
+.pv-note:nth-child(2) { transform: rotate(1deg); border-top-color: #3a7ae8; }
+.pv-note:nth-child(1) { flex: 0 0 auto; }
+.pv-note b { display: block; font-size: 14px; margin: 4px 0 2px; white-space: nowrap; }
+.pv-note > span:not(.pv-pin) { display: block; }
+.pv-note form { display: flex; gap: 6px; margin-top: 6px; }
+.pv-note input { flex: 1; min-width: 0; width: 100%; font: inherit; font-size: 16px; padding: 8px 4px; border: 2px solid #2a2238; background: #fff; text-transform: uppercase; }
+.pv-btn { font: inherit; font-size: 12px; padding: 6px 10px; border: 2px solid #1c1430; border-radius: 4px; cursor: pointer;
+  background: linear-gradient(#ff6a6a, #d8303a); color: #fff; text-shadow: 1px 1px 0 #6a0a10; box-shadow: 0 3px 0 #6a0a10; }
+.pv-btn.blue { background: linear-gradient(#6aa8ff, #2a6ad8); text-shadow: 1px 1px 0 #0a2a6a; box-shadow: 0 3px 0 #0a2a6a; }
+.pv-btn:disabled { background: #8ac898; text-shadow: none; box-shadow: 0 3px 0 #2e6a3a; cursor: default; }
+.pv-said { margin: 6px 0 0; color: #6a3a10; }
+.pv-said:empty { display: none; }
+.pv-zoom { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; background: rgba(40,20,5,0.45); }
+.pv-big { position: relative; width: min(78%, 300px); background: #fbf8f0; padding: 12px 12px 14px; box-shadow: 6px 8px 0 rgba(0,0,0,0.35);
+  animation: pv-lift 0.25s cubic-bezier(.2,1.3,.4,1); transform: rotate(-1.5deg); }
+@keyframes pv-lift { from { transform: scale(0.5) rotate(-8deg); opacity: 0; } }
+.pv-big .pv-name { font-size: 18px; padding: 10px 0 4px; }
+.pv-stats { display: flex; justify-content: space-around; color: #4a3a58; font-size: 12px; margin: 4px 0 10px; text-align: center; }
+.pv-stats b { display: block; font-size: 14px; color: #2a2238; }
+.pv-big .pv-pol { display: block; width: 100%; }
+.pv-keys { display: flex; gap: 8px; justify-content: center; }
+.pv-empty { grid-column: 1 / -1; justify-self: center; align-self: center; max-width: 340px; text-align: center; }
+.pv-empty span { display: block; }
+.pv-empty .pv-btn { margin-top: 8px; }

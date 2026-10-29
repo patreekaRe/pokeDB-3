@@ -8,11 +8,15 @@
    playing, it steps aside. Lines are in js/data/corner-crowd.js; js/mall-3d.js hands this its pieces (`H`).
    The Poké Mall's hall has a crowd of its own on the same walking and talking (2026-10-12, the user's ask): a cast from
    js/data/mall-crowd.js, a few standing about at the shop windows and fountains, a couple wandering, one coming or going
-   now and then, and a new cast every 8 hours (`H.cast`, `H.castHours` and the rest below). */
+   now and then, and a new cast every 8 hours (`H.cast`, `H.castHours` and the rest below).
+   The Clearing's folk keep to posts instead (`H.posts`, 2026-10-28, the user's ask: "individual set paths like on the
+   Pokemon games", fewer walking, nobody overlapping): each is dealt a spot to stand at, turning to look about, or a set
+   beat to pace out and back, and none comes or goes while you're there (js/ground-beats.js). */
 
 import { PATRONS, SHARED, CHATS, MEOWTH_REPLIES, MEOWTH_FOR } from './data/corner-crowd.js';
 import { playCry } from './audio.js';
 import { trainerName } from './leaderboard.js';
+import { beatPath, headTo, stepBeat, holdsTile } from './ground-beats.js';
 
 const CROWD = 5;                 // how many at once: enough to feel live, not so many it's crowded (the hall hands its own through H)
 const CAST = 12;                 // the day's regulars
@@ -22,6 +26,8 @@ const QUIET = [9000, 17000];     // the pause between lines over heads
 const GREET_AFTER = [25000, 55000];
 const PLAY = [25000, 70000], PONDER = [1800, 4500], COUNTER = [5000, 8000];
 const GAP = [1500, 3500];        // with walkers capped, the quiet between one walk ending and the next starting
+const LOOK = [2500, 7000], LOOKS = ['down', 'down', 'left', 'right'];   // a post's stander turning to look about
+const PACE_REST = [2000, 5000], WAIT = 2500;   // a pacer's rest at each end; blocked this long (ms), it turns back
 
 const between = ([a, b]) => a + Math.random() * (b - a);
 const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
@@ -54,12 +60,15 @@ function kindOf(spot) {
     oneWalker (only one walks at a time, the rest at their games or standing, and none stops on or beside the doormat:
     the Game Corner's, the user's ask, 2026-10-13, as the Clearing's ghosts), or `walkers` (that many at most: the
     towns' 2, the user's ask, 2026-10-14, the rest stationed), `drawn(v)` (where a point is drawn, a rolling town's),
-    `enter` (where they come in from and go out to, past the door; the bottom edge below it by default). */
+    `enter` (where they come in from and go out to, past the door; the bottom edge below it by default), `posts`
+    ([{ at } | { path }]: a spot to stand at or a beat to pace, in place of stations, walkers and comings and goings;
+    the first `walkers` dealt pace) and `busy(t, who)` (anyone on the place's ground there, for a pacer to wait for). */
 export function makeCrowd(H) {
   const { THREE } = H;
   const LIST = H.cast ?? PATRONS, LINES = H.shared ?? SHARED, TALKS = H.chats ?? CHATS, SIZE = H.size ?? CROWD;
   const CAP = H.walkers ?? (H.oneWalker ? 1 : 0);   // 0: any number walk at once
   const shown = H.drawn ?? ((v) => v);
+  const POSTS = H.posts ?? null;
   const SEED = H.seed ?? 'crowd', SWAPS = H.swap ?? SWAP, WANTS = H.wants ?? ['slots', 'slots', 'arcade', 'cards'];
   /* A card or touchscreen table is played from one of its ends, beside it, and nobody stands about in the two rows in
      front of one: a Pokémon there hid the table and caught the tap meant for it (2026-10-27, the user's ask: Kangaskhan
@@ -139,7 +148,21 @@ export function makeCrowd(H) {
     walkAfter = 0; incoming = null;
     if (dealing() !== deal) { deal = dealing(); cast = dealt(LIST, seeded(`${SEED}:${deal}`), H.castSize ?? CAST); }
     const rnd = seeded(`${SEED}:${deal}:${hour}`), who = dealt(cast, rnd, SIZE);
-    who.forEach(async (def, i) => {
+    if (POSTS) {
+      const beats = dealt(POSTS.filter(o => o.path), rnd, Infinity), spots = dealt(POSTS.filter(o => o.at), rnd, Infinity);
+      const posts = [...beats.slice(0, CAP || beats.length), ...spots, ...beats.slice(CAP || beats.length)];
+      who.forEach(async (def, i) => {
+        const post = posts[i];
+        if (!post) return;
+        const at = post.at ?? post.path.find(t => !blocked(null, t)) ?? post.path[0];
+        held.add(key(at));
+        const p = await arrive(def, at);
+        held.delete(key(at));
+        if (!p) return;
+        p.post = post; p.toEnd = false; p.state = 'ponder'; p.until = performance.now() + between(PACE_REST);
+        if (post.at) p.look = pickOne(LOOKS);
+      });
+    } else who.forEach(async (def, i) => {
       const want = WANTS[i] ?? null;
       const st = want && free(def, want), at = st ? st.at : spotAround();
       held.add(key(at));
@@ -178,8 +201,22 @@ export function makeCrowd(H) {
     if (!path.length) reach(p);
   }
 
+  /** Whether `t` is someone else's on the ground, for a pacer about to step there. */
+  const blocked = (p, t) => H.busy ? H.busy(t, p) : holdsTile(here, t, p) || yours(t);
+
+  /** A post's next move: a stander turns to look somewhere else; a pacer heads on along its beat, or back. */
+  function onPost(p, now) {
+    const b = p.post.path;
+    if (!b) { p.look = pickOne(LOOKS); p.until = now + between(LOOK); return; }
+    p.toEnd = headTo(b, p.w.tile, p.toEnd);
+    p.w.path = beatPath(b, p.w.tile, p.toEnd);
+    p.look = null;
+    if (p.w.path.length) { p.state = 'walk'; p.then = 'ponder'; } else p.until = now + 1000;
+  }
+
   function decide(p) {
     const now = performance.now();
+    if (p.post) return onPost(p, now);
     if (!byDoor(p.w.tile) && !mayWalk(p, now)) { p.until = now + 500 + Math.random() * 1500; return; }
     const r = Math.random() + (p.roam ? 0.45 : 0);   // a wanderer mostly wanders
     if (r < 0.62) { const st = free(p.def) || free(p.def, pickOne([...new Set(stations.map(s => s.kind))])); if (st) return go(p, st.at, 'play', st); }
@@ -206,6 +243,7 @@ export function makeCrowd(H) {
 
   function reach(p) {
     const now = performance.now();
+    if (p.post) { p.state = 'ponder'; p.until = now + between(PACE_REST); p.goal = null; return; }
     if (CAP && p.state === 'walk' && (p.then === 'gone' || !byDoor(p.w.tile))) walkAfter = now + between(GAP);
     if (p.then === 'gone') { p.state = 'out'; p.shrink = now; return; }
     if (p.then === 'play' && p.station) { p.state = 'play'; p.until = now + between(PLAY); faceStation(p); return; }
@@ -352,7 +390,11 @@ export function makeCrowd(H) {
         p.grow = Math.min(1, p.grow + dt / 400);
         if (p.state === 'out') { const k = 1 - (now - p.shrink) / 350; if (k <= 0) { remove(p); continue; } p.m.group.scale.setScalar(k); }
         else p.m.group.scale.setScalar(calm ? 1 : 0.3 + 0.7 * p.grow);
-        if (p.state === 'walk') step(p, dt);
+        if (p.state === 'walk' && p.post) {
+          const r = stepBeat(w, dt, p.def.speed, H.tileX, H.tileZ, (t) => blocked(p, t));
+          if (r === 'arrived') reach(p);
+          else if (r === 'blocked' && w.waited > WAIT) { w.path = []; w.waited = 0; reach(p); }   // turns back after its rest
+        } else if (p.state === 'walk') step(p, dt);
         else if (p.state === 'talk') { if (now > p.until) { const r = p.resume; p.resume = null; if (r?.state === 'play') { p.state = 'play'; faceStation(p); } else if (r?.state === 'walk' && r.path.length) { p.state = 'walk'; w.path = r.path; } else { p.state = 'ponder'; p.until = now + 800; } } }
         else if (p.state === 'play') {
           if (yours(w.tile)) {   // you walked up to its game: it makes way
@@ -360,9 +402,9 @@ export function makeCrowd(H) {
             if (!bubble && Math.random() < 0.5) blurt(p, pickOne(['Oh! Go ahead.', 'All yours!', 'Have a turn!', 'I was done anyway.']));
             go(p, spotAround(), 'ponder');
           } else if (now > p.until) { p.station = null; p.goal = null; p.state = 'ponder'; p.until = now + between(PONDER); }
-        } else if (p.state === 'ponder' && (yours(w.tile) || inLane(w.tile))) go(p, spotAround(), 'ponder');   // out of your way, and off a table's front
+        } else if (p.state === 'ponder' && !p.post && (yours(w.tile) || inLane(w.tile))) go(p, spotAround(), 'ponder');   // out of your way, and off a table's front
         else if ((p.state === 'ponder' || p.state === 'counter') && now > p.until) decide(p);
-        const t = now / 1000 + p.phase, moving = w.path.length > 0 && p.state === 'walk', mv = p.def.move, walks = p.m.walks;
+        const t = now / 1000 + p.phase, moving = w.path.length > 0 && p.state === 'walk' && !w.blocked, mv = p.def.move, walks = p.m.walks;
         let y = 0;
         if (walks) { if (!calm && p.hopUntil > now) y = Math.abs(Math.sin((p.hopUntil - now) / 500 * Math.PI * 2)) * 0.2; }   // its steps are drawn: no bob
         else if (!calm) {
@@ -377,11 +419,11 @@ export function makeCrowd(H) {
         p.m.group.children[1].scale.setScalar(mv === 'float' ? 0.7 : 1);
         // a person stands facing you, and turns to whoever it's talking with (its flip, as a Pokémon's)
         const turned = p.state === 'talk' || p.state === 'counter' || chat?.with.includes(p);
-        H.drawMon(p.m, walks ? { dir: moving ? w.dir : turned ? (w.flip ? 'right' : 'left') : 'down', moving } : { facing: 'front', flip: w.flip, x: w.x, z: w.z }, dt);
+        H.drawMon(p.m, walks ? { dir: moving ? w.dir : turned ? (w.flip ? 'right' : 'left') : p.post ? (p.look ?? w.dir ?? 'down') : 'down', moving } : { facing: 'front', flip: w.flip, x: w.x, z: w.z }, dt);
       }
 
       // comings and goings: one heads home, another walks in a few seconds later
-      if (now > nextSwap && !incoming && mayWalk(null, now)) {
+      if (!POSTS && now > nextSwap && !incoming && mayWalk(null, now)) {
         nextSwap = now + between(SWAPS);
         const out = shuffled(here.filter(p => !p.leaving && p.state !== 'talk' && !chat?.with.includes(p)))[0];
         if (out) { leave(out); incoming = now + between([5000, 14000]); }
@@ -396,7 +438,7 @@ export function makeCrowd(H) {
       }
 
       // once a visit, one comes over to say hi
-      if (!greeted && now > greetAt && !bubble && !chat && mayWalk(null, now)) {
+      if (!POSTS && !greeted && now > greetAt && !bubble && !chat && mayWalk(null, now)) {
         greeted = true;
         const p = shuffled(here.filter(o => !o.leaving && (o.state === 'ponder' || o.state === 'play')))[0];
         const spot = p && [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ x: me.tile.x + dx, y: me.tile.y + dy })).find(t => open(t) && !byDoor(t) && !inLane(t));
@@ -408,6 +450,9 @@ export function makeCrowd(H) {
       if (bubble) place();
       if (!bubble && !chat && now > nextTalk) idleTalk(now);
     },
+
+    /** Whether one of the crowd stands on `t` or is stepping onto it (`but` aside), or is about to arrive there. */
+    holds: (t, but) => held.has(key(t)) || holdsTile(here, t, but),
 
     /** Whether a tapped regular stands in front of a game: the tap is for the game behind it. */
     inFront: (obj) => { const p = obj?.userData?.who; return !!p && lane.has(key(p.w.tile)); },

@@ -8,7 +8,7 @@
    ============================================================ */
 
 import { $, el, confirmDialog } from './ui.js';
-import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
+import { getSave, updateSave, resetSave, clearRunData, RUN_SLOTS } from './storage.js';
 import { goldShell } from './data/journal-ranks.js';
 import { LEVEL_SHELLS, shellEarned } from './data/difficulty.js';
 import { LUXURY_SHELLS, LUXURY_SHELL_IDS } from './data/catalogue.js';
@@ -114,7 +114,7 @@ async function resetAll() {
   const cloud = cloudRemembered() ? ' Your cloud save, on every device, will be reset too.' : '';
   if (!(await confirmDialog(`Are you really sure? This can't be undone.${cloud}`, 'Erase it all'))) return;
   resetSave();
-  clearRunData();
+  RUN_SLOTS.forEach(clearRunData);
   location.reload();
 }
 

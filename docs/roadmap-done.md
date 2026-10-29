@@ -3811,6 +3811,92 @@ The user tapped Later on WHO ARE YOU? and was never asked again. Their call: ask
 picked. `save.lookChosen` (the setup, an OK, or wearing a look or Walk alone on the Trainer Card) replaces `lookAsked`,
 so a save that tapped Later before is asked again. Checked headless: asked, Later, asked again, a pick stops it.
 
+### Your trainer drawn smaller (2026-10-28, cloud; on `main`)
+The user found the trainer big indoors (the Secret Base, the Clearing, Kurt's Workshop). Their call: shrink trainer and
+townspeople alike, Pokémon untouched. They tried `?walker=` sizes on the live site (the first deploy of the flag failed on
+a GitHub network error and was re-run) and picked 1.0: `WALKER_PX` is now a GIF's pixels, down from 1.25. `?gap=N` was
+added to try the buddy further back; they asked for a tiny bit more, so `GAP` went 0.85 to 0.95. The old branch `trainer-shrink` (a plain 1.06) is no longer needed.
+
+### The Trainer Tailor (2026-10-28, cloud; on `main`)
+
+The user's option 1 and design: a fourth front in the Poké Mall hall, kept by Kecleon (`js/mall-tailor.js`). The hall's
+back wall respaced to four fronts (Furniture 3, Game Corner 7, Trainer Tailor 13, Safari Outfitter 17), the carpet ending
+at the guide between the vending machines, the mezzanine's columns at 5 and 15, the back palms gone. Inside: 33
+mannequins (every look's front frame) on runways in three rows, a WORN / OWNED / price plaque each, one mesh each for the
+figures, plaques and shadows; rails, a mirror, a fitting room, Kecleon's counter. The trainer window (`js/look-window.js`,
+Timburr's card crossed with Meowth's prize screen) opens at a mannequin, the mirror or Kecleon; the one shown is tried on
+(`tryLook()` in `js/data/looks.js`). Buying is the tailor's only; the Trainer Card's Trainer key opens the same window,
+Wear only. A grand-opening ribbon (`tailorRibbon`), Oak / Sonia once in the Clearing (`toldHeld('tailor')`),
+`?mall=tailor`. Headless: the tailor 239 draws a frame and 129 MB (the hall 322, budget 332).
+Swapped the same day (the user wasn't sure about the mannequins and picked, of four ideas, fitting rooms): six curtained
+booths across the floor, step in and the curtain draws, each look tried on behind a swish, step out in what you wear;
+rails and tables baked into one mesh a material (158 draws). The mall's shopkeepers stand as their battle GIFs again
+(`gif: true` in `monBoard()`). Then the user's design for the inside: a booth walked into changes the scene to inside it
+(`buildBooth()`, place `tb`): a gilt mirror with your reflection, you alone in the middle, the window only Kecleon's
+small card and ◀ / ▶ either side (a zoom-in on the booth from outside was tried first and turned down: the user wanted
+to be "inside"). 58 draws a frame in there.
+
+
+### Your buddy roams free in your Secret Base, and pets show an emote (2026-10-28, cloud; on `main`)
+The user's ask: the buddy roams free in their own base, comes room to room with them and roams on there, and a pet shows a
+cute emoji. Built as `pal` in `js/base-3d.js` (a guest-shaped roamer, `lead.solo()` for the trainer) and `emote()` (a
+HeartGold-style bubble: heart, smile, note or twinkle). A friend's base keeps the follow. Detail in
+`docs/reference/trainer-follow.md`. Not yet elsewhere: the Clearing, towns and rooms still have the buddy at your heels
+and a plain hop on a tap (an idea for later, on the roadmap).
+
+### Houses framed as the Base, Kurt kept his size (2026-10-28, cloud; on `main`)
+The user still looked big in Kurt's Workshop after the shrink: plain houses framed 6.2 tiles across, the Base 8, so
+`HOME_ACROSS` (`js/event-3d.js`) is 8 now (`?across=N` to try others). Kurt and the people in rooms keep their size
+(`NPC_PX`, 1/34; `?npc=N` to try others): about a head and a half over the trainer read right, and the user didn't pick
+another.
+
+- **Trainer Plaza board as a low kiosk, Oak nudged right** (2026-10-28): the tall board hid the PC; the user picked the kiosk of three ideas (a clothesline of Polaroids and a PC-like screen not built). `js/hub-plaza.js`.
+- **Trainer Plaza board full screen** (2026-10-28, a mock the user loved, made real the same day): the kiosk's Look opens `js/plaza-view.js` (styles `.pv-*` in `css/hub.css`): Polaroids, + Add (`addTrainer()`), Trainer Card (the Trainers app's page), your code and add-by-code (`addByCode()`); `?plazaview` pins up made-up trainers.
+
+### The Clearing on set paths, side-on flyers (2026-10-28, cloud; on `main`)
+The user's asks: legendaries flying over showed their front; Halloween's ghosts flew over too; too many people moving,
+some overlapping. Now the flyover draws the overworld sheet's left / right row (the journey film's silhouette too), the
+ghosts left the flyers, and the Clearing's folk, ghosts and Trainer Plaza buddies keep posts (a spot, or a short set
+beat) and wait for each other and you (`js/ground-beats.js`; `docs/reference/hub-base-mall.md`, "Set paths, nobody
+overlapping"). Headless: no two closer than a tile over 75 s of walking. Earlier the same day the user had agreed the
+silhouettes could stay GIFs; they then asked for side-on everywhere, so the film's changed too.
+
+### Leak check: the trainer sprites, the Trainer Tailor and the buddy follow (2026-10-29, cloud; branch `claude/sprite-memory-leak-checks-nt12hd`, on `main` too)
+The user's ask: "checks and memory leak stuff for the new sprites we added, new tailor shop and trainer buddy stuff. I
+want the game to run smooth." Probed headless (memory, DOM nodes, listeners, a heap snapshot's retainers, JS a frame).
+Fixed: the wardrobe on the Trainer Card held every card shut while it was open (Escape listener; ~255 listeners and ~18 MB
+a time); walking sheets' cut cache never hit; every Pokémon overworld sheet ever loaded stayed for good; `?look=` was
+read every frame. Measured fine: a trainer worn costs no JS a frame to speak of, towns and the Clearing hold flat over
+three minutes, the fitting room keeps nothing over 4 x 33 outfits. `tools/budget-check.mjs` now wears a look on its trips
+and adds `wardrobe` and `tailor` checks (fail before the fix: +56 MB, 765 listeners); its `event-spring` place had pointed
+at `?event=spring`, which isn't an event, so it measured the Clearing: now `?event=hot-spring` (227 draws, 73 MB). The
+Clearing's budget was re-recorded at 288 draws (the commit it was recorded on reads ~278 today: time of day and the crowd,
+not code) and the tailor's at its fitting rooms' 158 (it still read the mannequins' 322). `tools/fps-probe.mjs` gained
+`clearing-look`, `base-look`, `town-look`, `mall-tailor`. Detail: `docs/reference/trainer-follow.md`.
+
+### One saved run of each kind (2026-10-29, cloud; branch `claude/sprite-memory-leak-checks-nt12hd`, on `main` too)
+The user's ask: "make safari and normal run, and sky pillar have their own continues", to switch without abandoning one.
+Each kind saves under its own key (`runSlot()` in `js/storage.js`; the main run keeps `pokedb.run.v1`, an old shared-key
+Safari run or climb moves over on load). The Clearing's three Pokéstops each continue their own; the bar's run LCD shows
+the one by the Pokéstop you stand at; the signs title shows the latest with a "1/2 ▸" key to step through them. Starting a
+new run asks only over a run of its kind; abandoning names which. The cloud save copies all three. Checked headless (a
+scratchpad probe): three runs saved side by side, each continued and abandoned alone, the old key moved, the signs title's
+key switching Continue. Detail: `docs/reference/saved-runs.md`.
+
+### Chansey's GIF back, the room signs stay put (2026-10-29, cloud; on `main`)
+The Center's Chansey had turned into her overworld sprite with the overworld sheets; `monBoard()` takes `gif: true` to keep
+a battle GIF, and she does. On iPhone a drag could slide the Center's Heal / Forget / Upgrade bubbles off their machines:
+the shared room canvas (`.center3d-view`, the Center, Mart and ? rooms) was `touch-action: manipulation`, letting Safari
+pan the page under a drag-walk; it is `none` now, as the hub's.
+
+## Caught / researched mark in battle (2026-10-29, the user's ask; branch `claude/run-status-indicators-cqlsda`, on `main` too)
+A normal run's foe shows a Poké Ball by its name once beaten, gold with a ★ once researched (`docs/reference/battle-screen-layout.md`'s last section).
+### A 3D room blank after coming back to the game (2026-10-29, cloud; on `main`)
+The user's Pokémon Center came back with only its Heal / Upgrade / Forget signs on black, and was fine again after the
+hub. A place put to sleep on hiding was woken on return before its context-lost event had run (iOS freezes the page
+while hidden), and a restore asked for that early is ignored for good (reproduced headless). `wakeBeside()` in
+`js/hd2d.js` now waits for the loss to be dispatched (1 s at most) before restoring. Fixes every 3D place, not only the Center.
+
 ### Meowth's games offered after you play (2026-10-29, cloud; on `main`)
 The user: players don't know Meowth's prize counter sells the arcade machines (it was only in Meowth's and Porygon's
 chatter). Now shutting any game whose machine you don't own, in the Game Corner or the Arcade, opens the mall's buy window

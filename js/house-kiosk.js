@@ -15,10 +15,35 @@ import { playSound } from './audio.js';
 import { el, confirmDialog, refreshCoins, fitText } from './ui.js';
 import { smoothIcon } from './smooth-icons.js';
 
-const BASE_PRICE = 1500, PIC = 180;
+const BASE_PRICE = 1500, PIC = 180, SETTLE = 750;
 let sheet = null;
 const pics = new Map();   // `${id}:${paint}` -> a still of that house, drawn once a page load
-let queue = Promise.resolve();
+let queue = Promise.resolve(), warmed = false;
+
+/** House `id`'s still in paint `n` into the cache, queued behind the others (they share one renderer). Each waits for
+    `after` and a frame of its own: drawn back to back the first time (the shared turntable made, every house built and
+    painted), they held the page for a second and the camera's pan to the lot jumped (the user, 2026-10-28). */
+function bake(id, n, snap, after) {
+  const key = `${id}:${n}`;
+  return (queue = queue.then(async () => {
+    if (pics.has(key)) return;
+    await after;
+    await new Promise(r => requestAnimationFrame(r));
+    if (pics.has(key)) return;
+    const art = document.createElement('canvas');
+    art.width = art.height = PIC;
+    try { await snap(id, n, art); } catch (err) { console.warn('house still failed', id, err); return; }
+    pics.set(key, art);
+  }));
+}
+
+/** Every card's still drawn ahead, while Timburr's card is up, so the catalogue's first open is as smooth as a second. */
+export function warmKiosk(snap) {
+  if (warmed) return;
+  warmed = true;
+  const h = housesOf(getSave());
+  for (const x of HOUSES) bake(x.id, h.paint[x.id] || 0, snap);
+}
 
 /** `tryOn({ id, paint } | null)` builds that house on the lot (null: the one lived in); `buyBase(paint)` buys the
     Secret Base itself, true once bought; `snap(id, paint, canvas)` draws a still of a house; `onClose(changed)` once
@@ -48,6 +73,7 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
   sheet.append(who, coins, shut, line, shelf, pickRow);
   parent.append(sheet);
   requestAnimationFrame(() => sheet?.classList.add('up'));
+  const settled = new Promise(r => setTimeout(r, SETTLE));
 
   const show = () => {
     const now = housesOf(getSave());
@@ -72,17 +98,9 @@ export function openKiosk({ parent, tryOn, buyBase, rebuild, snap, onClose }) {
   const picture = (id, n) => {
     const c = el('canvas', 'hk-pic');
     c.width = c.height = PIC;
-    const key = `${id}:${n}`, put = () => c.getContext('2d').drawImage(pics.get(key), 0, 0);
+    const key = `${id}:${n}`, put = () => pics.has(key) && c.getContext('2d').drawImage(pics.get(key), 0, 0);
     if (pics.has(key)) put();
-    else queue = queue.then(async () => {
-      if (!pics.has(key)) {
-        const art = document.createElement('canvas');
-        art.width = art.height = PIC;
-        try { await snap(id, n, art); } catch (err) { console.warn('house still failed', id, err); return; }
-        pics.set(key, art);
-      }
-      put();
-    });
+    else bake(id, n, snap, settled).then(put);
     return c;
   };
   const dots = (house, i) => {

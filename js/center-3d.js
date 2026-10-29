@@ -877,7 +877,8 @@ export function warmCenter() {
     post = createPost(renderer, { short: 760, crisp: false });
     post.final.uniforms.uBlur.value = 0;   // no tilt-shift in the Center (the user's call, 2026-10-09)
     buildRoom();
-    nurse = await monBoard({ src: 'assets/pokemon/chansey-front.gif', name: 'Chansey', cry: 'chansey' }, false);
+    // her battle GIF, not the overworld sheet (the user's call, 2026-10-29)
+    nurse = await monBoard({ src: 'assets/pokemon/chansey-front.gif', name: 'Chansey', cry: 'chansey', gif: true }, false);
     nurse.board.rotation.x = -PITCH;
     nurse.group.position.set(tileX(5), 0.12, tileZ(1));
     nurse.group.traverse(n => { n.userData.spot = 'nurse'; });

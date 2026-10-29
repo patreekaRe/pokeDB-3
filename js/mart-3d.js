@@ -8,7 +8,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway } from './hd2d.js';
+import { loadThree, tex, NPC_PX, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
@@ -30,7 +30,6 @@ const COUNTER = { x0: 1, x1: 2, y: 2, h: 0.95, d: 0.8 };
 const DOOR = { x: 5, y: ROWS - 1 };
 const CLERK = { x: 1.9, y: 1 };   // on the counter's right, the PC on its left (the user's ask, 2026-10-14: the PC hid the cards)
 const MON_MAX = 1.6;          // your Pokémon's height cap here, so a legendary doesn't stand in front of the whole shelf
-const NPC_PX = 1 / 34;        // a trainer's sprite pixel, as the ? rooms' (js/event-3d.js)
 
 const C = { blue: ['#5aa0f8', '#3a7ce0', '#2a60c0'], navy: '#1c3270', white: ['#ffffff', '#f2f6fc', '#e2eaf6'],
   tile: ['#eef5ff', '#dceaff'], grout: '#bcd2f0', ink: '#1e2a48', red: '#e84838' };

@@ -38,14 +38,14 @@ import { sealOn, shardsPlaced } from './data/towns.js';
 import { runLines, landLine } from './data/camp.js';
 import { campNews } from './towns.js';
 import { gymTalk } from './gym.js';
-import { getSave, updateSave, clearRunData, loadRunData, restoreLostRun, isShiny } from './storage.js';
+import { getSave, updateSave, clearRunData, loadRunData, restoreLostRun, isShiny, runSlot } from './storage.js';
 import { meowthDue } from './meowth.js';
 import { sampleMail } from './mail.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE, BONUS_PAGES } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, visitTown, isVisiting, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace, campTalk } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, savedRuns, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, visitTown, isVisiting, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace, campTalk } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -85,17 +85,21 @@ import { HOUSES_BY_ID, housesOpen } from './data/houses.js';
 
 /* ---------- moving between screens ---------- */
 
-/** The saved run as the title's Continue gem shows it, or null. */
-function savedRunCard() {
-  const saved = loadSavedRun();
-  if (!saved) return null;
+/** A saved run as the title's Continue gem and the hub's Pokéstops show it: the one saved in `slot` ('main', 'safari' or
+    'tower'), or with none named the latest saved; null if there's none. */
+function savedRunCard(slot) {
+  const saved = slot ? loadSavedRun(slot) : savedRuns()[0];
+  return saved ? runCard(saved) : null;
+}
+
+function runCard(saved) {
   const { starter, stage, biome, hp, maxHp } = saved;
   const here = saved.current && saved.map.byId[saved.current];
   // a Safari run is in today's area, not the main game's biome: the same names as its map's signs
   const area = saved.safari && safariAreaOn(saved.safari.areas?.[biome], saved.safari.day);
   const land = area || biomeAt(saved.route, biome);
   return {
-    saved, hp, maxHp,
+    saved, hp, maxHp, slot: runSlot(saved),
     floor: saved.tower ? floorOf(saved.tower.flight, here ? here.floor : -1) : here ? here.floor + 1 : 0,   // the biome's floor you stand on; 0 on the road in, like StS's Neow floor (a climb's: the tower's)
     sprite: spriteUrl(starter, 'front', stage),
     name: stageName(starter, stage),
@@ -133,7 +137,7 @@ function continueGame(saved) {
 function previewStarter(starter) {
   prepare(starter, {
     onBegin: async (level, pack) => {
-      if (hasSavedRun() && !(await confirmDialog('Start a new run? Your saved run will be lost.', 'Start new'))) return;
+      if (hasSavedRun('main') && !(await confirmDialog('Start a new run? Your saved run will be lost.', 'Start new'))) return;
       if (isMewtwoRun(starter) && sealOn()) {   // the Sealed Weakness it carries into the Depths, shown big first
         const { showPentagram } = await import('./pentagram.js');
         await showPentagram(runLines(shardsPlaced(getSave())), { cry: true });
@@ -162,13 +166,17 @@ async function requestMenu(sure) {
   return true;
 }
 
+const ABANDON_LINE = { main: 'Abandon your run?', safari: 'Abandon your Safari Zone run?', tower: 'Abandon your Sky Pillar climb?' };
 /** Throw the run away for good (the user's ask): from the Pokédex's Settings, or the title's Escape Rope, which has
-    already asked in its own bubble (`sure`). True once it has gone. */
-async function requestAbandon(sure) {
-  if (!hasSavedRun() && !isRunActive()) return false;
-  if (sure !== true && !(await confirmDialog('Abandon this run? It will be gone for good.', 'Abandon'))) return false;
-  forfeitRun();
-  if (!isPeeking()) clearRunData();   // a ?event= playtest run leaves the real saved run alone
+    already asked in its own bubble (`sure`). The run in play, else the one saved in `slot` (the latest saved if none is
+    named). True once it has gone. */
+async function requestAbandon(sure, slot = null) {
+  const active = isRunActive();
+  if (!active) slot ??= savedRunCard()?.slot;
+  if (!active && !(slot && hasSavedRun(slot))) return false;
+  const line = active ? 'Abandon this run?' : ABANDON_LINE[slot];
+  if (sure !== true && !(await confirmDialog(`${line} It will be gone for good.`, 'Abandon'))) return false;
+  forfeitRun(slot ?? 'main');
   showHome();
   return true;
 }
@@ -205,7 +213,7 @@ function init() {
   // ?houses&tree: a save whose Secret Base was bought before houses (the Ancient Tree kept, the Starter Cottage free)
   if (query.has('houses') && query.has('tree')) updateSave(d => { d.baseOwned = true; delete d.houses; });
   if (query.has('houses') && HOUSES_BY_ID[query.get('livein')]) updateSave(d => { d.baseOwned = true; d.houses = { owned: ['tree', 'cottage', query.get('livein')], home: query.get('livein'), paint: {} }; });
-  if (query.has('runback') && !loadRunData()) console.log('Lost run put back:', restoreLostRun()?.why);   // stashLostRun()'s
+  if (query.has('runback')) console.log('Lost run put back:', restoreLostRun()?.why);   // stashLostRun()'s
   if (query.has('walk')) updateSave(d => { d.titleHub = true; });   // Settings' Title screen, by URL (?signs only for the page load)
   if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
@@ -292,13 +300,13 @@ function init() {
   initSafariPrep({
     onStart: async () => {
       if (!(await safariTicket())) return openSafariPrep();
-      if (hasSavedRun() && !(await confirmDialog('Start today\'s Safari Zone run? Your saved run will be lost.', 'Start'))) return openSafariPrep();
+      if (hasSavedRun('safari') && !(await confirmDialog('Start today\'s Safari Zone run? Your saved Safari run will be lost.', 'Start'))) return openSafariPrep();
       leaveTitle();
       beginSafari();
     },
     onDuo: async (ids) => {   // the Duo key's Start Duo (js/duoprep.js): a replay, so the Day Pass's
       if (!(await safariTicket())) return openSafariPrep();
-      if (hasSavedRun() && !(await confirmDialog('Start a Duo Run? Your saved run will be lost.', 'Start'))) return openSafariPrep();
+      if (hasSavedRun('safari') && !(await confirmDialog('Start a Duo Run? Your saved Safari run will be lost.', 'Start'))) return openSafariPrep();
       leaveTitle();
       beginSafari(undefined, ids);
     },
@@ -306,7 +314,7 @@ function init() {
 
   initTowerPrep({
     onStart: async (practice) => {
-      if (hasSavedRun() && !(await confirmDialog('Start a Sky Pillar climb? Your saved run will be lost.', 'Climb'))) return openTowerPrep();
+      if (hasSavedRun('tower') && !(await confirmDialog('Start a Sky Pillar climb? Your saved climb will be lost.', 'Climb'))) return openTowerPrep();
       const climber = practice ?? towerWeekly().starter;
       const close = await climbIntro({ starter: climber, shiny: getSave().shiny.on.includes(climber.id) });
       leaveTitle();
@@ -317,6 +325,7 @@ function init() {
 
   initTitle({
     savedRun: savedRunCard,
+    savedRuns: () => savedRuns().map(runCard),
     onContinue: continueGame,
     onNewGame: () => newGame(),
     onCollection: () => { showCollection(); leaveTitle(); },
@@ -384,7 +393,7 @@ function init() {
       if (place) { hideDevice(); return (await import(place.classList.contains('mall3d') ? './mall-3d.js' : './base-3d.js')).leave(); }
       if (await requestMenu()) hideDevice();
     },
-    abandonable: () => isRunActive() || hasSavedRun(),
+    abandonable: () => isRunActive() || savedRuns().length > 0,
   });
 
   // Playtest shortcut (the user's ask): ?scene=tutor (or kombat, center...) shows just that room's painted scene, no

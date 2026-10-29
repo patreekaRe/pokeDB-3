@@ -89,7 +89,7 @@
       <nav class="title-menu" id="title-menu" aria-label="Main menu"></nav>
       <!-- a saved run: its nameplate, right under the gems (renderRun() in js/title.js); the Pokémon waits in Continue's ball -->
       <div class="title-run" id="title-run" hidden>
-        <h3 class="biome-sign title-biome" id="title-run-biome"></h3>
+        <div class="title-run-top"><h3 class="biome-sign title-biome" id="title-run-biome"></h3><button type="button" class="title-run-next" id="title-run-next" hidden></button></div>
         <div class="title-run-row">
         <div class="nameplate title-plate" id="title-plate">
           <div class="nameplate-title"><strong id="title-run-name"></strong><strong class="title-floor" id="title-run-floor"></strong></div>
@@ -482,7 +482,7 @@
         <div class="turn-banner" id="relic-banner" data-side="relic" aria-hidden="true" hidden><strong id="relic-banner-title"></strong><span id="relic-banner-gain"></span></div>
 
         <div class="nameplate" id="enemy-plate">
-          <div class="nameplate-title"><strong id="enemy-name"></strong><span id="enemy-shiny" class="shiny-tag" hidden>Shiny</span><span id="enemy-type" class="chip"></span></div>
+          <div class="nameplate-title"><strong id="enemy-name"></strong><span id="enemy-dex" class="dex-mark" hidden><img src="assets/items/poke-ball.png" alt=""></span><span id="enemy-shiny" class="shiny-tag" hidden>Shiny</span><span id="enemy-type" class="chip"></span></div>
           <div class="gb-hp" id="enemy-hp" role="progressbar" aria-label="Enemy HP" aria-valuemin="0">
             <span class="gb-hp-tag" aria-hidden="true">HP:</span>
             <span class="gb-hp-track"><span class="gb-hp-fill" id="enemy-hp-fill"></span></span>

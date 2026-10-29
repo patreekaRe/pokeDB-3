@@ -1,5 +1,22 @@
 ## Saved runs
 
+**One saved run of each kind** (2026-10-29, the user's ask: "switch between a safari run or normal run without abandoning
+another"): the main game's run (Mewtwo's too) under `pokedb.run.v1`, a Safari run (the Duo Run's too) under
+`pokedb.run.safari`, a Sky Pillar climb under `pokedb.run.tower`. `runSlot(run)` in `js/storage.js` says which ('main',
+'safari', 'tower', from `run.safari` / `run.tower`); `saveRunData()` writes to the run's own key, and `loadRunData(slot)` /
+`clearRunData(slot)` / `loadSavedRun(slot)` / `hasSavedRun(slot)` take one ('main' when none is named). Everything in
+`js/run.js` that patches or clears the saved run uses the run's own slot (`creditRoom()`, `gleaned`, `gymWon`, `endRun()`,
+`abandonRun()`), and `forfeitRun(slot)` with no run in play throws away the one named. A run saved under the old shared
+key that is a Safari run or a climb moves to its own key as `js/storage.js` loads (and so does one a cloud copy brings
+back). Starting a new run of a kind asks only over a run of that kind ("Your saved Safari run will be lost"). Each
+checkpoint carries `savedAt`; `savedRuns()` lists them latest first. Where each is picked up: the Clearing's Pokéstops,
+each its own kind's (the trail's, the Safari gate's, the Sky Pillar's; `stopRuns` in `js/hub-3d.js`), the bar's run LCD
+showing the run of the Pokéstop you stand by, else the latest, its Escape Rope throwing that one away; the signs title's
+Continue and nameplate show the latest, and with more than one saved a key beside the sign (`#title-run-next`, "1/2 ▸")
+steps through them, Continue and the Run key acting on the one shown. The cloud save copies all three (`run`, `runSafari`,
+`runTower` on `saves/<uid>`; a copy from before has only `run`, and its fingerprint is unchanged while the other two are
+empty). The Stats app's runs-in-progress count is the main and Safari ones (a climb isn't a run started).
+
 The run in progress is checkpointed to its own localStorage key
 (`pokedb.run.v1`, helpers at the bottom of `js/storage.js`) every time
 `showMap()` runs, so a refresh resumes on the map before whatever room you
@@ -31,7 +48,7 @@ journey film, and the next biome's `showMap()` checkpoints it. A run saved befor
 road (`restoreRun()` rebuilds it from `BIOMES`), so it needed no version bump; a route id that isn't a biome of its slot
 discards the save. A refresh at the crossroads comes back to it (`run.atFork`, 2026-10-11). `held` (2026-10-15), the held berry packed for the run (docs/reference/items.md), is optional the same way: missing reads as none, an unknown id is dropped; so are the Berry Pouch's `pouch` (ids, missing or unknown ones read as empty) and `heldAte` (the biome the last held berry was eaten in, else null). A refresh in a Gym after beating its leader, or in the rewards after it, comes back to the gym's hand-over (`run.gymWon`: the fight's result and the leader's last words, checkpointed as the fight cuts back to the gym, `continueRun()` calling `gymRoom()`; 2026-10-13, the user's ask), never the boss again; `gymWon.counted` stops a second pass through the rewards counting the win twice, and `walkOn()` / `startBiome()` clear it. The title's
 Continue gem (`savedRunCard()` in `js/main.js`, drawn by `renderMenu()` in `js/title.js`) shows whenever a valid save
-exists, its icon the run's Poké Ball wobbling like a catch in progress (`.cball`, the old Continue card's pixel ball, which
+exists (the latest, or the one the next-run key picked), its icon the run's Poké Ball wobbling like a catch in progress (`.cball`, the old Continue card's pixel ball, which
 the user wanted back), its biome and HP on the nameplate under the gems; tapping it swings the lid open in a flash of light, and your
 Pokémon comes out white, then in colour, with its cry (`sendOut()`) before the map loads. Begin run confirms before replacing a save.
 

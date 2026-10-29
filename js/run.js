@@ -34,7 +34,7 @@ import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
 import { recordsOpen } from './data/records.js';
 import { runTypes, outStarter, runPool, runItems, fitsRun, newDuo, restoreDuo, syncDecks, duoGains, duoStarters } from './data/duo.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, stashLostRun, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, stashLostRun, runSlot, RUN_SLOTS, markSeen, markSafari, perkLevel, isNew, gainShiny, openSealedCapsules } from './storage.js';
 import { SHINY_ODDS, markShinies, shinyGain, shinyLine, addShiny } from './data/shinies.js';
 import { moveInFirst } from './safari-home.js';
 import { openSealed } from './data/exchange.js';
@@ -79,7 +79,7 @@ import { meowthDue } from './meowth.js';
 import { renderTower, hideTower, guardianIntro, towerFall, barReady, setTowerGraves } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
-import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
+import { dexSeen, dexDefeated, dexWeight, dexPerkLevel, dexMark } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariAreaOn, safariDaily, duoRoad, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
@@ -233,16 +233,21 @@ function streakLine(won, lost) {
   return `🔥 Win streak: ${n} in a row${goal}!`;
 }
 
-/** The Abandon button's: a run thrown away mid-way counts as a loss for the win streak, saved or loaded. */
-export function forfeitRun() {
+/** The Abandon button's: a run thrown away mid-way counts as a loss for the win streak, saved or loaded. With no run in
+    play, it's the one saved in `slot` (runSlot()). */
+export function forfeitRun(slot = 'main') {
   if (run && !run.over) breakStreak(run.starter.id, !!run.safari || !!run.tower);
-  else if (!run) { const saved = loadRunData(); if (saved) breakStreak(saved.starter, !!saved.safari || !!saved.tower); }
+  else if (!run) {
+    const saved = loadRunData(slot);
+    if (saved) breakStreak(saved.starter, !!saved.safari || !!saved.tower);
+    if (saved && !peeking) clearRunData(slot);   // a ?event= playtest leaves the real saved run alone
+  }
   abandonRun();
 }
 
 export function abandonRun() {
   abandonBattle();
-  if (run && !peeking) clearRunData();
+  if (run && !peeking) clearRunData(runSlot(run));
   bootLater = null;
   run = null;
   endVisit();
@@ -315,6 +320,7 @@ function checkpoint() {
   showBadgeNews();   // a new find puts a "!" on the Home key
   saveRunData({
     version: RUN_SAVE_VERSION,
+    savedAt: Date.now(),      // the latest of the runs saved (one a kind) is the one the title's Continue shows
     starter: run.starter.id,
     level: run.level,
     levelUnlocked: run.levelUnlocked,
@@ -371,7 +377,7 @@ function creditRoom(node) {
   run.credited ??= [];
   if (run.credited.includes(key)) return false;
   run.credited.push(key);
-  const saved = loadRunData();
+  const saved = loadRunData(runSlot(run));
   if (saved && !peeking) saveRunData({ ...saved, credited: run.credited });
   return true;
 }
@@ -398,7 +404,7 @@ function glean(key, drop) {
   if (!drop || gleaned(key)) return false;
   run.gleaned = [...(run.gleaned || []), key];
   if (drop.key) { if (!peeking) gainKey(drop.key); } else gainMat(drop.id, drop.n);
-  const saved = loadRunData();
+  const saved = loadRunData(runSlot(run));
   if (saved && !peeking) saveRunData({ ...saved, gleaned: run.gleaned });
   return true;
 }
@@ -484,15 +490,19 @@ function restoreRun(saved) {
   };
 }
 
-/** The saved run, rebuilt and ready to play, or null. A save that can't be restored is thrown away. */
-export function loadSavedRun() {
-  const saved = loadRunData();
+/** The run saved in `slot` (runSlot(): 'main', 'safari' or 'tower'), rebuilt and ready to play, or null. A save that
+    can't be restored is thrown away. */
+export function loadSavedRun(slot = 'main') {
+  const saved = loadRunData(slot);
   if (!saved) return null;
   try { return restoreRun(saved); }
-  catch (err) { console.error('Saved run thrown away:', err); stashLostRun(saved, err); clearRunData(); return null; }
+  catch (err) { console.error('Saved run thrown away:', err); stashLostRun(saved, err); clearRunData(slot); return null; }
 }
 
-export const hasSavedRun = () => loadSavedRun() !== null;
+export const hasSavedRun = (slot = 'main') => loadSavedRun(slot) !== null;
+
+/** Every run saved, the latest first (a run saved before they kept the time counts as the oldest). */
+export const savedRuns = () => RUN_SLOTS.map(loadSavedRun).filter(Boolean).sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
 
 /** Pick a saved run (from loadSavedRun) back up on its map. Returns the place's walk-on film if one plays over it. */
 export function continueRun(saved) {
@@ -811,7 +821,7 @@ async function goHome(from, town = null, to = null) {
     town opens its far gate onto the run (the user's ask, 2026-10-14). Never one at the crossroads, in a gym's hand-over,
     or Mewtwo's, a Safari or a climb, which have no town. */
 export function runWaitingIn(id) {
-  const saved = loadSavedRun();
+  const saved = loadSavedRun('main');
   if (!saved || saved.safari || saved.tower || saved.atFork || saved.gymWon || isMewtwoRun(saved.starter)) return null;
   return (saved.town ? saved.town.id : biomeAt(saved.route, saved.biome)?.id) === id ? saved : null;
 }
@@ -1921,6 +1931,7 @@ async function fight(node, { talked = false } = {}) {
   if (isTower() && augs().enemyHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().enemyHp));   // Sudden Death
   if (node.foeHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * node.foeHp));   // an event's foe, smaller than its usual self (the Snorlax)
   if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
+  encounter.dexMark = !ken && !isSafari() && !isTower() ? dexMark(node.enemyId) : null;
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
   encounter.shiny = isSafari() && node.type === 'fight' && Boolean(node.shiny);
@@ -2804,7 +2815,7 @@ function afterFight(node, result) {
     });
     if (run.gymWon && !recount && !peeking) {
       run.gymWon.counted = true;
-      const saved = loadRunData();
+      const saved = loadRunData(runSlot(run));
       if (saved) saveRunData({ ...saved, gymWon: run.gymWon });
     }
     if (isTower() && run.tower.flight >= TOP_FLIGHT) { collect(); climbed(TOP_FLOOR); return endRun(true); }   // Rayquaza on floor 100: the summit
@@ -5610,7 +5621,7 @@ async function endTower(won) {
 
 function endRun(won, atLastBoss = false, loss = null) {
   run.over = true;
-  if (!peeking) clearRunData();
+  if (!peeking) clearRunData(runSlot(run));
   if (!won && !peeking) try { recordFall(fallNow(loss)); } catch (err) { console.warn('No grave for this run', err); }   // a grave on your friends' maps (js/graves.js)
   if (!peeking) for (const id of run.items) markSeen('items', id);   // found on the last rewards, with no map checkpoint after
   if (isTower()) return endTower(won);

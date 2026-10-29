@@ -40,7 +40,7 @@ const JEEP = { x: 3, y: 1 }, COUNTER = { x: 8, y: 3, w: 5 }, KIOSK = { x: 13, y:
 const STUMP_H = 0.82, BALL_R = 0.24, SIGN_W = 1.5, SIGN_H = 0.75;
 
 export const OUTFITTER_KEEPER = { id: 'kangaskhan', name: 'Kangaskhan',
-  src: 'assets/pokemon/kangaskhan-front.gif',
+  src: 'assets/pokemon/kangaskhan-front.gif', gif: true,
   hello: ['Welcome to the Safari Outfitter! Kit up before you head into the Zone.', 'Ah, a ranger in the making! Have a look round.', 'Fresh balls on every cushion. My little one polished them all.'],
   chat: ['Great and Ultra Balls are the safe bet. The others shine at the right moment: read their tags!', 'Your first try each day is free. After that, a Day Pass from the machine buys replays till midnight.',
     'The board on the wall shows today\'s best catchers. Think you can top it?', 'Check the Ranger Task Board by my jeep: catch enough and there\'s furniture, coins and room for more Pokémon at home.', 'My little one wants to come along on a run. Not until it\'s bigger!',

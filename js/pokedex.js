@@ -119,6 +119,8 @@ export function dexDefeated(id) {
 
 /** How many entries' research is complete, of how many. */
 export const isResearched = (id) => Boolean(pageOf(id)) && researched(id);
+/** The battle plate's mark for a normal run's foe: 'researched', 'caught' (beaten once, the Pokédex's Poké Ball), or null. */
+export const dexMark = (id) => (!pageOf(id) || !getSave().dex.defeated.includes(id) ? null : researched(id) ? 'researched' : 'caught');
 export const researchCount =() => [ALL_IDS.filter(researched).length, ALL_IDS.length];
 
 /* ---------- the window ----------
