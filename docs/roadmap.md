@@ -1622,6 +1622,12 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
   leaderboards stop until the next day, nothing is charged). If it grows: move Firebase to Blaze with a small budget
   alert, and cut reads (leaderboards, the Trainer Plaza) first. The bigger risk is a Nintendo / TPC takedown of the repo
   or site, not load. Nothing built; the user decides when.
+- **Walking away from a ? room** (discussed 2026-10-29, the user asked whether leaving Rival's Return should be this
+  easy or the room should force a choice). Claude's call: keep it leavable. StS's We Meet Again has a fourth option,
+  "Attack", that gives nothing, so refusing him is part of the event; forced, it's a tax. But make the refusal a choice
+  on the board ("Refuse" / "Walk past him", with his parting line and Sneasel's hiss) rather than the doormat's
+  "You can't come back" box. Forced rooms (no Leave) only for an event whose every option costs something (StS's
+  Falling); none does yet. Not built; waiting on the user's say. ▶ Run in: CLOUD, effort medium.
 
 ## Parked (don't start unprompted)
 
