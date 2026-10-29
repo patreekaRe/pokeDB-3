@@ -3926,3 +3926,5 @@ The foe's caught / researched ball moved from beside its name to the row under i
 The user's ask, from a reel of another Pokémon roguelike: the leader's after-fight talk (`beaten` as their Pokémon falls,
 `won` after beating you, its Pokémon recalled first) stands them on the enemy's spot in the arena, lightly dimmed, instead
 of sliding in mid-screen (`stand` / `standOn()` in `js/gym.js`; `docs/reference/gym-leaders.md`).
+
+- 2026-10-29: the gym badge line after a win closes on any tap (the room held still till then), and every text box takes a lifted finger when iOS sends no click (`sayLines()` in `js/rewards.js`).
