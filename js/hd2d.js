@@ -64,6 +64,8 @@ export function sleepGL(renderer) {
   asleep.add(renderer);
   unhook(renderer);
   letGo(renderer);
+  const view = renderer.domElement;
+  losing.set(renderer, new Promise(done => view.addEventListener('webglcontextlost', () => setTimeout(done), { once: true })));
   try { renderer.forceContextLoss(); } catch { /* already gone */ }
   // three.js skips a lost context only once its 'webglcontextlost' event has come, a task later: a frame drawn before
   // then (the Clearing's, under the mall's curtain) hooked a new build's dispose listeners onto everything, which no
@@ -71,6 +73,11 @@ export function sleepGL(renderer) {
   if (!muted.has(renderer)) { muted.set(renderer, renderer.render); renderer.render = () => {}; }
 }
 const muted = new WeakMap();   // a sleeping renderer -> its own render()
+/* A restore asked for before the loss's 'webglcontextlost' event has been dispatched (and three.js has called
+   preventDefault() on it) is ignored, and the context stays lost for good: the place draws nothing but its labels (the
+   user's Pokémon Center, 2026-10-29). A page frozen while hidden (iOS) sleeps its places on hiding and wakes them on
+   return before that event has run, so a wake waits for it. */
+const losing = new WeakMap();   // a sleeping renderer -> resolves once its loss has been dispatched
 
 /* A lost context frees nothing in Safari. WebKit's loseContext() only cuts its objects loose: the GPU context behind it,
    with every texture, render target, shader and screen-sized buffer it made, lives on until the context is restored or
@@ -180,11 +187,14 @@ export function wakeBeside(renderer) {
   asleep.delete(renderer);
   if (muted.has(renderer)) { renderer.render = muted.get(renderer); muted.delete(renderer); }
   regrow(renderer);
-  return new Promise(done => {
+  const lost = losing.get(renderer);
+  losing.delete(renderer);
+  return Promise.race([lost, new Promise(done => setTimeout(done, 1000))]).then(() => new Promise(done => {
+    if (asleep.has(renderer)) return done();   // put back to sleep meanwhile
     const timer = setTimeout(done, 2000);
     renderer.domElement.addEventListener('webglcontextrestored', () => { clearTimeout(timer); done(); }, { once: true });
     try { renderer.forceContextRestore(); } catch { clearTimeout(timer); done(); }
-  });
+  }));
 }
 
 /* Away from the game (another app, the lock screen), the page is kept frozen until iOS needs the memory, and it lets go of

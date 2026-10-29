@@ -3891,3 +3891,8 @@ pan the page under a drag-walk; it is `none` now, as the hub's.
 
 ## Caught / researched mark in battle (2026-10-29, the user's ask; branch `claude/run-status-indicators-cqlsda`, on `main` too)
 A normal run's foe shows a Poké Ball by its name once beaten, gold with a ★ once researched (`docs/reference/battle-screen-layout.md`'s last section).
+### A 3D room blank after coming back to the game (2026-10-29, cloud; on `main`)
+The user's Pokémon Center came back with only its Heal / Upgrade / Forget signs on black, and was fine again after the
+hub. A place put to sleep on hiding was woken on return before its context-lost event had run (iOS freezes the page
+while hidden), and a restore asked for that early is ignored for good (reproduced headless). `wakeBeside()` in
+`js/hd2d.js` now waits for the loss to be dispatched (1 s at most) before restoring. Fixes every 3D place, not only the Center.
