@@ -29,7 +29,7 @@ import { tipAt } from './tips.js';
 import { calmFx } from './prefs.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog, crownArt, auraArt, lookArt } from './ui.js';
-import { lookSheet, wornLook } from './data/looks.js';
+import { HEROES, lookSheet, wornLook } from './data/looks.js';
 import { lookWindow } from './look-window.js';
 import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
@@ -787,75 +787,63 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   });
   const frame = el('div', 'tc-partner-frame');
   frame.append(pic);
+  // every key under the partner is one look (the user's pick, 2026-10-29: five pills in four styles read messy): a square
+  // slot with its icon, ringed while a toggle is on, a padlock while locked. Captions don't fit at 12px (a pixel font's
+  // letter is 12px wide, a slot 50px), so a locked slot's title says how it's earned on a tap (js/tips.js)
+  const slots = el('div', 'tc-slots');
+  const slot = (cls, title, label, art, onClick) => {
+    const b = el('button', `tc-slot ${cls}`);
+    b.type = 'button';
+    b.title = title;
+    b.setAttribute('aria-label', label);
+    b.append(...art);
+    b.addEventListener('click', () => { playSound('confirm'); onClick(); });
+    slots.append(b);
+    return b;
+  };
+  const toggle = (b, on) => { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); };
+  const locked = (cls, title, art) => {
+    const box = el('span', `tc-slot locked ${cls}`);
+    box.title = title;
+    box.append(...art, el('span', 'tc-slot-lock', '🔒'));
+    slots.append(box);
+  };
   const carried = SKIN_BY_ID[workshopOf(save).skin];
-  const ballKey = el('button', 'tc-shiny tc-ball-key');
-  ballKey.type = 'button';
-  ballKey.title = 'The ball your partner comes out of in battle: tap to choose';
-  ballKey.setAttribute('aria-label', `Ball: ${carried?.name ?? 'Poké Ball'}. Choose another`);
-  ballKey.append(ball3d(carried?.sprite ?? 'poke-ball'), carried?.name.replace(/ Ball$/, '') ?? 'Poké');
-  ballKey.addEventListener('click', () => { playSound('confirm'); ballPicker(body, redraw); });
-  frame.append(ballKey);
+  slot('tc-ball-key', 'The ball your partner comes out of in battle: tap to choose', `Ball: ${carried?.name ?? 'Poké Ball'}. Choose another`,
+    [ball3d(carried?.sprite ?? 'poke-ball')], () => ballPicker(body, redraw));
   const worn = wornLook(save);
-  const lookKey = el('button', 'tc-shiny tc-look-key');
-  lookKey.type = 'button';
-  lookKey.title = 'The trainer you walk as, your partner a step behind: tap to choose';
-  lookKey.setAttribute('aria-label', `Trainer: ${worn?.name ?? 'none'}. Choose one`);
-  lookKey.append(...(worn ? [lookArt(lookSheet(worn.id))] : []), 'Trainer');
-  lookKey.addEventListener('click', () => { playSound('confirm'); lookPicker(body, redraw); });
-  frame.append(lookKey);
+  slot(`tc-look-key${worn ? '' : ' alone'}`, 'The trainer you walk as, your partner a step behind: tap to choose', `Trainer: ${worn?.name ?? 'none'}. Choose one`,
+    [lookArt(lookSheet(worn?.id ?? HEROES[0].id))], () => lookPicker(body, redraw));
   if (mate.twin) {
-    const flip = el('button', `tc-shiny${mate.shiny ? ' on' : ''}`, mate.shiny ? '✨ Shiny' : 'Shiny');
-    flip.type = 'button';
-    flip.title = mate.shiny ? 'Shiny on: tap for its normal colours' : 'Tap for its shiny colours';
-    flip.setAttribute('aria-pressed', String(!!mate.shiny));
-    flip.setAttribute('aria-label', 'Shiny partner');
-    flip.addEventListener('click', () => {
-      updateSave(d => { d.partner = mate.twin; });
-      playSound('confirm');
-      openTrainerCard(into, { reopen: true });
-    });
-    frame.append(flip);
-  }
-  if (isMaster(save)) {
-    const on = wearsCrown(save), key = el('button', `tc-shiny tc-crown-key${on ? ' on' : ''}`, on ? '👑 Crown' : 'Crown');
-    key.type = 'button';
-    key.title = on ? 'The Champion\'s Crown is on: tap to take it off' : 'Tap to wear the Champion\'s Crown';
-    key.setAttribute('aria-pressed', String(on));
-    key.setAttribute('aria-label', 'Champion\'s Crown');
-    key.addEventListener('click', () => {
-      updateSave(d => { d.crown = !on; });
-      playSound('confirm');
-      openTrainerCard(into, { reopen: true });
-    });
-    frame.append(key);
-  } else {
-    // a preview of the crown for everyone not yet a Master, greyed, saying how it's earned (the user's pick, 2026-10-23)
-    const lock = el('span', 'tc-shiny tc-crown-locked');
-    lock.append(crownArt('tc-crown-mini'), ' Win Lv 10');
-    lock.title = 'The Champion\'s Crown: win a run on Trainer Level 10 and it floats over your partner.';
-    frame.append(lock);
+    const flip = slot('tc-shiny-key', mate.shiny ? 'Shiny on: tap for its normal colours' : 'Tap for its shiny colours', 'Shiny partner',
+      [el('span', 'tc-slot-glyph', '✨')], () => { updateSave(d => { d.partner = mate.twin; }); redraw(); });
+    toggle(flip, !!mate.shiny);
   }
   const earnedAuras = aurasEarned(save);
   if (earnedAuras.length) {
     // the Aura key steps through every aura earned, then off (the user's go, 2026-10-23); the best one isn't saved as a
     // pick, so a higher Level won later puts its aura on by itself
     const on = auraWorn(save), best = auraBest(save), cycle = [...earnedAuras, 0], next = cycle[(cycle.indexOf(on) + 1) % cycle.length];
-    const key = el('button', `tc-shiny tc-aura-key${on ? ` on aura-key-lv${on}` : ''}`, on ? `🔥 Lv ${on}` : 'Aura');
-    key.type = 'button';
-    key.title = `${on ? `The ${starName(on)} aura, for a Level ${on} win, is on` : 'Your aura is off'}: tap for ${next ? `the ${starName(next)} aura` : 'none'}`;
-    key.setAttribute('aria-label', `Super Saiyan aura: ${on ? starName(on) : 'off'}`);
-    key.addEventListener('click', () => {
-      updateSave(d => { if (next === best) delete d.aura; else d.aura = next; });
-      playSound('confirm');
-      openTrainerCard(into, { reopen: true });
-    });
-    frame.append(key);
+    const shown = on || best;
+    const key = slot(`tc-aura-key aura-key-lv${shown}`, `${on ? `The ${starName(on)} aura, for a Level ${on} win, is on` : 'Your aura is off'}: tap for ${next ? `the ${starName(next)} aura` : 'none'}`,
+      `Super Saiyan aura: ${on ? starName(on) : 'off'}`,
+      [auraArt(shown, { cls: 'tc-aura-mini', s: 40 }).back, el('span', 'tc-slot-lv', String(shown))],
+      () => { updateSave(d => { if (next === best) delete d.aura; else d.aura = next; }); redraw(); });
+    toggle(key, !!on);
   } else {
-    const lock = el('span', 'tc-shiny tc-crown-locked tc-aura-locked');
-    lock.append(auraArt(6, { cls: 'tc-aura-mini', s: 16 }).back, ' Win Lv 6');
-    lock.title = 'A Super Saiyan aura: win a run on Trainer Level 6 and your partner glows ruby, bigger each Level up to 10.';
-    frame.append(lock);
+    locked('tc-aura-key', 'A Super Saiyan aura: win a run on Trainer Level 6 and your partner glows ruby, bigger each Level up to 10.',
+      [auraArt(6, { cls: 'tc-aura-mini', s: 40 }).back]);
   }
+  if (isMaster(save)) {
+    const on = wearsCrown(save);
+    const key = slot('tc-crown-key', on ? 'The Champion\'s Crown is on: tap to take it off' : 'Tap to wear the Champion\'s Crown', 'Champion\'s Crown',
+      [crownArt('tc-crown-mini')], () => { updateSave(d => { d.crown = !on; }); redraw(); });
+    toggle(key, on);
+  } else {
+    // a preview of the crown for everyone not yet a Master, greyed, saying how it's earned (the user's pick, 2026-10-23)
+    locked('tc-crown-key', 'The Champion\'s Crown: win a run on Trainer Level 10 and it floats over your partner.', [crownArt('tc-crown-mini')]);
+  }
+  frame.append(slots);
   info.append(list, frame);
 
   let n = 0;

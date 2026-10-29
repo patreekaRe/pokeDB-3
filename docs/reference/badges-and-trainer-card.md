@@ -77,3 +77,13 @@ the stylesheet that uses it, `css/`.
 **The Trainer key** (2026-10-28, the user's ask: a trainer the buddy follows): beside the Ball key, the worn look's front
 frame and name (or "Trainer"), opening `lookPicker()`: the heroes free, the classes for PokéCoins, Walk alone to go
 without. The system's notes: `docs/reference/trainer-follow.md`.
+
+**The style slots** (2026-10-29, the user's pick of four ideas: the five pills under the partner, Ball / Trainer / Shiny /
+Crown / Aura, read messy in four looks): one panel (`.tc-partner-frame`) holds the partner and a 2-column grid of square
+slots (`.tc-slots`, `.tc-slot`; `slot()` / `locked()` in `openTrainerCard()`), in the order ball, trainer, shiny, aura,
+crown, an odd last one centred. Pickers (ball, trainer) always show their icon; toggles (shiny, aura, crown) fade while
+off and are ringed in the tier's ink (`--tc3`) while on (`aria-pressed`); the aura slot shows the worn (else best) aura
+and its Level in a corner chip. Locked ones (aura before a Level 6 win, crown before 10) are greyed spans under a 🔒,
+their title saying how they're earned on a tap. No captions: a 12px pixel letter is 12px wide and a slot about 47px.
+Walk alone shows the first hero as a faint silhouette. The other ideas offered: a row of round slots, one Style key
+opening a wardrobe page, or one pill style with "Ball · Moon" labels.

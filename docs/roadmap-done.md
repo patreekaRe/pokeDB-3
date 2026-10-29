@@ -3904,3 +3904,7 @@ for it (TAKE IT HOME, its 3D model turning, 750, Buy / Not now; `takeHome()` in 
 kind), once per game per mall visit. The first-tap lines and a Meowth hello say it too. Checked headless: Pong offered
 once a visit, Ekans Trail bought, Voltorb Flip offered by Meowth. Not done (ideas if it's still missed): a "!" or price
 tag on unowned cabinets.
+
+**The Trainer Card's style slots** (2026-10-29, cloud, on `main`; the user picked A of four ideas): the five mismatched
+pills under the partner are one look now, square icon slots in the partner's panel (ringed on, padlocked until earned).
+Notes: `docs/reference/badges-and-trainer-card.md`. The user checks the look on their phone.
