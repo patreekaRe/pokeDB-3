@@ -59,6 +59,7 @@ export const NEXT = [
   ['battle', 'A wild Pokémon you\'ve beaten before shows a Poké Ball under its HP bar, gold with a star once its research is complete.'],
   ['mall', 'Finish a game in the Game Corner or Arcade and its machine is offered to take home to your Secret Base, right there.'],
   ['dex', 'The Trainer Card\'s ball, trainer, shiny, aura, crown and pinned badge are six tidy icon slots in your partner\'s panel, ringed when on and padlocked until earned.'],
+  ['battle', 'After a gym fight, won or lost, the Gym Leader steps up onto their Pokémon\'s spot in the arena to talk, like the games.'],
   ...HELD.filter(([on]) => on).map(([, line]) => line),
 ];
 

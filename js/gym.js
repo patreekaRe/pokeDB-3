@@ -101,8 +101,10 @@ export function badgePop(l) {
     dimmed. */
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
-   `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
-export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false, title = 'GYM LEADER ', look = '', glow = '', pair = null } = {}) {
+   `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura.
+   `stand` (the enemy's portrait box): they slide in onto their Pokémon's spot on the battle screen instead of the
+   middle, as the games' trainers stand after a fight (the user's ask, 2026-10-29). */
+export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false, title = 'GYM LEADER ', look = '', glow = '', pair = null, stand = null } = {}) {
   const calm = !battleFx();
   const layer = el('div', `gym-scene${possess ? ' possess' : ''}${bubble ? ' bubble' : ''}${look ? ` ${look}` : ''}`);
   if (glow) layer.style.setProperty('--glow', glow);
@@ -116,6 +118,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, p
   const text = el('p', 'gym-text');
   box.append(plate, text, el('i', 'gym-more'));
   if (bubble) layer.append(box); else layer.append(who, box);
+  if (stand && !bubble) standOn(layer, stand);
   const other = pair && el('img', 'gym-trainer pair pixel');
   if (other) { other.src = pair.src; other.alt = ''; layer.prepend(other); layer.classList.add('paired'); }
   document.body.append(layer);
@@ -151,6 +154,21 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, p
   darkness?.();
   await sleep(calm ? 0 : 320);
   layer.remove();
+}
+
+/* Their feet where the Pokémon's were (the box's untransformed size: a fainted one is shrunk and tilted about its
+   middle), a person's height from the arena's own scale (--base), kept under the top bar. No box on screen: the middle. */
+function standOn(layer, box) {
+  const r = box.getBoundingClientRect();
+  if (!r.width || !box.offsetHeight) return;
+  const size = parseFloat(getComputedStyle(box).getPropertyValue('--size')) || 1;
+  const x = r.left + r.width / 2, feet = r.top + r.height / 2 + box.offsetHeight / 2;
+  const tall = Math.min(box.offsetHeight / size * 1.6, feet - 64);
+  if (tall < 80) return;
+  layer.classList.add('stand');
+  layer.style.setProperty('--sx', `${Math.round(x)}px`);
+  layer.style.setProperty('--sy', `${Math.round(feet)}px`);
+  layer.style.setProperty('--sh', `${Math.round(tall)}px`);
 }
 
 /* The speaker's picture, loaded before they slide in (2026-10-16: on an iPhone Smeargle's talk slid in empty, the picture
