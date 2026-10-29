@@ -17,8 +17,9 @@ const STILL = 0.004;    // moved less than this in a frame: stood still
 const JUMP = 2.5;       // the walker moved further than this in a frame: it was put somewhere new, not walked
 
 /** A trainer for the place, or null when none is worn. `group`: where the buddy's group lives; `pitch`: the boards' lean (or a function for it);
-    `dress(group)`: the place's own touch (a bend). */
-export async function makeLead({ group, pitch, dress }) {
+    `dress(group)`: the place's own touch (a bend); `gap()`: the world's scale where things are drawn bigger than 1 (the
+    crossroads), stretching the step between you. */
+export async function makeLead({ group, pitch, dress, gap = () => 1 }) {
   const look = wornLook(getSave());
   if (!look) return null;
   const m = await monBoard({ sheet: lookSheet(look.id), name: look.name }, false);
@@ -62,9 +63,10 @@ export async function makeLead({ group, pitch, dress }) {
       if (started && Math.hypot(here.x - was.x, here.z - was.z) > JUMP) { trail.length = 0; started = false; }   // a door, a warp
       if (!started) {   // you walk in first, your buddy just behind you, nearer the camera
         started = true;
-        trail.push({ x: here.x, y: here.y, z: here.z + GAP });
+        trail.push({ x: here.x, y: here.y, z: here.z + GAP * gap() });
         Object.assign(me, here); Object.assign(mate, trail[0]);
         dir = walker.facing === 'back' ? 'up' : 'down';
+        mateFacing = walker.facing === 'back' && mon.sheets.back ? 'back' : 'front';
       }
       const last = trail[trail.length - 1];
       if (Math.hypot(here.x - last.x, here.z - last.z) > 0.05) {
@@ -72,10 +74,10 @@ export async function makeLead({ group, pitch, dress }) {
         if (trail.length > 40) trail.shift();
       }
       const mineWas = { ...me }, mateWas = { ...mate };
-      if (acting) { settle(me, behind(here, GAP), dt); settle(mate, here, dt); }
+      if (acting) { settle(me, behind(here, GAP * gap()), dt); settle(mate, here, dt); }
       else {
         if (Math.hypot(me.x - here.x, me.z - here.z) < 0.25) Object.assign(me, here); else settle(me, here, dt);   // back from a swap
-        settle(mate, behind(here, GAP), dt);
+        settle(mate, behind(here, GAP * gap()), dt);
       }
       stride(mineWas, dt, mon.group.visible);
       const bx = mate.x - mateWas.x, bz = mate.z - mateWas.z;
@@ -96,6 +98,8 @@ export async function makeLead({ group, pitch, dress }) {
       trail.push({ ...me });
       stride(mineWas, dt, true);
     },
+    /** The trainer turned to `to` (down, left, right, up) till it next walks: to face someone talking. */
+    face(to) { dir = to; },
     /** Back at the walker's spot, the trail forgotten (a new room, a jump across the map). */
     reset() { trail.length = 0; started = false; },
     dispose(free) { group.remove(m.group); free?.(m.group); },

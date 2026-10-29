@@ -22,6 +22,7 @@ import { progressBar, isResearched } from './pokedex.js';
 import { getSave } from './storage.js';
 import { ALL_PAGES } from './data/pokedex.js';
 import { meowthTalk } from './meowth.js';
+import { makeLead } from './follow.js';
 import { typeText } from './type-badge.js';
 
 let THREE, renderer, post, view;
@@ -551,6 +552,9 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   // Meowth, the first time after Biome 1: out of the trees on the right to talk, then off again (js/meowth.js)
   const cat = meowth ? await monBoard({ src: 'assets/pokemon/meowth-front.gif', name: 'Meowth', cry: 'meowth' }, false) : null;
   if (cat) { cat.group.visible = false; W.scene.add(cat.group); }
+  // you as your trainer, up the path first, your Pokémon a step behind (js/follow.js); none worn, it walks alone
+  let scaleAt = () => 1;
+  const lead = await makeLead({ group: W.scene, pitch: 0, gap: () => scaleAt(walker.z) });
   await warmShaders(renderer, W.scene, camera);
 
   const scene = $('crossroads-scene'), go = $('xr-go'), calm = still();
@@ -563,6 +567,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
 
   const kitty = { x: 0, z: START_Z, facing: 'front', flip: false, hop: 0 };
   const walker = { x: 0, z: START_Z, facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };
+  let turned = false;   // your Pokémon turned to Meowth while it talks
   let talking = !!cat, picked = -1, walking = false, asking = false, backing = false, route = [], keys = new Set(), toRead = -1, reading = -1;
   let size = 1, vw = 0, vh = 0, raf = 0, last = 0, stepAt = 0, held = false;
   const read = new Set();   // boards opened: their "!" and glow stop
@@ -575,8 +580,13 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     fitCamera(camera, vw, vh, W);
     // your Pokémon as tall on the screen as the painted one where it loads in (frame() eases it down towards the fork)
     const room = Math.min(vw * 0.3, vh * (vh > vw * 1.1 ? 0.15 : 0.2));
-    size = room / F / Math.max(0.5, mon.top);
+    size = room / F / Math.max(0.5, mon.top, lead?.m.top ?? 0);
   }
+  /** How big a board is drawn standing at z, as frame() says. */
+  scaleAt = (z) => {
+    const u = Math.max(0, Math.min(1, (START_Z - z) / (START_Z - FORK_Z)));
+    return size * -z * (1 - (1 - SHRINK) * u * u * (3 - 2 * u));
+  };
   const project = (x, y, z) => { const p = new THREE.Vector3(x, y, z).project(camera); return [(p.x + 1) / 2 * vw, (1 - p.y) / 2 * vh]; };
 
   const box = $('xr-roads');
@@ -666,6 +676,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       route = [];
       keys.clear();
       face('back');
+      lead?.face('up');
       read.add(i);
       playSound('stick');
       fillPanel(i);
@@ -706,6 +717,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       resize();
     }
     resize();
+    if (lead) walker.z = START_Z - 0.95 * scaleAt(START_Z);   // so your Pokémon stands where it would alone
 
     /** Where a step from (x0, z0) to (x, z) ends up: on the grass below the fork, or kept to the road it's on. */
     function constrain(x0, z0, x, z) {
@@ -771,18 +783,21 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     };
 
     function frame(now, dt) {
-      drawMon(mon, walker, dt * 1000);
-      const dz = -walker.z;
+      mon.group.position.set(walker.x, 0, walker.z);
+      const pose = lead ? { ...lead.lead(walker, mon, dt * 1000), ...(turned ? { facing: 'front', flip: true } : {}) } : walker;
+      drawMon(mon, pose, dt * 1000);
       // as tall on the screen as it loads in near the bottom, easing down to SHRINK by the fork and held there (full
       // perspective felt like too much in the painted one); walking off up the road at the end, the distance shrinks it on
-      const u = Math.max(0, Math.min(1, (START_Z - walker.z) / (START_Z - FORK_Z)));
-      if (!walking) mon.scale = size * dz * (1 - (1 - SHRINK) * u * u * (3 - 2 * u));
-      mon.group.scale.setScalar(mon.scale);
-      mon.group.position.set(walker.x, 0, walker.z);
+      const stand = (m, z) => {
+        if (!walking) m.scale = scaleAt(z);
+        m.group.scale.setScalar(m.scale);
+        m.board.rotation.x = -Math.atan2(camH - m.top * 0.5 * m.scale, -z) * 0.85;
+      };
+      stand(mon, mon.group.position.z);
+      if (lead) stand(lead.m, lead.m.group.position.z);
       const bob = calm || !walker.hop ? 0 : Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08;
       mon.board.position.y = bob;
-      mon.board.scale.x = walker.flip ? -1 : 1;
-      mon.board.rotation.x = -Math.atan2(camH - mon.top * 0.5 * mon.scale, dz) * 0.85;
+      mon.board.scale.x = pose.flip ? -1 : 1;
       if (cat?.group.visible) {
         drawMon(cat, kitty, dt * 1000);
         const cu = Math.max(0, Math.min(1, (START_Z - kitty.z) / (START_Z - FORK_Z)));
@@ -852,9 +867,11 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       else await trot(...spot);
       kitty.flip = false;
       face('front');
-      walker.flip = true;   // your Pokémon turns to it
+      walker.flip = turned = true;   // your Pokémon turns to it
+      lead?.face('right');
       await meowthTalk(scene);
-      walker.flip = false;
+      walker.flip = turned = false;
+      lead?.face('up');
       face('back');
       if (!calm) await trot(edge, spot[1] - 1);
       cat.group.visible = false;
