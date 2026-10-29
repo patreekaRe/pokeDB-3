@@ -829,12 +829,12 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     const shown = on || best;
     const key = slot(`tc-aura-key aura-key-lv${shown}`, `${on ? `The ${starName(on)} aura, for a Level ${on} win, is on` : 'Your aura is off'}: tap for ${next ? `the ${starName(next)} aura` : 'none'}`,
       `Super Saiyan aura: ${on ? starName(on) : 'off'}`,
-      [el('span', 'tc-slot-glyph', '🔥'), el('span', 'tc-slot-lv', String(shown))],
+      [auraArt(shown, { cls: 'tc-aura-mini', s: 40 }).back, el('span', 'tc-slot-lv', String(shown))],
       () => { updateSave(d => { if (next === best) delete d.aura; else d.aura = next; }); redraw(); });
     toggle(key, !!on);
   } else {
     locked('tc-aura-key', 'A Super Saiyan aura: win a run on Trainer Level 6 and your partner glows ruby, bigger each Level up to 10.',
-      [el('span', 'tc-slot-glyph', '🔥')]);
+      [auraArt(6, { cls: 'tc-aura-mini', s: 40 }).back]);
   }
   if (isMaster(save)) {
     const on = wearsCrown(save);

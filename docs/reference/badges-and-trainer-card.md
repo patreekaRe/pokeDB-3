@@ -90,5 +90,5 @@ opening a wardrobe page, or one pill style with "Ball · Moon" labels.
 **Six slots** (2026-10-29, the user: five looked odd): the pinned badge moved into the grid as the sixth slot
 (`.tc-pin-key`, its cream disc), off the Badge Case's label (only Cover there now); the tack on the partner stays. Every
 slot always shows, so it's always 2x3: shiny is locked when the partner has no shiny of yours, the pin locked while
-signed out (no `myCode()`). The aura slot is the pixel 🔥 with its Level chip, coloured while on (the mini flames read
-as a blob at 47px).
+signed out (no `myCode()`). The aura slot keeps the animated aura flames (`auraArt(…, { s: 40 })`, the user likes them moving; a pixel 🔥 was
+tried and turned down) with its Level chip, coloured while on.
