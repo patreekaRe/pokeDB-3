@@ -90,3 +90,9 @@ near 185 MB, the arena awake over what the run keeps (the last two ? rooms, the 
   list (its buffer raised to 4000, the sprites filled the default 250) fetched with `cache: 'reload'`, then
   `location.reload()`, since a plain reload takes fresh-cached modules from the cache. No goes on to the pixel room or
   `onFail` as before.
+
+## ? rooms' Pokémon wear their battle GIFs (2026-10-29, the user's ask)
+Since the overworld sheets (2026-10-28) `monBoard()` drew any Pokémon with one as its sheet, ? rooms' too. `figure()` in
+`js/event-3d.js` now passes `gif: true`, so every Pokémon stood in a ? room, the grotto, a gym or Kenmatta's dojo plays its
+battle GIF. A town home's (the trader, a hall's cast, Mewtwo at the Depths camp) passes `ow: true` in its spot and keeps
+the sheet, like the town outside. Your partner walking the room keeps its sheet, as everywhere.

@@ -356,9 +356,11 @@ async function npcBoard(id) {
   return who;
 }
 
-/** Someone standing in the room: a trainer or a Pokémon (a front GIF, `flip` facing right), at tile `at`, `y` up. */
+/** Someone standing in the room: a trainer or a Pokémon (a front GIF, `flip` facing right), at tile `at`, `y` up. A ?
+    room's Pokémon keeps its battle GIF over an overworld sheet (the user's call, 2026-10-29); a town home's (`at.ow`)
+    takes the sheet, as the town outside does. */
 async function figure(stand, f, at) {
-  const who = f.npc ? await npcBoard(f.npc) : await monBoard({ src: f.src }, false);
+  const who = f.npc ? await npcBoard(f.npc) : await monBoard({ src: f.src, gif: !at.ow }, false);
   if (!f.npc) who.board.rotation.x = -PITCH;
   who.flip = !!f.flip;
   who.stand = stand;
@@ -10883,7 +10885,7 @@ async function buildHome(figs, { time, town, home, gift, belt }) {
   B.talks = new Set();
   if (!L && !H) for (const [id, x, y, o] of h.furnish || []) piece(id, x, y, o);
   if (home === 'shop' && figs.trader) {
-    B.who.trader = await figure('trader', figs.trader, { x: 3.5, ty: 1.2, scale: 0.9 });
+    B.who.trader = await figure('trader', figs.trader, { x: 3.5, ty: 1.2, scale: 0.9, ow: true });
     B.who.trader.group.traverse(o => { o.userData.spot = 0; });
     B.spots = [{ step: { x: 4, y: 3 } }];
     B.anchors[0] = overHead(B.who.trader);
@@ -10914,7 +10916,7 @@ async function buildHome(figs, { time, town, home, gift, belt }) {
     const ids = Object.keys(figs).filter(k => k.startsWith('cast:'));
     for (const [i, k] of ids.entries()) {
       const [x, ty, y, scale = 0.85] = h.castAt[i % h.castAt.length], id = k.slice(5);
-      B.who[id] = await figure(id, { ...figs[k], flip: h.flip ? h.flip(i, ids.length) : i % 2 === 1 }, { x, ty, y, scale });
+      B.who[id] = await figure(id, { ...figs[k], flip: h.flip ? h.flip(i, ids.length) : i % 2 === 1 }, { x, ty, y, scale, ow: true });
       B.talks.add(id);
     }
     let next = 0, turn = 0;
@@ -11340,7 +11342,7 @@ async function buildCamp(figs, h) {
   }
   // Mewtwo by the gate, watching it (not when you are Mewtwo)
   if (figs.mewtwo) {
-    B.who.mewtwo = await figure('mewtwo', figs.mewtwo, h.mewtwoAt);
+    B.who.mewtwo = await figure('mewtwo', figs.mewtwo, { ...h.mewtwoAt, ow: true });
     B.talks.add('mewtwo');
     for (const k of [key(7, 1), key(8, 1)]) B.blocked.add(k);
   }
