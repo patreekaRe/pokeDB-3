@@ -1616,6 +1616,13 @@ should fold out the same way (`render()` in `js/safariprep.js` could reuse `road
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
 
+- **Going public** (discussed 2026-10-29): the user is thinking of sharing the game openly. No bigger servers needed: the site is
+  static on GitHub Pages (258 MB, under its 1 GB limit; 100 GB a month of bandwidth, a soft limit) and the online parts
+  are Firebase `pokedb-42e7c` on the free Spark plan (50k reads / 20k writes a day; past that cloud save, friends and
+  leaderboards stop until the next day, nothing is charged). If it grows: move Firebase to Blaze with a small budget
+  alert, and cut reads (leaderboards, the Trainer Plaza) first. The bigger risk is a Nintendo / TPC takedown of the repo
+  or site, not load. Nothing built; the user decides when.
+
 ## Parked (don't start unprompted)
 
 - Battery Saver (a Settings switch: 3D at 30 fps, backdrops at 15): built and taken out the next day, the user's call (2026-10-16: "keep it 60fps for now"). `git cherry-pick dc3e47e` brings it back whole, `slowFrameMs()` included.
