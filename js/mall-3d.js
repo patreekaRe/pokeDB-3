@@ -953,7 +953,8 @@ const dexNews = () => root.querySelector('.mall-dex').classList.toggle('dex-news
 
 /** The device grows out of its key over the mall and shuts back into it, as in the Clearing. */
 function fromKey(open, key) {
-  if (key.classList.contains('out') || answer || riding) return;
+  // stepping into a fitting room: its step cut short, `booth` was never cleared and every tap was ignored
+  if (key.classList.contains('out') || answer || riding || (booth && P?.id !== 'tb')) return;
   walker.path = []; aim = null;
   playSound('confirm');
   open(key, () => { key.classList.remove('out'); dexNews(); showCoins(); });

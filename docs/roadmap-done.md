@@ -3913,4 +3913,6 @@ Notes: `docs/reference/badges-and-trainer-card.md`. The user checks the look on 
 **Stuck in the Clearing after the Pokédex** (2026-10-29, cloud, on `main`): opening the corner Pokédex (or Help) while
 your partner walked out to a new run cut its path short but left `outbound` set, so every tap was ignored for good
 (reproduced headless). `fromCorner()` in `js/hub-3d.js` now waits out a walk out, lets the walk back from a run carry
-on like the first walk-in, and `openHub()` clears a half-done walk-in.
+on like the first walk-in, and `openHub()` clears a half-done walk-in. The Mall had the same trap stepping into a Trainer Tailor
+fitting room (`booth`); its `fromKey()` now waits that step out too. The Secret Base and the towns open it from the run
+bar, which never cuts a walk.
