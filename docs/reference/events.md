@@ -298,8 +298,9 @@ Flame Wall, Grass Vine Whip and Block, Water Water Gun and Withdraw, Psychic Psy
   two a try, `tries` (4). Play opens `flipGame()`: a board of 8 tiles (`.flip-board`, layout `flip-game`, since the room
   is `flip-room`) that turn over; a matched move joins the deck there and then (`learnedId()`), a matched Voltorb pair
   blows up for `zap` HP; every try is saved, so a refresh picks the game up ("Keep playing"). Act `deal`.
-- **Rival's Return** (We Meet Again): your rival, a silhouette in a cap (the Gym's unknown leader copied to
-  `assets/trainers/rival.png`, its blink the same picture; `NPCS.rival`), and his Sneasel. He asks ₽ (`ask`), the item
+- **Rival's Return** (We Meet Again): your rival, Silver (since 2026-10-30, the sprite the user sent:
+  `assets/trainers/rival.png`, 80x80, its blink `rival-blink.png` with the one visible eye shut; `NPCS.rival`; until then
+  the Gym's unknown-leader silhouette), and his Sneasel. He asks ₽ (`ask`), the item
   of your Bag and the move of your deck picked by `node.event.pick` (never a basic, an evolution or unplayable card), each
   for a relic (`offerRelic()`). Act `barter` (`{ what }`: the coins, the Bag or the TM disc arcs to him; `trade` was the
   Day Care's).

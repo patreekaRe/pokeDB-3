@@ -3928,3 +3928,9 @@ The user's ask, from a reel of another Pokémon roguelike: the leader's after-fi
 of sliding in mid-screen (`stand` / `standOn()` in `js/gym.js`; `docs/reference/gym-leaders.md`).
 
 - 2026-10-29: the gym badge line after a win closes on any tap (the room held still till then), and every text box takes a lifted finger when iOS sends no click (`sayLines()` in `js/rewards.js`).
+
+### The rival's sprite in Rival's Return (2026-10-30, cloud; on `main`)
+The rival is Silver now, from a sprite the user sent (the Pokéngine CDN had just been allowed, but they picked their own):
+`assets/trainers/rival.png` 80x80, `rival-blink.png` painted (the visible eye shut), `NPCS.rival` refit to
+`head: [29, 52, 23], waist: 38` (the coat's skirt stays with the legs). Its artist is still to credit (roadmap, Waiting on
+the user). Patch 1.33, Dressed for the Road, cut with it.

@@ -350,7 +350,7 @@ export const NPCS = {
   deleter: { head: [24, 44, 17], waist: 36 },   // the Move Deleter (Augustine Sycamore)
   daycare: { head: [12, 34, 18], waist: 38 },   // the Day-Care Lady (Agatha)
   chairman: { head: [7, 27, 18], waist: 40 },   // the Fan Club's Chairman (Founder)
-  rival: { head: [14, 43, 27], waist: 53 },     // your rival in Rival's Return: a silhouette in a cap (the Gym's unknown leader), his name never given
+  rival: { head: [29, 52, 23], waist: 38 },     // your rival in Rival's Return (Silver, the user's sprite), his name never given
 };
 
 export const EVENTS_BY_ID = Object.fromEntries(EVENTS.map(e => [e.id, e]));
