@@ -406,7 +406,11 @@ Meowth Fury Swipes 3×3, Minccino Tail Slap 2×5, Glameow Fury Swipes 2×4, Haxo
 moves for every pool boss and Eternatus (its first form; Eternamax has none): Dunsparce Endeavor 20, Wigglytuff Double Slap
 5×4, Granbull Rage +3, Castform Sunny Day +3, Loudred Uproar 6×3, Munchlax Gluttony 18 block, Blissey Draining Kiss 12
 (heals 16), Porygon Sharpen +4, Porygon2 Recover 28 block, Eternatus Flamethrower 20; Porygon-Z got Download +4 so every
-boss has one (`tests/enemy-moves.test.mjs` holds it). Random order: Spinda, Castform. The Safari's Pokémon and the gyms
+boss has one (`tests/enemy-moves.test.mjs` holds it). Random order: Spinda, Castform.
+Bot check (human bot, the game before and after part 2, the same sim, 150 a cell, win %), route Ruins -> Thornwood:
+fire L0 / L3 84.7 / 53.3 -> 76.0 / 59.3, grass 70.0 / 46.0 -> 76.7 / 54.7, water 56.0 / 44.0 -> 48.7 / 34.7; Savanna -> Wastes:
+fire 72.0 / 50.0 -> 74.7 / 50.0, grass 65.3 / 41.3 -> 60.7 / 42.7, water 60.0 / 45.3 -> 66.7 / 49.3; Mewtwo (Depths)
+42.0 -> 45.3. Water Ruins -> Thornwood confirmed at 300: 53.0 / 38.3 -> 51.3 / 35.0, inside noise. Nothing retuned. The Safari's Pokémon and the gyms
 have none yet. The Pokédex lists them
 (`moveNumbers()` "5×3 dmg", "Once, at half HP", "picked at random"). Tests: `tests/enemy-moves.test.mjs`; in a real fight
 `tools/enemy-probe.mjs`; `?arena=wild&foe=<id>` (or `elite`) fights that Pokémon.

@@ -9,20 +9,25 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**▶ PLAYTEST ON THE LIVE SITE. Smarter enemies: done 2026-11-04, on `main`** (the double-battles idea's step (a); the
-user's call: on `main`, it doesn't need double battles; `docs/reference/cards.md`'s last section). Multi-hit moves
+**▶ PLAYTEST ON THE BRANCH. Smarter enemies: built 2026-11-04, on branch `smarter-enemies` (commit e9ffd33e), NOT on
+`main`** (the double-battles idea's step (a); `docs/reference/cards.md`'s last section). It went to `main` by mistake
+the same day (the session read "I'd put it on main" as the user's call; the user wanted a playtest branch) and was
+reverted there within the hour; pokeDB-sim's mirror is on its own `smarter-enemies` branch too. Playtest link:
+https://rawcdn.githack.com/patreekaRe/pokeDB-3/441c04ee9da21e9feb953b87daa92531c3778842/index.html (add the flags below to it). Merge both branches into `main` only once the user says so. Multi-hit moves
 ("5×3", each hit through your block), a move at half HP once (every Alpha's Frenzy 5×3, a move each for the 9 main bosses),
 a random order for 5 erratic ones (never a move three turns running), Regigigas opening with Slow Start. Bot check (human
 bot, old -> new win %, 150 a cell): Fire L0 76.7 -> 77.3, L3 50.7 -> 50.0; Grass L0 61.3 -> 72.0, L3 44.7 -> 44.7;
 Water L0 60.0 -> 48.7, L3 51.3 -> 36.0. Water confirmed at 300: L0 63.3 -> 56.3, L3 42.3 -> 39.7 (all 450 pooled:
 -8 / -7). So Fire and Grass hold and Water is ~7 points harder, deaths spread over biomes 2-3, no one fight; not
-retuned yet (the user's call: keep it as challenge, or soften Water's matchups). Try `?arena=wild&foe=cinccino` (two multi-hits),
+retuned yet (the user's call: keep it as challenge, or soften Water's matchups). On the playtest link try `?arena=wild&foe=cinccino` (two multi-hits),
 `?arena=elite&foe=sentret` (Frenzy at half HP), `?arena=wild&foe=kangaskhan`. Say if any fight feels unfair or the
 "5×3" bubble reads badly on a phone.
-> Next (▶ Run in: CLOUD, attach `pokeDB-3` and `pokeDB-sim`; effort medium): "Smarter enemies part 2, from
-> docs/reference/cards.md's last section: give the pool biomes' Pokémon (Ruins, Thornwood, Savanna), the Depths' and
-> the pool bosses the same treatment (multi-hits where the games' move hits several times, a half-HP move per boss),
-> plus anything the user said after playtesting part 1. Bot-check old vs new at 150 a cell; run tools/enemy-probe.mjs."
+**Part 2 built 2026-11-04 on the same branch** (commit 441c04e and its docs commit; `docs/reference/cards.md`'s "Part 2"): the
+pool biomes' and the Depths' multi-hits (Fury Swipes, Double Slap, Tail Slap 2×5, Icicle Spear, Fury Attack, Dual Chop), a
+half-HP move for every pool boss and Eternatus (and Porygon-Z), Spinda and Castform at random. Bot check: every cell
+within noise (Water on Ruins -> Thornwood at 300: L0 53.0 -> 51.3, L3 38.3 -> 35.0). On the branch link try
+`?arena=wild&foe=minccino` (2×5) and `?arena=elite&foe=spinda`. Next is the user's: playtest, say "merge" (both repos'
+`smarter-enemies` into `main`), or ask for Water to be softened, the Safari's Pokémon or the gyms next.
 
 **▶ PLAYTEST ON THE LIVE SITE. Shadows in a few draws, the hub's fps: done 2026-11-04, on `main`** (the user's ask:
 "improving fps overall especially in the hub, and find more memory leak stuff"; `docs/roadmap-done.md`,
@@ -1243,6 +1248,15 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**The whole battle revamp stays on branches** (the user's rule, 2026-11-04, CLAUDE.md's "The battle revamp never touches
+`main`"): smarter enemies, double battles and everything after them are built and playtested on their own branches,
+never pushed to `main` until the user says to merge.
+
+**Your cloud save on a playtest link** (an idea, 2026-11-04; the user noticed a githack link has no cloud save): cloud
+save is on only for `patreekare.github.io` and localhost (`FIREBASE_CONFIG` in `js/cloud.js`), so a branch's link
+starts empty, which keeps a test build from writing over the real save. Possible: let a playtest link sign in and load
+the cloud save read-only (never upload), so a branch is tried on your own progress. Not asked for yet.
+
 **Battles with more than one enemy (StS-style)** (an idea, 2026-11-04, on branch `multi-enemy-battles`, never `main`;
 the user's ask: the phone battle feels small, could fights have several enemies like Slay the Spire?). Measured on an
 iPhone 13 (390x664 visible): the arena is 374x337, the enemy's box 178x121 with an 85px sprite, its intent bubble 184px
@@ -1260,16 +1274,16 @@ bigger hitter) and a balance pass on encounter HP. Phased: (1) engine + `enemies
 
 **What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
 StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
-play). What it lacks: (a) **smarter enemies**: DONE on `main` 2026-11-04 (the "Open" entry above; the user's call: on
-`main`, since it doesn't need double battles). (b) **pairs designed with roles**, not two random Pokémon: a tank
+play). What it lacks: (a) **smarter enemies**: built on branch `smarter-enemies` 2026-11-04, waiting on the user's playtest (the
+"Open" entry above). (b) **pairs designed with roles**, not two random Pokémon: a tank
 shielding a hitter, a caller that brings in a helper, a pair that buffs each other; that's what makes two enemies a
 puzzle. (c) **StS's side-on layout** (you on the left, enemies in a row on the right, bigger sprites, a fanned hand):
 roomier on a phone but drops the Pokémon games' diagonal look; the user's call, not offered as the default. Order: (a)
-done, then double battles with (b), then decide on (c). Branch `multi-enemy-battles` was fast-forwarded to `main` after
-(a) landed, so its phase 1 starts from the smarter enemies.
+first, then double battles with (b), then decide on (c). Branch `multi-enemy-battles` already holds (a) (it was
+fast-forwarded while (a) was briefly on `main`), so its phase 1 starts from the smarter enemies.
 
 > Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
-> push to main; merge main into it first), do phase 1 of the double-battles idea in docs/roadmap.md: turn the single
+> push to main; merge main and `smarter-enemies` into it first), do phase 1 of the double-battles idea in docs/roadmap.md: turn the single
 > `b.enemy` in js/battle.js into `b.enemies[]` plus a current target, every fight still one enemy, nothing a player
 > would notice. Keep the smarter-enemy rules (`enemyMove()` / `moveOn()` in js/data/enemies.js) per enemy. Run node
 > --test and tools/enemy-probe.mjs, play a fight, a boss, a catch and a gym on a phone viewport; give me the githack link."
