@@ -13,7 +13,7 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 `main`** (the double-battles idea's step (a); `docs/reference/cards.md`'s last section). It went to `main` by mistake
 the same day (the session read "I'd put it on main" as the user's call; the user wanted a playtest branch) and was
 reverted there within the hour; pokeDB-sim's mirror is on its own `smarter-enemies` branch too. Playtest link:
-https://rawcdn.githack.com/patreekaRe/pokeDB-3/e9ffd33ebeee2bc4696b53d3b02596b2d25895a1/index.html (add the flags below to it). Merge both branches into `main` only once the user says so. Multi-hit moves
+https://rawcdn.githack.com/patreekaRe/pokeDB-3/441c04ee9da21e9feb953b87daa92531c3778842/index.html (add the flags below to it). Merge both branches into `main` only once the user says so. Multi-hit moves
 ("5×3", each hit through your block), a move at half HP once (every Alpha's Frenzy 5×3, a move each for the 9 main bosses),
 a random order for 5 erratic ones (never a move three turns running), Regigigas opening with Slow Start. Bot check (human
 bot, old -> new win %, 150 a cell): Fire L0 76.7 -> 77.3, L3 50.7 -> 50.0; Grass L0 61.3 -> 72.0, L3 44.7 -> 44.7;
@@ -22,10 +22,12 @@ Water L0 60.0 -> 48.7, L3 51.3 -> 36.0. Water confirmed at 300: L0 63.3 -> 56.3,
 retuned yet (the user's call: keep it as challenge, or soften Water's matchups). On the playtest link try `?arena=wild&foe=cinccino` (two multi-hits),
 `?arena=elite&foe=sentret` (Frenzy at half HP), `?arena=wild&foe=kangaskhan`. Say if any fight feels unfair or the
 "5×3" bubble reads badly on a phone.
-> Next (▶ Run in: CLOUD, attach `pokeDB-3` and `pokeDB-sim`; effort medium): "On branch `smarter-enemies` (never main until I say), smarter enemies part 2, from
-> docs/reference/cards.md's last section: give the pool biomes' Pokémon (Ruins, Thornwood, Savanna), the Depths' and
-> the pool bosses the same treatment (multi-hits where the games' move hits several times, a half-HP move per boss),
-> plus anything the user said after playtesting part 1. Bot-check old vs new at 150 a cell; run tools/enemy-probe.mjs."
+**Part 2 built 2026-11-04 on the same branch** (commit 441c04e and its docs commit; `docs/reference/cards.md`'s "Part 2"): the
+pool biomes' and the Depths' multi-hits (Fury Swipes, Double Slap, Tail Slap 2×5, Icicle Spear, Fury Attack, Dual Chop), a
+half-HP move for every pool boss and Eternatus (and Porygon-Z), Spinda and Castform at random. Bot check: every cell
+within noise (Water on Ruins -> Thornwood at 300: L0 53.0 -> 51.3, L3 38.3 -> 35.0). On the branch link try
+`?arena=wild&foe=minccino` (2×5) and `?arena=elite&foe=spinda`. Next is the user's: playtest, say "merge" (both repos'
+`smarter-enemies` into `main`), or ask for Water to be softened, the Safari's Pokémon or the gyms next.
 
 **▶ PLAYTEST ON THE LIVE SITE. Shadows in a few draws, the hub's fps: done 2026-11-04, on `main`** (the user's ask:
 "improving fps overall especially in the hub, and find more memory leak stuff"; `docs/roadmap-done.md`,
