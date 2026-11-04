@@ -3946,3 +3946,11 @@ of the shadow box each, dropping any that moves or hides; the shadow map checked
 Also fixed: a town's `placeSigns()` forced a layout every frame, `js/crumbs.js` one every five seconds (~9 ms in a town).
 Leak sweep: `tools/run-probe.mjs --fights=10` grows as untouched `main` does (each new kind of room built once and kept),
 six Clearing -> mall -> base trips hold attached DOM and heap flat. Detail: `docs/reference/hub-base-mall.md`'s last section.
+
+### Smarter enemies (2026-11-04, cloud; on `main`)
+
+The double-battles idea's step (a), on `main` by the user's call. `hits`, `atHalf`, `opens`, `order: 'random'` in
+`js/data/enemies.js` (shared picking: `enemyMove()` / `moveOn()`), mirrored in pokeDB-sim; Alphas' Frenzy, 9 boss
+half-HP moves, 11 multi-hit moves. `tests/enemy-moves.test.mjs`, `tools/enemy-probe.mjs`, `?arena=wild&foe=<id>`.
+Branch `multi-enemy-battles` fast-forwarded to `main` after.
+

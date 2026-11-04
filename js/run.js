@@ -925,13 +925,18 @@ function peekRoom(id) {
     startBiome(true);
     const stage = Number(new URLSearchParams(location.search).get('stage') ?? 1);
     const type = id === ':wild' ? 'fight' : 'elite', fights = Object.values(run.map.byId).filter(n => n.type === type);
-    return enterNode(fights.find(n => stageOf(run.map, n).stage === stage) ?? fights[0]);
+    const node = fights.find(n => stageOf(run.map, n).stage === stage) ?? fights[0];
+    const foe = new URLSearchParams(location.search).get('foe');   // &foe=sentret: that Pokémon (an Alpha of it)
+    if (ENEMY_DEFS[foe]) node.enemyId = foe;
+    return enterNode(node);
   }
   if (id === ':boss') {
     if (peekAt) walkInto(peekAt);
     startBiome(true);
     const boss = Object.values(run.map.byId).find(n => n.type === 'boss');
     if (peekBoss) boss.enemyId = peekBoss;
+    const foe = new URLSearchParams(location.search).get('foe');
+    if (ENEMY_DEFS[foe]) boss.enemyId = foe;
     if (peekBossHp !== 1) run.mods = { ...run.mods, bossHp: (run.mods.bossHp ?? 1) * peekBossHp };
     return enterNode(boss);
   }

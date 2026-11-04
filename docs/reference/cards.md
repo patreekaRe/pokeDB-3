@@ -378,8 +378,7 @@ and what it does now.
 
 ## Smarter enemies (2026-11-04)
 
-The first StS-feel step of the double-battles idea (the roadmap's "(a)"). **On branch `smarter-enemies`, not `main`**,
-until the user has playtested it; nothing below is in `main`'s code yet.
+The first StS-feel step of the double-battles idea (the roadmap's "(a)"), shipped on `main` since it works in single fights.
 Four data keys, written up in `js/data/enemies.js`' header; the picking lives there too (`enemyMove()`, `firstMove()`,
 `moveOn()`, `moveAfter()`, `hitCount()`), so `js/battle.js` and the sim's `sim/engine.js` share it. Never read
 `def.moves[moveIndex]` directly: `currentMove()` is `enemyMove()`, and Insight's "then" is `moveAfter()` (null, "then ❔",
