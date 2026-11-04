@@ -1202,9 +1202,11 @@ arena, the crossroads and the front lawn) wraps `renderer.shadowMap.render` and,
   hides (a mall floor walked in and out of), and it never joins again, so a hopping sign doesn't rebuild its cell forever.
 - **Checked headless**: the sun's shadow map texel for texel with batching and without, under reduced motion: the
   Clearing and the Secret Base identical, a town and the mall within the noise of two unbatched runs (their folk walk).
-  `tools/budget-check.mjs` draws a frame, before -> after: Clearing 218 -> 162, base 83 -> 67, mall hall 324 -> 280,
-  its upper floors 324 -> 198, Center 311 -> 124, Mart 236 -> 142, a ? room 227 -> 139, gym 483 -> 291, dojo 232 -> 156,
-  towns 384-495 -> ~230-330 once settled. Memory: a few MB of copied shapes a place (the Clearing's ~105k corners).
+  `tools/budget-check.mjs` draws a frame, before -> after (recorded in `tools/budgets.json`): Clearing 218 -> 162, base
+  83 -> 67, the mall's floors 324 -> 198, the Tailor 158 -> 111, Center 311 -> 124, Mart 236 -> 142, a ? room 227 -> 139,
+  gym 483 -> 291, dojo 232 -> 156, towns 361-495 -> 203-378. `tools/fps-probe.mjs`, game JS a frame: Clearing 4.6 -> 4.1
+  ms, Lantern Village 6.5 -> 4.2, the mall's hall 3.1 -> 2.9. Memory: a few MB of copied shapes a place (the Clearing's
+  ~105k corners).
 
 Found on the way, fixed: a town's `placeSigns()` read the room view's box each frame, after the folk's speech bubbles
 had moved, which laid the page out again every frame (now read once a size, `viewRect`); and `js/crumbs.js`'s note of where

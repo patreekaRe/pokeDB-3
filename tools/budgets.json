@@ -1,127 +1,127 @@
 {
  "clearing": {
-  "draws": 288,
-  "mb": 114.2,
+  "draws": 162,
+  "mb": 106.3,
   "awake": 1,
   "hidden": []
  },
  "base": {
-  "draws": 83,
-  "mb": 74.3,
+  "draws": 67,
+  "mb": 54.5,
   "awake": 1,
   "hidden": []
  },
  "yard": {
-  "draws": 61,
-  "mb": 70.2,
+  "draws": 56,
+  "mb": 55.5,
   "awake": 1,
   "hidden": []
  },
  "mall-hall": {
-  "draws": 332,
-  "mb": 132.6,
+  "draws": 198,
+  "mb": 120.7,
   "awake": 1,
   "hidden": []
  },
  "mall-2f": {
-  "draws": 332,
-  "mb": 155.8,
+  "draws": 198,
+  "mb": 141.5,
   "awake": 1,
   "hidden": []
  },
  "mall-corner": {
-  "draws": 332,
-  "mb": 161.7,
+  "draws": 198,
+  "mb": 147.6,
   "awake": 1,
   "hidden": []
  },
  "mall-arcade": {
-  "draws": 332,
-  "mb": 172,
+  "draws": 198,
+  "mb": 158.4,
   "awake": 1,
   "hidden": []
  },
  "mall-outfitter": {
-  "draws": 332,
-  "mb": 162.1,
+  "draws": 198,
+  "mb": 149.4,
   "awake": 1,
   "hidden": []
  },
  "mall-furniture": {
-  "draws": 332,
-  "mb": 155.4,
+  "draws": 198,
+  "mb": 141.3,
   "awake": 1,
   "hidden": []
  },
  "town-shrine": {
-  "draws": 376,
-  "mb": 164.9,
+  "draws": 300,
+  "mb": 153.2,
   "awake": 1,
   "hidden": []
  },
  "town-wastes": {
-  "draws": 435,
-  "mb": 165.2,
+  "draws": 336,
+  "mb": 149.6,
   "awake": 1,
   "hidden": []
  },
  "town-ruins": {
-  "draws": 489,
-  "mb": 155.7,
+  "draws": 378,
+  "mb": 148,
   "awake": 1,
   "hidden": []
  },
  "town-thornwood": {
-  "draws": 363,
-  "mb": 169.6,
+  "draws": 268,
+  "mb": 155.6,
   "awake": 1,
   "hidden": []
  },
  "town-savanna": {
-  "draws": 369,
-  "mb": 174.7,
+  "draws": 203,
+  "mb": 157.5,
   "awake": 1,
   "hidden": []
  },
  "center": {
-  "draws": 311,
-  "mb": 68.8,
+  "draws": 124,
+  "mb": 68.4,
   "awake": 1,
   "hidden": []
  },
  "mart": {
-  "draws": 236,
-  "mb": 112.5,
+  "draws": 142,
+  "mb": 97.4,
   "awake": 1,
   "hidden": []
  },
  "event-spring": {
-  "draws": 227,
+  "draws": 139,
   "mb": 72.7,
   "awake": 1,
   "hidden": []
  },
  "gym": {
-  "draws": 483,
-  "mb": 97.3,
+  "draws": 291,
+  "mb": 89.5,
   "awake": 1,
   "hidden": []
  },
  "dojo": {
-  "draws": 232,
-  "mb": 145.2,
+  "draws": 156,
+  "mb": 128.5,
   "awake": 1,
   "hidden": []
  },
  "tower": {
   "draws": 0,
-  "mb": 48.6,
+  "mb": 42.6,
   "awake": 1,
   "hidden": []
  },
  "run-map": {
   "draws": 0,
-  "mb": 43.6,
+  "mb": 30.4,
   "awake": 1,
   "hidden": []
  },
@@ -133,25 +133,25 @@
  },
  "safari-powerplant": {
   "draws": 0,
-  "mb": 33.1,
+  "mb": 20.2,
   "awake": 0,
   "hidden": []
  },
  "safari-nightalley": {
   "draws": 0,
-  "mb": 34.1,
+  "mb": 21.2,
   "awake": 0,
   "hidden": []
  },
  "clearing-houses": {
-  "draws": 275,
-  "mb": 119.5,
+  "draws": 162,
+  "mb": 106.3,
   "awake": 1,
   "hidden": []
  },
  "mall-tailor": {
-  "draws": 158,
-  "mb": 123.7,
+  "draws": 111,
+  "mb": 123.1,
   "awake": 1,
   "hidden": []
  },
