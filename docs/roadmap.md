@@ -1230,6 +1230,18 @@ bigger hitter) and a balance pass on encounter HP. Phased: (1) engine + `enemies
 (2) the two-enemy layout and targeting on phones; (3) pack encounters in `encounters` data + a few AoE cards;
 (4) the sim + balance. Not agreed yet: waiting on the user's go-ahead.
 
+**What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
+StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
+play). What it lacks, by how much each would add: (a) **smarter enemies**: every enemy loops its move list in a set
+order from a random start (`moveIndex` in `js/battle.js`), and no move hits more than once; StS enemies follow rules
+(never the same move three times running, a new move at half HP, "3 x 4" multi-hits, a slow build-up). Data plus a
+small engine change, works in single fights too, so it could even ship on `main` first. (b) **pairs designed with
+roles**, not two random Pokémon: a tank shielding a hitter, a caller that brings in a helper, a pair that buffs each
+other; that's what makes two enemies a puzzle. (c) **StS's side-on layout** (you on the left, enemies in a row on the
+right, bigger sprites, a fanned hand): roomier on a phone but drops the Pokémon games' diagonal look; the user's call,
+not offered as the default. Recommended order: (a), then double battles with (b), then decide on (c).
+
+
 > Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
 > push to main), do phase 1 of the double-battles idea in docs/roadmap.md: turn the single `b.enemy` in js/battle.js
 > into `b.enemies[]` plus a current target, every fight still one enemy, nothing a player would notice. Run node --test
