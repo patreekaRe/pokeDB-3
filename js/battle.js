@@ -37,7 +37,7 @@ import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { smoothIcon } from './smooth-icons.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
-import { biomeAt, TRAITS, enemyMove, firstMove, moveOn, moveAfter, hitCount } from './data/enemies.js';
+import { biomeAt, TRAITS } from './data/enemies.js';
 import { REAL_TYPES, realMultiplier, speciesTypes, moveType } from './data/real-types.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -351,9 +351,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
       vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
       bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
       rock: 0,                        // Rocks thrown at it (Safari): a wild one may run off on its turn
-      moveIndex: trial ? 0 : firstMove(def),
-      recent: [],                     // its last two moves' indexes: a random order never uses one three turns running
-      halfUsed: false,                // its `atHalf` move used (moveOn())
+      moveIndex: trial ? 0 : randIndex(def.moves.length),
       grown: {},                      // what each `grow` move has gained so far, by name (Eternamax's Dynamax Cannon)
     },
 
@@ -976,9 +974,7 @@ function disguise() {
 
 /** Taunt: the enemy's intent becomes the next attack in its move list (a buff or a shield skipped). */
 function taunt() {
-  const b = battle, moves = b.def.moves;
-  if (currentMove() === b.def.atHalf && !['attack', 'drain'].includes(b.def.atHalf.kind)) b.enemy.halfUsed = true;   // its half-HP move skipped too
-  const i = b.enemy.moveIndex;
+  const b = battle, moves = b.def.moves, i = b.enemy.moveIndex;
   const k = [...moves.keys()].find(k => ['attack', 'drain'].includes(moves[(i + k) % moves.length].kind));
   if (k == null) { pop('enemy-zone', '😜 Unmoved', 'note', 150); return; }
   if (k) { b.enemy.moveIndex = i + k; $('enemy-portrait-box').classList.remove('charging'); }
@@ -1224,7 +1220,7 @@ function effectsOf(card, x = 0, held = battle.hand.length) {
   if (e.blockPerTailwind) e.block = (e.block || 0) + e.blockPerTailwind * b.tailwind;          // Thermal
   if (e.blockPerStrength) e.block = (e.block || 0) + e.blockPerStrength * Math.max(0, b.strength + stealGain(e.steal));   // Hoard, Ill-Gotten Gains: its own Steal too
   if (e.blockPerIllusion) e.block = (e.block || 0) + e.blockPerIllusion * b.illusions;         // Night Shroud
-  if (e.blockIntent && punishing()) e.block = (e.block || 0) + e.blockIntent * intentDamage(currentMove());   // Turnabout, Retribution
+  if (e.blockIntent && punishing()) e.block = (e.block || 0) + e.blockIntent * attackDamage(currentMove());   // Turnabout, Retribution
   if (e.block && card.type === 'ground' && sanding()) e.block += SAND.bonus;                // Sandstorm: every Ground block
   return e;
 }
@@ -1265,7 +1261,7 @@ function damageFor(card, e) {
   if (e.perEvasion) amount += e.perEvasion * b.evasion;           // Sky Drop
   if (e.perTailwind) amount += e.perTailwind * b.tailwind;        // Aeroblast
   if (e.perIllusion) amount += e.perIllusion * b.illusions;       // Doppelganger
-  if (e.perIntent) amount += e.perIntent * intentDamage(currentMove());   // Ruination
+  if (e.perIntent) amount += e.perIntent * attackDamage(currentMove());   // Ruination
   if (b.powers.sandAttack && sanding()) amount += b.powers.sandAttack;   // Sand Force
   if (e.perStatusHeld) amount += e.perStatusHeld * statusHeld();  // Reversal
   if (hasAbility('guts') && statusHeld()) amount += b.ability.amount;
@@ -1801,7 +1797,7 @@ function addRandomCards(n) {
 function copycat() {
   const b = battle, move = currentMove();
   if (b.hand.length >= MAX_HAND) return;
-  const card = copyCard(move, move.kind === 'attack' || move.kind === 'drain' ? intentDamage(move) : 0);
+  const card = copyCard(move, move.kind === 'attack' || move.kind === 'drain' ? attackDamage(move) : 0);
   b.hand.push({ uid: nextUid++, card, fresh: true });
   pop('player-zone', `🐱 ${card.name}!`, 'note good', 250);
 }
@@ -2665,72 +2661,62 @@ async function enemyTurn() {
     $('enemy-portrait-box').classList.remove('charging');
     if (move.kind === 'attack' || move.kind === 'drain') {
       const damage = attackDamage(move);
-      const hits = b.guard ? 1 : hitCount(move);   // a Guard stops the whole move
-      for (let h = 0; h < hits; h++) {
-        if (h) {
-          await pause(160);
-          if (battle !== b) return;
-          if (b.hp <= 0 || en.hp <= 0) break;
-        }
-        const which = hits > 1 ? ` (hit ${h + 1} of ${hits})` : '';
-        $('enemy-portrait-box').classList.add('attacking');
-        await pause(300);
-        $('enemy-portrait-box').classList.remove('attacking');
-        if (battle !== b) return;
+      $('enemy-portrait-box').classList.add('attacking');
+      await pause(300);
+      $('enemy-portrait-box').classList.remove('attacking');
+      if (battle !== b) return;
 
-        if (b.guard) {
-          b.guard = false;
-          pop('player-zone', '✋ Guarded!', 'block');
-          log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
-        } else {
-          const shield = b.block;
-          soakShield();
-          b.struck = true;
-          const dodged = b.evasion > 0 && damage > 0;   // Evasion: half, before your block
-          const hit = evaded(damage);
-          if (dodged) { b.evasion -= 1; pop('player-zone', '🪶 Evaded!', 'block', 100); }
-          const through = hurtPlayer(Math.max(0, hit - (b.aug.hitReduce || 0)), move.name);
-          if (dodged && b.powers.evadeDamage) { const d = hurtEnemy(b.powers.evadeDamage); pop('enemy-zone', d > 0 ? `-${d} 💨` : 'Blocked', d > 0 ? 'dmg' : 'note', 350); }   // Gale
-          if (dodged && b.powers.evadeWeak) { applyDebuff('weaken', b.powers.evadeWeak); b.enemy.weakNew = (b.enemy.weakNew || 0) + b.powers.evadeWeak; }   // Gale Wings
-          if (dodged && b.powers.evadeSap) applyDebuff('sap', b.powers.evadeSap);       // Levitate
-          const effect = enemyTypeMultiplier(move);
-          hitSound(through, effect);
-          hitEffect('player-sprite');
-          bigHit(through, b.maxHp);
-          pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? (effect > 1 ? 'dmg super' : 'dmg') : 'block');
-          if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
-          if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
-          log(withRevive(`${b.def.name} used ${move.name}${which}! ${hit} damage${dodged ? ' (halved by Evasion)' : ''}${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, hit) ? `, ${Math.min(shield, hit)} blocked` : ''}.`));
-          if (fired('rocky-helmet')) {
-            hurtEnemy(3);
-            pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
-          }
-          if (through === 0 && damage > 0 && fired('big-pearl')) gainTide(2);
-          if (through === 0 && damage > 0 && fired('wave-incense')) {
-            hurtEnemy(5);
-            pop('enemy-zone', '-5 🌊', 'dmg', 320);
-          }
-          if (b.powers.thorns) {
-            hurtEnemy(b.powers.thorns);
-            pop('enemy-zone', `-${b.powers.thorns} 🔮`, 'dmg', 400);
-          }
-          if (through > 0 && b.powers.hurtStrength) gainStrength(b.powers.hurtStrength, `💥 +${b.powers.hurtStrength} strength`);   // Anger Point
-          b.lostNow += through;
-          if (b.bide) b.bide.stored += through;
-          const back = (b.aug.thorns || 0) + (b.aug.seedThorns && en.seed > 0 ? b.aug.seedThorns : 0) + Math.floor(damage * (b.aug.reflect || 0));
-          if (back) { const dealt = hurtEnemy(back); pop('enemy-zone', dealt > 0 ? `-${dealt} 🪞` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 450); }
+      if (b.guard) {
+        b.guard = false;
+        pop('player-zone', '✋ Guarded!', 'block');
+        log(`${b.def.name} used ${move.name}, but your Guard stopped it!`);
+      } else {
+        const shield = b.block;
+        soakShield();
+        b.struck = true;
+        const dodged = b.evasion > 0 && damage > 0;   // Evasion: half, before your block
+        const hit = evaded(damage);
+        if (dodged) { b.evasion -= 1; pop('player-zone', '🪶 Evaded!', 'block', 100); }
+        const through = hurtPlayer(Math.max(0, hit - (b.aug.hitReduce || 0)), move.name);
+        if (dodged && b.powers.evadeDamage) { const d = hurtEnemy(b.powers.evadeDamage); pop('enemy-zone', d > 0 ? `-${d} 💨` : 'Blocked', d > 0 ? 'dmg' : 'note', 350); }   // Gale
+        if (dodged && b.powers.evadeWeak) { applyDebuff('weaken', b.powers.evadeWeak); b.enemy.weakNew = (b.enemy.weakNew || 0) + b.powers.evadeWeak; }   // Gale Wings
+        if (dodged && b.powers.evadeSap) applyDebuff('sap', b.powers.evadeSap);       // Levitate
+        const effect = enemyTypeMultiplier(move);
+        hitSound(through, effect);
+        hitEffect('player-sprite');
+        bigHit(through, b.maxHp);
+        pop('player-zone', through > 0 ? `-${through}` : 'Blocked', through > 0 ? (effect > 1 ? 'dmg super' : 'dmg') : 'block');
+        if (effect > 1) pop('player-zone', 'Super effective!', 'note bad', 260);
+        if (effect < 1) pop('player-zone', 'Not very effective…', 'note good', 260);
+        log(withRevive(`${b.def.name} used ${move.name}! ${hit} damage${dodged ? ' (halved by Evasion)' : ''}${effect > 1 ? ' (super effective!)' : effect < 1 ? ' (not very effective)' : ''}${Math.min(shield, hit) ? `, ${Math.min(shield, hit)} blocked` : ''}.`));
+        if (fired('rocky-helmet')) {
+          hurtEnemy(3);
+          pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
         }
-        if (hasAbility('static')) { applyStatic(b.ability.amount, 450); abilityBanner(); }   // Static: each attack on you charges it
-        b.attackedNow = true;
-        if (b.counter) {   // Counter (Justified: block next turn, as this turn's would be gone first)
-          const dealt = hurtEnemy(b.counter);
-          pop('enemy-zone', dealt > 0 ? `-${dealt} 🥊` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 480);
-          if (b.powers.counterBlock) b.blockNext += b.powers.counterBlock;
+        if (through === 0 && damage > 0 && fired('big-pearl')) gainTide(2);
+        if (through === 0 && damage > 0 && fired('wave-incense')) {
+          hurtEnemy(5);
+          pop('enemy-zone', '-5 🌊', 'dmg', 320);
         }
-        if (b.powers.thornStatic) applyStatic(b.powers.thornStatic, 500);   // Electromorphosis
-        if (b.powers.thornFrost) applyFrost(b.powers.thornFrost, 500);      // Ice Scales
-        if (hits > 1) renderAll();
+        if (b.powers.thorns) {
+          hurtEnemy(b.powers.thorns);
+          pop('enemy-zone', `-${b.powers.thorns} 🔮`, 'dmg', 400);
+        }
+        if (through > 0 && b.powers.hurtStrength) gainStrength(b.powers.hurtStrength, `💥 +${b.powers.hurtStrength} strength`);   // Anger Point
+        b.lostNow += through;
+        if (b.bide) b.bide.stored += through;
+        const back = (b.aug.thorns || 0) + (b.aug.seedThorns && en.seed > 0 ? b.aug.seedThorns : 0) + Math.floor(damage * (b.aug.reflect || 0));
+        if (back) { const dealt = hurtEnemy(back); pop('enemy-zone', dealt > 0 ? `-${dealt} 🪞` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 450); }
       }
+      if (hasAbility('static')) { applyStatic(b.ability.amount, 450); abilityBanner(); }   // Static: each attack on you charges it
+      b.attackedNow = true;
+      if (b.counter) {   // Counter (Justified: block next turn, as this turn's would be gone first)
+        const dealt = hurtEnemy(b.counter);
+        pop('enemy-zone', dealt > 0 ? `-${dealt} 🥊` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 480);
+        if (b.powers.counterBlock) b.blockNext += b.powers.counterBlock;
+      }
+      if (b.powers.thornStatic) applyStatic(b.powers.thornStatic, 500);   // Electromorphosis
+      if (b.powers.thornFrost) applyFrost(b.powers.thornFrost, 500);      // Ice Scales
       if (move.kind === 'drain') {
         en.hp = Math.min(en.maxHp, en.hp + move.heal);
         pop('enemy-zone', `+${move.heal} HP`, 'heal', 200);
@@ -2796,7 +2782,7 @@ async function enemyTurn() {
   }
 
   en.tempSap = 0;                                 // Charm lasts one enemy turn
-  moveOn(b.def, en, move);                        // pick the next move
+  en.moveIndex += 1;                              // pick the next move
   renderAll();
   await pause(700);
 
@@ -2813,10 +2799,7 @@ async function enemyTurn() {
   beginPlayerTurn();
 }
 
-const currentMove = () => enemyMove(battle.def, battle.enemy);
-
-/** All a move's hits together, before your block: what Turnabout, Ruination and Copycat read off the intent. */
-const intentDamage = (move) => attackDamage(move) * hitCount(move);
+const currentMove = () => battle.def.moves[battle.enemy.moveIndex % battle.def.moves.length];
 
 /** Fire beats Grass, Grass beats Water, Water beats Fire. */
 function typeMultiplier(attacker, defender) {
@@ -2862,7 +2845,7 @@ function cardMultiplier(card) {
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
 function attackDamage(move) {
   const en = battle.enemy;
-  const raw = Math.round(Math.max(0, move.amount + (en.grown[move.name] || 0) + Math.round(en.dmgBonus / hitCount(move)) + en.strength + en.bait * BAIT.damage - en.sap - (en.tempSap || 0)) * en.dmgMult * enemyTypeMultiplier(move));
+  const raw = Math.round(Math.max(0, move.amount + (en.grown[move.name] || 0) + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap - (en.tempSap || 0)) * en.dmgMult * enemyTypeMultiplier(move));
   return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 
@@ -2957,7 +2940,7 @@ async function rebirth() {
 
   b.def = next;
   Object.assign(en, {
-    hp: Math.round(next.hp * b.hpScale), block: 0, strength: 0, burn: 0, seed: 0, sap: 0, weak: 0, vulnerable: 0, moveIndex: 0, grown: {}, recent: [], halfUsed: false,
+    hp: Math.round(next.hp * b.hpScale), block: 0, strength: 0, burn: 0, seed: 0, sap: 0, weak: 0, vulnerable: 0, moveIndex: 0, grown: {},
   });
   en.maxHp = en.hp;
   box.classList.remove('sinking', 'defeated', 'hit');
@@ -3612,9 +3595,8 @@ function renderIntent() {
     // ▲ means the enemy's type is strong against yours, ▼ means it is weak against yours
     const effect = enemyTypeMultiplier(move);
     const arrow = effect > 1 ? '▲' : effect < 1 ? '▼' : '';
-    const n = hitCount(move), per = attackDamage(move), times = n > 1 ? `×${n}` : '';
-    value = b.guard ? '✋' : `${evaded(per)}${times}${arrow}${b.evasion ? '🪶' : ''}`;
-    detail = b.guard ? 'will hit your Guard' : `${n > 1 ? `${n} hits of ` : ''}${evaded(per)} damage${b.evasion ? ` (${per}, halved by Evasion${n > 1 ? ' while it lasts' : ''})` : ''}${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
+    value = b.guard ? '✋' : `${evaded(attackDamage(move))}${arrow}${b.evasion ? '🪶' : ''}`;
+    detail = b.guard ? 'will hit your Guard' : `${evaded(attackDamage(move))} damage${b.evasion ? ` (${attackDamage(move)}, halved by Evasion)` : ''}${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
     if (b.safari && !typeless()) detail = `${REAL_TYPES[moveType(move, b.def)].label} move: ${detail}`;   // the real chart: which type is coming
     if (b.enemy.away) detail = `${AWAY[b.enemy.away].where}, out of reach of your attacks: ${detail}`;
   } else if (move.kind === 'defend') {
@@ -3623,11 +3605,11 @@ function renderIntent() {
     icon = CARDS_BY_ID[move.adds.card].art; kind = 'status'; value = `+${move.adds.n || 1}`; detail = '';
   } else if (move.kind === 'charge') {
     // shows the hit it's charging (the next move), so the warning carries its number
-    const hit = moveAfter(b.def, b.enemy);
-    icon = '⚠️'; kind = 'charge'; value = String(intentDamage(hit)); detail = `charging: the turn after, ${hit.name} deals ${intentDamage(hit)} damage`;
+    const hit = b.def.moves[(b.enemy.moveIndex + 1) % b.def.moves.length];
+    icon = '⚠️'; kind = 'charge'; value = String(attackDamage(hit)); detail = `charging: the turn after, ${hit.name} deals ${attackDamage(hit)} damage`;
   } else if (move.kind === 'away') {
-    const hit = moveAfter(b.def, b.enemy);
-    icon = AWAY[move.how].icon; kind = 'charge'; value = String(intentDamage(hit)); detail = `goes ${AWAY[move.how].where}, out of reach of your attacks: the turn after, ${hit.name} deals ${intentDamage(hit)} damage`;
+    const hit = b.def.moves[(b.enemy.moveIndex + 1) % b.def.moves.length];
+    icon = AWAY[move.how].icon; kind = 'charge'; value = String(attackDamage(hit)); detail = `goes ${AWAY[move.how].where}, out of reach of your attacks: the turn after, ${hit.name} deals ${attackDamage(hit)} damage`;
   } else {
     icon = '💪'; kind = 'buff'; value = `+${move.amount}`; detail = `+${move.amount} strength`;
   }
@@ -3655,32 +3637,21 @@ function renderIntent() {
   }
   box.title = `Next turn: ${move.name} (${detail})`;
   if (b.aug.insight) {   // Insight: the move after it too
-    const then = moveAfter(b.def, b.enemy);
-    const hits = then && (then.kind === 'attack' || then.kind === 'drain');
-    const times = hits && hitCount(then) > 1 ? `×${hitCount(then)}` : '';
-    if (!then) { box.append(el('span', 'intent-then', 'then ❔')); box.title += ', then a move it hasn\'t picked yet'; }
-    else {
-      box.append(el('span', 'intent-then', `then ${hits ? `⚔️${attackDamage(then)}${times}` : { defend: '🛡️', buff: '💪', charge: '⚠️', away: AWAY[then.how]?.icon }[then.kind] ?? '❔'} ${then.name}`));
-      box.title += `, then ${then.name}${hits ? ` (${intentDamage(then)} damage)` : ''}`;
-    }
+    const then = b.def.moves[(b.enemy.moveIndex + 1) % b.def.moves.length];
+    const hits = then.kind === 'attack' || then.kind === 'drain';
+    box.append(el('span', 'intent-then', `then ${hits ? `⚔️${attackDamage(then)}` : { defend: '🛡️', buff: '💪', charge: '⚠️', away: AWAY[then.how]?.icon }[then.kind] ?? '❔'} ${then.name}`));
+    box.title += `, then ${then.name}${hits ? ` (${attackDamage(then)} damage)` : ''}`;
   }
 }
 
 /** The HP the enemy's next hit would take through your block, as hurtPlayer() would count it (Evasion, Protective Pads,
     Assault Vest), for the intent's lethal warning. */
 function incoming(move) {
-  const b = battle, per = attackDamage(move);
-  let block = b.block, total = 0;
-  for (let h = 0; h < hitCount(move); h++) {   // each hit through what block the ones before it left
-    let through = Math.max(0, (h < b.evasion ? Math.floor(per / 2) : per) - (b.aug.hitReduce || 0));
-    const soaked = Math.min(block, through);
-    block -= soaked;
-    through -= soaked;
-    if (through > 0 && through <= 5 && hasRelic('protective-pads')) through = 1;
-    if (through > 0 && hasRelic('assault-vest')) through -= 1;
-    total += through;
-  }
-  return total;
+  const b = battle;
+  let through = Math.max(0, evaded(attackDamage(move)) - b.block);
+  if (through > 0 && through <= 5 && hasRelic('protective-pads')) through = 1;
+  if (through > 0 && hasRelic('assault-vest')) through -= 1;
+  return through;
 }
 
 function renderStatus() {
@@ -4109,9 +4080,7 @@ function showPreview(entry) {
 function shieldPreview(block, ghost = false) {
   const b = battle, move = currentMove();
   const hits = !b.guard && !b.struck && (move.kind === 'attack' || move.kind === 'drain') && !paralyzing();
-  const per = hits ? attackDamage(move) : 0;
-  let incoming = 0;
-  for (let h = 0; hits && h < hitCount(move); h++) incoming += Math.max(0, (h < b.evasion ? Math.floor(per / 2) : per) - (b.aug.hitReduce || 0));
+  const incoming = hits ? Math.max(0, evaded(attackDamage(move)) - (b.aug.hitReduce || 0)) : 0;
   return shieldChunk('player', Math.min(block, incoming, b.hp), b.hp, b.maxHp, ghost);
 }
 

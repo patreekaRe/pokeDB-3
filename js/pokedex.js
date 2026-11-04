@@ -312,12 +312,10 @@ function rewardBoxes() {
 
 /** A move's numbers in a fight (Research complete): attacks carry the biome's extra damage. */
 function moveNumbers(m, extra) {
-  const hits = m.hits || 1, per = m.amount + Math.round(extra / hits);
-  const dmg = hits > 1 ? `${per}×${hits} dmg` : `${per} dmg`;
   const junk = m.adds ? `${m.adds.n ?? 1} ${CARDS_BY_ID[m.adds.card]?.name ?? m.adds.card}` : '';
   const parts = {
-    attack: () => [dmg],
-    drain: () => [dmg, `heal ${m.heal}`],
+    attack: () => [`${m.amount + extra} dmg`],
+    drain: () => [`${m.amount + extra} dmg`, `heal ${m.heal}`],
     defend: () => [`+${m.amount} block`],
     buff: () => [`+${m.amount} strength`],
     status: () => [],
@@ -549,8 +547,7 @@ function fillEntry(dir) {
       el('span', '', `HP ${foe?.maxHp ?? '?'}`),
       weakLine(weak, role),
       el('small', '', p === DEPTHS_PAGE ? 'Numbers in the Depths' : 'Numbers at Level 0, before types'));
-    lines.push(typed('', base.description), facts, moveList(def.order === 'random' ? 'Moves, picked at random (never one three turns running)' : def.opens != null ? `Moves, in order, opening with ${def.moves[def.opens].name}` : 'Moves, in order', def.moves, foe?.strength ?? 0));
-    if (def.atHalf) lines.push(moveList('Once, at half HP', [def.atHalf], foe?.strength ?? 0));
+    lines.push(typed('', base.description), facts, moveList('Moves, in order', def.moves, foe?.strength ?? 0));
     if (def.phase2) lines.push(moveList(`Then it rises as ${def.phase2.name}`, def.phase2.moves, foe?.strength ?? 0));
     lines.push(el('div', 'pdx-lcd pdx-text gold', `★ Research complete (defeated ${defeats(id)})`));
   }

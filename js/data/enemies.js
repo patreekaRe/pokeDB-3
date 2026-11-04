@@ -20,20 +20,11 @@
    Any move can carry `adds: { card, n, to }`: status cards (Confusion, Paralysis, Poison, Sludge in
    cards.js) put into your 'draw' pile (shuffled in) or 'discard' pile (the default), for this fight.
 
-   Smarter enemies (2026-11-04, StS's rules; enemyMove() / firstMove() / moveOn() below, mirrored by the sim):
-     hits: N        on an attack or drain: it lands N times, each through your block (shown "4×3"). Strength it
-                    gains in the fight adds to every hit; the biome's extra damage is shared out between them.
-     atHalf: move   on the enemy: the first time it is at or under half HP its next move is this one, once,
-                    then its list picks up where it was (never a charge or away move).
-     opens: i       on the enemy: it always starts with moves[i] (else anywhere in its loop).
-     order: 'random' on the enemy: each turn it picks a move by `weight` (1 by default), never the same one three
-                    turns running; a charge or away move is still followed by the move after it.
-
    Numbers here are for the first biome. Later biomes multiply HP and
    add damage (see BIOMES at the bottom). Tweak them to balance the game!
    ============================================================ */
 
-import { random, pickOne, shuffled, randIndex } from '../rng.js';
+import { random, pickOne, shuffled } from '../rng.js';
 import { SAFARI_MONS, safariMonDef, PLACE } from './safari-mons.js';
 
 /** Pixel sprite from assets/pokemon/ (Gen 5 art from PokeAPI/sprites). */
@@ -81,7 +72,7 @@ export const ENEMY_DEFS = {
     name: 'Hoppip', type: 'grass', hp: 40, ...sprite('hoppip'),
     description: 'So light the meadow breeze carries it off.',
     moves: [
-      { kind: 'attack', name: 'Bullet Seed', amount: 2, hits: 3 },
+      { kind: 'attack', name: 'Bullet Seed', amount: 6 },
       { kind: 'defend', name: 'Synthesis',   amount: 7 },
       { kind: 'attack', name: 'Acrobatics',  amount: 9, type: 'normal' },
     ],
@@ -91,7 +82,7 @@ export const ENEMY_DEFS = {
     description: 'Hangs from a branch looking exactly like an acorn.',
     moves: [
       { kind: 'defend', name: 'Harden',      amount: 7 },
-      { kind: 'attack', name: 'Bullet Seed', amount: 2, hits: 3 },
+      { kind: 'attack', name: 'Bullet Seed', amount: 6 },
       { kind: 'attack', name: 'Seed Bomb',   amount: 9 },
     ],
   },
@@ -125,7 +116,6 @@ export const ENEMY_DEFS = {
   rattata: {
     name: 'Rattata', type: 'normal', hp: 40, ...sprite('rattata'),
     description: 'Small, quick and everywhere.',
-    order: 'random',
     moves: [
       { kind: 'attack', name: 'Tackle',       amount: 6 },
       { kind: 'attack', name: 'Quick Attack', amount: 5 },
@@ -138,7 +128,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Scratch',      amount: 6 },
       { kind: 'defend', name: 'Defense Curl', amount: 6 },
-      { kind: 'attack', name: 'Fury Swipes',  amount: 3, hits: 3 },
+      { kind: 'attack', name: 'Fury Swipes',  amount: 9 },
     ],
   },
   zigzagoon: {
@@ -237,7 +227,7 @@ export const ENEMY_DEFS = {
     name: 'Teddiursa', type: 'normal', hp: 52, ...sprite('teddiursa'),
     description: 'Licks honey off its paws. Cute until you get between it and the honey.',
     moves: [
-      { kind: 'attack', name: 'Fury Swipes', amount: 2, hits: 3 },
+      { kind: 'attack', name: 'Fury Swipes', amount: 6 },
       { kind: 'defend', name: 'Charm',       amount: 8 },
       { kind: 'attack', name: 'Slash',       amount: 11 },
     ],
@@ -245,11 +235,10 @@ export const ENEMY_DEFS = {
   aipom: {
     name: 'Aipom', type: 'normal', hp: 48, ...sprite('aipom'),
     description: 'Steals the shrine\'s offerings with its hand of a tail.',
-    order: 'random',
     moves: [
       { kind: 'attack', name: 'Swift',      amount: 6 },
       { kind: 'buff',   name: 'Nasty Plot', amount: 2 },
-      { kind: 'attack', name: 'Double Hit', amount: 6, hits: 2 },
+      { kind: 'attack', name: 'Double Hit', amount: 11 },
     ],
   },
   stantler: {
@@ -459,7 +448,6 @@ export const ENEMY_DEFS = {
   tauros: {
     name: 'Tauros', type: 'normal', hp: 68, ...sprite('tauros'),
     description: 'Whips itself with its tails, then charges at anything.',
-    order: 'random',
     moves: [
       { kind: 'attack', name: 'Body Slam',   amount: 8, adds: { card: 'paralysis', n: 1, to: 'draw' } },
       { kind: 'buff',   name: 'Rage',        amount: 2 },
@@ -470,7 +458,7 @@ export const ENEMY_DEFS = {
     name: 'Bouffalant', type: 'normal', hp: 72, ...sprite('bouffalant'),
     description: 'Its huge afro softens any blow, and not one of its own.',
     moves: [
-      { kind: 'attack', name: 'Fury Attack', amount: 3, hits: 3 },
+      { kind: 'attack', name: 'Fury Attack', amount: 8 },
       { kind: 'defend', name: 'Endure',      amount: 10 },
       { kind: 'attack', name: 'Head Charge', amount: 13 },
     ],
@@ -715,7 +703,6 @@ export const ENEMY_DEFS = {
   crobat: {
     name: 'Crobat', type: 'normal', hp: 66, ...sprite('crobat'),
     description: 'Four wings and no sound at all. You feel the bite before you see it.',
-    order: 'random',
     moves: [
       { kind: 'attack', name: 'Cross Poison', amount: 8, adds: { card: 'poison', n: 1 } },
       { kind: 'buff',   name: 'Agility',      amount: 3 },
@@ -738,7 +725,7 @@ export const ENEMY_DEFS = {
     description: 'Soaks up the cave\'s energy in its crystals, and fires it all at once.',
     moves: [
       { kind: 'defend', name: 'Iron Defense', amount: 14 },
-      { kind: 'attack', name: 'Rock Blast',   amount: 3, hits: 3 },
+      { kind: 'attack', name: 'Rock Blast',   amount: 9 },
       { kind: 'attack', name: 'Solar Beam',   amount: 15, type: 'normal' },
     ],
   },
@@ -863,7 +850,7 @@ export const ENEMY_DEFS = {
     name: 'Ambipom', type: 'normal', hp: 68, ...sprite('ambipom'),
     description: 'Swings through the shrine\'s trees on its two tails.',
     moves: [
-      { kind: 'attack', name: 'Double Hit',  amount: 4, hits: 2 },
+      { kind: 'attack', name: 'Double Hit',  amount: 8 },
       { kind: 'buff',   name: 'Nasty Plot',  amount: 2 },
       { kind: 'attack', name: 'Last Resort', amount: 12 },
     ],
@@ -927,9 +914,9 @@ export const ENEMY_DEFS = {
     name: 'Cinccino', type: 'normal', hp: 68, ...sprite('cinccino'),
     description: 'Its coat shrugs off ash, and its tail slaps faster than you can see.',
     moves: [
-      { kind: 'attack', name: 'Double Slap', amount: 2, hits: 4 },
+      { kind: 'attack', name: 'Double Slap', amount: 7 },
       { kind: 'drain',  name: 'Covet',       amount: 7, heal: 5 },
-      { kind: 'attack', name: 'Tail Slap',   amount: 3, hits: 4 },
+      { kind: 'attack', name: 'Tail Slap',   amount: 12 },
     ],
   },
   lopunny: {
@@ -1035,7 +1022,6 @@ export const ENEMY_DEFS = {
   snorlax: {
     name: 'Snorlax', type: 'normal', hp: 170, ...sprite('snorlax'), boss: true,
     description: 'Blocks the path. Hits like a boulder when it wakes up.',
-    atHalf: { kind: 'buff', name: 'Curse', amount: 3 },
     moves: [
       { kind: 'attack', name: 'Body Slam',   amount: 11, type: 'normal', adds: { card: 'paralysis', n: 1, to: 'draw' } },
       { kind: 'defend', name: 'Rest',        amount: 14 },
@@ -1046,9 +1032,8 @@ export const ENEMY_DEFS = {
   kangaskhan: {
     name: 'Kangaskhan', type: 'normal', hp: 150, ...sprite('kangaskhan'), boss: true,
     description: 'Nothing gets near the baby in its pouch.',
-    atHalf: { kind: 'attack', name: 'Comet Punch', amount: 4, hits: 4, type: 'normal' },
     moves: [
-      { kind: 'attack', name: 'Mega Punch',    amount: 5, hits: 2 },
+      { kind: 'attack', name: 'Mega Punch',    amount: 9 },
       { kind: 'buff',   name: 'Howl',          amount: 2 },
       { kind: 'attack', name: 'Extreme Speed', amount: 12 },
       { kind: 'attack', name: 'Mega Kick',     amount: 13 },
@@ -1057,7 +1042,6 @@ export const ENEMY_DEFS = {
   miltank: {
     name: 'Miltank', type: 'normal', hp: 175, ...sprite('miltank'), boss: true,
     description: 'Rolls across the meadow and flattens whatever it meets.',
-    atHalf: { kind: 'defend', name: 'Milk Drink', amount: 16 },
     moves: [
       { kind: 'attack', name: 'Rollout',       amount: 10 },
       { kind: 'defend', name: 'Defense Curl',  amount: 12 },
@@ -1068,7 +1052,6 @@ export const ENEMY_DEFS = {
   exploud: {
     name: 'Exploud', type: 'normal', hp: 250, ...sprite('exploud'), boss: true,
     description: 'Its roar shakes the leaves off every tree round the shrine.',
-    atHalf: { kind: 'attack', name: 'Echoed Voice', amount: 7, hits: 3 },
     moves: [
       { kind: 'attack', name: 'Uproar',      amount: 11 },
       { kind: 'drain',  name: 'Bite',        amount: 10, heal: 6 },
@@ -1079,7 +1062,6 @@ export const ENEMY_DEFS = {
   stoutland: {
     name: 'Stoutland', type: 'normal', hp: 230, ...sprite('stoutland'), boss: true,
     description: 'An old guard dog of the shrine. Its cape of fur is thick as armour.',
-    atHalf: { kind: 'buff', name: 'Roar', amount: 3 },
     moves: [
       { kind: 'attack', name: 'Take Down',  amount: 10 },
       { kind: 'buff',   name: 'Work Up',    amount: 3 },
@@ -1090,7 +1072,6 @@ export const ENEMY_DEFS = {
   ursaring: {
     name: 'Ursaring', type: 'normal', hp: 260, ...sprite('ursaring'), boss: true,
     description: 'It guards the shrine\'s honey trees, and it does not share.',
-    atHalf: { kind: 'attack', name: 'Fury Swipes', amount: 5, hits: 4 },
     moves: [
       { kind: 'attack', name: 'Slash',        amount: 11 },
       { kind: 'defend', name: 'Rest',         amount: 12 },
@@ -1132,7 +1113,6 @@ export const ENEMY_DEFS = {
   slaking: {
     name: 'Slaking', type: 'normal', hp: 440, ...sprite('slaking'), boss: true,
     description: 'Lazes about every other turn. The turns in between hurt.',
-    atHalf: { kind: 'buff', name: 'Bulk Up', amount: 4 },
     moves: [
       { kind: 'attack', name: 'Hammer Arm',  amount: 16 },
       { kind: 'defend', name: 'Truant',      amount: 14 },
@@ -1143,8 +1123,6 @@ export const ENEMY_DEFS = {
   regigigas: {
     name: 'Regigigas', type: 'normal', hp: 400, ...sprite('regigigas'), boss: true,
     description: 'Slow to wake, but it once towed the continents into place.',
-    atHalf: { kind: 'buff', name: 'Slow Start Ends', amount: 5 },
-    opens: 1,
     moves: [
       { kind: 'attack', name: 'Knock Off',  amount: 12 },
       { kind: 'buff',   name: 'Slow Start', amount: 3 },
@@ -1155,7 +1133,6 @@ export const ENEMY_DEFS = {
   lickilicky: {
     name: 'Lickilicky', type: 'normal', hp: 420, ...sprite('lickilicky'), boss: true,
     description: 'Its tongue can reach across a lava lake. Don\'t let it.',
-    atHalf: { kind: 'attack', name: 'Rollout', amount: 6, hits: 3 },
     moves: [
       { kind: 'attack', name: 'Wrap',         amount: 11 },
       { kind: 'buff',   name: 'Swords Dance', amount: 2 },
@@ -1166,7 +1143,6 @@ export const ENEMY_DEFS = {
   porygonz: {
     name: 'Porygon-Z', type: 'normal', hp: 420, ...sprite('porygonz'), boss: true,
     description: 'A glitch in the Ember Wastes. Beat it to finish the run.',
-    order: 'random',
     moves: [
       { kind: 'attack', name: 'Psybeam',    amount: 11 },
       { kind: 'buff',   name: 'Nasty Plot', amount: 2 },
@@ -1352,9 +1328,8 @@ export function eliteOf(def) {
     name: `Alpha ${def.name}`,
     hp: Math.round(def.hp * ELITE.hpMult),
     elite: true,
-    description: `A much bigger ${def.name}. Watch out for its Rampage, and it goes wild at half HP.`,
+    description: `A much bigger ${def.name}. Watch out for its Rampage.`,
     moves: [...def.moves, { kind: 'attack', name: 'Rampage', amount: ELITE.rampage }],
-    atHalf: def.atHalf ?? { kind: 'attack', name: 'Frenzy', amount: Math.round(ELITE.rampage / 3), hits: 3, type: 'normal' },   // smarter enemies: at half HP it lashes out
   };
 }
 
@@ -1482,7 +1457,7 @@ const biomeOf = (b) => (typeof b === 'number' ? BIOMES[b] : b);
 /* How strong a slot's Pokémon stand, from the default road's own (average HP of its wilds, Alphas' bases and bosses, and
    the average hit of its attacks), so a pool biome's Pokémon walked away from `home` match the slot (forkGrowth()). */
 const average = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
-const hitsOf = (ids) => ids.flatMap(id => ENEMY_DEFS[id].moves.filter(m => m.amount && m.kind !== 'defend' && m.kind !== 'buff').map(m => m.amount * (m.hits || 1)));
+const hitsOf = (ids) => ids.flatMap(id => ENEMY_DEFS[id].moves.filter(m => m.amount && m.kind !== 'defend' && m.kind !== 'buff').map(m => m.amount));
 let strengths = null;
 const strengthAt = (slot) => (strengths ??= BIOMES.map(b => ({
   fight: average(b.normals.map(id => ENEMY_DEFS[id].hp)), elite: average(b.elites.map(id => ENEMY_DEFS[id].hp)),
@@ -1500,47 +1475,6 @@ export const finalBiome = (starter) => (starter?.id === 'mewtwo' ? BIOMES.length
 
 /* Traits: what some of the Crystal Depths' Pokémon do whenever you play a card (enemyTrait() in js/battle.js). Each
    enemy's `trait` names one by `id`, with its own `name` (an Ability) and numbers. */
-/** The move an enemy will use next: its `atHalf` move the first time it is at or under half HP, else its list's. */
-export function enemyMove(def, en) {
-  if (def.atHalf && !en.halfUsed && en.hp * 2 <= en.maxHp) return def.atHalf;
-  return def.moves[en.moveIndex % def.moves.length];
-}
-
-/** Where an enemy's moves start: its `opens` move, a pick for a random order, else anywhere in its loop. */
-export function firstMove(def) {
-  if (def.opens != null) return def.opens;
-  return def.order === 'random' ? pickMove(def, []) : randIndex(def.moves.length);
-}
-
-/** After its turn (`used`: the move it had up as the turn began, used or lost to Paralysis), the next one comes up. */
-export function moveOn(def, en, used) {
-  if (def.atHalf && used === def.atHalf) { en.halfUsed = true; return; }
-  const i = en.moveIndex % def.moves.length;
-  en.recent = [...(en.recent || []), i].slice(-2);
-  const leads = ['charge', 'away'].includes(def.moves[i].kind);
-  en.moveIndex = def.order === 'random' && !leads ? pickMove(def, en.recent) : en.moveIndex + 1;
-}
-
-/** The move after the next one, as far as it is known (Insight's "then"): null when a random order hasn't picked it. */
-export function moveAfter(def, en) {
-  if (def.atHalf && !en.halfUsed && en.hp * 2 <= en.maxHp) return def.moves[en.moveIndex % def.moves.length];
-  const now = def.moves[en.moveIndex % def.moves.length];
-  if (def.order === 'random' && !['charge', 'away'].includes(now.kind)) return null;
-  return def.moves[(en.moveIndex + 1) % def.moves.length];
-}
-
-/** A random order's pick by weight, never the move it used the last two turns running. */
-function pickMove(def, recent) {
-  const banned = recent.length === 2 && recent[0] === recent[1] ? recent[0] : -1;
-  const weights = def.moves.map((m, i) => (i === banned ? 0 : m.weight ?? 1));
-  let roll = random() * weights.reduce((s, w) => s + w, 0);
-  for (let i = 0; i < weights.length; i++) if ((roll -= weights[i]) < 0 && weights[i] > 0) return i;
-  return weights.findIndex(w => w > 0);
-}
-
-/** How many times a move lands. */
-export const hitCount = (move) => move.hits || 1;
-
 export const TRAITS = {
   barbs:    { icon: '🦔', text: t => `${t.name}: every attack you play hurts you ${t.amount} (block soaks it, and it can't knock you out)` },
   analytic: { icon: '🧠', text: t => `${t.name}: it gains ${t.amount} strength whenever you play a Power` },
