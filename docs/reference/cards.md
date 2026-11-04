@@ -430,3 +430,28 @@ through the old and new engine match exactly (108 runs over the nine types, stro
 Eternatus rising 14 times). Left for phase 2: retargeting when the target falls while another stands, the layout, tap to
 target, per-enemy DOM (`#enemy-zone` is still one). In a real fight: `tools/battle-flows-probe.mjs` (a wild fight, the
 Depths boss rising, a Safari catch, a gym).
+
+## Double battles, phase 2: the two-enemy layout and tap to aim (2026-11-04, branch-only, never `main`)
+
+Built on phase 1, on the branch `claude/two-enemy-layout-targeting-46sg44` (from `multi-enemy-battles`). A fight's
+`encounter.mates` (only the test flag `?arena=double&foe=a,b`, `&hp=0.5` to shrink both, sets one so far: `node.mate` in
+js/run.js) adds a second enemy to `b.enemies`. **The page**: `layFoes()` in js/battle.js copies the enemy's plate and
+box as the page first had them (`FOE_PARTS`, taken in `initBattle()`) with `enemy2-…` ids and puts `.duo` on `#arena`; a
+single fight takes them away. battle.js's `$` is its own: an `enemy-…` id gives the copy of the enemy in focus
+(`focusOf(b)`: `b.view`, else `b.acting`, else `b.target`), so every existing hit, pop, lunge, faint and intro line lands
+on the right enemy unchanged. Drawing loops `withFoe(i, fn)` (sets `b.view`): `renderBars()`, `renderIntent()` →
+`intentOf()`, `renderStatus()` → `foeStatus()` + `renderPlayerStatus()`, `renderPose()` (only the target braces),
+`setupEnemy()`. The second is never the Safari's shiny or rare one; its own `en.dexMark`. **Aiming**: `aim(i)` on a tap
+of an enemy or its plate (a click on `#arena`, or through `#card-focus` while a card is raised, which stays up): your
+turn only, not while busy, at one standing; the other dims (`.aside`). **Falling**: `won(b)` replaces phase 1's
+`allDown()` checks: not all down, it calls `fallen(b)`, which faints each newly knocked-out enemy (`en.down`, its box
+`.defeated`, "The wild X fainted!", the faint sound; the next knockout gets `finishingBlow()` again) and moves the target
+to the one standing; a boss's unrisen second form waits at 0 HP for `finish()`. `finish()` focuses the last to fall.
+**The lethal warning** counts both: `coming()` gives each enemy's attack through your block in turn (Guard stops the
+first attack, Evasion halves the first hits across both), the 💀 goes on every attacking bubble when the sum would knock
+you out, and your HP bar's blue chunk (`shieldPreview()`) counts both raw. **The intro**: both slide in and cry, "Wild X
+and Y appeared!". **The 3D arena** casts a third pad from `#enemy2-zone` (`layout()`'s `foe2`, `standing(at)`,
+`follow()`). **Not yet** (phase 3+): Burn / Hail / Sandstorm / Rocky Helmet and every card still hit only the target or
+the one acting; no AoE; catching in a double; pack encounters in the data; the bot choosing a target. pokeDB-sim mirrors
+the rule (`retarget()` in sim/engine.js, a no-op while its fights have one enemy). Checked by `tools/double-probe.mjs`
+(402x874 and 390x664), with `tools/battle-flows-probe.mjs` and `tools/enemy-probe.mjs` for the single fights.

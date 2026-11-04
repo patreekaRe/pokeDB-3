@@ -440,7 +440,7 @@ function init() {
   // ?tower=25: a throwaway Sky Pillar climb starting at that floor (the week's tower and starter), never saved; &hp=0.1
   // shrinks every foe's HP
   if (params.get('tower')) return peekTower(Number(params.get('tower')), Number(params.get('hp') ?? 1), (params.get('aug') || '').split(',').filter(Boolean));
-  // ?arena=elite / boss / wild / ken: a throwaway run straight into an Alpha's, boss's, wild Pokémon's or Kenmatta's fight, in the 3D arena (&biome=, &stage=0-2, &starter=id)
+  // ?arena=elite / boss / wild / double / ken: a throwaway run straight into an Alpha's, boss's, wild Pokémon's, two wild Pokémon's or Kenmatta's fight, in the 3D arena (&biome=, &stage=0-2, &starter=id)
   // ?gym=phil: straight into that Gym Leader's gym, then their boss fight (&n=2 their second boss, &starter=id, &hp=0.1)
   // ?town=shrine: a throwaway run straight into that biome's gateway town (&starter=id), then on into the biome
   // ?dojo: straight into Kenmatta's dojo, as if walked in from the Clearing (its stars and belts are real)

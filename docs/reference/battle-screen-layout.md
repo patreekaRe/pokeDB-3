@@ -385,3 +385,13 @@ In a normal run (not the Safari, the Sky Pillar or Kenmatta's dojo), the foe's n
 and gold with a ★ once its research is complete. `dexMark(id)` in `js/pokedex.js` reads it from the save before the fight
 (`fight()` in `js/run.js` puts it on `encounter.dexMark`), so a first defeat shows it from the next meeting on. A
 Pokémon with no Pokédex page (a gym leader's) gets none.
+
+**A double battle's layout** (2026-11-04, branch-only; docs/reference/cards.md's "Double battles, phase 2"): `.duo` on
+`#arena` (css/screens.css, the block before `.dex-mark`) lays it out like the games' doubles: the two enemies' plates
+stack top left (rows 1 and 2; your side moves down a row), compact (a grid: name and type, the HP bar with its numbers
+beside it, a row kept for statuses in the plate itself, so neither plate moves when a status comes or goes), and the
+two enemies stand side by side top right, each in half the column, the left one nearer (lower, in front), each a size
+smaller (`--duo` 0.95 scales `--base`, and with it its pad) and capped to its half. Move bubbles drop the move's name
+(icon and number; the name is in the tip). On short phones (≤760px tall) your Pokémon is a step smaller (`--you` 0.86)
+so the second plate clears it. The one not aimed at dims (`.aside`: the sprite darkened, the plate faded). Measured: on
+a 390x664 iPhone the enemies' boxes are ~65-85px (a single's ~85px), the plates end at 194 and your Pokémon starts at 213.

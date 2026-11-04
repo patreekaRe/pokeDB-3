@@ -1251,7 +1251,7 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 **The whole battle revamp stays on branches** (the user's rule, 2026-11-04, CLAUDE.md's "The battle revamp never touches
 `main`"): smarter enemies, double battles and everything after them are built and playtested on their own branches,
 never pushed to `main` until the user says to merge. **No merge for a while** (the user, 2026-11-04, after part 2): the next steps build on the branches;
-the double battles' phase 1 is done (below) and phase 2 is next.
+the double battles' phases 1 and 2 are done (below); the user's playtest of the layout, then phase 3, are next.
 
 **Your cloud save on a playtest link** (an idea, 2026-11-04; the user noticed a githack link has no cloud save): cloud
 save is on only for `patreekare.github.io` and localhost (`FIREBASE_CONFIG` in `js/cloud.js`), so a branch's link
@@ -1282,6 +1282,26 @@ Tail Slap reads 3×5 in the Clearing (2×5 plus the biome's +7 shared over the h
 **Found, not fixed** (on `main` too): after a gym win a music fade can throw "setValueCurveAtTime overlaps"
 (`pass()` in `js/audio.js`: a pass started within a crossfade of the loop's end starts its fade-in and fade-out at once);
 a fix belongs on `main` (▶ CLOUD, effort low).
+**Phase 2 done 2026-11-04 on branch `claude/two-enemy-layout-targeting-46sg44`** (built from `multi-enemy-battles`, which
+it fast-forwards; commit PHASE2_COMMIT; playtest link PHASE2_LINK; pokeDB-sim's mirror on the same-named branch;
+`docs/reference/cards.md`'s "Double battles, phase 2" and the battle layout file's last paragraph): the games' doubles
+layout (two compact plates stacked top left, the two enemies side by side top right, the left one nearer, each its own
+3D pad), compact move bubbles (icon + number, the name in the tip), each enemy its own box, HP bar, statuses and pops;
+tap an enemy or its plate to aim (also with a card raised; the other dims), the target moving on when it falls while
+the other stands ("The wild X fainted!"), the lethal warning counting both attacks. Test-only: `?arena=double`
+(`&foe=rattata,sentret`, `&hp=0.5`). node --test, tools/enemy-probe.mjs, tools/battle-flows-probe.mjs and the new
+tools/double-probe.mjs (402x874 and 390x664) pass; the sim's `retarget()` leaves seeded runs unchanged. **Next: the
+user playtests the layout on a phone** (▶ PLAYTEST: the link above with `?arena=double`), then phase 3.
+
+> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
+> push to main; bring in `claude/two-enemy-layout-targeting-46sg44` first if it isn't there yet), do phase 3 of the
+> double-battles idea in docs/roadmap.md (phase 2's notes: docs/reference/cards.md's last section): pack encounters in
+> the enemies data, only some fights, pairs designed with roles (a tank shielding a hitter, a caller bringing a helper, a
+> pair that buffs each other; the 'hunts in packs' Pokémon first), a few AoE cards (`all: true`, describe() 'to ALL
+> enemies', a cardTerms() line, ART lines, no twins), what Burn, Hail, Sandstorm and Rocky Helmet do with two, and
+> catching only once one is left. Mirror it in pokeDB-sim's branch. Run node --test, tools/card-twins.mjs,
+> tools/double-probe.mjs, tools/battle-flows-probe.mjs and tools/enemy-probe.mjs on a phone viewport; give me the
+> githack link."
 
 **What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
 StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
@@ -1293,13 +1313,6 @@ roomier on a phone but drops the Pokémon games' diagonal look; the user's call,
 first, then double battles with (b), then decide on (c). Branch `multi-enemy-battles` already holds (a) (it was
 fast-forwarded while (a) was briefly on `main`), so its phase 1 starts from the smarter enemies.
 
-> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
-> push to main), do phase 2 of the double-battles idea in docs/roadmap.md (phase 1's notes: docs/reference/cards.md's
-> last section): the two-enemy layout on phones and targeting. Tap an enemy to aim (the other dims), a lone enemy
-> auto-targeted, the target moving on when it falls while the other stands; compact intents (icon + number, the name in
-> the tip); each enemy its own box, HP bar, statuses and pops; the 3D arena placing two. Add a test-only two-enemy fight
-> (a URL flag) to try it; real pack encounters wait for phase 3. Mirror any rule change in pokeDB-sim's branch. Run node
-> --test, tools/enemy-probe.mjs and tools/battle-flows-probe.mjs on a phone viewport; give me the githack link."
 
 **Houses show a lot of empty wall** (an idea, 2026-10-28): with houses framed 8 tiles across, Kurt's Workshop sits low
 with a third of the screen plank wall above it. A slightly lower camera tilt in houses would fill the screen without

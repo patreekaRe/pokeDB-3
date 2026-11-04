@@ -726,7 +726,7 @@ export function peekArena(starter, kind, biome = null, slot = null) {
   const home = BIOMES_BY_ID[biome];
   peekDepths = !!home?.secret;
   peekAt = home && !home.secret ? (canWalk(biome, slot) ? biomeAt({ [slot]: biome }, slot) : home) : null;
-  beginRun(starter, 0, kind === 'boss' ? ':boss' : kind === 'wild' ? ':wild' : kind === 'ken' ? ':ken' : ':elite');
+  beginRun(starter, 0, kind === 'boss' ? ':boss' : kind === 'wild' ? ':wild' : kind === 'double' ? ':double' : kind === 'ken' ? ':ken' : ':elite');
 }
 
 /** A playtest run's kit from the URL (any throwaway run: ?arena=, ?biome=, ?gym=, ?bossfight=...): &relics=wide-lens,sticky-barb,
@@ -914,7 +914,7 @@ function peekRoom(id) {
     node.stock ??= martStock();
     return enterNode(node);
   }
-  if (id === ':elite' || id === ':wild' || (id === ':boss' && peekDepths)) {
+  if (id === ':elite' || id === ':wild' || id === ':double' || (id === ':boss' && peekDepths)) {
     if (peekDepths) {   // Mewtwo's last biome, fully powered up like after its fall
       run.biome = finalBiome(run.starter);
       run.stage = run.starter.line.length - 1;
@@ -924,10 +924,14 @@ function peekRoom(id) {
     if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
     startBiome(true);
     const stage = Number(new URLSearchParams(location.search).get('stage') ?? 1);
-    const type = id === ':wild' ? 'fight' : 'elite', fights = Object.values(run.map.byId).filter(n => n.type === type);
+    const type = id === ':elite' ? 'elite' : 'fight', fights = Object.values(run.map.byId).filter(n => n.type === type);
     const node = fights.find(n => stageOf(run.map, n).stage === stage) ?? fights[0];
-    const foe = new URLSearchParams(location.search).get('foe');   // &foe=sentret: that Pokémon (an Alpha of it)
+    // &foe=sentret: that Pokémon (an Alpha of it); a double battle's (?arena=double) &foe=sentret,rattata picks both
+    const [foe, mate] = (new URLSearchParams(location.search).get('foe') || '').split(',');
     if (ENEMY_DEFS[foe]) node.enemyId = foe;
+    if (id === ':double') {   // two of the biome's wild Pokémon, side by side (docs/roadmap.md's double battles, phase 2)
+      node.mate = { id: ENEMY_DEFS[mate] ? mate : null, hp: Number(new URLSearchParams(location.search).get('hp')) || 1 };
+    }
     return enterNode(node);
   }
   if (id === ':boss') {
@@ -1935,6 +1939,12 @@ async function fight(node, { talked = false } = {}) {
   if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));
   if (isTower() && augs().enemyHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().enemyHp));   // Sudden Death
   if (node.foeHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * node.foeHp));   // an event's foe, smaller than its usual self (the Snorlax)
+  if (node.mate) {   // a double battle's second (only ?arena=double so far, a playtest): another of the biome's; &hp= shrinks both
+    let mate = buildEncounter(mainBiome(), node.type, run.mods, node.mate.id ?? undefined);
+    for (let i = 0; i < 8 && !node.mate.id && mate.def === encounter.def; i++) mate = buildEncounter(mainBiome(), node.type, run.mods);
+    encounter.mates = [mate];
+    for (const e of [encounter, mate]) e.maxHp = Math.max(1, Math.round(e.maxHp * node.mate.hp));
+  }
   if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   encounter.dexMark = !ken && !isSafari() && !isTower() ? dexMark(node.enemyId) : null;
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);

@@ -451,8 +451,12 @@ function padAt(p, lift = 0) {
 
 function layout(lift = 0) {
   const spot = (zone, pseudo, h = 0) => padAt(cssPad(document.getElementById(zone), pseudo), h);
-  return { foe: spot('enemy-zone', '::after', lift), you: spot('player-zone', '::before') };
+  // a double battle's second enemy (layFoes() in js/battle.js) stands on a pad of its own
+  const twin = document.getElementById('enemy2-zone') ? spot('enemy2-zone', '::after', lift) : null;
+  return { foe: spot('enemy-zone', '::after', lift), you: spot('player-zone', '::before'), foe2: twin };
 }
+/** Every pad's spot: the enemy's (a double battle's two) and yours. */
+const standing = (at) => [at.foe, at.you, at.foe2].filter(Boolean);
 
 /** A point's place on screen, 0-1 each way (y down). */
 function onScreen(x, y, z) {
@@ -543,6 +547,7 @@ function build(o) {
 
   const kitOf = (zone, pseudo) => clearing ? null : o.biome === 'tower' ? towerPad(o.tower.alt) : padKit(cssPad(document.getElementById(zone), pseudo), o.biome);
   B.pads = [pad(at.foe, kitOf('enemy-zone', '::after')), pad(at.you, kitOf('player-zone', '::before'))];
+  if (at.foe2) B.pads.push(pad(at.foe2, kitOf('enemy2-zone', '::after')));
   B.at = at;
   if (!dress) { const b = B; B = null; return b; }
 
@@ -555,7 +560,7 @@ function build(o) {
   fg.fillStyle = fl; fg.fillRect(0, 0, 4, 256);
   const alpha = tex(fade); alpha.flipY = true;
 
-  const clear = (x, z, m = 0.9) => [at.foe, at.you].every(p => Math.hypot(x - p.x, z - p.z) > p.r + m);
+  const clear = (x, z, m = 0.9) => standing(at).every(p => Math.hypot(x - p.x, z - p.z) > p.r + m);
   const onLand = (x, z) => onScreen(x, 0, z).y > hz + 0.004;   // stands on the 3D ground, not out in the pixel backdrop
   const between = (x, z) => { const s = onScreen(x, 0, z); return s.y > at.foe.sy - 0.02 && s.y < at.you.sy + 0.06 && s.x > 0.1 && s.x < 0.9; };
   // anything tall on screen must keep off the middle, where the backdrop's landmark and both Pokémon are; `reach` is how far
@@ -1156,7 +1161,7 @@ function dressKombat({ o, r, at, hz, zNear }) {
       const x = innerWidth * (sx + (sx < 0.5 ? 1 : -1) * k * 0.02), c = onGround(x, innerHeight * (hz + 0.025), 0);
       if (!c) continue;
       const offDais = !B.dais || Math.abs(c.x - foe.x) > foe.r + 1.6;
-      if (offDais && [at.foe, at.you].every(p => Math.hypot(c.x - p.x, c.z - p.z) > p.r + 0.9)) spot = c;
+      if (offDais && standing(at).every(p => Math.hypot(c.x - p.x, c.z - p.z) > p.r + 0.9)) spot = c;
     }
     if (spot) fires.push(brazier(spot.x, spot.z, { stoneM, goldM, lacquer: std({ color: paint(KOMBAT.lacquer), roughness: 0.4 }) }));
   }
@@ -1417,7 +1422,7 @@ function dressTower({ o, r, at, hz, zNear }) {
     const moss = [std({ color: '#5a8a3e', roughness: 1, flatShading: true }), std({ color: '#76a84c', roughness: 1, flatShading: true })];
     for (let i = 0; i < 60; i++) {
       const x = (r() - 0.5) * half * 2, z = zW + 0.4 + r() * (len - 6);
-      if (![at.foe, at.you].every(p => Math.hypot(x - p.x, z - p.z) > p.r + 0.4)) continue;
+      if (!standing(at).every(p => Math.hypot(x - p.x, z - p.z) > p.r + 0.4)) continue;
       const s = 0.12 + r() * 0.22;
       mesh(new THREE.IcosahedronGeometry(s, 1), moss[i % 2], x, s * 0.2, z).scale.y = 0.35;
     }
@@ -1494,7 +1499,7 @@ function dressTower({ o, r, at, hz, zNear }) {
         const stoneM = std({ map: tex(stoneArt()), color: '#c8cdb8', roughness: 0.9 }), lacquer = std({ color: '#5a6a58', roughness: 0.6 });
         for (const f of [0.06, 0.94]) {
           const c = onGround(innerWidth * f, innerHeight * (hz + 0.03), 0);
-          if (c && [at.foe, at.you].every(p => Math.hypot(c.x - p.x, c.z - p.z) > p.r + 0.9)) ticks.push(brazier(c.x, Math.max(c.z, zW + 0.7), { stoneM, goldM: gold, lacquer, power: 1.6 }));
+          if (c && standing(at).every(p => Math.hypot(c.x - p.x, c.z - p.z) > p.r + 0.9)) ticks.push(brazier(c.x, Math.max(c.z, zW + 0.7), { stoneM, goldM: gold, lacquer, power: 1.6 }));
         }
       }
     }
@@ -1576,14 +1581,14 @@ function stepDown() {
 /** The pads follow the page's: a boss's sprite that loads late, a move bubble that wraps, a Pokémon that grows on evolving
     all shift where the page draws its pads, and a 3D pad left where it was built stood off to the side (the user saw it). */
 function follow() {
-  const spots = [['enemy-zone', '::after'], ['player-zone', '::before']];
+  const spots = [['enemy-zone', '::after'], ['player-zone', '::before'], ['enemy2-zone', '::after']];
   spots.forEach(([zone, pseudo], i) => {
     const el = document.getElementById(zone);
-    if (!el) return;
+    if (!el || !A.pads[i]) return;
     const p = cssPad(el, pseudo), key = `${Math.round(p.cx)},${Math.round(p.cy)},${Math.round(p.w)}`;
     if (A.keys[i] === key) return;
     A.keys[i] = key;
-    const was = i ? A.at.you : A.at.foe, at = padAt(p, was.lift);
+    const was = [A.at.foe, A.at.you, A.at.foe2][i], at = padAt(p, was.lift);
     if (!at) return;
     const g = A.pads[i];
     g.position.set(at.x, at.lift, at.z);
@@ -1694,7 +1699,7 @@ function rebuild() {
   if (!b) return false;
   A = b;
   A.beat = 0; A.keys = [];
-  for (const p of [A.at.foe, A.at.you]) p.r0 = p.r;
+  for (const p of standing(A.at)) p.r0 = p.r;
   scene.add(A.group);
   if (wanted) show(false);
   last = 0; fpsLog.length = 0; slowSince = 0;

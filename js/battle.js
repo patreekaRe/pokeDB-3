@@ -34,7 +34,7 @@ import { ABILITIES, ENERGY_RELICS, RELICS_BY_ID } from './data/relics.js';
 import { STAB, DUO_SWITCH_PP, outStarter, runTypes, runTypePool, runItems, syncDecks } from './data/duo.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
-import { $, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
+import { $ as byId, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { smoothIcon } from './smooth-icons.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS, enemyMove, firstMove, moveOn, moveAfter, hitCount } from './data/enemies.js';
@@ -68,8 +68,26 @@ const TYPE_RELIC = { fire: 'charcoal', grass: 'miracle-seed', water: 'mystic-wat
 let battle = null;
 let nextUid = 1;
 
+/** The page's element by id. An enemy's own parts (`enemy-…`) are those of the enemy in focus (b.enemy): a double
+    battle's second enemy has its own copies, `enemy2-…` (layFoes()), so every hit, pop and faint lands on the right one. */
+const $ = (id) => byId(battle && focusOf(battle) && id.startsWith('enemy-') ? `enemy2-${id.slice(6)}` : id);
+/** The enemy in focus: one being drawn (withFoe()), else the one taking its turn, else the one your cards are aimed at. */
+const focusOf = (b) => b.view ?? b.acting ?? b.target;
+/** Runs `fn` with enemy `i` in focus, to draw each enemy of a double battle in turn. */
+function withFoe(i, fn) {
+  const b = battle, was = b.view;
+  b.view = i;
+  try { return fn(); } finally { b.view = was; }
+}
+
 /** Called once at startup. */
 export function initBattle() {
+  FOE_PARTS = ['enemy-plate', 'enemy-zone'].map(id => byId(id).cloneNode(true));
+  // a double battle: a tap on an enemy or its plate aims your cards at it
+  byId('arena').addEventListener('click', (e) => {
+    const foe = e.target.closest('.enemy-zone, .foe-plate');
+    if (foe) aim(foe.id.startsWith('enemy2-') ? 1 : 0);
+  });
   $('end-turn-btn').addEventListener('click', askEndTurn);
   $('throw-btn').addEventListener('click', toggleBallPicker);
   $('mulligan-btn').addEventListener('click', mulligan);
@@ -91,7 +109,10 @@ export function initBattle() {
   // tapping the battle around a picked card, or Escape, puts it back; tapping another card in the hand picks that one
   $('card-focus').addEventListener('click', (e) => {
     if (pilePick || e.target.closest('.focus-card, .focus-play')) return;
-    const other = document.elementsFromPoint(e.clientX, e.clientY).find(node => node.matches('.card.in-hand:not(.lifted)'));
+    const under = document.elementsFromPoint(e.clientX, e.clientY);
+    const foe = battle?.enemies.length > 1 && selectedUid !== null && under.find(node => node.matches('.enemy-zone, .foe-plate'));
+    if (foe) { aim(foe.id.startsWith('enemy2-') ? 1 : 0); return; }   // a raised card stays up while you aim it
+    const other = under.find(node => node.matches('.card.in-hand:not(.lifted)'));
     if (other && (selectedUid !== null || choosing?.picked)) tapCard(Number(other.dataset.uid));
     else cancelPick();
   });
@@ -331,10 +352,12 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
 
     // the enemies (one in every fight so far; double battles are docs/roadmap.md's idea): `b.enemy` and `b.def` read the
     // one in focus, the one acting on the enemies' turn, else the one your cards are aimed at
-    enemies: [makeFoe(def, encounter, run, aug, trial)],
-    target: 0,         // the enemy your cards hit
+    // a double battle's second (encounter.mates: so far only ?arena=double, a playtest) stands beside the first
+    enemies: [encounter, ...(encounter.mates ?? []).slice(0, 1)].map(en => makeFoe(en.def, en, run, aug, trial)),
+    target: 0,         // the enemy your cards hit: tap another to aim (aim()); it moves on when its enemy falls (fallen())
     acting: null,      // the enemy taking its turn, while it does
-    get enemy() { return this.enemies[this.acting ?? this.target]; },
+    view: null,        // the enemy being drawn (withFoe())
+    get enemy() { return this.enemies[this.view ?? this.acting ?? this.target]; },
     get def() { return this.enemy.def; },
     set def(d) { this.enemy.def = d; },
 
@@ -344,6 +367,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
 
   setTheme(out.type);
   wearFoil(run);
+  layFoes(battle);
   showScreen('battle-screen');
   const land = run.safari?.areas[run.biome] ?? biomeAt(run.route, run.biome)?.id;
   document.body.dataset.biome = land || '';   // the piles' colour
@@ -365,6 +389,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
 
   log(trial ? def.intro ?? `${def.name} steps onto the mat!` : encounter.kind === 'boss'
     ? def.prelude ?? (run.safari ? SAFARI_PRELUDE_LINES[run.safari.areas[run.biome]] : BOSS_PRELUDE_LINES[land]) ?? 'A powerful presence stirs...'
+    : battle.enemies.length > 1 ? `Wild ${battle.enemies.map(en => en.def.name).join(' and ')} appeared!`
     : `A ${encounter.shiny && run.safari && encounter.kind === 'fight' ? 'shiny' : 'wild'} ${def.name} appeared!`);
   if (deferIntro) {
     document.body.classList.add('boss-prelude');
@@ -404,11 +429,70 @@ function makeFoe(def, encounter, run, aug, trial) {
     recent: [],                     // its last two moves' indexes: a random order never uses one three turns running
     halfUsed: false,                // its `atHalf` move used (moveOn())
     grown: {},                      // what each `grow` move has gained so far, by name (Eternamax's Dynamax Cannon)
+    dexMark: encounter.dexMark ?? null,   // already in the Pokédex: 'caught' or 'researched' (dexMark() in js/run.js)
+    down: false,                    // fainted while another enemy still stands (fallen())
   };
 }
 
 /** Every enemy is down: the fight is won. */
 const allDown = (b) => b.enemies.every(en => en.hp <= 0);
+/** Is the fight won? If not, any enemy just knocked out while another stands faints now (fallen()). */
+function won(b) {
+  if (allDown(b)) return true;
+  fallen(b);
+  return false;
+}
+
+/** A double battle's enemy knocked out while the other still stands faints on its own, as finish() fells the last, and
+    your aim moves to the one left. A boss's unrisen second form waits at 0 HP for finish() to raise it. */
+function fallen(b) {
+  if (b.enemies.length < 2 || b.over) return;
+  for (const [i, en] of b.enemies.entries()) {
+    if (en.hp > 0 || en.down || (en.def.phase2 && !en.phased)) continue;
+    en.down = true;
+    withFoe(i, () => {
+      $('enemy-portrait-box').classList.remove('charging', 'attacking');
+      $('enemy-portrait-box').classList.add('defeated');
+      ambience($('enemy-img'), {});
+    });
+    playSound('faint');
+    log(`${b.kind === 'fight' ? 'The wild ' : ''}${en.def.name} fainted!`);
+    b.blowShown = false;   // the last one's knockout gets its beat too (finishingBlow())
+  }
+  if (b.enemies[b.target].hp <= 0) {
+    const next = b.enemies.findIndex(en => en.hp > 0);
+    if (next >= 0) b.target = next;
+  }
+  renderAll();
+}
+
+/** Aim your cards at enemy `i` (a tap on it or its plate): only in a double battle, on your turn, at one still standing. */
+function aim(i) {
+  const b = battle;
+  if (!b || b.over || b.busy || b.enemyActing || b.enemies.length < 2 || i === b.target || !(b.enemies[i]?.hp > 0)) return;
+  b.target = i;
+  vibrate(8);
+  renderAll();
+}
+
+/* A double battle's second enemy: its plate and box copied from the first's as the page first had them (`FOE_PARTS`,
+   taken at startup), their ids `enemy2-…`; `.duo` on the arena lays the two side by side (css/screens.css). A single
+   fight takes them away again. */
+let FOE_PARTS = null;
+function layFoes(b) {
+  const arena = byId('arena');
+  FOE_PARTS ??= ['enemy-plate', 'enemy-zone'].map(id => byId(id).cloneNode(true));
+  arena.querySelectorAll('.foe2').forEach(n => n.remove());
+  const duo = b.enemies.length > 1;
+  arena.classList.toggle('duo', duo);
+  if (!duo) return;
+  for (const part of FOE_PARTS) {
+    const copy = part.cloneNode(true);
+    for (const n of [copy, ...copy.querySelectorAll('[id]')]) n.id = n.id.replace(/^enemy-/, 'enemy2-');
+    copy.classList.add('foe2');
+    byId(part.id).after(copy);
+  }
+}
 
 /* A main biome's fight in a 3D place (js/arena-3d.js): loaded only when one is, and laid under the battle screen; a
    boss's stays hidden until its pixel prelude is over (playIntro()). A Sky Pillar fight's is the tower's room (`room`). */
@@ -450,13 +534,13 @@ async function playIntro() {
   const cry = (id) => id ? Promise.race([playCry(id), sleep(CRY_WAIT_MAX)]) : null;
   const motion = battleFx();
   const playerSpriteId = b.starter.line[b.stage].id;
-  preloadCries(b.def.spriteId ?? '', playerSpriteId, b.def.phase2?.spriteId ?? '', ...(b.duo ? [STARTERS_BY_ID[b.duo.run.ids[1 - b.duo.run.out]].line[b.stage].id] : []));
+  preloadCries(...b.enemies.map(en => en.def.spriteId ?? ''), playerSpriteId, b.def.phase2?.spriteId ?? '', ...(b.duo ? [STARTERS_BY_ID[b.duo.run.ids[1 - b.duo.run.out]].line[b.stage].id] : []));
   if (b.def.phase2) {
     new Image().src = b.def.phase2.image;
     preloadMusic(b.def.phase2.music);
   }
   preloadSounds('card', 'hit', 'block', 'blocked', 'end-turn', 'faint', 'item', 'potion', 'ball-throw', 'ball-open', 'stat-up', 'stat-down', 'low-hp',
-    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.def.moves.map(m => m.sound).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.def.phase2 ? ['charge', ...bossRebirthSounds()] : []), ...(b.shiny ? ['shiny'] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
+    'heal-hp', 'power', 'burn', 'run-away', 'no-pp', ...b.enemies.flatMap(en => en.def.moves.map(m => m.sound)).filter(Boolean), ...(b.kind === 'boss' ? ['thunder', ...bossPreludeSounds()] : []), ...(b.def.phase2 ? ['charge', ...bossRebirthSounds()] : []), ...(b.shiny ? ['shiny'] : []), ...(b.catchable ? ['catch-shake', 'catch-shake-2', 'catch-shake-3', 'catch-click', 'catch-success', 'bag'] : []));
 
   zone.classList.add('awaiting');
   renderAll();
@@ -490,11 +574,12 @@ async function playIntro() {
     } else log(b.def.intro ?? `${b.def.name} blocks the way!`);
   }
   // each Pokémon only cries once it's actually there to see
+  const zones = [...byId('arena').querySelectorAll('.enemy-zone')];   // a double battle's two come in together
   if (motion && !(b.leader && b.kind === 'boss')) {
-    enemyZone.classList.add('entering');
+    zones.forEach(z => z.classList.add('entering'));
     await sleep(800);
     if (!still()) return;
-    enemyZone.classList.replace('entering', 'revealed');
+    zones.forEach(z => z.classList.replace('entering', 'revealed'));
   }
   if (b.shiny) {   // the games' shiny sparkle as it appears, then its banner
     if (motion) shinySparkle(enemyZone);
@@ -503,7 +588,11 @@ async function playIntro() {
   }
   await Promise.all([cry(b.def.spriteId), sleep(motion ? 500 : 300)]);
   if (!still()) return;
-  enemyZone.classList.remove('revealed', 'ball-out');
+  for (const en of b.enemies.slice(1)) {
+    await Promise.all([cry(en.def.spriteId), sleep(motion ? 400 : 200)]);
+    if (!still()) return;
+  }
+  zones.forEach(z => z.classList.remove('revealed', 'ball-out'));
   const possessed = () => {
     $('enemy-portrait-box').classList.add('possessed');   // a violet glow too, so the dark reads on a dark arena
     setAura($('enemy-img'), 3, 'dark');
@@ -578,7 +667,7 @@ function resetIntro() {
   ball.classList.remove('thrown', 'open');
   $('player-sprite').classList.remove('released');
   $('player-zone').classList.remove('awaiting');
-  $('enemy-zone').classList.remove('entering', 'revealed', 'boss-waiting', 'ball-out');
+  byId('arena').querySelectorAll('.enemy-zone').forEach(z => z.classList.remove('entering', 'revealed', 'boss-waiting', 'ball-out'));
   document.querySelectorAll('.enemy-ball, .shiny-banner').forEach(n => n.remove());
 }
 
@@ -726,7 +815,7 @@ function beginPlayerTurn() {
   if (a.randomCard) addRandomCards(a.randomCard);
   if (a.copycat) copycat();
   surface();
-  if (allDown(b)) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry, a card surfacing
+  if (won(b)) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry, a card surfacing
   b.busy = false;
   if (b.turn === 1 && !b.safari && (getSave().handSwipes ?? 0) < HAND_TAUGHT) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
   else if (b.turn === HINT_TURNS + 1) hideHandHint();
@@ -1412,7 +1501,7 @@ async function playCard(uid) {
   await pause(220);
 
   if (battle !== b) return;                      // the player left the battle
-  if (allDown(b)) return finish(true);
+  if (won(b)) return finish(true);
   if (b.switchAfter) {   // Volt Switch: the partner comes out free; alone, it still counts as a switch
     b.switchAfter = false;
     if (b.duo) await comeOut(b);
@@ -2065,7 +2154,7 @@ async function useItem(index) {
   renderAll();
   await sleep(220);
   if (battle !== b) return;
-  if (allDown(b)) return finish(true);   // Enigma Berry off a Potion
+  if (won(b)) return finish(true);   // Enigma Berry off a Potion
   b.busy = false;
   renderAll();
 }
@@ -2499,7 +2588,7 @@ async function endTurn() {
     renderAll();
     await pause(500);
     if (battle !== b) return;
-    if (allDown(b)) return finish(true);
+    if (won(b)) return finish(true);
   }
 
   // Weather: Hail chips the enemy through its block, then a turn goes (Ice Age: each chip adds Frostbite)
@@ -2525,7 +2614,7 @@ async function endTurn() {
     renderAll();
     await pause(450);
     if (battle !== b) return;
-    if (allDown(b)) { b.felledBy = kind; return finish(true); }
+    if (won(b)) { b.felledBy = kind; return finish(true); }
   }
 
   // Status cards that hurt while held (Poison), then Ethereal cards fade away (exhausted).
@@ -2552,7 +2641,7 @@ async function endTurn() {
   fading.forEach(h => burnOut(h.uid));
   b.hand = b.hand.filter(h => !h.card.ethereal);
   fading.forEach(h => exhaustCard(h.card));
-  if (allDown(b)) { renderAll(); return finish(true); }   // Smoke-Poke Tail off a faded card
+  if (won(b)) { renderAll(); return finish(true); }   // Smoke-Poke Tail off a faded card
 
   // Discard whatever is left in your hand, except cards that retain (Slowpoke Tail, StS's Runic Pyramid: all of it).
   // Grip Claw also keeps the leftmost card that would have been discarded, and Still Waters lets you pick more.
@@ -2610,7 +2699,7 @@ async function enemyTurn() {
     if (battle !== b || !goOn) return;   // the fight is over, or a second form rising ended the turn
     b.acting = null;
   }
-  if (allDown(b)) return finish(true);       // knocked out by Rocky Helmet or Mirror Coat
+  if (won(b)) return finish(true);       // knocked out by Rocky Helmet or Mirror Coat
   if (b.aug.enemyTwice && b.turn === 1 && !b.twice) {   // Speed Demon: on turn 1 it goes again
     b.twice = true;
     b.struck = false;
@@ -2626,7 +2715,7 @@ async function enemyTurn() {
 async function enemyActs(b) {
   const en = b.enemy;
   const move = currentMove();
-  const felled = () => (allDown(b) ? finish(true) : true);
+  const felled = () => (won(b) ? finish(true) : true);
   en.block = 0;                                   // enemy block only lasts one round
   if (en.away) comeBack();
 
@@ -2922,6 +3011,7 @@ async function finish(won) {
   const b = battle;
   const riser = won && b.enemies.find(en => en.def.phase2 && !en.phased);
   if (riser) return rebirth(riser);
+  if (won && b.enemies.length > 1) b.view = Math.max(0, b.enemies.findIndex(en => !en.down));   // the last to fall
   b.busy = true;
   if (won) await finishingBlow(b.lastHit);   // felled by Burn, Leech Seed, a relic...: the beat comes now
   if (battle !== b) return;
@@ -3206,7 +3296,7 @@ function setupBattleScreen() {
   $('swap-hint').hidden = true;
   dressPlayer();
   resetIntro();
-  setupEnemy();
+  battle.enemies.forEach((_, i) => withFoe(i, setupEnemy));
   log('');
 }
 
@@ -3243,10 +3333,11 @@ function dressPlayer() {
 
 /** The enemy's sprite, plate and type: at the start of a fight, and again when a boss rises in its second form. */
 function setupEnemy() {
-  const b = battle;
+  const b = battle, first = !focusOf(b);   // a double battle's second is never the Safari's shiny or rare one
+  const shiny = b.shiny && first, rare = b.rare && first, dexMark = first ? b.dexMark : b.enemy.dexMark;
   const img = $('enemy-img');
-  img.src = b.shiny ? shinyImage(b.def.spriteId) : b.def.image;
-  img.alt = `${b.shiny ? 'Shiny ' : ''}${b.def.name}`;
+  img.src = shiny ? shinyImage(b.def.spriteId) : b.def.image;
+  img.alt = `${shiny ? 'Shiny ' : ''}${b.def.name}`;
   img.classList.toggle('pixel', !b.def.art);
   setAura(img, 0);   // puts out Kenmatta's aura from a previous fight (aura.js)
   const box = $('enemy-portrait-box');
@@ -3261,18 +3352,18 @@ function setupEnemy() {
 
   const type = typeless() ? 'normal' : b.def.type;   // elites and bosses ignore the chart, so show them as Neutral
   $('enemy-zone').dataset.type = type;
-  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : b.shiny ? '✨ ' : '') + b.def.name;
-  $('enemy-plate').classList.toggle('rare', b.rare);
-  $('enemy-rare').hidden = !b.rare;
-  $('enemy-plate').classList.toggle('shiny', b.shiny);
-  $('enemy-shiny').hidden = !b.shiny;
+  $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : shiny ? '✨ ' : '') + b.def.name;
+  $('enemy-plate').classList.toggle('rare', rare);
+  $('enemy-rare').hidden = !rare;
+  $('enemy-plate').classList.toggle('shiny', shiny);
+  $('enemy-shiny').hidden = !shiny;
   const mark = $('enemy-dex');
-  mark.hidden = !b.dexMark;
-  mark.classList.toggle('gold', b.dexMark === 'researched');
-  mark.title = b.dexMark === 'researched' ? 'Research complete' : 'Caught: in your Pokédex';
+  mark.hidden = !dexMark;
+  mark.classList.toggle('gold', dexMark === 'researched');
+  mark.title = dexMark === 'researched' ? 'Research complete' : 'Caught: in your Pokédex';
   mark.setAttribute('aria-label', mark.title);
   box.querySelector('.shiny-aura')?.remove();
-  if (b.shiny && battleFx()) {   // it sparkles all fight
+  if (shiny && battleFx()) {   // it sparkles all fight
     const aura = el('div', 'shiny-aura');
     aura.setAttribute('aria-hidden', 'true');
     for (let i = 0; i < 5; i++) aura.append(el('span', `shiny-twinkle t${i}`));
@@ -3558,12 +3649,19 @@ function renderBars() {
   const b = battle;
   setHpBar('player', b.hp, b.maxHp);
   setLoop('low-hp', !b.over && b.hp > 0 && b.hp <= b.maxHp * 0.2);   // the games' low-HP beeping
-  setHpBar('enemy', b.enemy.hp, b.enemy.maxHp);
+  b.enemies.forEach((en, i) => withFoe(i, () => {
+    setHpBar(i ? 'enemy2' : 'enemy', en.hp, en.maxHp);
+    $('enemy-plate').classList.toggle('has-block', en.block > 0);
+    if (!$('enemy-hp').querySelector('.gb-hp-shield.ghost')) enemyShield();
+    // a double battle: the one not aimed at dims, on your turn (aim())
+    const aside = b.enemies.length > 1 && i !== b.target && en.hp > 0 && !b.over && !b.enemyActing;
+    $('enemy-zone').classList.toggle('aside', aside);
+    $('enemy-plate').classList.toggle('aside', aside);
+    $('enemy-zone').classList.toggle('aimed', b.enemies.length > 1 && i === b.target && !b.over && !b.enemyActing);
+  }));
   renderPose();
   $('player-plate').classList.toggle('has-block', b.block > 0);
   if (!$('player-plate').classList.contains('block-preview')) shieldPreview(b.block);
-  $('enemy-plate').classList.toggle('has-block', b.enemy.block > 0);
-  if (!$('enemy-hp').querySelector('.gb-hp-shield.ghost')) enemyShield();
 
   // Energy is shown as the games' PP: "PP 2/3", out of what this turn started with. The number bumps when it changes.
   const orb = $('player-energy');
@@ -3631,11 +3729,22 @@ function replay(node, cls, ms, ...all) {
   replayAt.set(node, setTimeout(() => node.classList.remove(cls), ms));
 }
 
-/** The little bubble that says what the enemy will do next. */
+/** Each enemy's bubble saying what it will do next. In a double battle the lethal warning counts both attacks, the
+    first through your block before the second (coming()). */
 function renderIntent() {
+  const b = battle, hits = coming();
+  const lethal = !b.over && hits.reduce((sum, h) => sum + (h?.through ?? 0), 0) >= b.hp;
+  $('player-plate').classList.toggle('danger', lethal && battleFx());
+  b.enemies.forEach((en, i) => withFoe(i, () => intentOf(hits[i], lethal)));
+}
+
+/** The enemy in focus's bubble: `hit` its attack's share of coming(), `lethal` whether the enemies' attacks would knock
+    you out. A fallen one's is empty. */
+function intentOf(hit, lethal) {
   const b = battle;
   const box = $('enemy-intent');
-  if (b.over) { box.textContent = ''; box.className = 'intent'; delete box.dataset.move; $('player-plate').classList.remove('danger'); return; }
+  if (b.over || b.enemy.hp <= 0) { box.textContent = ''; box.className = 'intent'; delete box.dataset.move; return; }
+  const guard = !!hit?.guarded;
 
   const move = currentMove();
   let icon = '⚔️', value = '', kind = 'attack', detail = '';
@@ -3646,8 +3755,8 @@ function renderIntent() {
     const effect = enemyTypeMultiplier(move);
     const arrow = effect > 1 ? '▲' : effect < 1 ? '▼' : '';
     const n = hitCount(move), per = attackDamage(move), times = n > 1 ? `×${n}` : '';
-    value = b.guard ? '✋' : `${evaded(per)}${times}${arrow}${b.evasion ? '🪶' : ''}`;
-    detail = b.guard ? 'will hit your Guard' : `${n > 1 ? `${n} hits of ` : ''}${evaded(per)} damage${b.evasion ? ` (${per}, halved by Evasion${n > 1 ? ' while it lasts' : ''})` : ''}${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
+    value = guard ? '✋' : `${evaded(per)}${times}${arrow}${b.evasion ? '🪶' : ''}`;
+    detail = guard ? 'will hit your Guard' : `${n > 1 ? `${n} hits of ` : ''}${evaded(per)} damage${b.evasion ? ` (${per}, halved by Evasion${n > 1 ? ' while it lasts' : ''})` : ''}${move.kind === 'drain' ? ` and heal ${move.heal}` : ''}`;
     if (b.safari && !typeless()) detail = `${REAL_TYPES[moveType(move, b.def)].label} move: ${detail}`;   // the real chart: which type is coming
     if (b.enemy.away) detail = `${AWAY[b.enemy.away].where}, out of reach of your attacks: ${detail}`;
   } else if (move.kind === 'defend') {
@@ -3674,12 +3783,11 @@ function renderIntent() {
   box.className = `intent ${kind} fresh`;
   if (fresh) { box.classList.remove('fresh'); void box.offsetWidth; box.classList.add('fresh'); }
   box.replaceChildren(el('span', 'intent-icon', icon), el('b', 'intent-value', value), el('span', 'intent-name', kind === 'paralyzed' ? 'Paralyzed' : move.name));
-  const through = kind === 'attack' || kind === 'drain' ? incoming(move) : null;
-  const lethal = through !== null && through >= b.hp && !b.guard;
-  box.classList.toggle('lethal', lethal);
-  $('player-plate').classList.toggle('danger', lethal && battleFx());
-  if (lethal) { box.append(el('span', 'intent-mark', '💀')); detail += ': enough to knock you out!'; }
-  else if (through === 0 && !b.guard && attackDamage(move) > 0) { box.append(el('span', 'intent-mark safe', '✔')); detail += ', all blocked'; }
+  const through = hit && !guard ? hit.through : null;
+  const deadly = through !== null && lethal;
+  box.classList.toggle('lethal', deadly);
+  if (deadly) { box.append(el('span', 'intent-mark', '💀')); detail += b.enemies.filter(en => en.hp > 0).length > 1 ? ': with the other\'s, enough to knock you out!' : ': enough to knock you out!'; }
+  else if (through === 0 && attackDamage(move) > 0) { box.append(el('span', 'intent-mark safe', '✔')); detail += ', all blocked'; }
   if (kind === 'paralyzed') { box.title = `Next turn: ${detail}`; return; }
   if (move.adds && move.kind !== 'status') box.append(el('span', 'intent-icon intent-adds', CARDS_BY_ID[move.adds.card].art));
   if (move.adds) {
@@ -3699,24 +3807,40 @@ function renderIntent() {
   }
 }
 
-/** The HP the enemy's next hit would take through your block, as hurtPlayer() would count it (Evasion, Protective Pads,
-    Assault Vest), for the intent's lethal warning. */
-function incoming(move) {
-  const b = battle, per = attackDamage(move);
-  let block = b.block, total = 0;
-  for (let h = 0; h < hitCount(move); h++) {   // each hit through what block the ones before it left
-    let through = Math.max(0, (h < b.evasion ? Math.floor(per / 2) : per) - (b.aug.hitReduce || 0));
-    const soaked = Math.min(block, through);
-    block -= soaked;
-    through -= soaked;
-    if (through > 0 && through <= 5 && hasRelic('protective-pads')) through = 1;
-    if (through > 0 && hasRelic('assault-vest')) through -= 1;
-    total += through;
-  }
-  return total;
+/** What each enemy's next attack would do to you, in the order they act, as hurtPlayer() would count it: per enemy
+    null (no attack, Paralyzed, or fallen) or { through: the HP it takes past your block, raw: before block, guarded }.
+    Guard stops the first attack; Evasion halves the first hits and block soaks hits in turn, across both enemies. */
+function coming() {
+  const b = battle;
+  let block = b.block, hit = 0, guard = b.guard;
+  return b.enemies.map((en, i) => withFoe(i, () => {
+    const move = currentMove();
+    if (b.over || en.hp <= 0 || !(move.kind === 'attack' || move.kind === 'drain') || paralyzing()) return null;
+    if (guard) { guard = false; return { through: 0, raw: 0, guarded: true }; }
+    const per = attackDamage(move);
+    let through = 0, raw = 0;
+    for (let h = 0; h < hitCount(move); h++, hit++) {   // each hit through what block the ones before it left
+      let n = Math.max(0, (hit < b.evasion ? Math.floor(per / 2) : per) - (b.aug.hitReduce || 0));
+      raw += n;
+      const soaked = Math.min(block, n);
+      block -= soaked;
+      n -= soaked;
+      if (n > 0 && n <= 5 && hasRelic('protective-pads')) n = 1;
+      if (n > 0 && hasRelic('assault-vest')) n -= 1;
+      through += n;
+    }
+    return { through, raw, guarded: false };
+  }));
 }
 
 function renderStatus() {
+  const b = battle;
+  b.enemies.forEach((_, i) => withFoe(i, foeStatus));
+  renderPlayerStatus();
+}
+
+/** The enemy in focus's statuses under its plate, and their look on its sprite (burning, seeded...). */
+function foeStatus() {
   const b = battle;
   const en = b.enemy;
   const enemyBadges = [];
@@ -3727,8 +3851,9 @@ function renderStatus() {
   if (en.seed)     enemyBadges.push(['🌱', en.seed, `Leech Seed ${en.seed}: at the start of its turn it loses ${en.seed} HP and you heal ${en.seed}${b.powers.seedKeep ? '' : ', then it drops by 1'}`]);
   if (en.static)   enemyBadges.push(['⚡', en.static, `Static ${en.static}: at ${staticCap()} it's Paralyzed and loses its next move${paralyzing() ? ' (full!)' : ''}`, paralyzing() ? 'good' : '']);
   if (en.frostbite) enemyBadges.push(['❄️', en.frostbite, `Frostbite ${en.frostbite}: every hit on it deals +${en.frostbite}${b.powers.frostKeep ? '' : ', then it thaws by 1 at the end of its turn'}`]);
-  if (b.weather?.kind === 'hail') enemyBadges.push(['🌨️', b.weather.turns, `Hail, ${b.weather.turns} more turn${b.weather.turns > 1 ? 's' : ''}: at the end of your turn it loses ${HAIL.chip} HP, and your Ice attacks deal +${HAIL.bonus} a hit`]);
-  if (b.weather?.kind === 'sand') enemyBadges.push(['🏜️', b.weather.turns, `Sandstorm, ${b.weather.turns} more turn${b.weather.turns > 1 ? 's' : ''}: at the end of your turn it loses ${SAND.chip} HP, and your Ground cards block +${SAND.bonus}`]);
+  const aimed = focusOf(b) === b.target;   // the weather chips the one aimed at (a double battle's other is left alone)
+  if (b.weather?.kind === 'hail' && aimed) enemyBadges.push(['🌨️', b.weather.turns, `Hail, ${b.weather.turns} more turn${b.weather.turns > 1 ? 's' : ''}: at the end of your turn it loses ${HAIL.chip} HP, and your Ice attacks deal +${HAIL.bonus} a hit`]);
+  if (b.weather?.kind === 'sand' && aimed) enemyBadges.push(['🏜️', b.weather.turns, `Sandstorm, ${b.weather.turns} more turn${b.weather.turns > 1 ? 's' : ''}: at the end of your turn it loses ${SAND.chip} HP, and your Ground cards block +${SAND.bonus}`]);
   if (en.fault)    enemyBadges.push(['🌋', faultLine(), `Fault ${en.fault}: at the start of its turn, if its HP is ${faultLine()} or less, it's knocked out${faultLine() < en.fault ? ' (Alphas and bosses count half)' : ''}${en.hp <= faultLine() ? ' (in reach!)' : ''}`, en.hp <= faultLine() ? 'good' : '']);
   if (en.sap)      enemyBadges.push(['🍂', en.sap, `Sap ${en.sap}: its attacks deal ${en.sap} less damage, all fight`]);
   if (en.tempSap)  enemyBadges.push(['💕', en.tempSap, `Charmed: its attacks deal ${en.tempSap} less damage this turn`]);
@@ -3740,8 +3865,12 @@ function renderStatus() {
   if (b.def.trait) enemyBadges.push([TRAITS[b.def.trait.id].icon, '', TRAITS[b.def.trait.id].text(b.def.trait), 'bad']);
   $('enemy-status').replaceChildren(...[fleeBadge(b), ...enemyBadges.map(badgeFor)].filter(Boolean));
   const alive = en.hp > 0 && !b.over && battleFx();
+  if (en.hp <= 0) $('enemy-status').replaceChildren();
   ambience($('enemy-img'), alive ? { burn: en.burn, seed: en.seed, stat: en.static, frost: en.frostbite } : {});
+}
 
+function renderPlayerStatus() {
+  const b = battle;
   const playerBadges = [];
   if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage ${b.powers.keepBlock ? 'and stays between turns' : 'until your next turn'}`, 'block']);
   if (b.strength)   playerBadges.push(['💪', b.strength, `Strength ${b.strength}: +${b.strength} damage on every hit${b.flex ? ` (${b.flex} of it wears off at the end of this turn)` : ''}`, 'good']);
@@ -3774,7 +3903,7 @@ function renderStatus() {
     It sat in the nameplate's RARE pill until the user moved it out to leave room for a caught mark (2026-10-28); the
     plate keeps the word. */
 function fleeBadge(b) {
-  if (!b.rare || b.over) return null;
+  if (!b.rare || b.over || focusOf(b)) return null;
   const left = Math.max(0, RARE.turns - b.enemy.rock - b.turn + 1);
   const node = badgeFor(['', left, `A rare Pokémon: it runs off after ${left} more turn${left === 1 ? '' : 's'} of yours. Catch it or knock it out first!`, left <= 1 ? 'bad flee' : 'flee']);
   node.prepend(smoothIcon('run', 'flee-run'));
@@ -3859,11 +3988,13 @@ function renderHand() {
 /* The enemy's body language, on #enemy-pose (between the box's lunges and the GIF's own animations): it braces while a
    raised attack is aimed at it, and sways on its feet below a quarter of its HP. */
 function renderPose() {
-  const b = battle, pose = $('enemy-pose');
+  const b = battle;
   const up = !choosing && b.hand.find(h => h.uid === selectedUid);
-  const standing = !b.over && b.enemy.hp > 0;
-  pose.classList.toggle('bracing', standing && !!up && isAttack(up.card));
-  pose.classList.toggle('swaying', standing && b.enemy.hp < b.enemy.maxHp * 0.25);
+  b.enemies.forEach((en, i) => withFoe(i, () => {
+    const pose = $('enemy-pose'), standing = !b.over && en.hp > 0;
+    pose.classList.toggle('bracing', standing && i === b.target && !!up && isAttack(up.card));
+    pose.classList.toggle('swaying', standing && en.hp < en.maxHp * 0.25);
+  }));
 }
 
 /** Fans the hand in a gentle arc, like cards held in a hand: each overlaps the last a little,
@@ -4140,11 +4271,8 @@ function showPreview(entry) {
  * it take the blow (the user's ask, 2026-10-07).
  */
 function shieldPreview(block, ghost = false) {
-  const b = battle, move = currentMove();
-  const hits = !b.guard && !b.struck && (move.kind === 'attack' || move.kind === 'drain') && !paralyzing();
-  const per = hits ? attackDamage(move) : 0;
-  let incoming = 0;
-  for (let h = 0; hits && h < hitCount(move); h++) incoming += Math.max(0, (h < b.evasion ? Math.floor(per / 2) : per) - (b.aug.hitReduce || 0));
+  const b = battle;
+  const incoming = b.struck ? 0 : coming().reduce((sum, h) => sum + (h?.raw ?? 0), 0);   // a double battle's both
   return shieldChunk('player', Math.min(block, incoming, b.hp), b.hp, b.maxHp, ghost);
 }
 

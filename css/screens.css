@@ -414,7 +414,7 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 /* Laid out like the games: the enemy's nameplate top left with the enemy top right, your Pokémon bottom
    left with its nameplate bottom right. The two sprites share the middle row, in different columns, so
    the scene is no taller than when each nameplate sat under its own sprite. */
-#enemy-plate  { grid-column: 1; grid-row: 1; align-self: center; justify-self: center; }
+:is(#enemy-plate, #enemy2-plate)  { grid-column: 1; grid-row: 1; align-self: center; justify-self: center; }
 #player-plate { grid-column: 2; grid-row: 3; align-self: end; justify-self: center; }
 
 /* --- nameplates: a small Pokégear window under each fighter with its name and Gold/Silver HP bar --- */
@@ -436,6 +436,44 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .nameplate-title .chip .type-badge { width: 1.3em; height: 1.3em; }   /* just the type's pixel icon, no pill */
 /* the main games' caught ball, under a wild's HP bar (the user's call, 2026-10-29; it sat by the name): beaten once (the
    Pokédex's Poké Ball), gold with a star once researched */
+/* A double battle (layFoes() in js/battle.js; docs/roadmap.md's double battles, phase 2): like the games' doubles, the
+   two enemies' plates stack top left and the two stand side by side top right, the left one a step nearer (lower, in
+   front) and the right one further back, each on its own pad and a size smaller (--duo); their move bubbles are just
+   icon and number (the move's name is in the tip). Statuses sit in the plate's foot. A tap on an enemy or its plate
+   aims your cards at it (aim()); the other dims (.aside). Your side moves down a row. */
+.arena.duo { --duo: 0.95; grid-template-rows: auto auto 1fr auto; }
+.arena.duo .foe-plate { grid-column: 1; grid-row: 1; align-self: start; cursor: pointer; }
+.arena.duo #enemy2-plate { grid-row: 2; margin-top: 6px; }
+.arena.duo .enemy-zone { grid-row: 1 / 4; width: 50%; cursor: pointer; }
+.arena.duo .enemy-portrait { max-width: 100%; }   /* a big one (Sentret) keeps out of the other's half */
+.arena.duo #enemy-zone { justify-self: start; margin-top: calc(var(--base) * 0.32); z-index: 2; }
+.arena.duo #enemy2-zone { justify-self: end; z-index: 1; }
+.arena.duo .player-zone { grid-row: 3 / 5; }
+.arena.duo #player-plate { grid-row: 4; }
+/* a compact plate: name and type, then the HP bar with its numbers beside it, then a row kept for its statuses */
+.arena.duo .foe-plate {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "title title title" "mark bar num" "badges badges badges";
+  align-items: center; gap: 1px 5px; padding: 3px 7px 2px;
+}
+.arena.duo .foe-plate .nameplate-foot { display: contents; }
+.arena.duo .foe-plate .nameplate-title { grid-area: title; }
+.arena.duo .foe-plate .nameplate-title strong { font-size: 0.78rem; }
+.arena.duo .foe-plate .nameplate-title .chip { font-size: 0.75rem; }
+.arena.duo .foe-plate .gb-hp { grid-area: bar; width: 100%; margin: 0; }
+.arena.duo .foe-plate .gb-hp-tag { line-height: 10px; }
+.arena.duo .foe-plate .gb-hp-track { height: 14px; padding: 2px; }
+.arena.duo .foe-plate .gb-hp-num { grid-area: num; margin: 0; font-size: 0.75rem; line-height: 14px; letter-spacing: 0; }
+.arena.duo .foe-plate :is(.dex-mark, .rare-tag) { grid-area: mark; margin: 0; }
+.arena.duo .foe-plate .badges { grid-area: badges; position: static; display: flex; min-height: 18px; gap: 0 2px; }
+.arena.duo .foe-plate .badge { height: 18px; padding: 0 2px 0 1px; font-size: 0.75rem; }
+@media (max-height: 760px) { .arena.duo { --you: 0.86; } }   /* short phones: your Pokémon a step smaller clears the two plates */
+.arena.duo .intent { gap: 3px; padding: 3px 6px 3px 5px; }
+.arena.duo .intent-name { display: none; }
+.has-scene .arena.duo .enemy-zone::after { width: calc(var(--base) * 1.3); }
+.enemy-zone.aside .enemy-pose { filter: brightness(0.5) saturate(0.6); }
+.enemy-zone .enemy-pose { transition: filter 0.2s; }
+.foe-plate.aside { opacity: 0.62; }
+.foe-plate { transition: opacity 0.2s; }
 .dex-mark { flex: none; position: relative; align-self: center; margin: 0 4px 0 0; width: 1.15em; height: 1.15em; font-size: 1rem; cursor: help; }
 .dex-mark[hidden] { display: none; }
 .dex-mark img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
@@ -605,7 +643,7 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
   position: absolute; left: 0; right: 0; z-index: 3;
   justify-content: flex-start; flex-wrap: wrap; gap: 5px 6px; min-height: 0; align-items: center;
 }
-#enemy-plate .badges  { top: calc(100% + 9px); }
+:is(#enemy-plate, #enemy2-plate) .badges  { top: calc(100% + 9px); }
 #player-plate .badges { bottom: calc(100% + 9px); flex-wrap: wrap-reverse; }
 .nameplate .badges:empty { display: none; }
 .nameplate .badge {
@@ -718,7 +756,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 @keyframes bob { 50% { transform: translateY(-4px); } }
 @keyframes intentPop { from { transform: translateY(8px) scale(0.3); opacity: 0; } 60% { transform: translateY(-3px) scale(1.15); opacity: 1; } }
 
-.enemy-zone { --base: clamp(92px, 16vh, 160px); }   /* the enemy's box before --size (sizeSprite() in js/battle.js); its pad scales with it too */
+.enemy-zone { --base: calc(clamp(92px, 16vh, 160px) * var(--duo, 1)); }   /* the enemy's box before --size (sizeSprite() in js/battle.js); its pad scales with it too */
 .enemy-portrait {
   width: calc(var(--base) * var(--size, 1));
   aspect-ratio: 1;
@@ -754,7 +792,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 :is(.run-sprite, .map-trainer)[data-stage="1"] { --grow: 0.9; }
 #player-sprite {
   /* sized from the window height so it fits on short screens too; --size (sizeSprite() in js/battle.js) scales it by the file's real size */
-  width: calc(clamp(96px, 21vh, 230px) * var(--size, 1));
+  width: calc(clamp(96px, 21vh, 230px) * var(--size, 1) * var(--you, 1));
   aspect-ratio: 1;
   object-fit: contain;
   object-position: 50% 100%;
@@ -930,10 +968,10 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 /* the enemy winds up, then lunges; a big hit makes its sprite reel back (bigHit()), on the img so it doesn't fight the box's shake */
 .enemy-portrait.attacking { animation: enemyLunge 0.3s ease-in; }
 @keyframes enemyLunge { 25% { transform: translate(12px, -6px) scale(0.97); } 65% { transform: translate(-46px, 24px) scale(1.06); } }
-#enemy-img.recoil { transform-origin: 50% 100%; animation: enemyRecoil 0.52s ease-out; }
+:is(#enemy-img, #enemy2-img).recoil { transform-origin: 50% 100%; animation: enemyRecoil 0.52s ease-out; }
 @keyframes enemyRecoil { 18% { translate: 12px -8px; rotate: 9deg; scale: 0.94; } 50% { translate: 5px -3px; rotate: 4deg; scale: 0.98; } }
-@media (prefers-reduced-motion: reduce) { .enemy-portrait.attacking, #enemy-img.recoil { animation: none; } }
-.no-battle-fx :is(.enemy-portrait.attacking, #enemy-img.recoil, #player-sprite.lunge) { animation: none; }
+@media (prefers-reduced-motion: reduce) { .enemy-portrait.attacking, :is(#enemy-img, #enemy2-img).recoil { animation: none; } }
+.no-battle-fx :is(.enemy-portrait.attacking, :is(#enemy-img, #enemy2-img).recoil, #player-sprite.lunge) { animation: none; }
 /* 2x battle speed (Settings, js/settings.js): the same animations at half their length, to match pause() in battle.js */
 .fast-battle #battle-screen .pop { animation-duration: 0.6s; }
 .fast-battle #battle-screen .hit { animation-duration: 0.21s; }
@@ -941,7 +979,7 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 .fast-battle #battle-screen.big-hit::after { animation-duration: 0.15s; }
 .fast-battle #player-sprite.lunge { animation-duration: 0.19s; }
 .fast-battle .enemy-portrait.attacking { animation-duration: 0.15s; }
-.fast-battle #enemy-img.recoil { animation-duration: 0.26s; }
+.fast-battle :is(#enemy-img, #enemy2-img).recoil { animation-duration: 0.26s; }
 /* a super-effective hit's number is red and a notch bigger */
 .pop.dmg.super { color: #ff5a3a; -webkit-text-stroke-color: #3a0000; font-size: 2.35rem; }
 /* the block preview (showPreview() in battle.js): the block a raised card would add blinks on your nameplate */
@@ -974,9 +1012,9 @@ body.boss-prelude .player-zone::before { visibility: hidden; }
 #player-sprite { transition: opacity 0.9s, transform 0.9s, filter 0.9s, clip-path 0.9s; }
 /* Dig: the sprite sinks into the ground and pops back up. Moving it down while clipping its bottom by the same share keeps
    its feet on the ground line, so it reads as going into the earth, not sliding off. A wild Pokémon's Fly flies off the top. */
-#player-sprite.dug, .enemy-portrait:is(.away-dig, .away-dive) #enemy-img { clip-path: inset(0 0 100% 0); transform: translateY(100%); transition: transform 0.55s ease-in, clip-path 0.55s ease-in, opacity 0.55s; }
-#enemy-img { transition: transform 0.9s, clip-path 0.9s, opacity 0.6s; }
-.enemy-portrait.away-fly #enemy-img { transform: translateY(-140%) scale(0.6); opacity: 0; transition: transform 0.6s ease-in, opacity 0.6s ease-in; }
+#player-sprite.dug, .enemy-portrait:is(.away-dig, .away-dive) :is(#enemy-img, #enemy2-img) { clip-path: inset(0 0 100% 0); transform: translateY(100%); transition: transform 0.55s ease-in, clip-path 0.55s ease-in, opacity 0.55s; }
+:is(#enemy-img, #enemy2-img) { transition: transform 0.9s, clip-path 0.9s, opacity 0.6s; }
+.enemy-portrait.away-fly :is(#enemy-img, #enemy2-img) { transform: translateY(-140%) scale(0.6); opacity: 0; transition: transform 0.6s ease-in, opacity 0.6s ease-in; }
 #player-sprite.defeated { opacity: 0; transform: translateY(50px); filter: grayscale(1); }
 #player-sprite.fled { opacity: 0; transform: translateX(-120px); }   /* Poké Doll: ran away */
 
@@ -1011,8 +1049,8 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .enemy-zone.entering { will-change: transform; }
 @keyframes enemySlideIn { from { transform: translate3d(100vw, 0, 0); } to { transform: translate3d(0, 0, 0); } }
 .enemy-zone.entering .intent { visibility: hidden; }
-.enemy-zone.entering #enemy-img { filter: brightness(0) opacity(0.85); }
-.enemy-zone.revealed #enemy-img { animation: enemyReveal 0.4s ease-out; }
+.enemy-zone.entering :is(#enemy-img, #enemy2-img) { filter: brightness(0) opacity(0.85); }
+.enemy-zone.revealed :is(#enemy-img, #enemy2-img) { animation: enemyReveal 0.4s ease-out; }
 /* every step ends in the sprite's own resting filter (--rest: its shadow, an elite's red or a boss's gold glow), or the
    filters can't blend and it held a bright glow, then snapped back */
 @keyframes enemyReveal {
@@ -1238,8 +1276,8 @@ html:has(body[data-screen="battle-screen"]) { overflow-x: clip; }   /* no sidewa
 .catch-star { color: #f8d030; }
 /* a rare spawn's nameplate: a gold rim and a slow shimmer on its name */
 /* a rare spawn's rim is grass green, so it isn't mistaken for a shiny's gold (2026-10-20) */
-#enemy-plate.rare { box-shadow: 0 0 0 2px #58c040, 0 0 14px rgba(88, 192, 64, 0.6); }
-#enemy-plate.rare #enemy-name { color: #2a7a20; }
+:is(#enemy-plate, #enemy2-plate).rare { box-shadow: 0 0 0 2px #58c040, 0 0 14px rgba(88, 192, 64, 0.6); }
+:is(#enemy-plate, #enemy2-plate).rare :is(#enemy-name, #enemy2-name) { color: #2a7a20; }
 /* a RARE tag under its HP bar, the word alone (the user's call, 2026-10-28: the running count moved out to the status row) */
 .rare-tag { flex: none; margin-right: auto; padding: 1px 8px; font-size: 0.75rem; line-height: 18px; border: 1px solid #62d474;
   background: #1c5a2c; color: #b8f0c0; }
@@ -1422,14 +1460,14 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   .nameplate-title strong { font-size: 0.85rem; }
   .badge { width: 30px; height: 30px; font-size: 0.95rem; }
   .badges { min-height: 32px; gap: 6px; }
-  .enemy-zone { --base: clamp(80px, 13vh, 118px); }
+  .enemy-zone { --base: calc(clamp(80px, 13vh, 118px) * var(--duo, 1)); }
   .hand { --hand-card-w: 108px; }
   .battle-log { width: 96%; --log-font: 0.85rem; }
 }
 
 /* Short windows (small laptops): make the battle scene a little more compact */
 @media (max-height: 760px) and (min-width: 721px) {
-  .enemy-zone { --base: clamp(76px, 14vh, 160px); }
+  .enemy-zone { --base: calc(clamp(76px, 14vh, 160px) * var(--duo, 1)); }
   .hand { --hand-card-w: clamp(96px, 17vh, 148px); }
 }
 
@@ -3096,7 +3134,7 @@ body.battle-intro { pointer-events: none; }
   .nameplate { padding: 4px 7px 4px; gap: 2px; }
   .nameplate-title strong { font-size: 0.78rem; }
   .nameplate .gb-hp-num { font-size: 0.75rem; }
-  .enemy-zone { --base: clamp(70px, 12.5vh, 100px); }
+  .enemy-zone { --base: calc(clamp(70px, 12.5vh, 100px) * var(--duo, 1)); }
   .player-zone { padding-bottom: 4px; }
   .enemy-zone { gap: 3px; }
   .intent { margin-bottom: 5px; }
@@ -6637,7 +6675,7 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .intro-ball.enemy-ball.thrown { animation: ballArcX 0.7s linear both; }
 .intro-ball.enemy-ball.thrown .ball3d { animation: ballArcY 0.7s both, ballRoll 0.28s steps(16) infinite reverse; }
 .enemy-zone.ball-out .enemy-portrait { transform-origin: 50% 85%; animation: enemyBallOut 0.6s ease-out; }
-.enemy-zone.ball-out #enemy-img { animation: enemyBallGlow 0.6s ease-out; }
+.enemy-zone.ball-out :is(#enemy-img, #enemy2-img) { animation: enemyBallGlow 0.6s ease-out; }
 .enemy-zone.ball-out .intent { visibility: hidden; }
 @keyframes enemyBallOut { from { scale: 0.15; } 55% { scale: 1.12; } to { scale: 1; } }
 @keyframes enemyBallGlow { from { filter: brightness(8) var(--rest); } 55% { filter: brightness(2.5) var(--rest); } 75%, to { filter: brightness(1) var(--rest); } }
@@ -7351,8 +7389,8 @@ button.craft-mat.on { box-shadow: inset 0 0 0 3px #f0a820; background: #fff8e0; 
 
 /* a wild shiny in a Safari room (js/data/shinies.js): a gold rim and tag on its plate, sparkles on it all fight, a gold
    banner as it appears, a ball that shakes in gold, and a gold catch box */
-#enemy-plate.shiny { box-shadow: 0 0 0 2px #f8d030, 0 0 14px rgba(248, 208, 48, 0.6); }
-#enemy-plate.shiny #enemy-name { color: #a07000; }
+:is(#enemy-plate, #enemy2-plate).shiny { box-shadow: 0 0 0 2px #f8d030, 0 0 14px rgba(248, 208, 48, 0.6); }
+:is(#enemy-plate, #enemy2-plate).shiny :is(#enemy-name, #enemy2-name) { color: #a07000; }
 .shiny-tag {
   flex: none; margin-left: auto; padding: 2px 5px 1px; border-radius: 3px;
   background: #f8d030; color: #4a3000; font-size: 0.75rem; line-height: 1.2; text-transform: uppercase;
