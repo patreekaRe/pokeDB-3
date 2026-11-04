@@ -414,3 +414,19 @@ fire 72.0 / 50.0 -> 74.7 / 50.0, grass 65.3 / 41.3 -> 60.7 / 42.7, water 60.0 / 
 have none yet. The Pokédex lists them
 (`moveNumbers()` "5×3 dmg", "Once, at half HP", "picked at random"). Tests: `tests/enemy-moves.test.mjs`; in a real fight
 `tools/enemy-probe.mjs`; `?arena=wild&foe=<id>` (or `elite`) fights that Pokémon.
+
+## Double battles, phase 1: `b.enemies[]` (2026-11-04, branch `multi-enemy-battles`, never `main`)
+
+The engine half of docs/roadmap.md's double-battles idea; every fight still has one enemy and plays as before. A fight's
+enemies are `b.enemies`, each made by `makeFoe()` in `js/battle.js` with its own `def` (a second form's once it rises),
+`hpScale`, `phased`, HP, block, statuses and place in its moves (`enemyMove()` / `moveOn()` read the enemy, not the
+fight). `b.target` is the one your cards hit and `b.acting` the one taking its turn; `b.enemy` and `b.def` are accessors
+for the one in focus (`acting` on the enemies' turn, else `target`), so cards, relics, intents and the probes read as
+before. The enemies' turn is `enemyTurn()` looping `enemyActs()` over each one standing (an enemy felled by its own Burn,
+Leech Seed or Fault skips the rest of its turn); the fight is won when `allDown(b)`, and `finish()` raises whichever enemy
+has an unrisen `phase2` (`rebirth(en)`). pokeDB-sim's `sim/engine.js` mirrors it on its own `multi-enemy-battles`
+branch (the accessors on a `FIGHT` prototype, so `clone()` keeps them), checked as a pure refactor: the same seeded runs
+through the old and new engine match exactly (108 runs over the nine types, strong and human L3 bots; 30 Mewtwo runs,
+Eternatus rising 14 times). Left for phase 2: retargeting when the target falls while another stands, the layout, tap to
+target, per-enemy DOM (`#enemy-zone` is still one). In a real fight: `tools/battle-flows-probe.mjs` (a wild fight, the
+Depths boss rising, a Safari catch, a gym).

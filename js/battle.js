@@ -232,7 +232,6 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     duo: run.duo ? { run: run.duo, types: runTypes(run), came: [run.duo.out], armed: false, switches: 0, piles, drew: [false, false] } : null,
     stage: run.stage,
     biome: run.biome,
-    def,
     kind: encounter.kind,
     leader: encounter.leader ?? null,   // the Gym Leader sending out a boss (js/data/gym.js)
     leaderTalked: !!encounter.leaderTalked,   // they spoke in their 3D gym first (gymRoom() in js/run.js)
@@ -270,9 +269,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     dexMark: encounter.dexMark ?? null,   // a normal run's foe already in the Pokédex: 'caught' or 'researched' (dexMark())
     dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
     healMult: run.mods?.healMult ?? 1,   // Trainer Level 6's Bitter Medicine
-    hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
-    phased: false,     // the boss has already risen in its second form
-    enemyActing: false,   // the enemy's turn is under way (a second form rising then ends it)
+    enemyActing: false,   // the enemies' turn is under way (a second form rising then ends it)
 
     // the player
     hp: run.hp,
@@ -332,30 +329,14 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     discard: piles ? piles[run.duo.out].discard : [],
     exhaust: piles ? piles[run.duo.out].exhaust : [],       // exhausted and power cards: gone for the rest of THIS fight only
 
-    // the enemy
-    enemy: {
-      hp: encounter.maxHp,
-      maxHp: encounter.maxHp,
-      block: 0,
-      dmgBonus: encounter.strength,   // the biome's and level's extra damage: kept out of strength so it shows no 💪 badge
-      strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
-      dmgMult: encounter.dmgMult ?? 1,  // the Sky Pillar's compounding damage past floor 30
-      burn: run.relics.includes('flame-orb') ? 3 : 0,
-      seed: (run.relics.includes('gooey-mulch') ? 2 : 0) + (aug.startSeed || 0),   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
-      sap: 0,                         // its attacks deal this much less, all fight
-      static: run.relics.includes('light-ball') ? 3 : 0,   // Electric's meter: at staticCap() it's Paralyzed and loses its move
-      paras: 0,                       // times it's been Paralyzed this fight: each raises the next cap by 5
-      frostbite: run.relics.includes('snowball') ? 3 : 0,   // Ice's: every hit on it deals +1 a stack, then it thaws by 1 at the end of its turn
-      fault: run.relics.includes('earth-plate') ? 6 : 0,   // Ground's: at the start of its turn, HP at or below it (half for Alphas and bosses) knocks it out
-      weak: (aug.startWeak || 0) + (run.relics.includes('sachet') ? 2 : 0),               // turns left dealing WEAK_MULT damage
-      vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
-      bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
-      rock: 0,                        // Rocks thrown at it (Safari): a wild one may run off on its turn
-      moveIndex: trial ? 0 : firstMove(def),
-      recent: [],                     // its last two moves' indexes: a random order never uses one three turns running
-      halfUsed: false,                // its `atHalf` move used (moveOn())
-      grown: {},                      // what each `grow` move has gained so far, by name (Eternamax's Dynamax Cannon)
-    },
+    // the enemies (one in every fight so far; double battles are docs/roadmap.md's idea): `b.enemy` and `b.def` read the
+    // one in focus, the one acting on the enemies' turn, else the one your cards are aimed at
+    enemies: [makeFoe(def, encounter, run, aug, trial)],
+    target: 0,         // the enemy your cards hit
+    acting: null,      // the enemy taking its turn, while it does
+    get enemy() { return this.enemies[this.acting ?? this.target]; },
+    get def() { return this.enemy.def; },
+    set def(d) { this.enemy.def = d; },
 
     busy: true,        // true while animations play, so clicks are ignored
     over: false,
@@ -394,6 +375,40 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
   if (held) return () => playIntro();   // under a wipe held shut till the 3D arena is up: the Pokémon appear as it opens
   playIntro();
 }
+
+/** One enemy's own state: its Pokémon (`def`, a second form's once it rises), HP, block, statuses and its place in its
+    moves (enemyMove() / moveOn() in js/data/enemies.js), from the encounter and the relics and augments that mark it. */
+function makeFoe(def, encounter, run, aug, trial) {
+  return {
+    def,
+    hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
+    phased: false,                       // a boss already risen in its second form
+    hp: encounter.maxHp,
+    maxHp: encounter.maxHp,
+    block: 0,
+    dmgBonus: encounter.strength,   // the biome's and level's extra damage: kept out of strength so it shows no 💪 badge
+    strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
+    dmgMult: encounter.dmgMult ?? 1,  // the Sky Pillar's compounding damage past floor 30
+    burn: run.relics.includes('flame-orb') ? 3 : 0,
+    seed: (run.relics.includes('gooey-mulch') ? 2 : 0) + (aug.startSeed || 0),   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
+    sap: 0,                         // its attacks deal this much less, all fight
+    static: run.relics.includes('light-ball') ? 3 : 0,   // Electric's meter: at staticCap() it's Paralyzed and loses its move
+    paras: 0,                       // times it's been Paralyzed this fight: each raises the next cap by 5
+    frostbite: run.relics.includes('snowball') ? 3 : 0,   // Ice's: every hit on it deals +1 a stack, then it thaws by 1 at the end of its turn
+    fault: run.relics.includes('earth-plate') ? 6 : 0,   // Ground's: at the start of its turn, HP at or below it (half for Alphas and bosses) knocks it out
+    weak: (aug.startWeak || 0) + (run.relics.includes('sachet') ? 2 : 0),               // turns left dealing WEAK_MULT damage
+    vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
+    bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
+    rock: 0,                        // Rocks thrown at it (Safari): a wild one may run off on its turn
+    moveIndex: trial ? 0 : firstMove(def),
+    recent: [],                     // its last two moves' indexes: a random order never uses one three turns running
+    halfUsed: false,                // its `atHalf` move used (moveOn())
+    grown: {},                      // what each `grow` move has gained so far, by name (Eternamax's Dynamax Cannon)
+  };
+}
+
+/** Every enemy is down: the fight is won. */
+const allDown = (b) => b.enemies.every(en => en.hp <= 0);
 
 /* A main biome's fight in a 3D place (js/arena-3d.js): loaded only when one is, and laid under the battle screen; a
    boss's stays hidden until its pixel prelude is over (playIntro()). A Sky Pillar fight's is the tower's room (`room`). */
@@ -591,6 +606,7 @@ async function leaderThrow(still) {
 
 function beginPlayerTurn() {
   const b = battle;
+  b.acting = null;
   if (trialBroken(b)) return failTrial(b);
   b.turn += 1;
   b.struck = false;   // the next hit hasn't landed yet: the held shield shows again (shieldPreview())
@@ -710,7 +726,7 @@ function beginPlayerTurn() {
   if (a.randomCard) addRandomCards(a.randomCard);
   if (a.copycat) copycat();
   surface();
-  if (b.enemy.hp <= 0) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry, a card surfacing
+  if (allDown(b)) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry, a card surfacing
   b.busy = false;
   if (b.turn === 1 && !b.safari && (getSave().handSwipes ?? 0) < HAND_TAUGHT) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
   else if (b.turn === HINT_TURNS + 1) hideHandHint();
@@ -1396,7 +1412,7 @@ async function playCard(uid) {
   await pause(220);
 
   if (battle !== b) return;                      // the player left the battle
-  if (b.enemy.hp <= 0) return finish(true);
+  if (allDown(b)) return finish(true);
   if (b.switchAfter) {   // Volt Switch: the partner comes out free; alone, it still counts as a switch
     b.switchAfter = false;
     if (b.duo) await comeOut(b);
@@ -2049,7 +2065,7 @@ async function useItem(index) {
   renderAll();
   await sleep(220);
   if (battle !== b) return;
-  if (b.enemy.hp <= 0) return finish(true);   // Enigma Berry off a Potion
+  if (allDown(b)) return finish(true);   // Enigma Berry off a Potion
   b.busy = false;
   renderAll();
 }
@@ -2483,7 +2499,7 @@ async function endTurn() {
     renderAll();
     await pause(500);
     if (battle !== b) return;
-    if (b.enemy.hp <= 0) return finish(true);
+    if (allDown(b)) return finish(true);
   }
 
   // Weather: Hail chips the enemy through its block, then a turn goes (Ice Age: each chip adds Frostbite)
@@ -2509,7 +2525,7 @@ async function endTurn() {
     renderAll();
     await pause(450);
     if (battle !== b) return;
-    if (b.enemy.hp <= 0) { b.felledBy = kind; return finish(true); }
+    if (allDown(b)) { b.felledBy = kind; return finish(true); }
   }
 
   // Status cards that hurt while held (Poison), then Ethereal cards fade away (exhausted).
@@ -2536,7 +2552,7 @@ async function endTurn() {
   fading.forEach(h => burnOut(h.uid));
   b.hand = b.hand.filter(h => !h.card.ethereal);
   fading.forEach(h => exhaustCard(h.card));
-  if (b.enemy.hp <= 0) { renderAll(); return finish(true); }   // Smoke-Poke Tail off a faded card
+  if (allDown(b)) { renderAll(); return finish(true); }   // Smoke-Poke Tail off a faded card
 
   // Discard whatever is left in your hand, except cards that retain (Slowpoke Tail, StS's Runic Pyramid: all of it).
   // Grip Claw also keeps the leftmost card that would have been discarded, and Still Waters lets you pick more.
@@ -2582,12 +2598,35 @@ async function endTurn() {
   await enemyTurn();
 }
 
+/** The enemies' turn: each one still standing takes its own (enemyActs()), then yours begins. */
 async function enemyTurn() {
   const b = battle;
-  const en = b.enemy;
-  const move = currentMove();
   if (runsOff()) return runAway();
   b.enemyActing = true;
+  for (const [i, en] of b.enemies.entries()) {
+    if (en.hp <= 0) continue;
+    b.acting = i;
+    const goOn = await enemyActs(b);
+    if (battle !== b || !goOn) return;   // the fight is over, or a second form rising ended the turn
+    b.acting = null;
+  }
+  if (allDown(b)) return finish(true);       // knocked out by Rocky Helmet or Mirror Coat
+  if (b.aug.enemyTwice && b.turn === 1 && !b.twice) {   // Speed Demon: on turn 1 it goes again
+    b.twice = true;
+    b.struck = false;
+    pop('enemy-zone', '👟 Again!', 'note bad');
+    return enemyTurn();
+  }
+  b.enemyActing = false;
+  beginPlayerTurn();
+}
+
+/** One enemy's turn (`b.acting`'s): its statuses, then its move. True if the enemies' turn goes on after it; falsy
+    once the fight is over or handed on (a second form rising). */
+async function enemyActs(b) {
+  const en = b.enemy;
+  const move = currentMove();
+  const felled = () => (allDown(b) ? finish(true) : true);
   en.block = 0;                                   // enemy block only lasts one round
   if (en.away) comeBack();
 
@@ -2606,7 +2645,7 @@ async function enemyTurn() {
     renderAll();
     await pause(600);
     if (battle !== b) return;
-    if (b.enemy.hp <= 0) { b.felledBy = 'burn'; return finish(true); }
+    if (en.hp <= 0) { b.felledBy = 'burn'; return felled(); }
   }
 
   // 1b. Leech Seed drains it and heals you (Grassy Surge keeps it from dropping).
@@ -2623,7 +2662,7 @@ async function enemyTurn() {
     renderAll();
     await pause(600);
     if (battle !== b) return;
-    if (b.enemy.hp <= 0) { b.felledBy = 'seed'; return finish(true); }
+    if (en.hp <= 0) { b.felledBy = 'seed'; return felled(); }
   }
 
   // 1b'. Fault: its HP at or below its Fault (half for Alphas and bosses) knocks it out.
@@ -2637,7 +2676,7 @@ async function enemyTurn() {
     await pause(600);
     if (battle !== b) return;
     b.felledBy = 'fault';
-    return finish(true);
+    return felled();
   }
 
   // 1c. Static: a full meter Paralyzes it, and it loses this move (the next one comes up). Static goes back to 0, and
@@ -2796,21 +2835,13 @@ async function enemyTurn() {
   }
 
   en.tempSap = 0;                                 // Charm lasts one enemy turn
-  moveOn(b.def, en, move);                        // pick the next move
+  moveOn(en.def, en, move);                        // pick the next move
   renderAll();
   await pause(700);
 
   if (battle !== b) return;
   if (b.hp <= 0) return finish(false);
-  if (b.enemy.hp <= 0) return finish(true);       // knocked out by Rocky Helmet or Mirror Coat
-  if (b.aug.enemyTwice && b.turn === 1 && !b.twice) {   // Speed Demon: on turn 1 it goes again
-    b.twice = true;
-    b.struck = false;
-    pop('enemy-zone', '👟 Again!', 'note bad');
-    return enemyTurn();
-  }
-  b.enemyActing = false;
-  beginPlayerTurn();
+  return true;
 }
 
 const currentMove = () => enemyMove(battle.def, battle.enemy);
@@ -2889,7 +2920,8 @@ const winTrack = (kind, leader) => (leader ? 'gym-victory' : kind === 'elite' ||
 
 async function finish(won) {
   const b = battle;
-  if (won && b.def.phase2 && !b.phased) return rebirth();
+  const riser = won && b.enemies.find(en => en.def.phase2 && !en.phased);
+  if (riser) return rebirth(riser);
   b.busy = true;
   if (won) await finishingBlow(b.lastHit);   // felled by Burn, Leech Seed, a relic...: the beat comes now
   if (battle !== b) return;
@@ -2929,10 +2961,10 @@ async function finish(won) {
  * Awakened One; your side keeps everything. A tap skips the show. Felled on your turn, the turn goes on; on its own
  * (Burn, Leech Seed, Rocky Helmet), rising is its turn.
  */
-async function rebirth() {
-  const b = battle, en = b.enemy, next = b.def.phase2, still = () => battle === b;
+async function rebirth(en) {
+  const b = battle, next = en.def.phase2, still = () => battle === b;
   const motion = battleFx();
-  b.phased = true;
+  en.phased = true;
   b.busy = true;
   setStorm(false); arenaMod?.stormArena(false);
   renderAll();
@@ -2940,7 +2972,7 @@ async function rebirth() {
   box.classList.remove('charging');
   box.classList.add('sinking');
   playSound('faint');
-  log(`${b.def.name} fell... but the cavern is going dark!`);
+  log(`${en.def.name} fell... but the cavern is going dark!`);
   playMusic(null);
   await sleep(motion ? 1800 : 900);
   if (!still()) return;
@@ -2955,9 +2987,9 @@ async function rebirth() {
   finally { document.removeEventListener('pointerdown', onTap); }
   if (!still()) return;
 
-  b.def = next;
+  en.def = next;
   Object.assign(en, {
-    hp: Math.round(next.hp * b.hpScale), block: 0, strength: 0, burn: 0, seed: 0, sap: 0, weak: 0, vulnerable: 0, moveIndex: 0, grown: {}, recent: [], halfUsed: false,
+    hp: Math.round(next.hp * en.hpScale), block: 0, strength: 0, burn: 0, seed: 0, sap: 0, weak: 0, vulnerable: 0, moveIndex: 0, grown: {}, recent: [], halfUsed: false,
   });
   en.maxHp = en.hp;
   box.classList.remove('sinking', 'defeated', 'hit');
@@ -2976,6 +3008,7 @@ async function rebirth() {
   if (!still()) return;
   if (b.enemyActing) {
     b.enemyActing = false;
+    b.acting = null;
     return beginPlayerTurn();
   }
   b.busy = false;
@@ -3221,7 +3254,7 @@ function setupEnemy() {
   box.classList.toggle('sprite', !b.def.art);
   const zone = $('enemy-zone');
   if (b.def.art) ['--size', '--shift', '--drop', '--head-room'].forEach(name => zone.style.removeProperty(name));
-  else sizeSprite(img, 0.6, 1, 0.7, 1.3, b.phased ? 1.25 : 1, zone);   // a boss's second form towers over the first
+  else sizeSprite(img, 0.6, 1, 0.7, 1.3, b.enemy.phased ? 1.25 : 1, zone);   // a boss's second form towers over the first
   box.classList.toggle('elite', b.kind === 'elite');
   box.classList.toggle('boss', b.kind === 'boss');
   box.title = b.def.description;
@@ -3253,7 +3286,7 @@ function setupEnemy() {
   $('enemy-type').replaceChildren(...(real ?? [type]).map(t => typeText(t, (REAL_TYPES[t] ?? TYPES[t]).icon, '')));
   $('enemy-type').title = real ? `${real.map(t => REAL_TYPES[t].label).join(' / ')} type` : `${TYPES[type].label} type`;
   $('enemy-type').className = `chip type-${real ? real[0] : type}`;
-  box.classList.toggle('max', !!b.phased);
+  box.classList.toggle('max', !!b.enemy.phased);
 }
 
 function renderAll() {
@@ -4301,7 +4334,7 @@ function bigHit(through, maxHp, recoil) {
  */
 async function finishingBlow(n) {
   const b = battle;
-  if (b.blowShown || !typeless() || !n || (b.def.phase2 && !b.phased)) return;
+  if (b.blowShown || !typeless() || !n || (b.def.phase2 && !b.enemy.phased)) return;
   b.blowShown = true;
   const zone = $('enemy-zone'), screen = $('battle-screen');
   const num = el('span', 'ko-num', `-${n}`);
@@ -4328,7 +4361,7 @@ async function finishingBlow(n) {
 /** A boss close to fainting brings the weather in (see setStorm in scene.js). */
 function checkStorm() {
   const en = battle.enemy;
-  if (battle.kind === 'boss' && en.hp > 0 && en.hp <= en.maxHp * 0.3 && !(battle.def.phase2 && !battle.phased)) { setStorm(true); arenaMod?.stormArena(true); }
+  if (battle.kind === 'boss' && en.hp > 0 && en.hp <= en.maxHp * 0.3 && !(battle.def.phase2 && !en.phased)) { setStorm(true); arenaMod?.stormArena(true); }
 }
 
 /** A number or word that floats up from a spot on screen. */
