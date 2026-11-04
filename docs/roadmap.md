@@ -1250,6 +1250,11 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 `main`"): smarter enemies, double battles and everything after them are built and playtested on their own branches,
 never pushed to `main` until the user says to merge.
 
+**Your cloud save on a playtest link** (an idea, 2026-11-04; the user noticed a githack link has no cloud save): cloud
+save is on only for `patreekare.github.io` and localhost (`FIREBASE_CONFIG` in `js/cloud.js`), so a branch's link
+starts empty, which keeps a test build from writing over the real save. Possible: let a playtest link sign in and load
+the cloud save read-only (never upload), so a branch is tried on your own progress. Not asked for yet.
+
 **Battles with more than one enemy (StS-style)** (an idea, 2026-11-04, on branch `multi-enemy-battles`, never `main`;
 the user's ask: the phone battle feels small, could fights have several enemies like Slay the Spire?). Measured on an
 iPhone 13 (390x664 visible): the arena is 374x337, the enemy's box 178x121 with an 85px sprite, its intent bubble 184px
