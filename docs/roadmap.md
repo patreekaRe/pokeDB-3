@@ -1283,7 +1283,7 @@ Tail Slap reads 3×5 in the Clearing (2×5 plus the biome's +7 shared over the h
 (`pass()` in `js/audio.js`: a pass started within a crossfade of the loop's end starts its fade-in and fade-out at once);
 a fix belongs on `main` (▶ CLOUD, effort low).
 **Phase 2 done 2026-11-04 on branch `claude/two-enemy-layout-targeting-46sg44`** (built from `multi-enemy-battles`, which
-it fast-forwards; commit PHASE2_COMMIT; playtest link PHASE2_LINK; pokeDB-sim's mirror on the same-named branch;
+it fast-forwards; commit e624ecb; playtest link https://rawcdn.githack.com/patreekaRe/pokeDB-3/e624ecb5bcfbfb2006ce4ab243c8989f516bc932/index.html?arena=double; pokeDB-sim's mirror on the same-named branch;
 `docs/reference/cards.md`'s "Double battles, phase 2" and the battle layout file's last paragraph): the games' doubles
 layout (two compact plates stacked top left, the two enemies side by side top right, the left one nearer, each its own
 3D pad), compact move bubbles (icon + number, the name in the tip), each enemy its own box, HP bar, statuses and pops;
