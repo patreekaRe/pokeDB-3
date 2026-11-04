@@ -1215,6 +1215,26 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**Battles with more than one enemy (StS-style)** (an idea, 2026-11-04, on branch `multi-enemy-battles`, never `main`;
+the user's ask: the phone battle feels small, could fights have several enemies like Slay the Spire?). Measured on an
+iPhone 13 (390x664 visible): the arena is 374x337, the enemy's box 178x121 with an 85px sprite, its intent bubble 184px
+wide; on an iPhone SE 72px. Three enemies abreast would leave ~60px sprites and no room for full intents, so the pick
+offered is **Pokémon-style double battles**: at most 2 enemies, only in some fights (pack Pokémon whose dex lines
+already say "hunts in packs": Houndour, the jungle's school), bosses solo or boss + one minion, singles stay the
+default. Needs: `b.enemy` (144 uses in `js/battle.js`) becomes `b.enemies[]` + a target; tap an enemy to target (the
+other dims), a lone enemy auto-targeted so singles play as now; compact intents (icon + number, name in the tip); per-
+enemy statuses (burn, Weak, Vulnerable, Static, Frost, Fault...); which card lines hit all (a new `all: true` key,
+`describe()` "to ALL enemies", a `cardTerms()` line); catching / Poké Balls only once one is left (or aim the ball);
+the 3D arena placing two; `sim/engine.js` mirrored with a bot that targets (lowest HP that dies this turn, else the
+bigger hitter) and a balance pass on encounter HP. Phased: (1) engine + `enemies[]` with one enemy, no visible change;
+(2) the two-enemy layout and targeting on phones; (3) pack encounters in `encounters` data + a few AoE cards;
+(4) the sim + balance. Not agreed yet: waiting on the user's go-ahead.
+
+> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
+> push to main), do phase 1 of the double-battles idea in docs/roadmap.md: turn the single `b.enemy` in js/battle.js
+> into `b.enemies[]` plus a current target, every fight still one enemy, nothing a player would notice. Run node --test
+> and play a fight, a boss, a catch and a gym on a phone viewport; give me the githack link."
+
 **Houses show a lot of empty wall** (an idea, 2026-10-28): with houses framed 8 tiles across, Kurt's Workshop sits low
 with a third of the screen plank wall above it. A slightly lower camera tilt in houses would fill the screen without
 changing any sizes. The user wasn't sure ("I dunno"); not asked for yet.
