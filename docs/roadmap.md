@@ -13,7 +13,10 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 user's call: on `main`, it doesn't need double battles; `docs/reference/cards.md`'s last section). Multi-hit moves
 ("5×3", each hit through your block), a move at half HP once (every Alpha's Frenzy 5×3, a move each for the 9 main bosses),
 a random order for 5 erratic ones (never a move three turns running), Regigigas opening with Slow Start. Bot check (human
-bot, 150 a cell, old vs new): pending, see the next commit. Try `?arena=wild&foe=cinccino` (two multi-hits),
+bot, old -> new win %, 150 a cell): Fire L0 76.7 -> 77.3, L3 50.7 -> 50.0; Grass L0 61.3 -> 72.0, L3 44.7 -> 44.7;
+Water L0 60.0 -> 48.7, L3 51.3 -> 36.0. Water confirmed at 300: L0 63.3 -> 56.3, L3 42.3 -> 39.7 (all 450 pooled:
+-8 / -7). So Fire and Grass hold and Water is ~7 points harder, deaths spread over biomes 2-3, no one fight; not
+retuned yet (the user's call: keep it as challenge, or soften Water's matchups). Try `?arena=wild&foe=cinccino` (two multi-hits),
 `?arena=elite&foe=sentret` (Frenzy at half HP), `?arena=wild&foe=kangaskhan`. Say if any fight feels unfair or the
 "5×3" bubble reads badly on a phone.
 > Next (▶ Run in: CLOUD, attach `pokeDB-3` and `pokeDB-sim`; effort medium): "Smarter enemies part 2, from
