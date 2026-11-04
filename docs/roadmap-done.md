@@ -3934,3 +3934,14 @@ The rival is Silver now, from a sprite the user sent (the Pokéngine CDN had jus
 `assets/trainers/rival.png` 80x80, `rival-blink.png` painted (the visible eye shut), `NPCS.rival` refit to
 `head: [29, 52, 23], waist: 38` (the coat's skirt stays with the legs). Its artist is still to credit (roadmap, Waiting on
 the user). Patch 1.33, Dressed for the Road, cut with it.
+
+### Shadows in a few draws; the hub's fps and a leak sweep (2026-11-04, cloud; on `main`)
+The user's ask: better fps, the hub most of all, and more memory leaks. A CPU profile of the Clearing put ~85% of a
+frame's JS in three.js's render (by the draw), and 103 of its ~234 draws were the sun's shadow map, 82 of them still, plain
+scenery. `shadowBatch(renderer)` (`js/hd2d.js`, every 3D place) copies still casters into a few shadow-only meshes, a cell
+of the shadow box each, dropping any that moves or hides; the shadow map checked texel for texel against unbatched.
+`tools/budget-check.mjs` before -> after: Clearing 218 -> 162, base 83 -> 67, mall hall 324 -> 280, its floors 324 -> 198,
+Center 311 -> 124, Mart 236 -> 142, ? room 227 -> 139, gym 483 -> 291, dojo 232 -> 156, towns about a quarter fewer.
+Also fixed: a town's `placeSigns()` forced a layout every frame, `js/crumbs.js` one every five seconds (~9 ms in a town).
+Leak sweep: `tools/run-probe.mjs --fights=10` grows as untouched `main` does (each new kind of room built once and kept),
+six Clearing -> mall -> base trips hold attached DOM and heap flat. Detail: `docs/reference/hub-base-mall.md`'s last section.

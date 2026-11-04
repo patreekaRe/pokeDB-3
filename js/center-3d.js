@@ -10,7 +10,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway, dispose } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway, dispose, shadowBatch } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
@@ -861,6 +861,7 @@ export function warmCenter() {
     view.className = 'center3d-view';
     renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
     renderer.shadowMap.enabled = true;
+    shadowBatch(renderer);
     renderer.shadowMap.type = THREE.PCFShadowMap;
     scene = new THREE.Scene();
     scene.background = new THREE.Color('#3a1c14');

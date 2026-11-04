@@ -18,7 +18,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { openPokedex, openHowto } from './collection.js';
-import { loadThree, dispose, unload, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon, smallNoShadow } from './hd2d.js';
+import { loadThree, dispose, unload, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon, smallNoShadow, shadowBatch } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
@@ -1773,6 +1773,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
   wakeGL(renderer);
   renderer.shadowMap.enabled = true;
+  shadowBatch(renderer);
   renderer.shadowMap.type = THREE.PCFShadowMap;
   scene = new THREE.Scene();
   scene.background = new THREE.Color('#2a2236');

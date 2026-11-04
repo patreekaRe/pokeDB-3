@@ -9,6 +9,19 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**▶ PLAYTEST ON THE LIVE SITE. Shadows in a few draws, the hub's fps: done 2026-11-04, on `main`** (the user's ask:
+"improving fps overall especially in the hub, and find more memory leak stuff"; `docs/roadmap-done.md`,
+`docs/reference/hub-base-mall.md`'s last section). Every 3D place draws its still scenery's shadows in a few batches
+(`shadowBatch()` in `js/hd2d.js`): headless, the Clearing 218 -> 162 draws a frame, the Center 311 -> 124, the gym 483 ->
+291, the mall's floors 324 -> 198, towns about a quarter fewer. Towns also stopped laying the page out every frame and
+every five seconds. No leak found: ten fights on one page and six Clearing -> mall -> base trips hold as untouched `main`
+does. On a phone: walk the Clearing, a town, the mall and a fight; say if it's smoother, and if any shadow is missing, left
+behind where something moved, or flickers a moment after you arrive (batches form ~3 s after a place settles).
+**Leads not taken, measured** (▶ Run in: CLOUD, effort medium, only if a phone still lags): three.js's render is still most of a
+frame's JS (the Clearing's ~120 main-pass draws: the plaza board's cork frame and stand aren't merged, ~8 draws); the
+Clearing's per-frame scene walk (`bendAll()`, 0.04 ms) and the PC and hologram repaints (~15 a second) cost too little to
+touch. `NODE_PATH=$(npm root -g) node tools/fps-probe.mjs --only=clearing,town-shrine` measures them.
+
 **▶ PLAYTEST ON THE LIVE SITE. Caught / researched mark in battle: done 2026-10-29, on `main`** (the user's ask): a normal
 run's foe shows a Poké Ball by its name once beaten, gold with a ★ once researched. On a phone: say if it reads clearly
 or should sit elsewhere on the plate.

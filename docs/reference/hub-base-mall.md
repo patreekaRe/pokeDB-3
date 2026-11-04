@@ -1181,3 +1181,32 @@ than a tile. The towns, mall and Game Corner crowds still come and go as before 
 overworld sheet draws its left or right row, not its front (`liveFlyer()`); the journey film's silhouette flaps the
 sheet's left row too (`sideOn()` in `js/travel.js`). Eternatus has no sheet and keeps its GIF. The Halloween ghosts no
 longer join the flyers (`SEASON_FLYERS`); winter's Delibird and Vanillite still do.
+
+## The shadow pass in a few draws (2026-11-04, every 3D place)
+
+The user's ask: better fps, the hub most of all. A CPU profile of the Clearing put ~85% of its frame's JS in three.js's
+render, which costs by the draw, and 103 of its ~234 draws a frame were the sun's shadow map: three.js draws every caster
+again, one draw apiece, though 82 of them were still, plain scenery. `shadowBatch(renderer)` in `js/hd2d.js` (called once
+after `shadowMap.enabled = true` in the Clearing, the base, the mall, the ? rooms and towns, the Center, the Mart, the
+arena, the crossroads and the front lawn) wraps `renderer.shadowMap.render` and, per scene:
+
+- **Who joins**: every mesh that casts, is seen unchanged (world matrix, geometry and its version, material, side) at two
+  looks `SCAN` (1.5 s) apart, and needs only its shape to cast: no `alphaTest` cut-out (a sprite, a leafy billboard), no
+  custom depth material, not skinned or morphed. Big parts (over `BIG_PART`, 12k corners) stay a draw of their own.
+- **The batches**: members are copied, in world space, positions and index only, into one mesh per cell of the shadow
+  box (half its width a side, a `big|` cell for anything wider) and side, capped at `BIG_CELL` (40k corners) a batch.
+  Cells rebuild ~2 ms' worth a frame, smallest first. The batches are added to the scene only for the shadow draw, so taps,
+  the bend, `warmShaders()` and `dispose()` never meet them; a `FinalizationRegistry` frees them with a dropped scene.
+- **Leaving**: each frame every member is checked; one that moved, changed shape or material, stopped casting, hid or
+  left the scene drops out, its cell's batch hidden till rebuilt (so no shadow is left where it was). Two moves, or four
+  hides (a mall floor walked in and out of), and it never joins again, so a hopping sign doesn't rebuild its cell forever.
+- **Checked headless**: the sun's shadow map texel for texel with batching and without, under reduced motion: the
+  Clearing and the Secret Base identical, a town and the mall within the noise of two unbatched runs (their folk walk).
+  `tools/budget-check.mjs` draws a frame, before -> after: Clearing 218 -> 162, base 83 -> 67, mall hall 324 -> 280,
+  its upper floors 324 -> 198, Center 311 -> 124, Mart 236 -> 142, a ? room 227 -> 139, gym 483 -> 291, dojo 232 -> 156,
+  towns 384-495 -> ~230-330 once settled. Memory: a few MB of copied shapes a place (the Clearing's ~105k corners).
+
+Found on the way, fixed: a town's `placeSigns()` read the room view's box each frame, after the folk's speech bubbles
+had moved, which laid the page out again every frame (now read once a size, `viewRect`); and `js/crumbs.js`'s note of where
+you are forced a layout every five seconds (~9 ms in a town), now read off the DOM alone. Measured and left: `bendAll()`'s
+walk of the Clearing each frame (0.04 ms), the PC screen's and hologram's repaints (~15 a second, small canvases).

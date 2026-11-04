@@ -9,7 +9,9 @@ const NOTE = 'pokedb.crumb', LOG = 'pokedb.reloads', KEEP = 5, EVERY = 5000;
 const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
 const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* full or blocked: no note */ } };
 
-const shown = (node) => node && node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden';
+// read off the page as it stands, never its layout: a layout forced every five seconds cost a town ~9 ms a time
+// (2026-11-04), a dropped frame
+const shown = (node) => node?.isConnected && !node.closest('[hidden]');
 
 /** The place on screen, in a few words: a 3D place's title, a walk-in room's, or the screen and the biome. */
 function where() {

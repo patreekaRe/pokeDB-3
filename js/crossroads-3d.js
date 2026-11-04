@@ -11,7 +11,7 @@
 
 import { $, el, sleep, confirmDialog } from './ui.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
-import { loadThree, tex, monBoard, drawMon, createPost, warmShaders, wakeGL, sleepGL, tooSoon } from './hd2d.js';
+import { loadThree, tex, monBoard, drawMon, createPost, warmShaders, wakeGL, sleepGL, tooSoon, shadowBatch } from './hd2d.js';
 import { sceneShot } from './scene.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
 import { spriteUrl, stageName } from './data/starters.js';
@@ -535,6 +535,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     view.className = 'xr3d-view';
     renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
     renderer.shadowMap.enabled = true;
+    shadowBatch(renderer);
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.setPixelRatio(1);
     post = createPost(renderer, { short: 760, crisp: false });

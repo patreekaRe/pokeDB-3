@@ -50,6 +50,7 @@ const HELD = [
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ...HELD.filter(([on]) => on).map(([, line]) => line),
+  ['fixes', 'Every 3D place, from the Clearing to towns, gyms and fights, draws its shadows in a few batches now, so phones run smoother, and towns no longer hitch every few seconds.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

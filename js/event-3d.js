@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, NPC_PX, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours, unload, putAway } from './hd2d.js';
+import { loadThree, tex, crop, NPC_PX, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours, unload, putAway, shadowBatch } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic, byFace } from './hub-3d.js';
@@ -45,7 +45,7 @@ let built = {}, R = null, mon = null, mat = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let lead = null;   // you as your trainer, your buddy a step behind (js/follow.js)
 let frozen = false;   // a Gym Leader is about to talk or talking: you can't walk (freezeEvent())
-let opts = null, aim = null, busy = false, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0, camZ = NaN;
+let opts = null, aim = null, busy = false, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0, camZ = NaN, viewRect = null;
 let leftAt = 0, visit = null, acting = null, queued = [];
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -11733,6 +11733,7 @@ function placeCamera(dt) {
 }
 
 function resize() {
+  viewRect = null;
   const w = view.clientWidth, h = view.clientHeight;
   if (!w || !h || !R) return;
   renderer.setPixelRatio(1);
@@ -11795,7 +11796,9 @@ function still() { walker.lunge = walker.ox = walker.oy = walker.oz = 0; }
 
 /** The room's own signs, floating over their props. */
 function placeSigns() {
-  const btns = document.querySelectorAll(`#reward-options.c3d ${SIGNS_OF(R.kind)}`), r = view.getBoundingClientRect();
+  // the view's box read once a size (it's fixed over the whole screen): read each frame, after a town's folk had moved
+  // their speech bubbles, it laid the page out again every frame
+  const btns = document.querySelectorAll(`#reward-options.c3d ${SIGNS_OF(R.kind)}`), r = viewRect ??= view.getBoundingClientRect();
   R.spots.forEach((spot, i) => {
     const b = btns[i], at = R.anchors[i];
     if (!b || !at) return;
@@ -11850,6 +11853,7 @@ export function warmEvent() {
     view.className = 'center3d-view';
     renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
     renderer.shadowMap.enabled = true;
+    shadowBatch(renderer);
     renderer.shadowMap.type = THREE.PCFShadowMap;
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(30, 1, 0.5, 140);

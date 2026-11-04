@@ -14,7 +14,7 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { residentCap, openPC, resident } from './pc.js';
-import { loadThree, tex, crop, trim, NPC_PX as TRAINER_PX, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, bakeColours, smallNoShadow } from './hd2d.js';
+import { loadThree, tex, crop, trim, NPC_PX as TRAINER_PX, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, bakeColours, smallNoShadow, shadowBatch } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
@@ -2671,6 +2671,7 @@ export async function openBase3d({ onLeave = null, start = 'main', guest = null 
   } catch { return fallBack(); }
   wakeGL(renderer);
   renderer.shadowMap.enabled = true;
+  shadowBatch(renderer);
   renderer.shadowMap.type = THREE.PCFShadowMap;
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(30, 1, 0.5, 120);

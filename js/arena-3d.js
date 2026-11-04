@@ -8,7 +8,7 @@
    white flash (`revealArena()`). A Sky Pillar fight stands in one of the tower's rooms, built whole (`dressTower()`): only
    the sky in its windows is the pixel scene's. */
 
-import { loadThree, tex, createPost, dispose, warmShaders, wakeGL, restGL, sleepGL, tooSoon } from './hd2d.js';
+import { loadThree, tex, createPost, dispose, warmShaders, wakeGL, restGL, sleepGL, tooSoon, shadowBatch } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour, sceneBare } from './scene.js';
 import { paintMedallion } from './medallion-art.js';
@@ -1615,6 +1615,7 @@ export function warmArena() {
     document.body.append(view);
     renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
     renderer.shadowMap.enabled = true;
+    shadowBatch(renderer);
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     scene = new THREE.Scene();
     backdrop = new THREE.CanvasTexture(document.getElementById('scene-bg'));

@@ -23,7 +23,7 @@ import { makeBuddies } from './hub-buddies.js';
 import { cloudConfigured, cloudRemembered } from './cloud.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, NPC_PX as TRAINER_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, NPC_PX as TRAINER_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours, shadowBatch } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { same, nearAny } from './ground-beats.js';
 import { gateHp, gateReady } from './gate.js';
@@ -4803,6 +4803,7 @@ async function build() {
   renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
+  shadowBatch(renderer);
   scene = new THREE.Scene();
   scene.fog = new THREE.Fog('#9ccaf0', 30, 50);
   camera = new THREE.PerspectiveCamera(30, 1, 0.5, 140);

@@ -346,6 +346,194 @@ export function smallNoShadow(root, r = 0.1) {
   });
 }
 
+/* ---------- the shadow pass in a few draws (2026-11-04) ----------
+   three.js draws every shadow caster again into the sun's shadow map each frame, one draw apiece: the Clearing's sun
+   cost 103 draws a frame on top of its 120, 82 of them still, plain scenery that needs no texture to cast. The depth pass
+   only wants their shapes, so those are copied, in world space, into a few shadow-only meshes (a cell of the shadow box
+   each, so they're still culled to it) and drawn instead of them. Nothing is decided ahead: anything still for two looks
+   SCAN ms apart joins, and a member that moves, hides, leaves, changes shape or material, or stops casting is dropped
+   from its batch on the frame it does (its cell rebuilt next frame, it casting on its own meanwhile), so a place needs
+   no list of what moves. Those batches sit in the scene only while the shadow map is drawn, so nothing else (taps, the
+   bend, dispose()) ever meets them. One call per renderer: `shadowBatch(renderer)`. */
+const SCAN = 1500, BIG_PART = 12000, BIG_CELL = 40000, SHADOW_SIDE = { 0: 1, 1: 0, 2: 2 }, batched = new WeakSet(), shadowSets = new WeakMap();
+
+/** The side a material casts from, or null if its shadow needs more than its shape (a cut-out, a clip, a displacement). */
+function castSide(m) {
+  if (!m || !m.visible || m.wireframe || m.alphaTest > 0 || (m.displacementMap && m.displacementScale !== 0) || (m.clipShadows && m.clippingPlanes?.length)) return null;
+  return m.shadowSide ?? SHADOW_SIDE[m.side];
+}
+function sideOf(o) {
+  if (!o.isMesh || o.isSkinnedMesh || o.morphTargetInfluences || o.customDepthMaterial || o.onBeforeShadow !== THREE.Object3D.prototype.onBeforeShadow) return null;
+  const g = o.geometry;
+  if (!g?.attributes.position || g.morphAttributes.position || (o.isInstancedMesh && o.count > 512)) return null;
+  if (!Array.isArray(o.material)) return castSide(o.material);
+  const side = castSide(o.material[0]);
+  return side != null && o.material.every(m => castSide(m) === side) ? side : null;
+}
+
+/** Batches `renderer`'s still shadow casters, in every scene it draws. */
+export function shadowBatch(renderer) {
+  const sm = renderer.shadowMap;
+  if (batched.has(sm)) return;
+  batched.add(sm);
+  const draw = sm.render;
+  sm.render = function (lights, scene, camera) {
+    if (!this.enabled || !lights.length || (!this.autoUpdate && !this.needsUpdate)) return draw.call(this, lights, scene, camera);
+    let set = shadowSets.get(scene);
+    if (!set) shadowSets.set(scene, set = shadowSet(scene));
+    set.before(lights, camera);
+    try { draw.call(this, lights, scene, camera); } finally { set.after(); }
+  };
+}
+
+// a scene thrown away with its batches still built (a crossroads, after its visit): their shapes let go with it, or the
+// renderer's cache of them would keep their arrays for as long as it lives
+const freeBatches = new FinalizationRegistry(geos => { for (const g of geos) g.dispose(); });
+
+function shadowSet(scene) {
+  const group = new THREE.Group(), cells = new Map(), members = new Map(), seen = new WeakMap(), drops = new WeakMap(), sides = {}, off = [], gone = [], geos = new Set();
+  freeBatches.register(scene, geos);
+  group.name = 'shadow-batch';
+  group.matrixAutoUpdate = false;
+  let scanAt = 0, cell = 8;
+  const sphere = new THREE.Sphere(), m4 = new THREE.Matrix4(), inst = new THREE.Matrix4(), v = new THREE.Vector3();
+
+  function note(o) {
+    const g = o.geometry;
+    return { o, mat: o.material, geo: g, pos: g.attributes.position, ver: g.attributes.position.version, iver: g.index?.version ?? -1,
+      m: Float64Array.from(o.matrixWorld.elements), count: o.count, inst: o.instanceMatrix?.version, side: sideOf(o) };
+  }
+  const same = (a, b) => a.mat === b.mat && a.geo === b.geo && a.pos === b.pos && a.ver === b.ver && a.iver === b.iver && a.count === b.count && a.inst === b.inst && a.side === b.side;
+  /** Why a member can't stay: 'changed' (moved, reshaped, another material) or 'hidden' (hidden, or out of the scene). */
+  function still(r, camera) {
+    const o = r.o, g = o.geometry;
+    if (!o.castShadow || o.material !== r.mat || g !== r.geo || g.attributes.position !== r.pos || r.pos.version !== r.ver || (g.index?.version ?? -1) !== r.iver || sideOf(o) !== r.side) return 'changed';
+    if (o.isInstancedMesh && (o.count !== r.count || o.instanceMatrix.version !== r.inst)) return 'changed';
+    const e = o.matrixWorld.elements;
+    for (let i = 0; i < 16; i++) if (e[i] !== r.m[i]) return 'changed';
+    if (!o.layers.test(camera.layers)) return 'hidden';
+    for (let p = o; p !== scene; p = p.parent) if (!p || !p.visible) return 'hidden';
+    return null;
+  }
+  function drop(r, why) {
+    members.delete(r.o);
+    seen.delete(r.o);
+    const c = cells.get(r.cell);
+    c.list.splice(c.list.indexOf(r), 1);
+    c.verts -= r.verts;
+    c.dirty = true;
+    drops.set(r.o, (drops.get(r.o) || 0) + (why === 'changed' ? 2 : 1));
+  }
+  // every caster unchanged since the last look joins its cell; one that moved twice, or hid four times (a floor of the
+  // mall walked in and out of), never does again, so its cell isn't built over and over
+  function scan(camera) {
+    scene.traverseVisible(o => {
+      if (members.has(o) || !o.castShadow || (drops.get(o) || 0) >= 4 || sideOf(o) == null || !o.layers.test(camera.layers)) return;
+      const now = note(o), was = seen.get(o);
+      seen.set(o, now);
+      if (!was || !same(was, now) || was.m.some((x, i) => x !== now.m[i])) return;
+      now.verts = now.pos.count * (o.isInstancedMesh ? o.count : 1);
+      if (now.verts > BIG_PART) return;   // a draw on its own already, and dear to copy each time its cell is built again
+      if (o.isInstancedMesh) { if (!o.boundingSphere) o.computeBoundingSphere(); sphere.copy(o.boundingSphere); }
+      else { if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); sphere.copy(o.geometry.boundingSphere); }
+      sphere.applyMatrix4(o.matrixWorld);
+      const at = sphere.radius > cell ? `big|${now.side}` : `${Math.floor(sphere.center.x / cell)},${Math.floor(sphere.center.z / cell)}|${now.side}`;
+      let c, n = 0;
+      for (; (c = cells.get(now.cell = `${at}|${n}`)) && c.verts + now.verts > BIG_CELL; n++);
+      if (!c) cells.set(now.cell, c = { list: [], mesh: null, dirty: true, side: now.side, verts: 0 });
+      c.list.push(now);
+      c.verts += now.verts;
+      c.dirty = true;
+      members.set(o, now);
+    });
+  }
+  // one cell's members copied, in world space, into one shape
+  function rebuild(id, c) {
+    if (c.mesh) { group.remove(c.mesh); geos.delete(c.mesh.geometry); c.mesh.geometry.dispose(); c.mesh = null; }
+    c.dirty = false;
+    if (!c.list.length) { cells.delete(id); return; }
+    const parts = [];
+    let verts = 0, ids = 0;
+    for (const r of c.list) {
+      const o = r.o, g = o.geometry, n = r.pos.count, all = g.index ? g.index.count : n;
+      const ranges = Array.isArray(o.material) ? g.groups.map(x => [x.start, x.count]) : [[g.drawRange.start, g.drawRange.count]];
+      let k = 0;
+      for (const [s, len] of ranges) k += Math.max(0, Math.min(all, s + len) - Math.max(0, s));
+      for (let i = 0; i < (o.isInstancedMesh ? o.count : 1); i++) { parts.push({ r, i, ranges, n, all }); verts += n; ids += k; }
+    }
+    const pos = new Float32Array(verts * 3), index = new (verts > 65535 ? Uint32Array : Uint16Array)(ids);
+    let pv = 0, pi = 0;
+    for (const { r, i, ranges, n, all } of parts) {
+      const o = r.o, idx = o.geometry.index, p = r.pos;
+      if (o.isInstancedMesh) { o.getMatrixAt(i, inst); m4.multiplyMatrices(o.matrixWorld, inst); } else m4.copy(o.matrixWorld);
+      const e = m4.elements, flip = m4.determinant() < 0, base = pv / 3;
+      if (p.isInterleavedBufferAttribute || p.itemSize !== 3 || p.normalized) {
+        for (let k = 0; k < n; k++) { v.fromBufferAttribute(p, k).applyMatrix4(m4); pos[pv++] = v.x; pos[pv++] = v.y; pos[pv++] = v.z; }
+      } else {
+        // the world matrix written out: the shape copied straight from its array (a 66k-vertex cell took 21 ms through
+        // Vector3s, the first time, headless)
+        const a = p.array;
+        for (let j = 0, z = n * 3; j < z; j += 3) {
+          const x = a[j], y = a[j + 1], w = a[j + 2];
+          pos[pv++] = e[0] * x + e[4] * y + e[8] * w + e[12];
+          pos[pv++] = e[1] * x + e[5] * y + e[9] * w + e[13];
+          pos[pv++] = e[2] * x + e[6] * y + e[10] * w + e[14];
+        }
+      }
+      const ia = idx?.array;
+      for (const [s, len] of ranges) {
+        for (let j = Math.max(0, s), z = Math.min(all, s + len); j + 2 < z; j += 3) {
+          const a = ia ? ia[j] : j, b = ia ? ia[j + 1] : j + 1, d = ia ? ia[j + 2] : j + 2;
+          index[pi++] = base + a; index[pi++] = base + (flip ? d : b); index[pi++] = base + (flip ? b : d);
+        }
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setIndex(new THREE.BufferAttribute(pi === index.length ? index : index.slice(0, pi), 1));
+    geo.computeBoundingSphere();
+    geos.add(geo);
+    const mesh = new THREE.Mesh(geo, sides[c.side] ??= new THREE.MeshBasicMaterial({ shadowSide: c.side, colorWrite: false, depthWrite: false }));
+    mesh.castShadow = true;
+    mesh.matrixAutoUpdate = false;
+    mesh.raycast = () => {};
+    c.mesh = mesh;
+    group.add(mesh);
+  }
+  return {
+    before(lights, camera) {
+      const sun = lights.find(l => l.isDirectionalLight && l.castShadow);
+      if (sun) cell = Math.max(4, (sun.shadow.camera.right - sun.shadow.camera.left) / 2);
+      for (const r of members.values()) { const why = still(r, camera); if (why) gone.push(r, why); }
+      for (let i = 0; i < gone.length; i += 2) drop(gone[i], gone[i + 1]);
+      gone.length = 0;
+      const now = performance.now();
+      if (now - scanAt > SCAN) { scanAt = now; scan(camera); }
+      // ~2 ms of them a frame, the smallest first (its loops warmed up before a big cell's 40k-odd corners): no hitch as a
+      // place settles, and settled within a few frames
+      const t0 = performance.now();
+      do {
+        let next = null;
+        for (const e of cells) if (e[1].dirty && (!next || e[1].list.length < next[1].list.length)) next = e;
+        if (!next) break;
+        rebuild(...next);
+      } while (performance.now() - t0 < 2);
+      for (const c of cells.values()) {
+        if (!c.mesh) continue;
+        c.mesh.visible = !c.dirty;   // a cell waiting on its rebuild casts through its members, not from where one was
+        if (!c.dirty) for (const r of c.list) { r.o.castShadow = false; off.push(r.o); }
+      }
+      group.updateMatrixWorld(true);
+      scene.add(group);
+    },
+    after() {
+      scene.remove(group);
+      for (const o of off) o.castShadow = true;
+      off.length = 0;
+    },
+  };
+}
+
 export function dispose(group) {
   group.traverse(o => {
     o.geometry?.dispose();

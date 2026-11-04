@@ -6,7 +6,7 @@
    written before houses shows the Ancient Tree. Its own renderer, made for each visit and dropped on the way out
    (dropGL()), the only context awake while it's up. */
 
-import { loadThree, tex, dispose, monBoard, drawMon, createPost, curtain, wakeGL, dropGL, tooSoon } from './hd2d.js';
+import { loadThree, tex, dispose, monBoard, drawMon, createPost, curtain, wakeGL, dropGL, tooSoon, shadowBatch } from './hd2d.js';
 import { hubThree, fine, texOf, mergeStill, ancientArt, treeArt, bushArt, CLEARING_LIGHT } from './hub-3d.js';
 import { makeHouse } from './hub-houses.js';
 import { HOUSES_BY_ID } from './data/houses.js';
@@ -76,6 +76,7 @@ export async function openLawn({ name, json, buddyKey }) {
   const renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
   wakeGL(renderer);
   renderer.shadowMap.enabled = true;
+  shadowBatch(renderer);
   renderer.shadowMap.type = THREE.PCFShadowMap;
   const post = createPost(renderer, { crisp: false });
   post.final.uniforms.uBlur.value = 2;

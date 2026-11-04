@@ -8,7 +8,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, NPC_PX, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway } from './hd2d.js';
+import { loadThree, tex, NPC_PX, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway, shadowBatch } from './hd2d.js';
 import { leadFor } from './follow.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
@@ -981,6 +981,7 @@ export function warmMart() {
     view.className = 'center3d-view mart3d-view';
     renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
     renderer.shadowMap.enabled = true;
+    shadowBatch(renderer);
     renderer.shadowMap.type = THREE.PCFShadowMap;
     scene = new THREE.Scene();
     scene.background = new THREE.Color('#141c34');
