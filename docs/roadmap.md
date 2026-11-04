@@ -1251,7 +1251,7 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 **The whole battle revamp stays on branches** (the user's rule, 2026-11-04, CLAUDE.md's "The battle revamp never touches
 `main`"): smarter enemies, double battles and everything after them are built and playtested on their own branches,
 never pushed to `main` until the user says to merge. **No merge for a while** (the user, 2026-11-04, after part 2): the next steps build on the branches;
-the double battles' phase 1 below is next.
+the double battles' phase 1 is done (below) and phase 2 is next.
 
 **Your cloud save on a playtest link** (an idea, 2026-11-04; the user noticed a githack link has no cloud save): cloud
 save is on only for `patreekare.github.io` and localhost (`FIREBASE_CONFIG` in `js/cloud.js`), so a branch's link
@@ -1271,7 +1271,17 @@ enemy statuses (burn, Weak, Vulnerable, Static, Frost, Fault...); which card lin
 the 3D arena placing two; `sim/engine.js` mirrored with a bot that targets (lowest HP that dies this turn, else the
 bigger hitter) and a balance pass on encounter HP. Phased: (1) engine + `enemies[]` with one enemy, no visible change;
 (2) the two-enemy layout and targeting on phones; (3) pack encounters in `encounters` data + a few AoE cards;
-(4) the sim + balance. Not agreed yet: waiting on the user's go-ahead.
+(4) the sim + balance. **Phase 1 done 2026-11-04 on branch `multi-enemy-battles`** (commit 53f4339 and its docs
+commit; pokeDB-sim's mirror on its own `multi-enemy-battles` branch; `docs/reference/cards.md`'s "Double battles, phase
+1"): the branch brought up to date (main merged, main's revert of smarter enemies reverted, `smarter-enemies` part 2
+merged), then `b.enemies[]` + `b.target` / `b.acting`, each enemy its own `def`, second form and move order, the enemies'
+turn one enemy at a time, a win once all are down; `b.enemy` / `b.def` read the one in focus. Nothing a player sees
+changed: node --test, tools/enemy-probe.mjs and the new tools/battle-flows-probe.mjs (a wild fight, Eternatus rising, a
+Safari catch, a gym, on a phone viewport) pass, and the sim gives the exact same seeded runs before and after. Minccino's
+Tail Slap reads 3×5 in the Clearing (2×5 plus the biome's +7 shared over the hits; the same before the change).
+**Found, not fixed** (on `main` too): after a gym win a music fade can throw "setValueCurveAtTime overlaps"
+(`pass()` in `js/audio.js`: a pass started within a crossfade of the loop's end starts its fade-in and fade-out at once);
+a fix belongs on `main` (▶ CLOUD, effort low).
 
 **What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
 StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
@@ -1284,11 +1294,12 @@ first, then double battles with (b), then decide on (c). Branch `multi-enemy-bat
 fast-forwarded while (a) was briefly on `main`), so its phase 1 starts from the smarter enemies.
 
 > Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
-> push to main; bring it up to date first: merge main, then `git revert 88339c1` (main's revert of smarter enemies, or the
-> merge takes them out), then merge `smarter-enemies` (part 2), and check `?arena=wild&foe=minccino` shows 2×5), do phase 1 of the double-battles idea in docs/roadmap.md: turn the single
-> `b.enemy` in js/battle.js into `b.enemies[]` plus a current target, every fight still one enemy, nothing a player
-> would notice. Keep the smarter-enemy rules (`enemyMove()` / `moveOn()` in js/data/enemies.js) per enemy. Run node
-> --test and tools/enemy-probe.mjs, play a fight, a boss, a catch and a gym on a phone viewport; give me the githack link."
+> push to main), do phase 2 of the double-battles idea in docs/roadmap.md (phase 1's notes: docs/reference/cards.md's
+> last section): the two-enemy layout on phones and targeting. Tap an enemy to aim (the other dims), a lone enemy
+> auto-targeted, the target moving on when it falls while the other stands; compact intents (icon + number, the name in
+> the tip); each enemy its own box, HP bar, statuses and pops; the 3D arena placing two. Add a test-only two-enemy fight
+> (a URL flag) to try it; real pack encounters wait for phase 3. Mirror any rule change in pokeDB-sim's branch. Run node
+> --test, tools/enemy-probe.mjs and tools/battle-flows-probe.mjs on a phone viewport; give me the githack link."
 
 **Houses show a lot of empty wall** (an idea, 2026-10-28): with houses framed 8 tiles across, Kurt's Workshop sits low
 with a third of the screen plank wall above it. A slightly lower camera tilt in houses would fill the screen without
