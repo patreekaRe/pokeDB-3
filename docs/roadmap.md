@@ -1250,7 +1250,8 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 
 **The whole battle revamp stays on branches** (the user's rule, 2026-11-04, CLAUDE.md's "The battle revamp never touches
 `main`"): smarter enemies, double battles and everything after them are built and playtested on their own branches,
-never pushed to `main` until the user says to merge.
+never pushed to `main` until the user says to merge. **No merge for a while** (the user, 2026-11-04, after part 2): the next steps build on the branches;
+the double battles' phase 1 below is next.
 
 **Your cloud save on a playtest link** (an idea, 2026-11-04; the user noticed a githack link has no cloud save): cloud
 save is on only for `patreekare.github.io` and localhost (`FIREBASE_CONFIG` in `js/cloud.js`), so a branch's link
@@ -1283,7 +1284,8 @@ first, then double battles with (b), then decide on (c). Branch `multi-enemy-bat
 fast-forwarded while (a) was briefly on `main`), so its phase 1 starts from the smarter enemies.
 
 > Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
-> push to main; merge main and `smarter-enemies` into it first), do phase 1 of the double-battles idea in docs/roadmap.md: turn the single
+> push to main; bring it up to date first: merge main, then `git revert 88339c1` (main's revert of smarter enemies, or the
+> merge takes them out), then merge `smarter-enemies` (part 2), and check `?arena=wild&foe=minccino` shows 2×5), do phase 1 of the double-battles idea in docs/roadmap.md: turn the single
 > `b.enemy` in js/battle.js into `b.enemies[]` plus a current target, every fight still one enemy, nothing a player
 > would notice. Keep the smarter-enemy rules (`enemyMove()` / `moveOn()` in js/data/enemies.js) per enemy. Run node
 > --test and tools/enemy-probe.mjs, play a fight, a boss, a catch and a gym on a phone viewport; give me the githack link."
