@@ -9,6 +9,18 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**▶ PLAYTEST ON THE LIVE SITE. Smarter enemies: done 2026-11-04, on `main`** (the double-battles idea's step (a); the
+user's call: on `main`, it doesn't need double battles; `docs/reference/cards.md`'s last section). Multi-hit moves
+("5×3", each hit through your block), a move at half HP once (every Alpha's Frenzy 5×3, a move each for the 9 main bosses),
+a random order for 5 erratic ones (never a move three turns running), Regigigas opening with Slow Start. Bot check (human
+bot, 150 a cell, old vs new): pending, see the next commit. Try `?arena=wild&foe=cinccino` (two multi-hits),
+`?arena=elite&foe=sentret` (Frenzy at half HP), `?arena=wild&foe=kangaskhan`. Say if any fight feels unfair or the
+"5×3" bubble reads badly on a phone.
+> Next (▶ Run in: CLOUD, attach `pokeDB-3` and `pokeDB-sim`; effort medium): "Smarter enemies part 2, from
+> docs/reference/cards.md's last section: give the pool biomes' Pokémon (Ruins, Thornwood, Savanna), the Depths' and
+> the pool bosses the same treatment (multi-hits where the games' move hits several times, a half-HP move per boss),
+> plus anything the user said after playtesting part 1. Bot-check old vs new at 150 a cell; run tools/enemy-probe.mjs."
+
 **▶ PLAYTEST ON THE LIVE SITE. Shadows in a few draws, the hub's fps: done 2026-11-04, on `main`** (the user's ask:
 "improving fps overall especially in the hub, and find more memory leak stuff"; `docs/roadmap-done.md`,
 `docs/reference/hub-base-mall.md`'s last section). Every 3D place draws its still scenery's shadows in a few batches
@@ -1227,6 +1239,37 @@ window needs work (effort: low). ▶ Playtest on the live site.
 user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lum`, open the Bag's Items, Take off, then Hold.
 
 ## Ideas, not agreed yet (ask the user before building)
+
+**Battles with more than one enemy (StS-style)** (an idea, 2026-11-04, on branch `multi-enemy-battles`, never `main`;
+the user's ask: the phone battle feels small, could fights have several enemies like Slay the Spire?). Measured on an
+iPhone 13 (390x664 visible): the arena is 374x337, the enemy's box 178x121 with an 85px sprite, its intent bubble 184px
+wide; on an iPhone SE 72px. Three enemies abreast would leave ~60px sprites and no room for full intents, so the pick
+offered is **Pokémon-style double battles**: at most 2 enemies, only in some fights (pack Pokémon whose dex lines
+already say "hunts in packs": Houndour, the jungle's school), bosses solo or boss + one minion, singles stay the
+default. Needs: `b.enemy` (144 uses in `js/battle.js`) becomes `b.enemies[]` + a target; tap an enemy to target (the
+other dims), a lone enemy auto-targeted so singles play as now; compact intents (icon + number, name in the tip); per-
+enemy statuses (burn, Weak, Vulnerable, Static, Frost, Fault...); which card lines hit all (a new `all: true` key,
+`describe()` "to ALL enemies", a `cardTerms()` line); catching / Poké Balls only once one is left (or aim the ball);
+the 3D arena placing two; `sim/engine.js` mirrored with a bot that targets (lowest HP that dies this turn, else the
+bigger hitter) and a balance pass on encounter HP. Phased: (1) engine + `enemies[]` with one enemy, no visible change;
+(2) the two-enemy layout and targeting on phones; (3) pack encounters in `encounters` data + a few AoE cards;
+(4) the sim + balance. Not agreed yet: waiting on the user's go-ahead.
+
+**What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
+StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
+play). What it lacks: (a) **smarter enemies**: DONE on `main` 2026-11-04 (the "Open" entry above; the user's call: on
+`main`, since it doesn't need double battles). (b) **pairs designed with roles**, not two random Pokémon: a tank
+shielding a hitter, a caller that brings in a helper, a pair that buffs each other; that's what makes two enemies a
+puzzle. (c) **StS's side-on layout** (you on the left, enemies in a row on the right, bigger sprites, a fanned hand):
+roomier on a phone but drops the Pokémon games' diagonal look; the user's call, not offered as the default. Order: (a)
+done, then double battles with (b), then decide on (c). Branch `multi-enemy-battles` was fast-forwarded to `main` after
+(a) landed, so its phase 1 starts from the smarter enemies.
+
+> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
+> push to main; merge main into it first), do phase 1 of the double-battles idea in docs/roadmap.md: turn the single
+> `b.enemy` in js/battle.js into `b.enemies[]` plus a current target, every fight still one enemy, nothing a player
+> would notice. Keep the smarter-enemy rules (`enemyMove()` / `moveOn()` in js/data/enemies.js) per enemy. Run node
+> --test and tools/enemy-probe.mjs, play a fight, a boss, a catch and a gym on a phone viewport; give me the githack link."
 
 **Houses show a lot of empty wall** (an idea, 2026-10-28): with houses framed 8 tiles across, Kurt's Workshop sits low
 with a third of the screen plank wall above it. A slightly lower camera tilt in houses would fill the screen without

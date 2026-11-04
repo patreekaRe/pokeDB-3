@@ -375,3 +375,30 @@ and what it does now.
   its 150-run gap was noise; every cell within noise.
 - **Kenmatta's dojo** was rebuilt on the new cards (the user's pick, 2026-10-26; `docs/reference/events.md`'s dojo
   notes): each trial keeps its idea, its decks and HP retuned and solved again.
+
+## Smarter enemies (2026-11-04)
+
+The first StS-feel step of the double-battles idea (the roadmap's "(a)"), shipped on `main` since it works in single fights.
+Four data keys, written up in `js/data/enemies.js`' header; the picking lives there too (`enemyMove()`, `firstMove()`,
+`moveOn()`, `moveAfter()`, `hitCount()`), so `js/battle.js` and the sim's `sim/engine.js` share it. Never read
+`def.moves[moveIndex]` directly: `currentMove()` is `enemyMove()`, and Insight's "then" is `moveAfter()` (null, "then ❔",
+when a random order hasn't picked yet).
+- `hits: N` (attack / drain): N hits, each through the block the ones before left. The enemy's in-fight strength adds to
+  every hit; the biome's extra damage (`en.dmgBonus`; `baseStrength` in the sim) is shared out, `round(bonus / N)` a hit,
+  so a multi-hit move costs about what a single one did until the enemy powers up. Per hit: Evasion's stacks, Rocky
+  Helmet, Wave Incense / Big Pearl on a blocked hit, thorns, Counter, Static, Anger Point. A Guard stops the whole move.
+  Turnabout, Ruination and Copycat read the total (`intentDamage()`); the intent shows "5×3", `incoming()` adds the hits
+  up for the 💀. The biome scaling's average hit (`strengthAt()`) counts amount × hits.
+- `atHalf: move` (the enemy): its next move the first time it's at or under half HP, shown at once on the intent, used
+  once (`en.halfUsed`), then the loop picks up where it was. Paralysis loses it like any move; Taunt skips it if it isn't
+  an attack. Every Alpha has one (`eliteOf()`: Frenzy, a third of Rampage's 14, 3 hits) unless its base has its own. Bosses:
+  Snorlax Curse, Kangaskhan Comet Punch 4×4, Miltank Milk Drink, Exploud Echoed Voice, Stoutland Roar, Ursaring Fury
+  Swipes, Slaking Bulk Up, Regigigas Slow Start Ends, Lickilicky Rollout. Never a charge or away move.
+- `opens: i`: always starts with `moves[i]` (Regigigas opens with Slow Start).
+- `order: 'random'`: picks by `weight` (1 by default), never one move three turns running (`en.recent`); a charge or
+  away move is still followed by the move after it. Rattata, Aipom, Tauros, Crobat, Porygon-Z.
+Multi-hit data (the games' multi-hit moves, about the same total): Sentret / Teddiursa Fury Swipes, Hoppip / Seedot Bullet
+Seed, Aipom / Ambipom Double Hit, Bouffalant Fury Attack, Gigalith Rock Blast, Cinccino Double Slap and Tail Slap,
+Kangaskhan Mega Punch. The pool biomes, the Safari's Pokémon and the gyms have none yet. The Pokédex lists them
+(`moveNumbers()` "5×3 dmg", "Once, at half HP", "picked at random"). Tests: `tests/enemy-moves.test.mjs`; in a real fight
+`tools/enemy-probe.mjs`; `?arena=wild&foe=<id>` (or `elite`) fights that Pokémon.
