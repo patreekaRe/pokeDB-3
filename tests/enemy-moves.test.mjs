@@ -53,3 +53,8 @@ test('every enemy move is well formed', () => {
   }
   assert.equal(hitCount(eliteOf(ENEMY_DEFS.sentret).atHalf), 3);
 });
+
+test('every boss but the Sky Pillar\'s and Safari\'s has a half-HP move', async () => {
+  const { BIOMES, ALT_BIOMES } = await import('../js/data/enemies.js');
+  for (const b of [...BIOMES, ...ALT_BIOMES]) for (const id of b.bosses) assert.ok(ENEMY_DEFS[id].atHalf, id);
+});

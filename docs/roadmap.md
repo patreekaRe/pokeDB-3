@@ -19,7 +19,7 @@ a random order for 5 erratic ones (never a move three turns running), Regigigas 
 bot, old -> new win %, 150 a cell): Fire L0 76.7 -> 77.3, L3 50.7 -> 50.0; Grass L0 61.3 -> 72.0, L3 44.7 -> 44.7;
 Water L0 60.0 -> 48.7, L3 51.3 -> 36.0. Water confirmed at 300: L0 63.3 -> 56.3, L3 42.3 -> 39.7 (all 450 pooled:
 -8 / -7). So Fire and Grass hold and Water is ~7 points harder, deaths spread over biomes 2-3, no one fight; not
-retuned yet (the user's call: keep it as challenge, or soften Water's matchups). Try `?arena=wild&foe=cinccino` (two multi-hits),
+retuned yet (the user's call: keep it as challenge, or soften Water's matchups). On the playtest link try `?arena=wild&foe=cinccino` (two multi-hits),
 `?arena=elite&foe=sentret` (Frenzy at half HP), `?arena=wild&foe=kangaskhan`. Say if any fight feels unfair or the
 "5×3" bubble reads badly on a phone.
 **Part 2 built 2026-11-04 on the same branch** (commit 441c04e and its docs commit; `docs/reference/cards.md`'s "Part 2"): the
@@ -1275,13 +1275,13 @@ bigger hitter) and a balance pass on encounter HP. Phased: (1) engine + `enemies
 
 **What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
 StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
-play). What it lacks: (a) **smarter enemies**: DONE on `main` 2026-11-04 (the "Open" entry above; the user's call: on
-`main`, since it doesn't need double battles). (b) **pairs designed with roles**, not two random Pokémon: a tank
+play). What it lacks: (a) **smarter enemies**: built on branch `smarter-enemies` 2026-11-04, waiting on the user's playtest (the
+"Open" entry above). (b) **pairs designed with roles**, not two random Pokémon: a tank
 shielding a hitter, a caller that brings in a helper, a pair that buffs each other; that's what makes two enemies a
 puzzle. (c) **StS's side-on layout** (you on the left, enemies in a row on the right, bigger sprites, a fanned hand):
 roomier on a phone but drops the Pokémon games' diagonal look; the user's call, not offered as the default. Order: (a)
-done, then double battles with (b), then decide on (c). Branch `multi-enemy-battles` was fast-forwarded to `main` after
-(a) landed, so its phase 1 starts from the smarter enemies.
+first, then double battles with (b), then decide on (c). Branch `multi-enemy-battles` already holds (a) (it was
+fast-forwarded while (a) was briefly on `main`), so its phase 1 starts from the smarter enemies.
 
 > Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
 > push to main; bring it up to date first: merge main, then `git revert 88339c1` (main's revert of smarter enemies, or the

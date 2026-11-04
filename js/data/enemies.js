@@ -287,7 +287,7 @@ export const ENEMY_DEFS = {
     name: 'Shellder', type: 'water', hp: 62, ...sprite('shellder'),
     description: 'Clamps shut in the temple\'s tide pools and waits for a careless foot.',
     moves: [
-      { kind: 'attack', name: 'Tackle',     amount: 6, type: 'normal' },
+      { kind: 'attack', name: 'Icicle Spear', amount: 2, hits: 3, type: 'normal' },
       { kind: 'defend', name: 'Withdraw',      amount: 10 },
       { kind: 'attack', name: 'Clamp', amount: 11 },
     ],
@@ -368,7 +368,7 @@ export const ENEMY_DEFS = {
     name: 'Skitty', type: 'normal', hp: 58, ...sprite('skitty'),
     description: 'Chases the light rippling on the temple walls round and round the halls.',
     moves: [
-      { kind: 'attack', name: 'Double Slap',      amount: 6 },
+      { kind: 'attack', name: 'Double Slap', amount: 2, hits: 3 },
       { kind: 'defend', name: 'Wish',       amount: 9 },
       { kind: 'attack', name: 'Double-Edge', amount: 12 },
     ],
@@ -564,7 +564,7 @@ export const ENEMY_DEFS = {
     name: 'Rapidash', type: 'fire', hp: 64, ...sprite('rapidash'),
     description: 'Gallops the jungle trails so fast the leaves catch fire behind it.',
     moves: [
-      { kind: 'attack', name: 'Stomp', amount: 8, type: 'normal' },
+      { kind: 'attack', name: 'Fury Attack', amount: 3, hits: 3, type: 'normal' },
       { kind: 'buff',   name: 'Agility',     amount: 2 },
       { kind: 'attack', name: 'Flare Blitz', amount: 13 },
     ],
@@ -649,7 +649,7 @@ export const ENEMY_DEFS = {
     name: 'Simisear', type: 'fire', hp: 52, ...sprite('simisear'),
     description: 'Lords it over the one shady tree on the plain, and roasts whoever wants the shade.',
     moves: [
-      { kind: 'attack', name: 'Fury Swipes', amount: 6, type: 'normal' },
+      { kind: 'attack', name: 'Fury Swipes', amount: 2, hits: 3, type: 'normal' },
       { kind: 'buff',   name: 'Work Up',     amount: 2 },
       { kind: 'attack', name: 'Flame Burst', amount: 10 },
     ],
@@ -696,7 +696,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Scratch',     amount: 6 },
       { kind: 'attack', name: 'Pay Day',     amount: 7 },
-      { kind: 'attack', name: 'Fury Swipes', amount: 9 },
+      { kind: 'attack', name: 'Fury Swipes', amount: 3, hits: 3 },
     ],
   },
   minccino: {
@@ -705,7 +705,7 @@ export const ENEMY_DEFS = {
     moves: [
       { kind: 'attack', name: 'Pound',     amount: 6 },
       { kind: 'defend', name: 'Tidy Up',   amount: 7 },
-      { kind: 'attack', name: 'Tail Slap', amount: 10 },
+      { kind: 'attack', name: 'Tail Slap', amount: 2, hits: 5 },
     ],
   },
 
@@ -767,7 +767,7 @@ export const ENEMY_DEFS = {
     description: 'Its tusks cut through steel. It sharpens them on the crystals.',
     moves: [
       { kind: 'buff',   name: 'Dragon Dance', amount: 4 },
-      { kind: 'attack', name: 'Dragon Claw',  amount: 10 },
+      { kind: 'attack', name: 'Dual Chop', amount: 5, hits: 2 },
       { kind: 'attack', name: 'Outrage',      amount: 16 },
     ],
   },
@@ -946,7 +946,7 @@ export const ENEMY_DEFS = {
     name: 'Vigoroth', type: 'normal', hp: 72, ...sprite('vigoroth'),
     description: 'Can\'t sit still for a second. It tears through the jungle like a storm with claws.',
     moves: [
-      { kind: 'attack', name: 'Fury Swipes',   amount: 8 },
+      { kind: 'attack', name: 'Fury Swipes', amount: 3, hits: 3 },
       { kind: 'defend', name: 'Endure',  amount: 11 },
       { kind: 'attack', name: 'Slash', amount: 13 },
     ],
@@ -963,6 +963,7 @@ export const ENEMY_DEFS = {
   spinda: {
     name: 'Spinda', type: 'normal', hp: 66, ...sprite('spinda'),
     description: 'Totters along the jungle paths. Its dizzy steps make anyone who follows it lose the trail.',
+    order: 'random',
     moves: [
       { kind: 'attack', name: 'Dizzy Punch',  amount: 8 },
       { kind: 'buff',   name: 'Psych Up',     amount: 2 },
@@ -992,7 +993,7 @@ export const ENEMY_DEFS = {
     name: 'Glameow', type: 'normal', hp: 66, ...sprite('glameow'),
     description: 'Lounges in the shade of the thorn trees and claws whatever wakes it.',
     moves: [
-      { kind: 'attack', name: 'Fury Swipes', amount: 7 },
+      { kind: 'attack', name: 'Fury Swipes', amount: 2, hits: 4 },
       { kind: 'buff',   name: 'Hone Claws',  amount: 2 },
       { kind: 'attack', name: 'Slash',       amount: 12 },
     ],
@@ -1101,6 +1102,7 @@ export const ENEMY_DEFS = {
   dunsparce: {
     name: 'Dunsparce', type: 'normal', hp: 250, ...sprite('dunsparce'), boss: true,
     description: 'They say it bored the temple\'s halls before the builders came. Now the water\'s in, it wants them back.',
+    atHalf: { kind: 'attack', name: 'Endeavor', amount: 20 },
     moves: [
       { kind: 'attack', name: 'Drill Run',   amount: 11 },
       { kind: 'status', name: 'Glare',       adds: { card: 'paralysis', n: 2, to: 'draw' } },
@@ -1111,6 +1113,7 @@ export const ENEMY_DEFS = {
   wigglytuff: {
     name: 'Wigglytuff', type: 'normal', hp: 240, ...sprite('wigglytuff'), boss: true,
     description: 'Sings on the tide altar every night. The ruins went under, and it never stopped singing.',
+    atHalf: { kind: 'attack', name: 'Double Slap', amount: 5, hits: 4 },
     moves: [
       { kind: 'attack', name: 'Body Slam',   amount: 10, adds: { card: 'paralysis', n: 1, to: 'draw' } },
       { kind: 'defend', name: 'Rest',        amount: 13 },
@@ -1121,6 +1124,7 @@ export const ENEMY_DEFS = {
   granbull: {
     name: 'Granbull', type: 'normal', hp: 230, ...sprite('granbull'), boss: true,
     description: 'Took the altar for its den. Every offering left there since has been its dinner.',
+    atHalf: { kind: 'buff', name: 'Rage', amount: 3 },
     moves: [
       { kind: 'attack', name: 'Bite',            amount: 10 },
       { kind: 'buff',   name: 'Bulk Up',         amount: 3 },
@@ -1167,6 +1171,7 @@ export const ENEMY_DEFS = {
     name: 'Porygon-Z', type: 'normal', hp: 420, ...sprite('porygonz'), boss: true,
     description: 'A glitch in the Ember Wastes. Beat it to finish the run.',
     order: 'random',
+    atHalf: { kind: 'buff', name: 'Download', amount: 4 },
     moves: [
       { kind: 'attack', name: 'Psybeam',    amount: 11 },
       { kind: 'buff',   name: 'Nasty Plot', amount: 2 },
@@ -1179,6 +1184,7 @@ export const ENEMY_DEFS = {
   blissey: {
     name: 'Blissey', type: 'normal', hp: 430, ...sprite('blissey'), boss: true,
     description: 'Nests in the Heart Tree\'s roots and nurses every hurt thing in the jungle. Not you.',
+    atHalf: { kind: 'drain', name: 'Draining Kiss', amount: 12, heal: 16 },
     moves: [
       { kind: 'attack', name: 'Egg Bomb',        amount: 12 },
       { kind: 'defend', name: 'Soft-Boiled',   amount: 14 },
@@ -1189,6 +1195,7 @@ export const ENEMY_DEFS = {
   porygon: {
     name: 'Porygon', type: 'normal', hp: 420, ...sprite('porygon'), boss: true,
     description: 'Someone brought it to map the jungle. The jungle grew over the someone.',
+    atHalf: { kind: 'buff', name: 'Sharpen', amount: 4 },
     moves: [
       { kind: 'attack', name: 'Psybeam', amount: 12 },
       { kind: 'buff',   name: 'Conversion', amount: 2 },
@@ -1199,6 +1206,7 @@ export const ENEMY_DEFS = {
   porygon2: {
     name: 'Porygon2', type: 'normal', hp: 420, ...sprite('porygon2'), boss: true,
     description: 'Upgraded itself to survive the jungle. It is still upgrading.',
+    atHalf: { kind: 'defend', name: 'Recover', amount: 28 },
     moves: [
       { kind: 'attack', name: 'Discharge',          amount: 11 },
       { kind: 'buff',   name: 'Conversion 2',         amount: 2 },
@@ -1212,6 +1220,8 @@ export const ENEMY_DEFS = {
   castform: {
     name: 'Castform', type: 'normal', hp: 235, ...sprite('castform'), boss: true,
     description: 'Sits on Sun Rock and calls the drought down on the plain. No rain has fallen since it came.',
+    order: 'random',
+    atHalf: { kind: 'buff', name: 'Sunny Day', amount: 3 },
     moves: [
       { kind: 'attack', name: 'Weather Ball', amount: 11 },
       { kind: 'defend', name: 'Forecast',     amount: 13 },
@@ -1222,6 +1232,7 @@ export const ENEMY_DEFS = {
   loudred: {
     name: 'Loudred', type: 'normal', hp: 250, ...sprite('loudred'), boss: true,
     description: 'Roars from Sun Rock at dawn, and the whole savanna stampedes.',
+    atHalf: { kind: 'attack', name: 'Uproar', amount: 6, hits: 3 },
     moves: [
       { kind: 'attack', name: 'Stomp',       amount: 10 },
       { kind: 'buff',   name: 'Howl',        amount: 3 },
@@ -1232,6 +1243,7 @@ export const ENEMY_DEFS = {
   munchlax: {
     name: 'Munchlax', type: 'normal', hp: 260, ...sprite('munchlax'), boss: true,
     description: 'Ate the savanna\'s last fruit tree, roots and all, and is still hungry.',
+    atHalf: { kind: 'defend', name: 'Gluttony', amount: 18 },
     moves: [
       { kind: 'attack', name: 'Tackle',      amount: 10 },
       { kind: 'defend', name: 'Stockpile',   amount: 14 },
@@ -1247,6 +1259,7 @@ export const ENEMY_DEFS = {
   eternatus: {
     name: 'Eternatus', type: 'normal', hp: 440, ...sprite('eternatus'), boss: true, music: 'eternatus',
     trait: { id: 'stamina', name: 'Pressure', after: 4, amount: 8 },
+    atHalf: { kind: 'attack', name: 'Flamethrower', amount: 20 },
     description: 'The energy at the bottom of everything. It has been waiting a very long time.',
     moves: [
       { kind: 'attack', name: 'Dynamax Cannon', amount: 14 },
