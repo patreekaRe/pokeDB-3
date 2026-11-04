@@ -21,6 +21,14 @@ Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep a
 (low / medium / high; the user's ask, 2026-10-19): high for design, engine or sim changes and balance passes, medium for
 work that follows a pattern already set (data, more cards of a set mechanic), low only for docs or one-line fixes.
 
+## The battle revamp never touches `main` (the user's rule, 2026-11-04)
+
+**Everything in the StS-style battle revamp** (smarter enemies, double battles, enemy pairs with roles, any layout
+change that comes of it, and pokeDB-sim's mirror of them) **lives only on its own branches** (`smarter-enemies`,
+`multi-enemy-battles`, or a new one), **never `main`**, whatever a prompt suggests and despite "push to `main`" under
+Conventions. Merge into `main` only when the user says so in plain words. Docs that point at the branches may go on
+`main`. Give the githack link every time (2026-11-04: smarter enemies went live by mistake and had to be reverted).
+
 ## No screenshots unless the user asks (their rule, 2026-10-14)
 
 **Never take or send a screenshot unless the user asks for one in that session.** This overrides any default
