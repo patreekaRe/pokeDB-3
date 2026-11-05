@@ -1283,12 +1283,12 @@ Tail Slap reads 3×5 in the Clearing (2×5 plus the biome's +7 shared over the h
 (`pass()` in `js/audio.js`: a pass started within a crossfade of the loop's end starts its fade-in and fade-out at once);
 a fix belongs on `main` (▶ CLOUD, effort low).
 **Phase 2 done 2026-11-04 on branch `claude/two-enemy-layout-targeting-46sg44`** (built from `multi-enemy-battles`, which
-it fast-forwards; commit e624ecb; playtest link https://rawcdn.githack.com/patreekaRe/pokeDB-3/e624ecb5bcfbfb2006ce4ab243c8989f516bc932/index.html?arena=double; pokeDB-sim's mirror on the same-named branch;
+it fast-forwards; commit e624ecb; playtest link https://rawcdn.githack.com/patreekaRe/pokeDB-3/0a204b3fc33e8f55578de1fab0de08dea98952bd/index.html?arena=double; pokeDB-sim's mirror on the same-named branch;
 `docs/reference/cards.md`'s "Double battles, phase 2" and the battle layout file's last paragraph): the games' doubles
 layout (two compact plates stacked top left, the two enemies side by side top right, the left one nearer, each its own
 3D pad), compact move bubbles (icon + number, the name in the tip), each enemy its own box, HP bar, statuses and pops;
 tap an enemy or its plate to aim (also with a card raised; the other dims), the target moving on when it falls while
-the other stands ("The wild X fainted!"), the lethal warning counting both attacks. Test-only: `?arena=double`
+the other stands ("The wild X fainted!"), the lethal warning counting both attacks; a fallen enemy's plate goes and the other's moves up (the user's ask, 2026-11-05, commit 0a204b3). Test-only: `?arena=double`
 (`&foe=rattata,sentret`, `&hp=0.5`). node --test, tools/enemy-probe.mjs, tools/battle-flows-probe.mjs and the new
 tools/double-probe.mjs (402x874 and 390x664) pass; the sim's `retarget()` leaves seeded runs unchanged. **Next: the
 user playtests the layout on a phone** (▶ PLAYTEST: the link above with `?arena=double`), then phase 3.
