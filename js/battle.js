@@ -27,6 +27,7 @@ import { spriteUrl, stageName, STARTERS_BY_ID } from './data/starters.js';
 import { ITEMS_BY_ID, ITEM_SLOTS } from './data/items.js';
 import { heldFires, heldHeal, clearsCard } from './data/held.js';
 import { toldHeld, tellHeld } from './held-tips.js';
+import { tipAt } from './tips.js';
 import { isShiny, getSave, updateSave, markSeen, safariSparkle } from './storage.js';
 import { shinyImage } from './data/shinies.js';
 import { vibrate, battleFx, calmFx, pref } from './prefs.js';
@@ -476,7 +477,16 @@ function aim(i) {
   if (!b || b.over || b.busy || b.enemyActing || b.enemies.length < 2 || i === b.target || !(b.enemies[i]?.hp > 0)) return;
   b.target = i;
   vibrate(8);
+  if (!getSave().aimTaught) updateSave(save => { save.aimTaught = true; });
   renderAll();
+}
+
+/** A double battle's first turn, till you've aimed once (the user's ask, 2026-11-05: nothing said you could switch
+    targets): a note pinned over the one not aimed at. */
+function teachAim(b) {
+  const other = b.enemies.findIndex((en, i) => i !== b.target && en.hp > 0);
+  if (other < 0 || getSave().aimTaught) return;
+  tipAt(withFoe(other, () => $('enemy-portrait-box')), 'Tap a Pokémon to aim your moves at it.');
 }
 
 /* A double battle's second enemy: its plate and box copied from the first's as the page first had them (`FOE_PARTS`,
@@ -821,6 +831,7 @@ function beginPlayerTurn() {
   surface();
   if (won(b)) return finish(true);   // Riptide off the turn's first block, Spelon Berry, Enigma Berry, a card surfacing
   b.busy = false;
+  if (b.turn === 1 && b.enemies.length > 1) teachAim(b);
   if (b.turn === 1 && !b.safari && (getSave().handSwipes ?? 0) < HAND_TAUGHT) showHandHint(lockDeal(b.hand.filter(h => h.fresh).length));   // Safari players already know the gestures
   else if (b.turn === HINT_TURNS + 1) hideHandHint();
   $('swap-hint').hidden = !b.duo || b.turn > HINT_TURNS || b.duo.held;   // a duo's "hold to swap", the hand hint's way
@@ -3662,7 +3673,10 @@ function renderBars() {
     const aside = b.enemies.length > 1 && i !== b.target && en.hp > 0 && !b.over && !b.enemyActing;
     $('enemy-zone').classList.toggle('aside', aside);
     $('enemy-plate').classList.toggle('aside', aside);
-    $('enemy-zone').classList.toggle('aimed', b.enemies.length > 1 && i === b.target && !b.over && !b.enemyActing);
+    // the reticle on the one aimed at while two stand, and a tapping finger on the other till you've aimed once (teachAim())
+    const two = b.enemies.filter(e => e.hp > 0).length > 1 && !b.over && !b.enemyActing;
+    $('enemy-zone').classList.toggle('aimed', two && i === b.target);
+    $('enemy-zone').classList.toggle('aim-teach', aside && two && !getSave().aimTaught);
   }));
   renderPose();
   $('player-plate').classList.toggle('has-block', b.block > 0);

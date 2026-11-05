@@ -50,11 +50,20 @@ for (const [w, h] of [[402, 874], [390, 664]]) {
   check(intents.length === 2 && intents.every(i => i.name === 'none' && /Next turn: /.test(i.title)), `compact move bubbles, the name in the tip: ${intents.map(i => i.text).join(' / ')}`);
   check(await page.evaluate(() => window.__pads()) === 3, '3D arena: a pad for each enemy and yours');
 
+  // how to aim is shown: a reticle on the one aimed at, a tapping fingertip on the other and a note, till you aim once
+  const shown = await page.evaluate(() => ({
+    ring: getComputedStyle(document.querySelector('#enemy-portrait-box'), '::after').content,
+    teach: getComputedStyle(document.querySelector('#enemy2-portrait-box'), '::before').content,
+    tip: document.querySelector('.tap-tip')?.textContent ?? '',
+  }));
+  check(shown.ring !== 'none' && shown.teach !== 'none' && /aim/.test(shown.tip), `the aim is shown: a reticle, a tapping fingertip, the note ("${shown.tip}")`);
   // tap to aim
   await page.mouse.click(z2.l + z2.w / 2, z2.t + z2.h / 2);
   await page.waitForTimeout(150);
   let s = await page.evaluate(() => ({ t: window.__battle().target, aside: [...document.querySelectorAll('#arena .enemy-zone.aside')].map(n => n.id) }));
   check(s.t === 1 && s.aside.join() === 'enemy-zone', `a tap on the second aims at it, the first dims (${s.aside})`);
+  const taught = await page.evaluate(() => ({ teach: document.querySelectorAll('#arena .aim-teach').length, ring: document.querySelector('#arena .enemy-zone.aimed')?.id }));
+  check(!taught.teach && taught.ring === 'enemy2-zone', 'once aimed, the fingertip goes for good and the reticle moves');
   const uid = await page.evaluate(() => window.__attack()?.uid);
   await page.evaluate((u) => window.__raise(u), uid);
   await page.waitForTimeout(400);

@@ -443,7 +443,7 @@ on the right enemy unchanged. Drawing loops `withFoe(i, fn)` (sets `b.view`): `r
 `intentOf()`, `renderStatus()` → `foeStatus()` + `renderPlayerStatus()`, `renderPose()` (only the target braces),
 `setupEnemy()`. The second is never the Safari's shiny or rare one; its own `en.dexMark`. **Aiming**: `aim(i)` on a tap
 of an enemy or its plate (a click on `#arena`, or through `#card-focus` while a card is raised, which stays up): your
-turn only, not while busy, at one standing; the other dims (`.aside`). **Falling**: `won(b)` replaces phase 1's
+turn only, not while busy, at one standing; the other dims (`.aside`). **Showing it** (the user's ask, 2026-11-05: nobody would know they could switch): while two stand, the one aimed at wears a breathing gold reticle (`.aimed`), and till you've aimed once (`aimTaught` in the save, set by `aim()`) a fingertip taps on the other (`.aim-teach`) and a double battle's first turn pins "Tap a Pokémon to aim your moves at it." over it (`teachAim()`, `tipAt()`). **Falling**: `won(b)` replaces phase 1's
 `allDown()` checks: not all down, it calls `fallen(b)`, which faints each newly knocked-out enemy (`en.down`, its box
 `.defeated`, its plate fading then gone, `.fading` / `.gone`, so the other's moves up into the corner (the user's ask,
 2026-11-05), "The wild X fainted!", the faint sound; the next knockout gets `finishingBlow()` again) and moves the target

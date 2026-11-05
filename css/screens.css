@@ -474,6 +474,26 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .enemy-zone .enemy-pose { transition: filter 0.2s; }
 .foe-plate.aside { opacity: 0.62; }
 .foe-plate { transition: opacity 0.2s; }
+/* the one aimed at wears a gold reticle, its corners breathing in; till you've aimed once (aimTaught in the save) a
+   fingertip taps on the other (renderBars() in js/battle.js) */
+.arena.duo .enemy-zone.aimed .enemy-portrait::after {
+  content: ''; position: absolute; inset: -4px; pointer-events: none; --c: #ffd84a;
+  background:
+    linear-gradient(var(--c) 0 0) top left / 14px 3px, linear-gradient(var(--c) 0 0) top left / 3px 14px,
+    linear-gradient(var(--c) 0 0) top right / 14px 3px, linear-gradient(var(--c) 0 0) top right / 3px 14px,
+    linear-gradient(var(--c) 0 0) bottom left / 14px 3px, linear-gradient(var(--c) 0 0) bottom left / 3px 14px,
+    linear-gradient(var(--c) 0 0) bottom right / 14px 3px, linear-gradient(var(--c) 0 0) bottom right / 3px 14px;
+  background-repeat: no-repeat; filter: drop-shadow(0 0 1px #3a2800) drop-shadow(0 0 4px rgb(255 216 74 / 0.6));
+  animation: aimBreath 1.4s ease-in-out infinite;
+}
+@keyframes aimBreath { 50% { scale: 0.92; } }
+.arena.duo .enemy-zone.aim-teach .enemy-portrait::before {
+  content: ''; position: absolute; left: 50%; top: 45%; z-index: 3; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%;
+  background: rgb(255 255 255 / 0.92); box-shadow: 0 0 0 2px rgb(16 16 28 / 0.55), 0 0 10px 3px rgb(255 230 128 / 0.75);
+  pointer-events: none; animation: aimTap 1.6s ease-in-out infinite;
+}
+@keyframes aimTap { 0%, 100% { scale: 1; opacity: 0.95; } 20% { scale: 0.7; opacity: 1; } 45% { scale: 1.5; opacity: 0; } 70% { scale: 1; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .arena.duo .enemy-zone .enemy-portrait::after, .arena.duo .enemy-zone .enemy-portrait::before { animation: none; } }
 /* a fallen enemy's plate fades, then goes (fallen() in js/battle.js), and the other's moves up into its place */
 .foe-plate.fading { opacity: 0; transition: opacity 0.4s; }
 .arena.duo .foe-plate.gone { display: none; }
