@@ -1283,7 +1283,7 @@ Tail Slap reads 3×5 in the Clearing (2×5 plus the biome's +7 shared over the h
 (`pass()` in `js/audio.js`: a pass started within a crossfade of the loop's end starts its fade-in and fade-out at once);
 a fix belongs on `main` (▶ CLOUD, effort low).
 **Phase 2 done 2026-11-04 on branch `claude/two-enemy-layout-targeting-46sg44`** (built from `multi-enemy-battles`, which
-it fast-forwards; commit e624ecb; playtest link https://rawcdn.githack.com/patreekaRe/pokeDB-3/0a204b3fc33e8f55578de1fab0de08dea98952bd/index.html?arena=double; pokeDB-sim's mirror on the same-named branch;
+it fast-forwards; commit e624ecb; playtest link https://rawcdn.githack.com/patreekaRe/pokeDB-3/227759fd4cfd434e51ea83119d3939b775b80125/index.html?arena=double; pokeDB-sim's mirror on the same-named branch;
 `docs/reference/cards.md`'s "Double battles, phase 2" and the battle layout file's last paragraph): the games' doubles
 layout (two compact plates stacked top left, the two enemies side by side top right, the left one nearer, each its own
 3D pad), compact move bubbles (icon + number, the name in the tip), each enemy its own box, HP bar, statuses and pops;
@@ -1291,7 +1291,9 @@ tap an enemy or its plate to aim (also with a card raised; the other dims), the 
 the other stands ("The wild X fainted!"), the lethal warning counting both attacks; a fallen enemy's plate goes and the other's moves up (the user's ask, 2026-11-05, commit 0a204b3). Test-only: `?arena=double`
 (`&foe=rattata,sentret`, `&hp=0.5`). node --test, tools/enemy-probe.mjs, tools/battle-flows-probe.mjs and the new
 tools/double-probe.mjs (402x874 and 390x664) pass; the sim's `retarget()` leaves seeded runs unchanged. **The user's
-verdict (2026-11-05): "I kinda like this"** after trying it, the plate fix included. Offered, not asked for yet: the
+verdict (2026-11-05): "I kinda like this"** after trying it, the plate fix included. Then (the user, same day: "I don't think the player knows how to switch targets"):
+a gold reticle on the one aimed at, and till the first aim a tapping fingertip on the other and a first-turn note
+(commit 227759f). Offered, not asked for yet: the
 enemy left sliding to the middle and standing a step bigger once it's alone. **Next: phase 3.**
 
 > Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
