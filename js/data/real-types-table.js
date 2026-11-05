@@ -138,7 +138,7 @@ export const MOVES = {
   flying: 'Acrobatics|Aerial Ace|Air Cutter|Air Slash|Bounce|Brave Bird|Chatter|Drill Peck|Fly|Gust|Hurricane|Mirror Move|Peck|Pluck|Sky Attack|Wing Attack',
   psychic: 'Agility|Amnesia|Barrier|Calm Mind|Confusion|Cosmic Power|Dream Eater|Extrasensory|Future Sight|Heal Pulse|Heart Stamp|Hypnosis|Imprison|Kinesis|Light Screen|Meditate|Miracle Eye|Mirror Coat|Psybeam|Psychic|Psycho Cut|Psyshock|Psywave|Reflect|Rest|Teleport|Zen Headbutt',
   bug: 'Attack Order|Bug Bite|Bug Buzz|Defend Order|Fury Cutter|Leech Life|Megahorn|Pin Missile|Quiver Dance|Silver Wind|Steamroller|String Shot|Struggle Bug|Tail Glow|Twineedle|X-Scissor',
-  rock: 'Ancient Power|Head Smash|Power Gem|Rock Blast|Rock Polish|Rock Slide|Rock Throw|Rock Tomb|Rock Wrecker|Rollout|Sandstorm|Stone Edge',
+  rock: 'Ancient Power|Head Smash|Power Gem|Rock Blast|Rock Polish|Rock Slide|Rock Throw|Rock Tomb|Rock Wrecker|Rollout|Sandstorm|Stone Edge|Wide Guard',
   ghost: 'Astonish|Confuse Ray|Curse|Grudge|Hex|Lick|Night Shade|Ominous Wind|Shadow Ball|Shadow Claw|Shadow Punch|Shadow Sneak|Spite',
   dragon: 'Dragon Breath|Dragon Claw|Dragon Dance|Dragon Pulse|Dragon Rage|Dragon Rush|Dragon Tail|Outrage|Twister',
   dark: 'Bite|Crunch|Dark Pulse|Faint Attack|Fake Tears|Feint Attack|Foul Play|Hone Claws|Knock Off|Nasty Plot|Night Daze|Night Slash|Pursuit|Snatch|Sucker Punch|Thief|Torment',

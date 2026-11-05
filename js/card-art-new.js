@@ -195,4 +195,33 @@ export const NEW = {
     <path d="M30 6A18 18 0 1 0 42 34A14 14 0 1 1 30 6Z" fill="url(#$m)" ${line(2.4)}/>
     ${sparkle(36, 12, 3.2, '#e0c0ff')}${sparkle(40, 22, 2.2, '#e0c0ff')}
     <path d="M14 28h6M17 25v6" stroke="#ff7ab8" stroke-width="2.4" stroke-linecap="round"/>`,
+
+  /* ---------- the double battles' hit-both cards (2026-11-05, branch-only): each splits to two marks ---------- */
+  acid: `<defs>${radial('a', [[0, '#f4ffb0'], [0.5, '#9ae040'], [1, '#4a8a20']], '42%', '38%', '70%')}</defs>
+    <path d="M24 6C30 15 35 20 35 27C35 33 30 37 24 37C18 37 13 33 13 27C13 20 18 15 24 6Z" fill="url(#$a)" ${line(2.6)}/>
+    <path d="M18.5 25c0-3 1.4-5.4 3.2-7.2" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8"/>
+    ${drop(8, 40, 4.2, 150).replace('#7cc8ff', '#9ae040')}${drop(40, 40, 4.2, 30).replace('#7cc8ff', '#9ae040')}
+    <path d="M13 36L9 38M35 36L39 38" ${line(1.8)}/>
+    <circle cx="27" cy="24" r="2" fill="#c8f070"/><circle cx="22" cy="30" r="1.4" fill="#c8f070"/>`,
+
+  'max-flare': `<defs>${hot}${radial('r', [[0, '#ff9a9a'], [0.6, '#e02a4a'], [1, '#7a0a2a']])}</defs>
+    <ellipse cx="24" cy="40" rx="20" ry="5.5" fill="url(#$r)" ${line(2.2)}/>
+    ${blaze(13, 8, 40, 13, 2.4, -14)}${blaze(35, 8, 40, 13, 2.4, 14)}
+    <path d="${flame(24, 3, 38, 12)}" fill="url(#$h)" ${line(2.4)}/>
+    <path d="${flame(24.2, 20, 36, 5)}" fill="#fff6c0"/>`,
+
+  'max-overgrowth': `<defs>${radial('r', [[0, '#ff9a9a'], [0.6, '#e02a4a'], [1, '#7a0a2a']])}</defs>
+    <ellipse cx="24" cy="40" rx="20" ry="5.5" fill="url(#$r)" ${line(2.2)}/>
+    ${leaf(13, 40, 30, -112, '#5ac83a', 0.36)}
+    ${leaf(35, 40, 30, -68, '#5ac83a', 0.36)}
+    ${leaf(24, 40, 22, -90, '#8ae05a', 0.4)}
+    <circle cx="9" cy="12" r="2.2" fill="#c8a040" ${line(1.2)}/><circle cx="39" cy="12" r="2.2" fill="#c8a040" ${line(1.2)}/>`,
+
+  'max-geyser': `<defs>${sea}${radial('r', [[0, '#ff9a9a'], [0.6, '#e02a4a'], [1, '#7a0a2a']])}</defs>
+    <ellipse cx="24" cy="40" rx="20" ry="5.5" fill="url(#$r)" ${line(2.2)}/>
+    <path d="M9 40C9 28 10 18 13 10C16 18 17 28 17 40Z" fill="url(#$w)" ${line(2.2)}/>
+    <path d="M31 40C31 28 32 18 35 10C38 18 39 28 39 40Z" fill="url(#$w)" ${line(2.2)}/>
+    <circle cx="13" cy="7" r="3" fill="#bfeaff" ${line(1.6)}/><circle cx="35" cy="7" r="3" fill="#bfeaff" ${line(1.6)}/>
+    <path d="M12 34V20M34 34V20" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="24" cy="18" r="1.8" fill="#9ae0ff" ${line(1.1)}/><circle cx="22" cy="26" r="1.3" fill="#9ae0ff" ${line(1)}/>`,
 };

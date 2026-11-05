@@ -31,7 +31,7 @@ import { smoothIcon } from './smooth-icons.js';
 import { typeText } from './type-badge.js';
 
 const ROLE_LABEL = { wild: 'Wild', elite: 'Alpha', boss: 'Boss' };
-const MOVE_KIND = { attack: ['⚔️', 'Attack'], drain: ['🩸', 'Drain'], defend: ['🛡️', 'Block'], buff: ['💪', 'Buff'], status: ['🗂️', 'Status'] };
+const MOVE_KIND = { attack: ['⚔️', 'Attack'], drain: ['🩸', 'Drain'], defend: ['🛡️', 'Block'], buff: ['💪', 'Buff'], status: ['🗂️', 'Status'], call: ['📣', 'Call for Help'] };
 
 let page = 0;
 
@@ -318,9 +318,10 @@ function moveNumbers(m, extra) {
   const parts = {
     attack: () => [dmg],
     drain: () => [dmg, `heal ${m.heal}`],
-    defend: () => [`+${m.amount} block`],
-    buff: () => [`+${m.amount} strength`],
+    defend: () => [`+${m.amount} block${m.team ? ' to each' : ''}`],
+    buff: () => [`+${m.amount} strength${m.team ? ' to each' : ''}`],
     status: () => [],
+    call: () => [`brings in a ${ENEMY_DEFS[m.calls]?.name ?? m.calls}, else ${m.instead.name} (${moveNumbers(m.instead, extra)})`],
   }[m.kind]?.() ?? [];
   if (junk) parts.push(`+${junk}`);
   return parts.join(', ');
@@ -542,7 +543,7 @@ function fillEntry(dir) {
       typed('muted', `Research: defeated ${defeats(id)}/${goalOf(id)}. At ${goalOf(id)} this entry reveals its type, moves and weakness.`));
   } else {
     const def = role === 'elite' ? eliteOf(base) : base;
-    const foe = buildEncounter(BIOMES_BY_ID[p.biome], role === 'wild' ? 'fight' : role, modsFor(0), id);
+    const foe = buildEncounter(BIOMES_BY_ID[p.biome], role === 'wild' ? 'fight' : role, modsFor(0), id, { solo: true });
     const weak = role === 'wild' && TYPES[base.type].losesTo;
     const facts = el('div', 'pdx-lcd pdx-facts');
     facts.append(
@@ -551,6 +552,7 @@ function fillEntry(dir) {
       el('small', '', p === DEPTHS_PAGE ? 'Numbers in the Depths' : 'Numbers at Level 0, before types'));
     lines.push(typed('', base.description), facts, moveList(def.order === 'random' ? 'Moves, picked at random (never one three turns running)' : def.opens != null ? `Moves, in order, opening with ${def.moves[def.opens].name}` : 'Moves, in order', def.moves, foe?.strength ?? 0));
     if (def.atHalf) lines.push(moveList('Once, at half HP', [def.atHalf], foe?.strength ?? 0));
+    if (role === 'wild' && def.pack) lines.push(el('div', 'pdx-lcd pdx-text', `Never alone: met in a pair with a ${def.pack.mates.map(m => ENEMY_DEFS[m].name).join(' and a ')}, each a little smaller.`));
     if (def.phase2) lines.push(moveList(`Then it rises as ${def.phase2.name}`, def.phase2.moves, foe?.strength ?? 0));
     lines.push(el('div', 'pdx-lcd pdx-text gold', `★ Research complete (defeated ${defeats(id)})`));
   }

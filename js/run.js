@@ -25,7 +25,7 @@ import { toldHeld, tellHeld } from './held-tips.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
 import { battleFx, calmFx } from './prefs.js';
-import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
+import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN, onePack } from './data/enemies.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
@@ -372,6 +372,15 @@ function checkpoint() {
  * that way). The rooms already credited this run are written into the saved run straight away; a replay of one still
  * plays and pays its run rewards once, but the Pokédex doesn't count it twice. False if this room was already credited.
  */
+/** A fight's Pokémon, each once: its own and a pair's other (a Call for Help's are the caller's own kind). */
+const foeIds = (node, encounter) => [...new Set([node.enemyId, ...(encounter.mates ?? []).map(m => m.id)].filter(Boolean))];
+/** The Pokédex's defeats for a won fight: a double battle counts each of its Pokémon. */
+function dexDefeatedAll(node, result) {
+  const ids = [...new Set([node.enemyId, ...(result.foes ?? [])].filter(Boolean))];
+  const all = ids.map(id => dexDefeated(id));
+  return { lines: all.flatMap(r => r.lines), complete: all.some(r => r.complete), research: all.find(r => r.research)?.research ?? null, safari: all.find(r => r.safari)?.safari ?? null };
+}
+
 function creditRoom(node) {
   const key = `${run.biome}:${node.id}`;
   run.credited ??= [];
@@ -1935,17 +1944,22 @@ async function fight(node, { talked = false } = {}) {
   const intro = isTower() && node.type === 'boss' ? await guardianIntro({ def: ENEMY_DEFS[node.enemyId], floor: floorOf(run.tower.flight, node.floor) }) : null;
   const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : gymLeader(node) ? 'gym-leader-battle' : undefined);
   intro?.();
-  const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId);
-  if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));
-  if (isTower() && augs().enemyHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().enemyHp));   // Sudden Death
-  if (node.foeHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * node.foeHp));   // an event's foe, smaller than its usual self (the Snorlax)
-  if (node.mate) {   // a double battle's second (only ?arena=double so far, a playtest): another of the biome's; &hp= shrinks both
-    let mate = buildEncounter(mainBiome(), node.type, run.mods, node.mate.id ?? undefined);
-    for (let i = 0; i < 8 && !node.mate.id && mate.def === encounter.def; i++) mate = buildEncounter(mainBiome(), node.type, run.mods);
+  // a pack Pokémon's room is a double battle (its `pack`, js/data/enemies.js); the Safari pairs only one species, so
+  // the one left to catch is the one its room was for, and a playtest's ?arena=double picks its own pair
+  const solo = !!node.mate || (isSafari() && !onePack(node.enemyId));
+  const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId, { solo });
+  if (node.mate) {   // a double battle's second (?arena=double, a playtest): another of the biome's; &hp= shrinks both
+    let mate = buildEncounter(mainBiome(), node.type, run.mods, node.mate.id ?? undefined, { solo: true });
+    for (let i = 0; i < 8 && !node.mate.id && mate.def === encounter.def; i++) mate = buildEncounter(mainBiome(), node.type, run.mods, undefined, { solo: true });
     encounter.mates = [mate];
     for (const e of [encounter, mate]) e.maxHp = Math.max(1, Math.round(e.maxHp * node.mate.hp));
   }
-  if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
+  const foes = [encounter, ...(encounter.mates ?? []), ...Object.values(encounter.reserve ?? {})];
+  const shrink = (n) => { for (const e of foes) e.maxHp = Math.max(1, Math.round(e.maxHp * n)); };
+  if (isTower() && node.type === 'boss' && augs().guardianHp) shrink(augs().guardianHp);
+  if (isTower() && augs().enemyHp) shrink(augs().enemyHp);   // Sudden Death
+  if (node.foeHp) shrink(node.foeHp);   // an event's foe, smaller than its usual self (the Snorlax)
+  if (!ken && !isSafari() && !isTower() && !peeking) for (const id of foeIds(node, encounter)) dexSeen(id);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   encounter.dexMark = !ken && !isSafari() && !isTower() ? dexMark(node.enemyId) : null;
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
@@ -2722,7 +2736,7 @@ function afterFight(node, result) {
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
   const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari() || isTower();   // the Sky Pillar would farm it too
   const recounted = node.type === 'boss' && run.gymWon?.counted;   // back from Continue in the gym: its Pokédex research is already counted
-  const { lines: dexNews, complete: dexComplete, research, safari: safariStep } = creditRoom(node) && !sprint && !peeking && !recounted ? dexDefeated(node.enemyId) : { lines: [], complete: false };
+  const { lines: dexNews, complete: dexComplete, research, safari: safariStep } = creditRoom(node) && !sprint && !peeking && !recounted ? dexDefeatedAll(node, result) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
   // The final boss leaves it to endRun(), whose result window lists every unlock.

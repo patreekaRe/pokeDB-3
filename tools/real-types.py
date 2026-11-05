@@ -32,7 +32,7 @@ def table(name):
 
 def roster():
     js = ("import { SAFARI_ROSTER } from './js/data/safari.js'; import { ENEMY_DEFS } from './js/data/enemies.js';"
-          "console.log(JSON.stringify(SAFARI_ROSTER.map(id => [id, ENEMY_DEFS[id].moves.map(m => m.name)])));")
+          "console.log(JSON.stringify(SAFARI_ROSTER.map(id => [id, ENEMY_DEFS[id].moves.map(m => (m.kind === 'call' ? m.instead : m).name)])));")
     out = subprocess.run(['node', '--input-type=module', '-e', js], cwd=ROOT, capture_output=True, text=True, check=True)
     return json.loads(out.stdout)
 

@@ -46,7 +46,7 @@ test('every Safari Pokémon has its real types and every move it uses a real typ
     assert.ok(known.has(id), `${id} is in real-types-table.js (run tools/real-types.py)`);
     const def = ENEMY_DEFS[id];
     for (const t of speciesTypes(def)) assert.ok(REAL_TYPES[t], `${id}: ${t}`);
-    for (const m of def.moves) assert.ok(moves.has(m.name), `${id}'s ${m.name} has a type (run tools/real-types.py)`);
+    for (const m of def.moves.map(m => (m.kind === 'call' ? m.instead : m))) assert.ok(moves.has(m.name), `${id}'s ${m.name} has a type (run tools/real-types.py)`);   // a Call for Help hits nothing: what it uses instead does
   }
   assert.deepEqual(speciesTypes(ENEMY_DEFS.oddish), ['grass', 'poison']);
   assert.equal(moveType({ name: 'Bite' }, ENEMY_DEFS.growlithe), 'dark');

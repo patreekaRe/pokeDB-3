@@ -2,7 +2,9 @@
    viewports. Checks the two-enemy layout (two plates, two boxes clear of each other and of your side, compact move
    bubbles, a 3D pad each), a tap on an enemy aiming at it (the other dims), aiming with a card raised (it stays up), the
    lethal warning counting both attacks, the target falling while the other stands (it faints, the aim moves on, the
-   fight goes on) and the win:
+   fight goes on) and the win. Phase 3 (2026-11-05): a pack Pokémon's room is a pair (Houndour's), its Howl powers up
+   both, Sentret's Call for Help brings one in (a third pad, it waits a turn), Acid hits both, Hail and Rocky Helmet
+   with two, and no ball while two stand:
      NODE_PATH=$(npm root -g) node tools/double-probe.mjs
    Prints what it checks and exits 1 on a failed check or a console error. */
 import { serve, launch, phone, threeCopy } from './probe-kit.mjs';
@@ -16,6 +18,9 @@ window.__raised = () => selectedUid;
 window.__play = async (uid) => { const b = battle; b.busy = false; await playCard(uid); for (let i = 0; i < 80 && b.busy && !b.over; i++) await sleep(100); };
 window.__end = async () => { const b = battle; b.busy = false; await endTurn(); for (let i = 0; i < 200 && (b.busy || b.enemyActing) && !b.over; i++) await sleep(100); };
 window.__attack = () => battle.hand.find(h => isAttack(h.card) && !whyNotPlayable(h.card) && costOf(h.card) <= battle.energy);
+window.__cast = async (id) => { const b = battle; b.busy = true; await resolveCard(CARDS_BY_ID[id], 0); b.busy = false; renderAll(); };
+window.__whyNotThrow = () => whyNotThrow();
+window.__intent = (i) => withFoe(i, () => currentMove());
 `
   : path === '/js/arena-3d.js' ? body.toString() + '\nwindow.__pads = () => A?.pads?.length ?? 0;\n'
   : body;
@@ -105,10 +110,88 @@ for (const [w, h] of [[402, 874], [390, 664]]) {
   await ctx.close();
 }
 
+// phase 3: the pack, the caller, a hit-both card, the weather, Rocky Helmet and the ball, on one phone
+const start = async (page, url) => {
+  await page.goto(url);
+  for (let i = 0; i < 60 && await page.evaluate(() => !window.__battle?.() || window.__battle().busy !== false); i++) {
+    await page.waitForTimeout(500);
+    await page.mouse.click(200, 400).catch(() => {});
+  }
+  await page.waitForTimeout(600);
+};
+{
+  const { ctx, page, errors } = await phone(browser, three);
+  console.log('-- phase 3: a Houndour pack');
+  await start(page, `http://localhost:${port}/index.html?arena=wild&foe=houndour&starter=squirtle&relics=rocky-helmet`);
+  let s = await page.evaluate(() => { const b = window.__battle(); return { names: b.enemies.map(en => en.def.name), hp: b.enemies.map(en => en.maxHp), mult: b.enemies.map(en => en.dmgMult), duo: document.getElementById('arena').classList.contains('duo'), pads: window.__pads() }; });
+  check(s.names.join() === 'Houndour,Houndour' && s.duo && s.pads === 3, `a pack Pokémon's room is a pair: ${s.names} (HP ${s.hp}, damage ×${s.mult})`);
+  // Howl: both gain its strength; Hail: both lose its chip; Rocky Helmet: each attacker takes 3
+  s = await page.evaluate(async () => {
+    const b = window.__battle(), howl = b.enemies[0].def.moves.findIndex(m => m.name === 'Howl');
+    b.enemies[0].moveIndex = howl;
+    b.enemies[1].moveIndex = b.enemies[1].def.moves.findIndex(m => m.kind === 'attack');
+    b.weather = { kind: 'hail', turns: 3 };
+    b.block = 0;
+    const before = b.enemies.map(en => ({ hp: en.hp, str: en.strength }));
+    const bubble = document.getElementById('enemy-intent').title;
+    await window.__end();
+    return { bubble, after: b.enemies.map((en, i) => ({ dHp: before[i].hp - en.hp, dStr: en.strength - before[i].str })), log: document.getElementById('battle-log-live').textContent };
+  });
+  check(/to each of them/.test(s.bubble), `Howl's bubble says both ("${s.bubble}")`);
+  check(s.after.every(a => a.dStr >= 2), `Howl powers up both (strength +${s.after.map(a => a.dStr)})`);
+  check(s.after[0].dHp === 3 && s.after[1].dHp === 6, `Hail chips both (3 each), Rocky Helmet only the one that attacked (-${s.after.map(a => a.dHp)})`);
+  // Acid hits both, the Vulnerable on both
+  s = await page.evaluate(async () => {
+    const b = window.__battle(), was = b.enemies.map(en => en.hp + en.block);
+    await window.__cast('acid');
+    return { lost: b.enemies.map((en, i) => was[i] - en.hp - en.block), vuln: b.enemies.map(en => en.vulnerable) };
+  });
+  check(s.lost.every(n => n > 0) && s.vuln.every(n => n === 1), `Acid hits both (-${s.lost}) and both are Vulnerable`);
+  // no ball while two stand; one left, the reason goes
+  s = await page.evaluate(() => { const b = window.__battle(); b.catchable = true; b.energy = 9; const two = window.__whyNotThrow(); b.enemies[0].hp = 0; window.__render(); const one = window.__whyNotThrow(); b.catchable = false; return { two, one }; });
+  check(/knock one out/.test(s.two ?? '') && !/knock one out/.test(s.one ?? ''), `no ball while two stand ("${s.two}"), one left it may fly`);
+  check(!errors.length, `no console errors${errors.length ? `: ${errors.join(' | ')}` : ''}`);
+  await ctx.close();
+}
+{
+  const { ctx, page, errors } = await phone(browser, three);
+  console.log('-- phase 3: Sentret calls for help');
+  await start(page, `http://localhost:${port}/index.html?arena=wild&foe=sentret&starter=charmander`);
+  let s = await page.evaluate(async () => {
+    const b = window.__battle(), call = b.enemies[0].def.moves.findIndex(m => m.kind === 'call');
+    b.enemies[0].moveIndex = call;
+    window.__render();
+    const bubble = document.getElementById('enemy-intent').title;
+    b.block = 999;
+    await window.__end();
+    return { bubble, n: b.enemies.length, names: b.enemies.map(en => en.def.name), hp: b.enemies.map(en => `${en.hp}/${en.maxHp}`), duo: document.getElementById('arena').classList.contains('duo'), pads: window.__pads(), zone: document.getElementById('enemy2-zone')?.className, log: document.getElementById('battle-log-live').textContent };
+  });
+  check(/calls for help/.test(s.bubble), `its bubble says it will call ("${s.bubble}")`);
+  check(s.n === 2 && s.duo && s.pads === 3 && /revealed/.test(s.zone), `the call brings one in: ${s.names} (${s.hp}), a third pad, it slid in ("${s.log}")`);
+  s = await page.evaluate(() => ({ first: window.__intent(0).name, second: window.__intent(1).name }));
+  check(s.first !== 'Call for Help' && s.second !== 'Call for Help', `with two out, no one calls (${s.first} / ${s.second})`);
+  // the caller falls: the helper may call again (CALLS = 2 a fight), into the fallen one's place
+  s = await page.evaluate(async () => {
+    const b = window.__battle();
+    b.enemies[0].hp = 1; b.enemies[0].block = 0;
+    await window.__play(window.__attack().uid);
+    b.target = 1;
+    b.enemies[1].moveIndex = b.enemies[1].def.moves.findIndex(m => m.kind === 'call');
+    b.block = 999;
+    await window.__end();
+    return { n: b.enemies.length, standing: b.enemies.filter(en => en.hp > 0).length, called: b.called, plate: getComputedStyle(document.getElementById('enemy-plate')).display, over: b.over };
+  });
+  check(!s.over && s.n === 2 && s.standing === 2 && s.called === 2 && s.plate !== 'none', `the caller fell and the other called one into its place (${s.called} calls, its plate back)`);
+  s = await page.evaluate(() => { const b = window.__battle(); b.enemies[1].hp = 0; window.__render(); b.enemies[0].moveIndex = b.enemies[0].def.moves.findIndex(m => m.kind === 'call'); return window.__intent(0).name; });
+  check(s !== 'Call for Help', `two calls a fight: the third is ${s} instead`);
+  check(!errors.length, `no console errors${errors.length ? `: ${errors.join(' | ')}` : ''}`);
+  await ctx.close();
+}
+
 // a single fight afterwards has no second plate and no .duo
 {
   const { ctx, page, errors } = await phone(browser, three);
-  await page.goto(`http://localhost:${port}/index.html?arena=wild`);
+  await page.goto(`http://localhost:${port}/index.html?arena=wild&foe=rattata`);
   for (let i = 0; i < 60 && await page.evaluate(() => !window.__battle?.() || window.__battle().busy !== false); i++) {
     await page.waitForTimeout(500);
     await page.mouse.click(200, 400).catch(() => {});

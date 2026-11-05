@@ -38,7 +38,7 @@ import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { $ as byId, el, makeCard, forgetCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { smoothIcon } from './smooth-icons.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
-import { biomeAt, TRAITS, enemyMove, firstMove, moveOn, moveAfter, hitCount } from './data/enemies.js';
+import { biomeAt, TRAITS, enemyMove, firstMove, moveOn, moveAfter, hitCount, callRoom } from './data/enemies.js';
 import { REAL_TYPES, realMultiplier, speciesTypes, moveType } from './data/real-types.js';
 import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
@@ -355,6 +355,9 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     // one in focus, the one acting on the enemies' turn, else the one your cards are aimed at
     // a double battle's second (encounter.mates: so far only ?arena=double, a playtest) stands beside the first
     enemies: [encounter, ...(encounter.mates ?? []).slice(0, 1)].map(en => makeFoe(en.def, en, run, aug, trial)),
+    reserve: encounter.reserve ?? {},   // who a Call for Help brings in, by id (callIn())
+    called: 0,                          // Pokémon called in this fight (CALLS at most)
+    foeOf: (enc) => makeFoe(enc.def, enc, run, aug, trial),
     target: 0,         // the enemy your cards hit: tap another to aim (aim()); it moves on when its enemy falls (fallen())
     acting: null,      // the enemy taking its turn, while it does
     view: null,        // the enemy being drawn (withFoe())
@@ -406,6 +409,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, held = 
     moves (enemyMove() / moveOn() in js/data/enemies.js), from the encounter and the relics and augments that mark it. */
 function makeFoe(def, encounter, run, aug, trial) {
   return {
+    id: encounter.id ?? null,            // its ENEMY_DEFS id (a double battle's Pokédex credits each)
     def,
     hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
     phased: false,                       // a boss already risen in its second form
@@ -433,6 +437,44 @@ function makeFoe(def, encounter, run, aug, trial) {
     dexMark: encounter.dexMark ?? null,   // already in the Pokédex: 'caught' or 'researched' (dexMark() in js/run.js)
     down: false,                    // fainted while another enemy still stands (fallen())
   };
+}
+
+/** How many enemies still stand. */
+const standingFoes = (b) => b.enemies.filter(en => en.hp > 0).length;
+/** Who a buff or defend lands on: the one using it, or with `team` every enemy standing (it first). */
+const teamOf = (b, move) => (move.team ? [b.acting ?? b.target, ...b.enemies.map((_, i) => i).filter(i => i !== (b.acting ?? b.target) && b.enemies[i].hp > 0)] : [b.acting ?? b.target]);
+
+/** Call for Help: the Pokémon it calls (`b.reserve`, built with the fight) joins, beside the caller or in a fallen one's
+    place, slides in and cries. False if the fight was left meanwhile. */
+async function callIn(b, move) {
+  const caller = b.enemy, enc = b.reserve[move.calls];
+  if (!enc) return true;
+  b.called += 1;
+  const foe = b.foeOf(enc);
+  let i = b.enemies.findIndex(en => en !== caller && en.hp <= 0);
+  if (i < 0) { i = b.enemies.length; b.enemies.push(foe); layFoes(b); }
+  else b.enemies[i] = foe;
+  pop('enemy-zone', '📣 Call for Help!', 'note bad');
+  log(`${caller.def.name} called for help!`);
+  const zone = withFoe(i, () => {
+    setupEnemy();
+    const z = $('enemy-zone');
+    z.classList.remove('entering', 'revealed');
+    void z.offsetWidth;
+    if (battleFx()) z.classList.add('entering');
+    return z;
+  });
+  arenaMod?.joinArena?.();
+  renderAll();
+  if (battleFx()) await pause(800);
+  if (battle !== b) return false;
+  zone.classList.remove('entering');
+  zone.classList.add('revealed');
+  log(`${b.kind === 'fight' ? 'A wild ' : ''}${foe.def.name} came to help ${caller.def.name}!`);
+  await Promise.race([playCry(foe.def.spriteId ?? ''), sleep(CRY_WAIT_MAX)]);
+  renderAll();
+  await pause(300);
+  return battle === b;
 }
 
 /** Every enemy is down: the fight is won. */
@@ -1583,43 +1625,52 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     e.block = 0;
   }
 
-  // --- damage ---
-  const { hits, multiplier } = damageFor(card, e);
+  // --- damage --- (`all`: on every enemy standing, the one aimed at first, each its own numbers: Vulnerable, Frostbite)
+  const struck = e.all ? [b.target, ...b.enemies.map((_, i) => i).filter(i => i !== b.target && b.enemies[i].hp > 0)] : [b.target];
+  const each = struck.map(j => { b.view = j; try { return damageFor(card, e); } finally { b.view = null; } });
+  const { hits, multiplier } = each[0];
   if (hits.length) b.fightAttacks += 1;
   if (hits.length) {
     if (!b.powers.focusKeep) b.focus = 0;         // focus is used up by the attack (not under Psychic Terrain)
     let through = 0;
-    for (const [i, amount] of hits.entries()) {
-      lunge('player-sprite');
-      await pause(180);
-      if (battle !== b) return false;
-      const dealt = hurtEnemy(amount);
-      through += dealt;
-      if (dealt > 0 && b.powers.attackSeed) applyDebuff('seed', b.powers.attackSeed);
-      if (dealt > 0 && b.powers.attackStatic) applyStatic(b.powers.attackStatic);
-      hitSound(dealt, multiplier);
-      hitEffect('enemy-portrait-box');
-      bigHit(dealt, b.enemy.maxHp, 'enemy-img');
-      strikeFx(card, i === 0 && !echo, dealt);
-      pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? (multiplier > 1 ? 'dmg super' : 'dmg') : 'note');
-      if (b.enemy.hp <= 0) { await finishingBlow(dealt); break; }
-      if (i < hits.length - 1) { renderBars(); await pause(200); }
-    }
-    if (b.aug.hydra && b.enemy.hp > 0) {   // Hydra: every hit again, at a share of its damage
-      await pause(160);
-      if (battle !== b) return false;
-      for (const amount of hits) {
-        const dealt = hurtEnemy(Math.floor(amount * b.aug.hydra));
+    for (const [n, j] of struck.entries()) {
+      if (b.enemies[j].hp <= 0) continue;
+      b.view = n ? j : null;   // the one aimed at stays in focus as before; the others are drawn as they're hit
+      const { hits, multiplier } = each[n];
+      for (const [i, amount] of hits.entries()) {
+        lunge('player-sprite');
+        await pause(180);
+        if (battle !== b) return false;
+        const dealt = hurtEnemy(amount);
         through += dealt;
+        if (dealt > 0 && b.powers.attackSeed) applyDebuff('seed', b.powers.attackSeed);
+        if (dealt > 0 && b.powers.attackStatic) applyStatic(b.powers.attackStatic);
+        hitSound(dealt, multiplier);
         hitEffect('enemy-portrait-box');
-        pop('enemy-zone', dealt > 0 ? `-${dealt} 🐉` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
+        bigHit(dealt, b.enemy.maxHp, 'enemy-img');
+        strikeFx(card, i === 0 && !echo, dealt);
+        pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? (multiplier > 1 ? 'dmg super' : 'dmg') : 'note');
         if (b.enemy.hp <= 0) { await finishingBlow(dealt); break; }
+        if (i < hits.length - 1) { renderBars(); await pause(200); }
       }
+      if (b.aug.hydra && b.enemy.hp > 0) {   // Hydra: every hit again, at a share of its damage
+        await pause(160);
+        if (battle !== b) return false;
+        for (const amount of hits) {
+          const dealt = hurtEnemy(Math.floor(amount * b.aug.hydra));
+          through += dealt;
+          hitEffect('enemy-portrait-box');
+          pop('enemy-zone', dealt > 0 ? `-${dealt} 🐉` : 'Blocked', dealt > 0 ? 'dmg' : 'note');
+          if (b.enemy.hp <= 0) { await finishingBlow(dealt); break; }
+        }
+      }
+      if (multiplier > 1) pop('enemy-zone', 'Super effective!', 'note good', 260);
+      if (multiplier < 1) pop('enemy-zone', 'Not very effective…', 'note bad', 260);
+      if (n) { b.view = null; if (battle !== b) return false; }
     }
-    if (multiplier > 1) pop('enemy-zone', 'Super effective!', 'note good', 260);
-    if (multiplier < 1) pop('enemy-zone', 'Not very effective…', 'note bad', 260);
+    b.view = null;
     const total = hits.length > 1 ? `${hits.join(' + ')} damage` : `${hits[0]} damage`;
-    log(`${who} used ${card.name}! ${total}${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}.`);
+    log(`${who} used ${card.name}! ${total}${multiplier > 1 ? ' (super effective!)' : multiplier < 1 ? ' (not very effective)' : ''}${struck.length > 1 ? ` to ${b.def.name}, ${each.slice(1).map(x => x.hits.reduce((a, c) => a + c, 0)).join(' and ')} to the other` : ''}.`);
     b.firstAttack = false;
     if (fired('shell-bell')) healPlayer(1);
     if (b.aug.attackHeal && healPlayer(b.aug.attackHeal)) playSound('heal-hp');
@@ -1642,8 +1693,9 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     log(card.status ? `${card.name} was cleared away.` : `${who} used ${card.name}.`);
   }
 
-  // --- everything else a card can do ---
+  // --- everything else a card can do --- (an `all` card's marks on the enemy land on each one it hit)
   applyEffects(e);
+  for (const j of struck.slice(1)) if (b.enemies[j].hp > 0) { b.view = j; try { applyEffects(onFoe(e)); } finally { b.view = null; } }
   if (e.switch) b.switchAfter = true;   // once the card has gone to its pile (playCard()), so it lands in its own
   if (e.perDiscarded && e.discardedNow) applyEffects(timesEach(e.perDiscarded, e.discardedNow));
   if (e.combo && b.played - 1 >= e.combo.at) {
@@ -1748,6 +1800,11 @@ function enemyTrait(card) {
     pop('enemy-zone', `${TRAITS.stamina.icon} +${t.amount} 🛡️`, 'block', 150);
   }
 }
+
+/** What a card does to the enemy itself (Burn, Weak, Vulnerable, Leech Seed, Static, Frostbite, Fault, Sap): an `all`
+    card's land on every enemy it hit, the rest of it once. */
+const FOE_MARKS = ['burn', 'burnTimes', 'weaken', 'vulnerable', 'seed', 'static', 'frostbite', 'fault', 'sap'];
+const onFoe = (e) => Object.fromEntries(FOE_MARKS.filter(k => e[k]).map(k => [k, e[k]]));
 
 /** Block, Weak, draw... everything a card does besides its damage. Also used for a card's combo and for
     `onExhaust` / `onDiscard`. Damp Rock adds to every card's block. */
@@ -2248,6 +2305,7 @@ async function recallCard() {
 /* ---------- catching: the Safari Zone's Throw Ball (js/data/balls.js, docs/reference/safari.md) ---------- */
 
 /** A Safari wild fight: the Throw Ball button shows all fight (the odds are low at high HP, catchChance()). */
+/** A Safari wild can be caught (in a double battle only once one is left: whyNotThrow()). */
 const canCatch = () => battle.catchable && !battle.over && battle.enemy.hp > 0;
 
 
@@ -2255,6 +2313,7 @@ const canCatch = () => battle.catchable && !battle.over && battle.enemy.hp > 0;
 function whyNotThrow() {
   const b = battle;
   if (b.busy || b.over) return 'Wait for your turn.';
+  if (standingFoes(b) > 1) return 'Two are out: knock one out first, then throw at the one left.';
   if (b.enemy.away) return `${b.def.name} is ${AWAY[b.enemy.away].where}!`;
   if (b.energy < THROW_PP) return `A throw costs ${THROW_PP} PP.`;
   if (!ballsInBag(getSave().balls, ballWeek(), safariBallsLeft(getSave().safari)).length) return 'You\'re out of balls!';
@@ -2431,7 +2490,7 @@ async function caughtIt(ballId) {
   $('enemy-portrait-box').classList.add('defeated');
   stopAura();
   closeDialog('piles-dialog');
-  b.onEnd({ won: true, caught: true, shiny: b.shiny, ball: ballId, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
+  b.onEnd({ won: true, caught: true, foes: b.enemies.map(en => en.id).filter(Boolean), shiny: b.shiny, ball: ballId, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b) });
 }
 
 /** On its turn, before anything else: does the wild Pokémon run off? A rare spawn leaves after RARE.turns of your turns
@@ -2612,20 +2671,22 @@ async function endTurn() {
     if (!(kind === 'hail' && b.powers.hailKeep) && !(kind === 'sand' && b.powers.sandKeep)) b.weather.turns -= 1;   // Endless Winter, Endless Sands
     if (b.weather.turns <= 0) b.weather = null;
     const hail = kind === 'hail', chip = hail ? HAIL.chip : SAND.chip;
-    enemyLoses(chip);
-    hitEffect('enemy-portrait-box');
-    pop('enemy-zone', `-${chip} ${hail ? '🌨️' : '🏜️'}`, 'dmg');
-    log(`${b.def.name} is buffeted by the ${hail ? 'hail' : 'sandstorm'}! ${chip} damage.`);
+    // like the games' weather, it buffets every enemy standing; what it gives you (block, Icicles) comes once a turn
+    const hit = b.enemies.map((en, i) => i).filter(i => b.enemies[i].hp > 0);
+    for (const i of hit) withFoe(i, () => {
+      enemyLoses(chip);
+      hitEffect('enemy-portrait-box');
+      pop('enemy-zone', `-${chip} ${hail ? '🌨️' : '🏜️'}`, 'dmg');
+      if (hail && b.powers.hailFrost && b.enemy.hp > 0) applyFrost(b.powers.hailFrost, 200);
+      if (!hail && b.powers.sandFault && b.enemy.hp > 0) applyFault(b.powers.sandFault, 200);   // Desert Spirit
+      if (!hail && b.powers.sandWeak && b.enemy.hp > 0) applyDebuff('weaken', b.powers.sandWeak);   // Blinding Sand
+    });
+    log(`${hit.length > 1 ? 'Both are' : `${b.def.name} is`} buffeted by the ${hail ? 'hail' : 'sandstorm'}! ${chip} damage${hit.length > 1 ? ' each' : ''}.`);
     if (hail) {
-      if (b.powers.hailFrost && b.enemy.hp > 0) applyFrost(b.powers.hailFrost, 200);
       if (b.powers.hailChipBlock) gainBlock(b.powers.hailChipBlock);   // Polar Vortex
       if (fired('safety-goggles')) gainBlock(3);
       if (b.powers.hailIcicle) addCards({ id: 'icicle', n: b.powers.hailIcicle });   // Icefall
-    } else {
-      if (b.powers.sandFault && b.enemy.hp > 0) applyFault(b.powers.sandFault, 200);   // Desert Spirit
-      if (b.powers.sandChipBlock) gainBlock(b.powers.sandChipBlock);   // Sand Screen
-      if (b.powers.sandWeak && b.enemy.hp > 0) applyDebuff('weaken', b.powers.sandWeak);   // Blinding Sand
-    }
+    } else if (b.powers.sandChipBlock) gainBlock(b.powers.sandChipBlock);   // Sand Screen
     renderAll();
     await pause(450);
     if (battle !== b) return;
@@ -2707,12 +2768,13 @@ async function enemyTurn() {
   const b = battle;
   if (runsOff()) return runAway();
   b.enemyActing = true;
-  for (const [i, en] of b.enemies.entries()) {
+  for (const [i, en] of [...b.enemies.entries()]) {   // one called in this turn waits for the next
     if (en.hp <= 0) continue;
     b.acting = i;
     const goOn = await enemyActs(b);
     if (battle !== b || !goOn) return;   // the fight is over, or a second form rising ended the turn
     b.acting = null;
+    if (won(b)) return finish(true);     // its own Rocky Helmet or Mirror Coat knocked it out: it faints before the other acts
   }
   if (won(b)) return finish(true);       // knocked out by Rocky Helmet or Mirror Coat
   if (b.aug.enemyTwice && b.turn === 1 && !b.twice) {   // Speed Demon: on turn 1 it goes again
@@ -2897,17 +2959,24 @@ async function enemyActs(b) {
       pop('enemy-zone', `${how.icon} ${how.pop}`, 'note bad');
       playSound(how.sound);
       log(`${b.def.name} ${move.name === 'Bounce' ? 'sprang up high' : how.went}! Your attacks can't reach it.`);
+    } else if (move.kind === 'call') {
+      if (!await callIn(b, move)) return;
     } else if (move.kind === 'defend') {
-      en.block += move.amount;
-      pop('enemy-zone', `+${move.amount} 🛡️`, 'block');
-      statFx('enemy');
-      log(`${b.def.name} used ${move.name} and raised a shield.`);
+      // a `team` move (Wide Guard, Reflect) shields every enemy standing: a tank covering its partner
+      for (const i of teamOf(b, move)) withFoe(i, () => {
+        b.enemy.block += move.amount;
+        pop('enemy-zone', `+${move.amount} 🛡️`, 'block');
+        statFx('enemy');
+      });
+      log(`${b.def.name} used ${move.name} and raised a shield${move.team && standingFoes(b) > 1 ? ' over them both' : ''}.`);
     } else if (move.kind === 'buff') {
-      enemyStrength(move.amount);
-      pop('enemy-zone', `💪 +${move.amount}`, 'note bad');
+      for (const i of teamOf(b, move)) withFoe(i, () => {   // Howl: the whole pack's attacks hit harder
+        enemyStrength(move.amount);
+        pop('enemy-zone', `💪 +${move.amount}`, 'note bad');
+        statFx('enemy');
+      });
       playSound('stat-up');
-      statFx('enemy');
-      log(`${b.def.name} used ${move.name}! Its attacks hit harder.`);
+      log(`${b.def.name} used ${move.name}! ${move.team && standingFoes(b) > 1 ? 'Their' : 'Its'} attacks hit harder.`);
     }
     if (move.adds) {
       // junk for your deck (a `kind: 'status'` move does only this; an attack can do it too)
@@ -2948,7 +3017,7 @@ async function enemyActs(b) {
   return true;
 }
 
-const currentMove = () => enemyMove(battle.def, battle.enemy);
+const currentMove = () => enemyMove(battle.def, battle.enemy, callRoom(battle.enemies, battle.called));
 
 /** All a move's hits together, before your block: what Turnabout, Ruination and Copycat read off the intent. */
 const intentDamage = (move) => attackDamage(move) * hitCount(move);
@@ -3026,6 +3095,7 @@ async function finish(won) {
   const b = battle;
   const riser = won && b.enemies.find(en => en.def.phase2 && !en.phased);
   if (riser) return rebirth(riser);
+  if (won) b.acting = null;   // felled by its own Burn or Leech Seed as its turn began: the turn is over
   if (won && b.enemies.length > 1) b.view = Math.max(0, b.enemies.findIndex(en => !en.down));   // the last to fall
   b.busy = true;
   if (won) await finishingBlow(b.lastHit);   // felled by Burn, Leech Seed, a relic...: the beat comes now
@@ -3056,7 +3126,7 @@ async function finish(won) {
 
   stopAura();
   closeDialog('piles-dialog');
-  b.onEnd({ won, foe: b.def.name, move: won ? null : b.blow ?? null, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b), spent: b.spent, exhausted: [...new Set(b.recycled)], turns: b.turn, felledBy: b.felledBy });
+  b.onEnd({ won, foe: b.def.name, foes: b.enemies.map(en => en.id).filter(Boolean), move: won ? null : b.blow ?? null, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b), spent: b.spent, exhausted: [...new Set(b.recycled)], turns: b.turn, felledBy: b.felledBy });
 }
 
 /**
@@ -3779,7 +3849,10 @@ function intentOf(hit, lethal) {
     if (b.safari && !typeless()) detail = `${REAL_TYPES[moveType(move, b.def)].label} move: ${detail}`;   // the real chart: which type is coming
     if (b.enemy.away) detail = `${AWAY[b.enemy.away].where}, out of reach of your attacks: ${detail}`;
   } else if (move.kind === 'defend') {
-    icon = '🛡️'; kind = 'defend'; value = `+${move.amount}`; detail = `+${move.amount} block`;
+    const both = move.team && standingFoes(b) > 1;   // Wide Guard, Reflect: its partner's too
+    icon = '🛡️'; kind = 'defend'; value = `+${move.amount}${both ? '×2' : ''}`; detail = `+${move.amount} block${both ? ' to each of them' : ''}`;
+  } else if (move.kind === 'call') {
+    icon = '📣'; kind = 'buff'; value = '+1'; detail = `calls for help: a ${b.reserve[move.calls]?.def.name ?? 'Pokémon'} joins the fight`;
   } else if (move.kind === 'status') {
     icon = CARDS_BY_ID[move.adds.card].art; kind = 'status'; value = `+${move.adds.n || 1}`; detail = '';
   } else if (move.kind === 'charge') {
@@ -3790,7 +3863,8 @@ function intentOf(hit, lethal) {
     const hit = moveAfter(b.def, b.enemy);
     icon = AWAY[move.how].icon; kind = 'charge'; value = String(intentDamage(hit)); detail = `goes ${AWAY[move.how].where}, out of reach of your attacks: the turn after, ${hit.name} deals ${intentDamage(hit)} damage`;
   } else {
-    icon = '💪'; kind = 'buff'; value = `+${move.amount}`; detail = `+${move.amount} strength`;
+    const both = move.team && standingFoes(b) > 1;   // Howl: the whole pack's
+    icon = '💪'; kind = 'buff'; value = `+${move.amount}${both ? '×2' : ''}`; detail = `+${move.amount} strength${both ? ' to each of them' : ''}`;
   }
   if (paralyzing()) {   // Static is full: it loses this move
     icon = '⚡'; kind = 'paralyzed'; value = ''; detail = `Paralyzed: its Static is full, so it loses ${move.name}`;
@@ -3820,7 +3894,7 @@ function intentOf(hit, lethal) {
     const times = hits && hitCount(then) > 1 ? `×${hitCount(then)}` : '';
     if (!then) { box.append(el('span', 'intent-then', 'then ❔')); box.title += ', then a move it hasn\'t picked yet'; }
     else {
-      box.append(el('span', 'intent-then', `then ${hits ? `⚔️${attackDamage(then)}${times}` : { defend: '🛡️', buff: '💪', charge: '⚠️', away: AWAY[then.how]?.icon }[then.kind] ?? '❔'} ${then.name}`));
+      box.append(el('span', 'intent-then', `then ${hits ? `⚔️${attackDamage(then)}${times}` : { defend: '🛡️', buff: '💪', charge: '⚠️', away: AWAY[then.how]?.icon, call: '📣' }[then.kind] ?? '❔'} ${then.name}`));
       box.title += `, then ${then.name}${hits ? ` (${intentDamage(then)} damage)` : ''}`;
     }
   }

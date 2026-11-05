@@ -1733,6 +1733,20 @@ export function revealArena() {
   if (A) show(true);
 }
 
+/** A Pokémon called in mid-fight (a Call for Help, js/battle.js's callIn()) stands on a pad of its own: the second
+    enemy's, added to the arena built for one. */
+export function joinArena() {
+  const zone = document.getElementById('enemy2-zone');
+  if (!A || A.pads[2] || !zone || !current) return;
+  const at = padAt(cssPad(zone, '::after'), A.at.foe?.lift ?? 0);
+  if (!at) return;
+  const o = current, kit = A.clearing ? null : o.biome === 'tower' ? towerPad(o.tower.alt) : padKit(cssPad(zone, '::after'), o.biome);
+  B = A;
+  try { A.pads[2] = pad(at, kit); } finally { B = null; }
+  at.r0 = at.r;
+  A.at.foe2 = at;
+}
+
 /** Back to the pixel scene (the fight is over, or the next one isn't 3D). */
 export function unmountArena() {
   building++;

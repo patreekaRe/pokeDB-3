@@ -29,6 +29,14 @@
      order: 'random' on the enemy: each turn it picks a move by `weight` (1 by default), never the same one three
                     turns running; a charge or away move is still followed by the move after it.
 
+   Double battles (docs/roadmap.md's idea, phase 3, branch-only; buildEncounter() below, mirrored by the sim):
+     pack: { mates, hp, dmg }  on the enemy: a normal fight with it is a pair, it and `mates` (ids) side by side.
+                    `hp` scales each one's HP (a number for all, or one per Pokémon, it first); `dmg` scales their damage.
+                    In the Safari only a pair of one species comes as a pair (the one left is the one you catch).
+     team: true     on a buff or defend: every enemy standing gets it (Howl, Wide Guard, Reflect).
+     kind: 'call'   Call for Help: `calls` (an id) joins the fight at `hp` of its usual HP, if there's room (one enemy
+                    standing) and the fight has calls left (CALLS); else it uses its `instead` move.
+
    Numbers here are for the first biome. Later biomes multiply HP and
    add damage (see BIOMES at the bottom). Tweak them to balance the game!
    ============================================================ */
@@ -134,10 +142,10 @@ export const ENEMY_DEFS = {
   },
   sentret: {
     name: 'Sentret', type: 'normal', hp: 42, ...sprite('sentret'),
-    description: 'Stands on its tail to keep watch over the meadow.',
+    description: 'Stands on its tail to keep watch over the meadow, and calls the others the moment it spots you.',
     moves: [
       { kind: 'attack', name: 'Scratch',      amount: 6 },
-      { kind: 'defend', name: 'Defense Curl', amount: 6 },
+      { kind: 'call',   name: 'Call for Help', calls: 'sentret', hp: 0.5, instead: { kind: 'defend', name: 'Defense Curl', amount: 6 } },
       { kind: 'attack', name: 'Fury Swipes',  amount: 3, hits: 3 },
     ],
   },
@@ -164,9 +172,10 @@ export const ENEMY_DEFS = {
   houndour: {
     name: 'Houndour', type: 'fire', hp: 52, ...sprite('houndour'),
     description: 'Hunts the shrine grounds in packs, calling out to each other.',
+    pack: { mates: ['houndour'], hp: 0.6, dmg: 0.7 },
     moves: [
       { kind: 'attack', name: 'Bite',      amount: 7, type: 'normal' },
-      { kind: 'buff',   name: 'Howl',      amount: 1 },
+      { kind: 'buff',   name: 'Howl',      amount: 2, team: true },
       { kind: 'attack', name: 'Fire Fang', amount: 11 },
     ],
   },
@@ -279,7 +288,7 @@ export const ENEMY_DEFS = {
     description: 'Its tail fins glow in the drowned corridors. Follow the light and you swim into its school.',
     moves: [
       { kind: 'attack', name: 'Water Gun', amount: 6 },
-      { kind: 'buff',   name: 'Rain Dance', amount: 3 },
+      { kind: 'call',   name: 'Call for Help', calls: 'finneon', hp: 0.5, instead: { kind: 'buff', name: 'Rain Dance', amount: 3 } },
       { kind: 'attack', name: 'Waterfall',      amount: 11 },
     ],
   },
@@ -468,10 +477,11 @@ export const ENEMY_DEFS = {
   },
   bouffalant: {
     name: 'Bouffalant', type: 'normal', hp: 72, ...sprite('bouffalant'),
-    description: 'Its huge afro softens any blow, and not one of its own.',
+    description: 'Its huge afro softens any blow, and not one of its own. It stands in front of the herd.',
+    pack: { mates: ['tauros'], hp: [0.7, 0.45], dmg: 0.7 },
     moves: [
       { kind: 'attack', name: 'Fury Attack', amount: 3, hits: 3 },
-      { kind: 'defend', name: 'Endure',      amount: 10 },
+      { kind: 'defend', name: 'Wide Guard',  amount: 12, team: true },
       { kind: 'attack', name: 'Head Charge', amount: 13 },
     ],
   },
@@ -535,10 +545,11 @@ export const ENEMY_DEFS = {
   },
   exeggutor: {
     name: 'Exeggutor', type: 'grass', hp: 66, ...sprite('exeggutor'),
-    description: 'Grows taller than the undergrowth here, and its heads argue about who saw you first.',
+    description: 'Grows taller than the undergrowth here, and its heads argue about who saw you first. Simisage swing down to hide behind it.',
+    pack: { mates: ['simisage'], hp: [0.7, 0.45], dmg: 0.7 },
     moves: [
       { kind: 'drain',  name: 'Giga Drain', amount: 7, heal: 6 },
-      { kind: 'defend', name: 'Reflect',   amount: 10 },
+      { kind: 'defend', name: 'Reflect',   amount: 12, team: true },
       { kind: 'attack', name: 'Wood Hammer', amount: 12 },
     ],
   },
@@ -639,9 +650,10 @@ export const ENEMY_DEFS = {
   houndoom: {
     name: 'Houndoom', type: 'fire', hp: 52, ...sprite('houndoom'),
     description: 'Hunts the savanna in packs after dark. Its howl carries from one burning grass fire to the next.',
+    pack: { mates: ['houndour'], hp: [0.65, 0.5], dmg: 0.7 },
     moves: [
       { kind: 'attack', name: 'Smog',    amount: 6, type: 'normal', adds: { card: 'poison', n: 1 } },
-      { kind: 'buff',   name: 'Roar',    amount: 1 },
+      { kind: 'buff',   name: 'Howl',    amount: 2, team: true },
       { kind: 'attack', name: 'Inferno', amount: 11 },
     ],
   },
@@ -1514,10 +1526,16 @@ export const finalBiome = (starter) => (starter?.id === 'mewtwo' ? BIOMES.length
 /* Traits: what some of the Crystal Depths' Pokémon do whenever you play a card (enemyTrait() in js/battle.js). Each
    enemy's `trait` names one by `id`, with its own `name` (an Ability) and numbers. */
 /** The move an enemy will use next: its `atHalf` move the first time it is at or under half HP, else its list's. */
-export function enemyMove(def, en) {
+export function enemyMove(def, en, canCall = false) {
   if (def.atHalf && !en.halfUsed && en.hp * 2 <= en.maxHp) return def.atHalf;
-  return def.moves[en.moveIndex % def.moves.length];
+  const move = def.moves[en.moveIndex % def.moves.length];
+  return move.kind === 'call' && !canCall ? move.instead : move;
 }
+
+/** How many Pokémon a fight's callers can bring in, all told. */
+export const CALLS = 2;
+/** May an enemy Call for Help now? Only one stands (the room is the other's), and the fight has calls left. */
+export const callRoom = (enemies, called) => called < CALLS && enemies.filter(en => en.hp > 0).length < 2;
 
 /** Where an enemy's moves start: its `opens` move, a pick for a random order, else anywhere in its loop. */
 export function firstMove(def) {
@@ -1527,7 +1545,7 @@ export function firstMove(def) {
 
 /** After its turn (`used`: the move it had up as the turn began, used or lost to Paralysis), the next one comes up. */
 export function moveOn(def, en, used) {
-  if (def.atHalf && used === def.atHalf) { en.halfUsed = true; return; }
+  if (def.atHalf && used === def.atHalf) { en.halfUsed = true; return; }   // (a call's `instead` moves on like the call)
   const i = en.moveIndex % def.moves.length;
   en.recent = [...(en.recent || []), i].slice(-2);
   const leads = ['charge', 'away'].includes(def.moves[i].kind);
@@ -1617,24 +1635,44 @@ export function dealEnemies(at, kind, rooms, byId, weight = () => 1, normals = n
   }
 }
 
-export function buildEncounter(at, kind, mods, enemyId) {
+/** A fight: its enemy, HP and extra damage, and in a double battle `mates` (the pair's other, built the same way) and
+    `reserve` (what a Call for Help brings in, by id). `solo`: never a pair (the Safari's mixed pairs, a playtest's own). */
+export function buildEncounter(at, kind, mods, enemyId, { solo = false } = {}) {
+  const one = buildOne(at, kind, mods, enemyId);
+  const { def } = one, pack = !solo && kind === 'fight' && def.pack;
+  const scale = (e, hp, dmg) => Object.assign(e, { maxHp: Math.max(1, Math.round(e.maxHp * hp)), dmgMult: (e.dmgMult ?? 1) * dmg });
+  if (pack) {
+    const hpOf = (i) => (Array.isArray(pack.hp) ? pack.hp[i] ?? pack.hp[pack.hp.length - 1] : pack.hp ?? 1);
+    scale(one, hpOf(0), pack.dmg ?? 1);
+    one.mates = pack.mates.map((id, i) => scale(buildOne(at, kind, mods, id), hpOf(i + 1), pack.dmg ?? 1));
+  }
+  const calls = def.moves.filter(m => m.kind === 'call');
+  if (calls.length) one.reserve = Object.fromEntries(calls.map(m => [m.calls, scale(buildOne(at, kind, mods, m.calls), m.hp ?? 1, m.dmg ?? 1)]));
+  return one;
+}
+
+/** Is this pair all one species? (The Safari's only pairs: the one left to catch is the one its room was for.) */
+export const onePack = (id) => !ENEMY_DEFS[id]?.pack || ENEMY_DEFS[id].pack.mates.every(m => m === id);
+
+function buildOne(at, kind, mods, enemyId) {
   const biome = biomeOf(at);
 
   if (kind === 'boss') {
-    const def = ENEMY_DEFS[enemyId || pick(biome.bosses)], grow = forkGrowth(biome, kind);
+    const id = enemyId || pick(biome.bosses), def = ENEMY_DEFS[id], grow = forkGrowth(biome, kind);
     return {
-      def, kind,
+      id, def, kind,
       maxHp: Math.round(def.hp * grow.hp * mods.bossHp),
       strength: biome.bossBonus + grow.dmg + mods.bossDmg + mods.enemyDmg,
       dmgMult: mods.enemyDmgMult ?? 1,
     };
   }
 
-  const base = ENEMY_DEFS[enemyId || pick(kind === 'elite' ? biome.elites : biome.normals)];
+  const id = enemyId || pick(kind === 'elite' ? biome.elites : biome.normals), base = ENEMY_DEFS[id];
   const def = kind === 'elite' ? eliteOf(base) : base;
   const place = (def.template && PLACE[biome.slot]) || { hp: 1, dmg: 0 };   // a Safari template Pokémon grows with its area's place
   const grow = forkGrowth(biome, kind);
   return {
+    id,
     def,
     kind,
     maxHp: Math.round(def.hp * place.hp * grow.hp * biome.hpMult * mods.normalHp * (kind === 'elite' ? mods.eliteHp : 1)),

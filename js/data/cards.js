@@ -16,6 +16,7 @@
      weaken        Weak: the enemy deals 25% less damage for this many turns
      vulnerable    Vulnerable: the enemy takes 50% more from your attacks for this many turns
      burn          burn the enemy (takes damage at the start of its turn)
+     all           the damage, and its Burn / Weak / Vulnerable / Leech Seed..., land on ALL enemies (a double battle's both)
      guard         completely block the enemy's next attack
      needsWounded  can only be played when you are missing some HP
      hits          the damage lands this many times (strength, relics and
@@ -168,6 +169,7 @@ const NEUTRAL_CARDS = [
   { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', sprite: 'shield', effects: { block: 7 }, noOffer: true },   // Defend: Grass's starting deck only; offered, it doubled Water's Withdraw. 7 since the 2026-10-16 balance pass (Leech Seed lost its stage bonus)
   { id: 'iron-defense', name: 'Iron Defense', type: 'normal', cost: 2, art: '🏰', sprite: 'metal-coat', effects: { block: 22 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { block: 30 } } },   // Impervious
   { id: 'quick-guard',  name: 'Quick Guard',  type: 'normal', cost: 2, art: '✋', sprite: 'protective-pads', effects: { guard: true }, exhaust: true },   // Exhaust since 2026-10-16: a whole enemy turn for 2 PP, every time, topped the bot's card picks for every type
+  { id: 'acid',         name: 'Acid',         type: 'normal', cost: 1, art: '🧪', effects: { damage: 5, vulnerable: 1, all: true }, upgrade: { effects: { damage: 8 } } },   // Thunderclap: a double battle's hit-both (phase 3)
   { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', sprite: 'potion', effects: { heal: 10 }, exhaust: true },      // Bandage Up
   { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', sprite: 'smoke-ball', effects: { weaken: 2 }, exhaust: true },   // Intimidate
   { id: 'tailwind',     name: 'Rest',         type: 'normal', cost: 0, art: '💤', sprite: 'air-balloon', effects: { nextEnergy: 1 } },   // was Tailwind, its id kept: Flying owns Tailwind now (docs/duo-design.md answer 18)
@@ -248,6 +250,7 @@ const FIRE_CARDS = [
   { id: 'shell-trap',      name: 'Shell Trap',      type: 'fire', cost: 1, art: '🐚', sprite: 'jaboca-berry', effects: { block: 18, addCard: { id: 'paralysis', n: 2 } }, rarity: 'uncommon', upgrade: { effects: { block: 23 } } },   // Power Through
   { id: 'fiery-wrath',     name: 'Fiery Wrath',     type: 'fire', cost: 0, art: '😡', sprite: 'dread-plate', effects: { selfDamage: 3, addCard: { id: 'cinder', n: 2 } }, rarity: 'uncommon', upgrade: { effects: { addCard: { id: 'cinder', n: 3 } } } },   // Bloodletting + Blade Dance: Reckless and Kindling
   { id: 'lava-plume',      name: 'Lava Plume',      type: 'fire', cost: 2, art: '🌋', sprite: 'occa-berry', effects: { damage: 12, burn: 3, weaken: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 16, burn: 4, weaken: 2 } } },   // Uppercut, its Vulnerable a Burn
+  { id: 'max-flare',       name: 'Max Flare',       type: 'fire', cost: 2, art: '🔥', effects: { damage: 11, burn: 3, all: true }, rarity: 'uncommon', upgrade: { effects: { damage: 14, burn: 4 } } },   // Immolate, smaller: hits both in a double battle
   { id: 'ember-veil',      name: 'Ember Veil',      type: 'fire', cost: 2, art: '🛡️', sprite: 'safety-goggles', effects: { burn: 2, weaken: 1, block: 11 }, rarity: 'uncommon', upgrade: { effects: { burn: 3, weaken: 2, block: 14 } } },   // a Defend that burns and weakens
   { id: 'inferno-charge',  name: 'Inferno Charge',  type: 'fire', cost: 2, art: '⚡', sprite: 'cell-battery', effects: { selfDamage: 2, damage: 11, nextEnergy: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 15 } } },   // Outmaneuver as a Reckless attack
   { id: 'flash-fire',      name: 'Flash Fire',      type: 'fire', cost: 2, art: '📚', sprite: 'light-ball', effects: { exhaustDraw: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 1 } },   // Dark Embrace
@@ -327,6 +330,7 @@ const GRASS_CARDS = [
   { id: 'spore',          name: 'Spore',          type: 'grass', cost: 1, art: '🍄', sprite: 'balm-mushroom', effects: { weaken: 2, vulnerable: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { weaken: 3, vulnerable: 3 } } },   // Crippling Cloud
   { id: 'effect-spore',   name: 'Effect Spore',   type: 'grass', cost: 1, art: '🍄', sprite: 'mixed-mushrooms', effects: { debuffDamage: 5 }, power: true, rarity: 'uncommon', upgrade: { effects: { debuffDamage: 7 } } },   // Sadistic Nature
   { id: 'leaf-tornado',   name: 'Leaf Tornado',   type: 'grass', cost: 1, art: '🌪️', sprite: 'green-scarf', effects: { damage: 6, perDebuff: 4 }, rarity: 'uncommon', upgrade: { effects: { damage: 8, perDebuff: 5 } } },   // Bane, per debuff
+  { id: 'max-overgrowth', name: 'Max Overgrowth', type: 'grass', cost: 2, art: '🌿', effects: { damage: 10, seed: 3, all: true }, rarity: 'uncommon', upgrade: { effects: { damage: 13, seed: 4 } } },   // Immolate's shape in Leech Seed: hits both in a double battle
   { id: 'rage-powder',    name: 'Rage Powder',    type: 'grass', cost: 1, art: '🍄', sprite: 'heal-powder', effects: { block: 8, ifWeak: { block: 5 } }, rarity: 'uncommon', upgrade: { effects: { block: 11, ifWeak: { block: 6 } } } },   // a Defend that holds better against a Weak enemy
   { id: 'forests-curse',  name: 'Forest\'s Curse', type: 'grass', cost: 1, art: '🌳', sprite: 'odd-incense', effects: { sap: 1, vulnerable: 2 }, rarity: 'uncommon', upgrade: { effects: { sap: 2, vulnerable: 3 } } },   // Malaise (lite)
   { id: 'powder',         name: 'Powder',         type: 'grass', cost: 2, art: '💨', sprite: 'metal-powder', effects: { weakEachTurn: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 1 } },   // Noxious Fumes, as Weak
@@ -392,6 +396,7 @@ const WATER_CARDS = [
   { id: 'swift-swim',     name: 'Swift Swim',     type: 'water', cost: 0, art: '💦', sprite: 'deep-sea-scale', effects: { tideMult: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { tideMult: 3 } } },   // Catalyst
   { id: 'crabhammer',     noOffer: true, name: 'Crabhammer',     type: 'water', cost: 2, art: '🦀', sprite: 'kings-rock', effects: { damage: 6, hits: 2, perTide: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 8 } } },   // two claws, each +2 per Tide (Hydro Pump is the one big hit)
   { id: 'water-spout',    name: 'Water Spout',    type: 'water', cost: 'X', art: '⛲', sprite: 'wailmer-pail', effects: { perX: { tide: 2 } }, rarity: 'uncommon', upgrade: { effects: { xPlus: 1 } } },   // Tempest
+  { id: 'max-geyser',     name: 'Max Geyser',     type: 'water', cost: 1, art: '⛲', effects: { damage: 8, tide: 1, all: true }, upgrade: { effects: { damage: 11 } } },   // Cleave, with a Tide: hits both in a double battle
   { id: 'aqua-ring',      name: 'Aqua Ring',      type: 'water', cost: 1, art: '⭕', sprite: 'pearl-string', effects: { heal: 4, tide: 2 }, rarity: 'uncommon', upgrade: { effects: { heal: 6 } } },   // a ring of water: heal and Tide
   { id: 'mirror-coat',    name: 'Mirror Coat',    type: 'water', cost: 1, art: '🔮', sprite: 'reveal-glass', effects: { thorns: 3, tideEachTurn: 1 }, power: true, rarity: 'uncommon', upgrade: { effects: { thorns: 5 } } },   // Thorns that brings in the Tide
   { id: 'water-veil',     name: 'Water Veil',     type: 'water', cost: 1, art: '🌧️', sprite: 'prism-scale', effects: { blockEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { blockEachTurn: 4 } } },   // Metallicize
@@ -1442,7 +1447,8 @@ function sentences(e) {
   if (e.exhaustHand)  parts.push({ all: 'Exhaust your hand.', status: 'Exhaust every status card in your hand.' }[e.exhaustHand] ?? 'Exhaust every non-attack in your hand.');
   const times = e.perX?.hits ? ` ${xLabel(e)} times` : e.hitsPerAttack ? ' for each attack you\'ve played this turn'
     : e.hitsPerExhausted ? ' for each card exhausted' : e.hits > 1 ? ` ${e.hits} times` : '';
-  if (e.damage)       parts.push(`Deal ${e.damage} damage${times}.`);
+  const all = e.all ? ' to ALL enemies' : '';   // a double battle's both (the line's own sentence, so it never reads like a plain hit)
+  if (e.damage)       parts.push(`Deal ${e.damage} damage${times}${all}.`);
   if (e.blockDamage) {
     const share = e.blockDamage === true ? 'your block' : e.blockDamage === 0.5 ? 'half your block' : e.blockDamage === 0.75 ? 'three quarters of your block' : `${e.blockDamage} times your block`;
     parts.push(e.block ? `Gain ${e.block} block, then deal damage equal to ${share}${times}.` : `Deal damage equal to ${share}${times}.`);
@@ -1471,12 +1477,12 @@ function sentences(e) {
   if (e.perStatusHeld) parts.push(`+${e.perStatusHeld} for each status card in your hand.`);
   if (e.hits && !e.damage && !e.blockDamage) parts.push(e.hits > 1 ? `It hits ${e.hits} more times.` : 'It hits once more.');
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
-  if (e.burn)         parts.push(e.burnTimes > 1 ? `Burn ${e.burn}, ${TIMES[e.burnTimes] ?? `${e.burnTimes} times`}.` : `Burn ${e.burn}.`);
+  if (e.burn)         parts.push(e.burnTimes > 1 ? `Burn ${e.burn}, ${TIMES[e.burnTimes] ?? `${e.burnTimes} times`}${all}.` : `Burn ${e.burn}${all}.`);
   if (e.burnMult)     parts.push(`${MULT[e.burnMult] ?? `Multiply by ${e.burnMult}`} the enemy's Burn.`);
   if (e.seedMult)     parts.push(`${MULT[e.seedMult] ?? `Multiply by ${e.seedMult}`} the enemy's Leech Seed.`);
-  if (e.weaken)       parts.push(`Apply ${e.weaken} Weak.`);
-  if (e.vulnerable)   parts.push(`Apply ${e.vulnerable} Vulnerable.`);
-  if (e.seed)         parts.push(`Leech Seed ${e.seed}.`);
+  if (e.weaken)       parts.push(`Apply ${e.weaken} Weak${all}.`);
+  if (e.vulnerable)   parts.push(`Apply ${e.vulnerable} Vulnerable${all}.`);
+  if (e.seed)         parts.push(`Leech Seed ${e.seed}${all}.`);
   if (e.static)       parts.push(`Static ${e.static}.`);
   if (e.frostbite)    parts.push(`Frostbite ${e.frostbite}.`);
   if (e.frostMult)    parts.push(`${MULT[e.frostMult] ?? `Multiply by ${e.frostMult}`} the enemy's Frostbite.`);
@@ -1746,6 +1752,7 @@ export function cardTerms(card) {
     uses(/^bait$/) && term('Bait'),
     uses(/^rock$/) && term('Rock'),
     uses(/debuff/i) && ['Debuffs', 'Weak, Vulnerable, Leech Seed, Sap, Burn.'],
+    e.all && ['ALL enemies', 'In a double battle it hits both, the one you aim at first. Alone, it hits the one.'],
     (uses(/^perX$/) || card.cost === 'X') && ['X', 'Spends all your PP. X is how much.'],
     e.combo && [`Combo ${e.combo.at}`, `Only if you've played ${e.combo.at} other cards this turn.`],
     uses(/^ifHurt$|OnHurt$/) && ['Losing HP', 'Any HP loss counts, even your own.'],
