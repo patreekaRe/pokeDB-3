@@ -456,3 +456,50 @@ and Y appeared!". **The 3D arena** casts a third pad from `#enemy2-zone` (`layou
 the one acting; no AoE; catching in a double; pack encounters in the data; the bot choosing a target. pokeDB-sim mirrors
 the rule (`retarget()` in sim/engine.js, a no-op while its fights have one enemy). Checked by `tools/double-probe.mjs`
 (402x874 and 390x664), with `tools/battle-flows-probe.mjs` and `tools/enemy-probe.mjs` for the single fights.
+
+## Double battles, phase 3: pairs with roles, hit-both cards, the two-enemy rules (2026-11-05, branch-only, never `main`)
+
+Built on phase 2, on the branch `claude/double-battles-phase-3-yxc8zz` (from `claude/two-enemy-layout-targeting-46sg44`,
+which it fast-forwards, as that one fast-forwards `multi-enemy-battles`). **Which fights**: one Pokémon in each biome's
+twelve normals is never met alone, so about one fight a biome is a double; elites, bosses, gyms and Kenmatta stay single.
+Data keys (js/data/enemies.js' header): `pack: { mates, hp, dmg }` on the one the room is dealt for (`hp` a number or one
+per Pokémon, it first; `dmg` scales both's damage through `dmgMult`, so the bubbles stay honest), `team: true` on a buff or
+defend (every enemy standing gets it), and `kind: 'call'` (`calls`, `hp`, `instead`). `buildEncounter()` builds a pair's
+`mates` and a caller's `reserve` (`{ solo }` turns pairs off: the Pokédex's numbers, `?arena=double`'s own pick, the sim's
+`solo` variant), and every encounter now carries its `id`.
+- **Calls for help**: Sentret (the Clearing) and Finneon (the Ruins) start alone; their Call for Help brings one of their
+  own kind in at 0.35 of its HP and 0.7 of its damage (`callIn()` in js/battle.js: beside the caller, or in a fallen one's place, sliding in as a
+  silhouette and crying; a third 3D pad, `joinArena()` in js/arena-3d.js). Only while one stands, two calls a fight
+  (`CALLS`, `callRoom()`), else its `instead` move (Defense Curl, Rain Dance), which is what the bubble shows. One called
+  in waits a turn to act (the enemies' turn loops a copy of the list).
+- **A tank shielding a hitter**: Bouffalant's Wide Guard (the Wastes, with Tauros) and Exeggutor's Reflect (Thornwood, with
+  Simisage), 9 block to each; the tank at 0.6 of its HP, the hitter at 0.4, both at 0.6 damage.
+- **A pack that powers each other up**: Houndour's Howl (the Shrine, two Houndours at 0.5 HP) and Houndoom's (the Savanna,
+  0.55 and a Houndour at 0.45), +2 strength to each, both at 0.6 damage. The bubble says "+2×2" / "to each of them".
+- **Hit-both cards** (`all: true`; describe() adds "to ALL enemies" to the damage and to each mark, a cardTerms() box "ALL
+  enemies"): Acid (Neutral, 1 PP, 5 to ALL + 1 Vulnerable to ALL, StS's Thunderclap), Max Flare (Fire, 2 PP uncommon, 11 +
+  Burn 3), Max Overgrowth (Grass, 2 PP uncommon, 10 + Leech Seed 3), Max Geyser (Water, 1 PP, 8 + 1 Tide, StS's Cleave).
+  Nearly every real spread move was already a card, hence the Max moves. Each hits the one aimed at first, then the other,
+  each with its own Vulnerable / Frostbite (`damageFor()` per enemy); its marks (`onFoe()`: Burn, Weak, Vulnerable, Leech
+  Seed, Static, Frostbite, Fault, Sap) land on each, the rest of it (Tide, draw, block) once. Art in js/card-art-new.js.
+- **The two-enemy rules**: Hail and Sandstorm chip every enemy standing (Ice Age's Frostbite, Desert Spirit's Fault and
+  Blinding Sand's Weak on each); what they give you (Polar Vortex, Safety Goggles, Icefall, Sand Screen) comes once. Burn,
+  Leech Seed, Static and Fault are each enemy's own and tick on its own turn. Rocky Helmet (and thorns, Counter, Wave
+  Incense) hurt the one attacking; one knocked out that way faints before the other acts.
+- **Catching**: never at one of two (the games' rule): the throw button stays up but spent, "Two are out: knock one out
+  first, then throw at the one left." (`whyNotThrow()`), and the ball flies at the one left. The Safari meets pairs only
+  of one species (`onePack()`; a mixed pair's room fights its own Pokémon alone there), so the one caught is always the
+  one its room was for and nothing after the catch needs another id.
+- **The Pokédex**: a won double credits each of its Pokémon (`dexDefeatedAll()` in js/run.js, from the result's `foes`),
+  both are seen, the pack's lead's entry says "Never alone: met in a pair with a ...", and the moves list shows "+12 block
+  to each" and "brings in a Sentret, else Defense Curl (...)".
+pokeDB-sim mirrors all of it on the same-named branch (the bot aims where its plan for the turn scores best, values a
+knockout as two of that enemy's attacks it won't take, and never throws at one of two). Checked by `tools/double-probe.mjs`'s
+phase 3 part (a Houndour pack, Howl on both, Hail and Rocky Helmet, Acid, the ball, Sentret's calls). `?arena=wild&foe=houndour`
+(or `sentret`, `bouffalant`, `exeggutor`, `houndoom`, `finneon`) fights one.
+**Bot check** (human bot, Level 3, default route, 150 a cell, win %; pairs on vs the sim's `solo` variant, the same sim):
+first numbers fire / grass / water 50.7 / 40.0 / 38.0 vs 47.3 / 41.3 / 36.7, inside noise, but a pair fight cost about twice
+an ordinary fight of its biome in HP (Houndour pack 27% of max HP vs 12%, Bouffalant + Tauros 35% vs 15%, fainting 12 of 80;
+Sentret's call 18% vs 6%). Trimmed to the numbers above: 47.3 / 45.3 / 34.0, the Houndour pack 13% (an average Shrine
+fight), Bouffalant + Tauros 21% (1.4x), Sentret 8% (1.5x). Exeggutor, Houndoom and Finneon (the pool biomes) were set by
+analogy, unmeasured; phase 4 is the full pass.

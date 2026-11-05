@@ -1251,7 +1251,7 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 **The whole battle revamp stays on branches** (the user's rule, 2026-11-04, CLAUDE.md's "The battle revamp never touches
 `main`"): smarter enemies, double battles and everything after them are built and playtested on their own branches,
 never pushed to `main` until the user says to merge. **No merge for a while** (the user, 2026-11-04, after part 2): the next steps build on the branches;
-the double battles' phases 1 and 2 are done (below); the user's playtest of the layout, then phase 3, are next.
+the double battles' phases 1, 2 and 3 are done (below); the user's playtest of phase 3, then phase 4, are next.
 
 **Your cloud save on a playtest link** (an idea, 2026-11-04; the user noticed a githack link has no cloud save): cloud
 save is on only for `patreekare.github.io` and localhost (`FIREBASE_CONFIG` in `js/cloud.js`), so a branch's link
@@ -1294,17 +1294,32 @@ tools/double-probe.mjs (402x874 and 390x664) pass; the sim's `retarget()` leaves
 verdict (2026-11-05): "I kinda like this"** after trying it, the plate fix included. Then (the user, same day: "I don't think the player knows how to switch targets"):
 a gold reticle on the one aimed at, and till the first aim a tapping fingertip on the other and a first-turn note
 (commit 227759f). Offered, not asked for yet: the
-enemy left sliding to the middle and standing a step bigger once it's alone. **Next: phase 3.**
+enemy left sliding to the middle and standing a step bigger once it's alone.
+**Phase 3 done 2026-11-05 on branch `claude/double-battles-phase-3-yxc8zz`** (built from the phase 2 branch, which it
+fast-forwards, as that one fast-forwards `multi-enemy-battles`, so any of them can be brought up to it; commits 51c2eea
+and 73106db; pokeDB-sim's mirror on the same-named branch; `docs/reference/cards.md`'s "Double battles, phase 3"): one
+Pokémon in each biome's twelve normals is never met alone, so about one fight a biome is a double. **Pairs with roles**:
+a pack powering each other up (Houndour ×2 in the Shrine, Houndoom + Houndour in the Savanna: Howl +2 to each), a tank
+shielding a hitter (Bouffalant + Tauros in the Wastes, Exeggutor + Simisage in Thornwood: 9 block to each), a caller
+(Sentret in the Clearing, Finneon in the Ruins: Call for Help brings one of its kind in, two calls a fight, only while
+it stands alone). **Hit-both cards**: Acid (Neutral), Max Flare, Max Overgrowth, Max Geyser (`all: true`, "to ALL enemies").
+**Two-enemy rules**: Hail and Sandstorm chip both, Burn / Leech Seed / Static / Fault stay each one's own, Rocky Helmet
+hurts the one attacking. **Catching**: no ball while two stand ("Two are out: knock one out first"); the Safari pairs one
+species only. A double credits both in the Pokédex. Bot check (human, L3, 150 a cell): win rates level with pairs off,
+after the pairs were trimmed from about twice an ordinary fight's cost to 1-1.5x. node --test, card-twins,
+double-probe (51 checks), battle-flows and enemy probes pass. Playtest link (a fresh save, so add `&coins=` if needed):
+https://rawcdn.githack.com/patreekaRe/pokeDB-3/73106db32e13405d11d20a9c73d4595d15a56364/index.html?arena=wild&foe=houndour (also `foe=sentret`,
+`bouffalant`, `exeggutor`, `houndoom`, `finneon`), or start a normal run from the same link and meet them on the map.
+Not done: no patch note yet (the revamp gets one when it merges); the Safari's mixed pairs fight alone. **Next: the
+user's playtest, then phase 4.**
 
-> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
-> push to main; bring in `claude/two-enemy-layout-targeting-46sg44` first if it isn't there yet), do phase 3 of the
-> double-battles idea in docs/roadmap.md (phase 2's notes: docs/reference/cards.md's last section): pack encounters in
-> the enemies data, only some fights, pairs designed with roles (a tank shielding a hitter, a caller bringing a helper, a
-> pair that buffs each other; the 'hunts in packs' Pokémon first), a few AoE cards (`all: true`, describe() 'to ALL
-> enemies', a cardTerms() line, ART lines, no twins), what Burn, Hail, Sandstorm and Rocky Helmet do with two, and
-> catching only once one is left. Mirror it in pokeDB-sim's branch. Run node --test, tools/card-twins.mjs,
-> tools/double-probe.mjs, tools/battle-flows-probe.mjs and tools/enemy-probe.mjs on a phone viewport; give me the
-> githack link."
+> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch
+> `claude/double-battles-phase-3-yxc8zz` (never push to main), do phase 4 of the double-battles idea in docs/roadmap.md
+> (phase 3's notes: docs/reference/cards.md's last section): the balance pass with pokeDB-sim's branch. Measure the pair
+> fights the first screen didn't (Exeggutor, Houndoom, Finneon on the pool roads; Levels 0 and 5), the hit-both cards'
+> pick rate and value, and whether more biomes want a second pair; keep the pairs at about 1-1.5x an ordinary fight's
+> HP cost. Bot runs small (150 a cell, 300 to confirm). Run node --test, tools/card-twins.mjs and tools/double-probe.mjs;
+> give me the githack link."
 
 **What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
 StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
