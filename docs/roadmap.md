@@ -1290,8 +1290,9 @@ layout (two compact plates stacked top left, the two enemies side by side top ri
 tap an enemy or its plate to aim (also with a card raised; the other dims), the target moving on when it falls while
 the other stands ("The wild X fainted!"), the lethal warning counting both attacks; a fallen enemy's plate goes and the other's moves up (the user's ask, 2026-11-05, commit 0a204b3). Test-only: `?arena=double`
 (`&foe=rattata,sentret`, `&hp=0.5`). node --test, tools/enemy-probe.mjs, tools/battle-flows-probe.mjs and the new
-tools/double-probe.mjs (402x874 and 390x664) pass; the sim's `retarget()` leaves seeded runs unchanged. **Next: the
-user playtests the layout on a phone** (▶ PLAYTEST: the link above with `?arena=double`), then phase 3.
+tools/double-probe.mjs (402x874 and 390x664) pass; the sim's `retarget()` leaves seeded runs unchanged. **The user's
+verdict (2026-11-05): "I kinda like this"** after trying it, the plate fix included. Offered, not asked for yet: the
+enemy left sliding to the middle and standing a step bigger once it's alone. **Next: phase 3.**
 
 > Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch `multi-enemy-battles` (never
 > push to main; bring in `claude/two-enemy-layout-targeting-46sg44` first if it isn't there yet), do phase 3 of the
