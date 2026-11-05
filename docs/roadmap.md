@@ -1328,13 +1328,15 @@ now cost about an ordinary fight, so there's room for one, but which Pokémon an
 not asked for). node --test, card-twins and double-probe (52 checks, a Bouffalant step added) pass. Playtest link:
 https://rawcdn.githack.com/patreekaRe/pokeDB-3/440d8a6b23f1f63eb39cf4fee47de3d68c26aeca/index.html?arena=wild&foe=bouffalant&biome=wastes
 (also `foe=finneon&biome=ruins`, `foe=sentret`, `houndour`, `exeggutor`, `houndoom`), or a normal run from the same
-link. Offered, not asked for: Acid reworked or out of the pools; a second pair in some biomes; the enemy left sliding to
+link. Acid's rework picked (the user asked Claude to choose, 2026-11-05): 2 Vulnerable instead of 1 (upgraded 3), so it's
+worth a card on a lone enemy too, not only in a double; built in phase 5. Offered, not asked for: a second pair in some biomes; the enemy left sliding to
 the middle once alone. **Next: the user's playtest of this branch, then phase 5 (below; Acid only, or Acid plus second
 pairs in the biomes the user names) and a merge when the user says so.** The side-on layout is out (the user's no, 2026-11-05).
 
 > Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt (only if the user wants it after the
 > playtest): "On branch `claude/phase-3-playtest-kn1qzz` (never push to main), double battles phase 5: rework Acid
-> (an extra copy cost 10-18 points in phase 4) and add a second pair to the biomes the user picks, each with a role
+> (an extra copy cost 10-18 points in phase 4) to 5 damage and 2 Vulnerable to ALL enemies, upgraded 8 and 3 (was 1 and
+> 8 / 1; the pick, 2026-11-05, passes card-twins), confirm with the bot that an extra copy no longer costs points and add a second pair to the biomes the user picks, each with a role
 > (pack, tank, caller); keep pairs at 1-1.5x an ordinary fight's HP cost with pokeDB-sim's branch (150 a cell, 300 to
 > confirm). Run node --test, tools/card-twins.mjs and tools/double-probe.mjs; give me the githack link."
 
