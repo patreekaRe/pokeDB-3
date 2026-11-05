@@ -133,6 +133,7 @@ const start = async (page, url) => {
     b.weather = { kind: 'hail', turns: 3 };
     b.block = 0;
     const before = b.enemies.map(en => ({ hp: en.hp, str: en.strength }));
+    window.__render();
     const bubble = document.getElementById('enemy-intent').title;
     await window.__end();
     return { bubble, after: b.enemies.map((en, i) => ({ dHp: before[i].hp - en.hp, dStr: en.strength - before[i].str })), log: document.getElementById('battle-log-live').textContent };

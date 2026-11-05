@@ -34,8 +34,8 @@
                     `hp` scales each one's HP (a number for all, or one per Pokémon, it first); `dmg` scales their damage.
                     In the Safari only a pair of one species comes as a pair (the one left is the one you catch).
      team: true     on a buff or defend: every enemy standing gets it (Howl, Wide Guard, Reflect).
-     kind: 'call'   Call for Help: `calls` (an id) joins the fight at `hp` of its usual HP, if there's room (one enemy
-                    standing) and the fight has calls left (CALLS); else it uses its `instead` move.
+     kind: 'call'   Call for Help: `calls` (an id) joins the fight at `hp` of its usual HP and `dmg` of its damage, if
+                    there's room (one enemy standing) and the fight has calls left (CALLS); else it uses its `instead` move.
 
    Numbers here are for the first biome. Later biomes multiply HP and
    add damage (see BIOMES at the bottom). Tweak them to balance the game!
@@ -145,7 +145,7 @@ export const ENEMY_DEFS = {
     description: 'Stands on its tail to keep watch over the meadow, and calls the others the moment it spots you.',
     moves: [
       { kind: 'attack', name: 'Scratch',      amount: 6 },
-      { kind: 'call',   name: 'Call for Help', calls: 'sentret', hp: 0.5, instead: { kind: 'defend', name: 'Defense Curl', amount: 6 } },
+      { kind: 'call',   name: 'Call for Help', calls: 'sentret', hp: 0.35, dmg: 0.7, instead: { kind: 'defend', name: 'Defense Curl', amount: 6 } },
       { kind: 'attack', name: 'Fury Swipes',  amount: 3, hits: 3 },
     ],
   },
@@ -172,7 +172,7 @@ export const ENEMY_DEFS = {
   houndour: {
     name: 'Houndour', type: 'fire', hp: 52, ...sprite('houndour'),
     description: 'Hunts the shrine grounds in packs, calling out to each other.',
-    pack: { mates: ['houndour'], hp: 0.6, dmg: 0.7 },
+    pack: { mates: ['houndour'], hp: 0.5, dmg: 0.6 },
     moves: [
       { kind: 'attack', name: 'Bite',      amount: 7, type: 'normal' },
       { kind: 'buff',   name: 'Howl',      amount: 2, team: true },
@@ -288,7 +288,7 @@ export const ENEMY_DEFS = {
     description: 'Its tail fins glow in the drowned corridors. Follow the light and you swim into its school.',
     moves: [
       { kind: 'attack', name: 'Water Gun', amount: 6 },
-      { kind: 'call',   name: 'Call for Help', calls: 'finneon', hp: 0.5, instead: { kind: 'buff', name: 'Rain Dance', amount: 3 } },
+      { kind: 'call',   name: 'Call for Help', calls: 'finneon', hp: 0.35, dmg: 0.7, instead: { kind: 'buff', name: 'Rain Dance', amount: 3 } },
       { kind: 'attack', name: 'Waterfall',      amount: 11 },
     ],
   },
@@ -478,10 +478,10 @@ export const ENEMY_DEFS = {
   bouffalant: {
     name: 'Bouffalant', type: 'normal', hp: 72, ...sprite('bouffalant'),
     description: 'Its huge afro softens any blow, and not one of its own. It stands in front of the herd.',
-    pack: { mates: ['tauros'], hp: [0.7, 0.45], dmg: 0.7 },
+    pack: { mates: ['tauros'], hp: [0.6, 0.4], dmg: 0.6 },
     moves: [
       { kind: 'attack', name: 'Fury Attack', amount: 3, hits: 3 },
-      { kind: 'defend', name: 'Wide Guard',  amount: 12, team: true },
+      { kind: 'defend', name: 'Wide Guard',  amount: 9, team: true },
       { kind: 'attack', name: 'Head Charge', amount: 13 },
     ],
   },
@@ -546,10 +546,10 @@ export const ENEMY_DEFS = {
   exeggutor: {
     name: 'Exeggutor', type: 'grass', hp: 66, ...sprite('exeggutor'),
     description: 'Grows taller than the undergrowth here, and its heads argue about who saw you first. Simisage swing down to hide behind it.',
-    pack: { mates: ['simisage'], hp: [0.7, 0.45], dmg: 0.7 },
+    pack: { mates: ['simisage'], hp: [0.6, 0.4], dmg: 0.6 },
     moves: [
       { kind: 'drain',  name: 'Giga Drain', amount: 7, heal: 6 },
-      { kind: 'defend', name: 'Reflect',   amount: 12, team: true },
+      { kind: 'defend', name: 'Reflect',   amount: 9, team: true },
       { kind: 'attack', name: 'Wood Hammer', amount: 12 },
     ],
   },
@@ -650,7 +650,7 @@ export const ENEMY_DEFS = {
   houndoom: {
     name: 'Houndoom', type: 'fire', hp: 52, ...sprite('houndoom'),
     description: 'Hunts the savanna in packs after dark. Its howl carries from one burning grass fire to the next.',
-    pack: { mates: ['houndour'], hp: [0.65, 0.5], dmg: 0.7 },
+    pack: { mates: ['houndour'], hp: [0.55, 0.45], dmg: 0.6 },
     moves: [
       { kind: 'attack', name: 'Smog',    amount: 6, type: 'normal', adds: { card: 'poison', n: 1 } },
       { kind: 'buff',   name: 'Howl',    amount: 2, team: true },
