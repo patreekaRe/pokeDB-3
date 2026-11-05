@@ -145,7 +145,7 @@ export const ENEMY_DEFS = {
     description: 'Stands on its tail to keep watch over the meadow, and calls the others the moment it spots you.',
     moves: [
       { kind: 'attack', name: 'Scratch',      amount: 6 },
-      { kind: 'call',   name: 'Call for Help', calls: 'sentret', hp: 0.35, dmg: 0.7, instead: { kind: 'defend', name: 'Defense Curl', amount: 6 } },
+      { kind: 'call',   name: 'Call for Help', calls: 'sentret', hp: 0.3, dmg: 0.6, instead: { kind: 'defend', name: 'Defense Curl', amount: 6 } },
       { kind: 'attack', name: 'Fury Swipes',  amount: 3, hits: 3 },
     ],
   },
@@ -288,7 +288,7 @@ export const ENEMY_DEFS = {
     description: 'Its tail fins glow in the drowned corridors. Follow the light and you swim into its school.',
     moves: [
       { kind: 'attack', name: 'Water Gun', amount: 6 },
-      { kind: 'call',   name: 'Call for Help', calls: 'finneon', hp: 0.35, dmg: 0.7, instead: { kind: 'buff', name: 'Rain Dance', amount: 3 } },
+      { kind: 'call',   name: 'Call for Help', calls: 'finneon', hp: 0.25, dmg: 0.5, instead: { kind: 'buff', name: 'Rain Dance', amount: 3 } },
       { kind: 'attack', name: 'Waterfall',      amount: 11 },
     ],
   },
