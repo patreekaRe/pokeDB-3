@@ -503,3 +503,19 @@ an ordinary fight of its biome in HP (Houndour pack 27% of max HP vs 12%, Bouffa
 Sentret's call 18% vs 6%). Trimmed to the numbers above: 47.3 / 45.3 / 34.0, the Houndour pack 13% (an average Shrine
 fight), Bouffalant + Tauros 21% (1.4x), Sentret 8% (1.5x). Exeggutor, Houndoom and Finneon (the pool biomes) were set by
 analogy, unmeasured; phase 4 is the full pass.
+
+## Double battles, phase 4: the playtest's fixes and the balance pass (2026-11-05, branch `claude/phase-3-playtest-kn1qzz`)
+
+- **Enemy block**: every standing enemy's block clears as the enemies' turn begins (`enemyTurn()` in js/battle.js), not
+  as each one acts, so a tank's `team` block given before its partner acts lasts through the partner's turn (StS's rule).
+  `tools/double-probe.mjs` checks it (Bouffalant + Tauros both keep 9 block into turn 2).
+- **Names**: a double's reward news names both ("The two wild Houndour fainted!", "The wild Exeggutor and Simisage
+  fainted!", from the result's `foes`), and the map's revealed room too (`roomFoes()` in js/map.js; a Safari area's mixed
+  pack names its own Pokémon, as it fights alone there).
+- **Callers trimmed**: Sentret's call `hp: 0.3, dmg: 0.6`, Finneon's `0.25 / 0.5` (were 0.35 / 0.7: Sentret cost 1.5-1.9x an
+  ordinary Clearing fight's HP, Finneon 2.1-2.3x a Ruins one). Now 1.0-1.6x and 1.3-1.6x.
+- **Measured, left as is** (human bot, both pool routes, L0 / L3 / L5, % of max HP a fight vs the biome's other normals):
+  Houndoom + Houndour 1.3-1.6x, Bouffalant + Tauros 1.2-1.4x, Exeggutor + Simisage 0.7-1.2x.
+- **Hit-both cards** (offered → taken; an extra copy in the starting deck, L3, 100 a cell, against 200 without): Max Geyser
+  38-50%, about level; Max Overgrowth 11-29%, +15 points; Max Flare 5-13%, level; Acid 2-28%, -10 to -18 (a dead draw for
+  most decks: a candidate to rework, the user's call).

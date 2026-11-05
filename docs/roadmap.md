@@ -1251,7 +1251,7 @@ user playtests it** ▶ Playtest on the live site: `?biome=ruins&berries=oran,lu
 **The whole battle revamp stays on branches** (the user's rule, 2026-11-04, CLAUDE.md's "The battle revamp never touches
 `main`"): smarter enemies, double battles and everything after them are built and playtested on their own branches,
 never pushed to `main` until the user says to merge. **No merge for a while** (the user, 2026-11-04, after part 2): the next steps build on the branches;
-the double battles' phases 1, 2 and 3 are done (below); the user's playtest of phase 3, then phase 4, are next.
+the double battles' phases 1 to 4 are done (below); the user's playtest of the phase 4 branch is next.
 
 **Your cloud save on a playtest link** (an idea, 2026-11-04; the user noticed a githack link has no cloud save): cloud
 save is on only for `patreekare.github.io` and localhost (`FIREBASE_CONFIG` in `js/cloud.js`), so a branch's link
@@ -1310,16 +1310,33 @@ after the pairs were trimmed from about twice an ordinary fight's cost to 1-1.5x
 double-probe (51 checks), battle-flows and enemy probes pass. Playtest link (a fresh save, so add `&coins=` if needed):
 https://rawcdn.githack.com/patreekaRe/pokeDB-3/73106db32e13405d11d20a9c73d4595d15a56364/index.html?arena=wild&foe=houndour (also `foe=sentret`,
 `bouffalant`, `exeggutor`, `houndoom`, `finneon`), or start a normal run from the same link and meet them on the map.
-Not done: no patch note yet (the revamp gets one when it merges); the Safari's mixed pairs fight alone. **Next: the
-user's playtest, then phase 4.**
+Not done: no patch note yet (the revamp gets one when it merges); the Safari's mixed pairs fight alone.
+**Phase 3's playtest and phase 4 done 2026-11-05 on branch `claude/phase-3-playtest-kn1qzz`** (built from the phase 3
+branch, which it fast-forwards; commits 7e73053 and 440d8a6; pokeDB-sim's mirror on the same-named branch;
+`docs/reference/cards.md`'s "Double battles, phase 4"). The playtest (headless, all six pairs played to the end) found
+three things, all fixed: a tank's 9 block on its partner was gone before the partner's turn ended (every enemy's block now
+goes as the enemies' turn begins, StS's rule); the reward news and the map's revealed room named only one Pokémon ("The
+two wild Houndour fainted!", "Exeggutor and Simisage"). The balance pass (human bot, both pool routes, Levels 0 / 3 / 5):
+Houndoom + Houndour 1.3-1.6x an ordinary fight's HP cost, Bouffalant + Tauros 1.2-1.4x, Exeggutor + Simisage 0.7-1.2x,
+but the callers cost far more (Sentret 1.5-1.9x, Finneon 2.1-2.3x, fainting 24 of 112 at L5), so their helpers came down
+(Sentret's 0.3 HP / 0.6 damage, Finneon's 0.25 / 0.5): now Sentret 1.0-1.6x, Finneon 1.3-1.6x, and L3 win rates with
+pairs on (fire / grass / water 55 / 50 / 31) are level with the screen's pairs off. **Hit-both cards** (the bot now
+values a hit's second target): Max Geyser is taken 38-50% of the times offered, Max Overgrowth 11-29%, Max Flare 5-13%,
+Acid 2-28%; an extra copy in the starting deck (L3, 100 a cell) is worth +15 points for Max Overgrowth, about nothing for
+Max Flare and Max Geyser, and costs 10-18 for Acid (a dead draw in most decks). **A second pair per biome**: the pairs
+now cost about an ordinary fight, so there's room for one, but which Pokémon and what role is a design call (offered,
+not asked for). node --test, card-twins and double-probe (52 checks, a Bouffalant step added) pass. Playtest link:
+https://rawcdn.githack.com/patreekaRe/pokeDB-3/440d8a6b23f1f63eb39cf4fee47de3d68c26aeca/index.html?arena=wild&foe=bouffalant&biome=wastes
+(also `foe=finneon&biome=ruins`, `foe=sentret`, `houndour`, `exeggutor`, `houndoom`), or a normal run from the same
+link. Offered, not asked for: Acid reworked or out of the pools; a second pair in some biomes; the enemy left sliding to
+the middle once alone. **Next: the user's playtest of this branch, then (c) below (the side-on layout, the user's call)
+or a merge when the user says so.**
 
-> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt: "On branch
-> `claude/double-battles-phase-3-yxc8zz` (never push to main), do phase 4 of the double-battles idea in docs/roadmap.md
-> (phase 3's notes: docs/reference/cards.md's last section): the balance pass with pokeDB-sim's branch. Measure the pair
-> fights the first screen didn't (Exeggutor, Houndoom, Finneon on the pool roads; Levels 0 and 5), the hit-both cards'
-> pick rate and value, and whether more biomes want a second pair; keep the pairs at about 1-1.5x an ordinary fight's
-> HP cost. Bot runs small (150 a cell, 300 to confirm). Run node --test, tools/card-twins.mjs and tools/double-probe.mjs;
-> give me the githack link."
+> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt (only if the user wants it after the
+> playtest): "On branch `claude/phase-3-playtest-kn1qzz` (never push to main), double battles phase 5: rework Acid
+> (an extra copy cost 10-18 points in phase 4) and add a second pair to the biomes the user picks, each with a role
+> (pack, tank, caller); keep pairs at 1-1.5x an ordinary fight's HP cost with pokeDB-sim's branch (150 a cell, 300 to
+> confirm). Run node --test, tools/card-twins.mjs and tools/double-probe.mjs; give me the githack link."
 
 **What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
 StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
