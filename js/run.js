@@ -2788,8 +2788,12 @@ function afterFight(node, result) {
   const shard = node.type === 'elite' && node.shard && !gleaned(gleanKey(node, 'shard')) ? KEY_BY_ID[node.shard] : null;
   if (shard) dexNews.unshift(`${shard.icon} The Waystone Shard was floating over it! ${shard.name} went into your Satchel's Key Items.${peeking ? ' (A playtest: nothing is saved.)' : shard.shard === 'clearing' ? ' Take it home to the Nietos.' : ` Take it back to ${TOWNS[shard.shard].name}'s board.`}`);
   const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
+  // a double battle's news names every Pokémon in it: "The wild Bouffalant and Tauros", "The two wild Houndour"
+  const all = node.type === 'fight' ? (result.foes ?? []).map(id => ENEMY_DEFS[id]?.name).filter(Boolean) : [];
+  const pack = all.length < 2 ? null : new Set(all).size === 1 ? `The ${['two', 'three', 'four'][all.length - 2] ?? all.length} wild ${all[0]}`
+    : `The wild ${all.slice(0, -1).join(', ')} and ${all.at(-1)}`;
   run.pendingCoins = {
-    foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
+    foe: pack ?? (node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe),
     coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs]) + luxury), money: prize, dex: dexNews, safari: safariStep,
     beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${shinyCatch ? 'Shiny ' : ''}${foe} was caught!` : null,
     shiny: Boolean(shinyCatch || opened.length),   // the catch box's gold

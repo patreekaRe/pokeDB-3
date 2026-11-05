@@ -26,7 +26,7 @@
    ============================================================ */
 
 import { TYPES } from './data/cards.js';
-import { ENEMY_DEFS } from './data/enemies.js';
+import { ENEMY_DEFS, BIOMES_BY_ID, onePack } from './data/enemies.js';
 import { EVENTS_BY_ID } from './data/events.js';
 import { buildingSvg } from './buildings.js';
 import { random } from './rng.js';
@@ -747,6 +747,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
 export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, read = null, track = 0, type = null, peek = null, ken = false, gym = null, graves = null, onGrave = null, duoNew = null } = {}) {
+  mapBiome = biome;
   // peek: a look-only copy drawn into another box (the Bag's map, from a battle or a reward), leaving the map screen's own alone
   // ken: Kenmatta has been beaten once, so the Move Tutor's ❓ room shows his face
   // read: picking a ❓ room for Unown Rubbing; track: Tracker's Eye's level, marking wild fights by match-up against `type`
@@ -802,8 +803,7 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     // Every fight is chosen ahead of time (so a refresh can't reroll it), but no room names its Pokémon (the user's call:
     // the tooltip gave elites and the boss away) unless the Silph Scope revealed it.
     if (node.enemyId && node.revealed) {
-      const def = ENEMY_DEFS[node.enemyId];
-      label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${def.name}`;   // no type badge: elites and bosses are all Normal (the user's call)
+      label = `${info.label}: ${node.type === 'elite' ? 'Alpha ' : ''}${roomFoes(node)}`;   // no type badge: elites and bosses are all Normal (the user's call)
     }
     // a Safari rare spawn (markRares() in js/data/safari.js) shows rustling grass on its room's corner, like the games' shaking grass
     if (node.rare && !node.visited) {
@@ -1029,9 +1029,19 @@ function revealedFigure(node) {
   img.alt = '';
   fig.append(img);
   if (node.type === 'fight' && TYPES[def.type]) { fig.append(el('span', `map-revealed-type type-${def.type}`)); fig.lastChild.append(typeBadge(def.type)); }
-  fig.title = `${node.type === 'elite' ? 'Alpha ' : ''}${def.name}${node.type === 'fight' ? ` (${TYPES[def.type].label} type)` : ''}`;
+  fig.title = `${node.type === 'elite' ? 'Alpha ' : ''}${roomFoes(node)}${node.type === 'fight' ? ` (${TYPES[def.type].label} type)` : ''}`;
   place(fig, nodeX(node), rowY(node.floor));
   return fig;
+}
+
+/** Who a room's fight is with: a pack Pokémon's room is a pair (its `pack`, js/data/enemies.js), "Houndoom and Houndour";
+    a Safari area (no run biome) pairs only one species, as fight() in js/run.js does. */
+let mapBiome = 'clearing';
+function roomFoes(node) {
+  const def = ENEMY_DEFS[node.enemyId];
+  if (node.type !== 'fight' || !def.pack || (!BIOMES_BY_ID[mapBiome] && !onePack(node.enemyId))) return def.name;
+  const mates = def.pack.mates.map(id => ENEMY_DEFS[id].name);
+  return mates.every(n => n === def.name) ? `${mates.length + 1} ${def.name}` : `${def.name} and ${mates.join(' and ')}`;
 }
 
 function place(elem, x, y) {

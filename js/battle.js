@@ -2768,6 +2768,9 @@ async function enemyTurn() {
   const b = battle;
   if (runsOff()) return runAway();
   b.enemyActing = true;
+  // every enemy's block goes as their turn begins, not as each one's own does: a tank's Wide Guard or Reflect, given
+  // before its partner acts, would otherwise be gone before the partner's turn was over (StS's rule too)
+  for (const en of b.enemies) if (en.hp > 0) en.block = 0;
   for (const [i, en] of [...b.enemies.entries()]) {   // one called in this turn waits for the next
     if (en.hp <= 0) continue;
     b.acting = i;
@@ -2793,7 +2796,6 @@ async function enemyActs(b) {
   const en = b.enemy;
   const move = currentMove();
   const felled = () => (won(b) ? finish(true) : true);
-  en.block = 0;                                   // enemy block only lasts one round
   if (en.away) comeBack();
 
   // 1. Burn hurts the enemy first.

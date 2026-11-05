@@ -4,7 +4,7 @@
    lethal warning counting both attacks, the target falling while the other stands (it faints, the aim moves on, the
    fight goes on) and the win. Phase 3 (2026-11-05): a pack Pokémon's room is a pair (Houndour's), its Howl powers up
    both, Sentret's Call for Help brings one in (a third pad, it waits a turn), Acid hits both, Hail and Rocky Helmet
-   with two, and no ball while two stand:
+   with two, no ball while two stand, and Bouffalant's Wide Guard lasting Tauros's turn too:
      NODE_PATH=$(npm root -g) node tools/double-probe.mjs
    Prints what it checks and exits 1 on a failed check or a console error. */
 import { serve, launch, phone, threeCopy } from './probe-kit.mjs';
@@ -17,7 +17,9 @@ window.__raise = (uid) => tapCard(uid);
 window.__raised = () => selectedUid;
 window.__play = async (uid) => { const b = battle; b.busy = false; await playCard(uid); for (let i = 0; i < 80 && b.busy && !b.over; i++) await sleep(100); };
 window.__end = async () => { const b = battle; b.busy = false; await endTurn(); for (let i = 0; i < 200 && (b.busy || b.enemyActing) && !b.over; i++) await sleep(100); };
-window.__attack = () => battle.hand.find(h => isAttack(h.card) && !whyNotPlayable(h.card) && costOf(h.card) <= battle.energy);
+// a hand of only skills (the draw's luck) gets an Ember, so a check never hangs on what was drawn
+window.__attack = () => battle.hand.find(h => isAttack(h.card) && !whyNotPlayable(h.card) && costOf(h.card) <= battle.energy)
+  ?? (battle.hand.push({ uid: nextUid++, card: CARDS_BY_ID.ember, fresh: true }), renderAll(), battle.hand.at(-1));
 window.__cast = async (id) => { const b = battle; b.busy = true; await resolveCard(CARDS_BY_ID[id], 0); b.busy = false; renderAll(); };
 window.__whyNotThrow = () => whyNotThrow();
 window.__intent = (i) => withFoe(i, () => currentMove());
@@ -174,7 +176,7 @@ const start = async (page, url) => {
   // the caller falls: the helper may call again (CALLS = 2 a fight), into the fallen one's place
   s = await page.evaluate(async () => {
     const b = window.__battle();
-    b.enemies[0].hp = 1; b.enemies[0].block = 0;
+    b.enemies[0].hp = 1; b.enemies[0].block = 0; b.energy = 9;
     await window.__play(window.__attack().uid);
     b.target = 1;
     b.enemies[1].moveIndex = b.enemies[1].def.moves.findIndex(m => m.kind === 'call');
@@ -185,6 +187,24 @@ const start = async (page, url) => {
   check(!s.over && s.n === 2 && s.standing === 2 && s.called === 2 && s.plate !== 'none', `the caller fell and the other called one into its place (${s.called} calls, its plate back)`);
   s = await page.evaluate(() => { const b = window.__battle(); b.enemies[1].hp = 0; window.__render(); b.enemies[0].moveIndex = b.enemies[0].def.moves.findIndex(m => m.kind === 'call'); return window.__intent(0).name; });
   check(s !== 'Call for Help', `two calls a fight: the third is ${s} instead`);
+  check(!errors.length, `no console errors${errors.length ? `: ${errors.join(' | ')}` : ''}`);
+  await ctx.close();
+}
+
+{
+  const { ctx, page, errors } = await phone(browser, three);
+  console.log('-- phase 3: Bouffalant shields Tauros');
+  await start(page, `http://localhost:${port}/index.html?arena=wild&foe=bouffalant&biome=wastes&starter=bulbasaur`);
+  const s = await page.evaluate(async () => {
+    const b = window.__battle();
+    b.enemies[0].moveIndex = b.enemies[0].def.moves.findIndex(m => m.name === 'Wide Guard');
+    b.enemies[1].moveIndex = b.enemies[1].def.moves.findIndex(m => m.kind === 'attack');
+    b.block = 999;
+    await window.__end();
+    return { names: b.enemies.map(en => en.def.name), block: b.enemies.map(en => en.block), turn: b.turn };
+  });
+  // every enemy's block goes as their turn begins, so the tank's shield on the hitter, given first, lasts into yours
+  check(s.turn === 2 && s.block.every(n => n === 9), `Wide Guard: ${s.names} both keep 9 block into your turn (${s.block})`);
   check(!errors.length, `no console errors${errors.length ? `: ${errors.join(' | ')}` : ''}`);
   await ctx.close();
 }
