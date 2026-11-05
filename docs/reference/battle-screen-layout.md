@@ -393,5 +393,5 @@ beside it, a row kept for statuses in the plate itself, so neither plate moves w
 two enemies stand side by side top right, each in half the column, the left one nearer (lower, in front), each a size
 smaller (`--duo` 0.95 scales `--base`, and with it its pad) and capped to its half. Move bubbles drop the move's name
 (icon and number; the name is in the tip). On short phones (≤760px tall) your Pokémon is a step smaller (`--you` 0.86)
-so the second plate clears it. The one not aimed at dims (`.aside`: the sprite darkened, the plate faded). Measured: on
+so the second plate clears it. The one not aimed at dims (`.aside`: the sprite darkened, the plate faded). A fallen enemy's plate fades and goes (`.gone`), and the other's moves up into its place (2026-11-05). Measured: on
 a 390x664 iPhone the enemies' boxes are ~65-85px (a single's ~85px), the plates end at 194 and your Pokémon starts at 213.

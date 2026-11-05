@@ -454,6 +454,10 @@ function fallen(b) {
       $('enemy-portrait-box').classList.remove('charging', 'attacking');
       $('enemy-portrait-box').classList.add('defeated');
       ambience($('enemy-img'), {});
+      // its plate fades and goes, so the one left has the corner to itself (the user's ask, 2026-11-05)
+      const plate = $('enemy-plate');
+      plate.classList.add('fading');
+      setTimeout(() => { if (battle === b) plate.classList.add('gone'); }, battleFx() ? 450 : 0);
     });
     playSound('faint');
     log(`${b.kind === 'fight' ? 'The wild ' : ''}${en.def.name} fainted!`);
@@ -3353,6 +3357,7 @@ function setupEnemy() {
   const type = typeless() ? 'normal' : b.def.type;   // elites and bosses ignore the chart, so show them as Neutral
   $('enemy-zone').dataset.type = type;
   $('enemy-name').textContent = (b.kind === 'boss' ? '👹 ' : b.kind === 'elite' ? '💀 ' : shiny ? '✨ ' : '') + b.def.name;
+  $('enemy-plate').classList.remove('fading', 'gone');
   $('enemy-plate').classList.toggle('rare', rare);
   $('enemy-rare').hidden = !rare;
   $('enemy-plate').classList.toggle('shiny', shiny);

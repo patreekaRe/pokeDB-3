@@ -474,6 +474,10 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 .enemy-zone .enemy-pose { transition: filter 0.2s; }
 .foe-plate.aside { opacity: 0.62; }
 .foe-plate { transition: opacity 0.2s; }
+/* a fallen enemy's plate fades, then goes (fallen() in js/battle.js), and the other's moves up into its place */
+.foe-plate.fading { opacity: 0; transition: opacity 0.4s; }
+.arena.duo .foe-plate.gone { display: none; }
+.arena.duo #enemy-plate.gone + #enemy2-plate { margin-top: 0; }
 .dex-mark { flex: none; position: relative; align-self: center; margin: 0 4px 0 0; width: 1.15em; height: 1.15em; font-size: 1rem; cursor: help; }
 .dex-mark[hidden] { display: none; }
 .dex-mark img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }

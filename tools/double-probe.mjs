@@ -80,6 +80,9 @@ for (const [w, h] of [[402, 874], [390, 664]]) {
   await page.evaluate((u) => window.__play(u), uid);
   s = await page.evaluate(() => { const b = window.__battle(); return { over: b.over, t: b.target, down: b.enemies.map(en => en.down), gone: document.getElementById('enemy-portrait-box').classList.contains('defeated'), log: document.getElementById('battle-log-live').textContent, bubble: document.getElementById('enemy-intent').textContent }; });
   check(!s.over && s.down.join() === 'true,false' && s.t === 1 && s.gone && !s.bubble, `the first falls, the aim moves on, the fight goes on ("${s.log}")`);
+  await page.waitForTimeout(600);
+  const [gone, moved] = await Promise.all([page.evaluate(() => getComputedStyle(document.getElementById('enemy-plate')).display), box(page, 'enemy2-plate')]);
+  check(gone === 'none' && Math.abs(moved.t - p1.t) <= 1, `its plate goes and the other's moves up into its place (top ${Math.round(moved.t)})`);
   await page.evaluate(() => window.__end());
   s = await page.evaluate(() => { const b = window.__battle(); return { turn: b.turn, over: b.over, hp: b.enemies.map(en => en.hp) }; });
   check(!s.over && s.turn === 2 && s.hp[0] === 0, 'the enemies\' turn: only the one standing acts, then yours');
