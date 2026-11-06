@@ -9,8 +9,8 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**▶ PLAYTEST ON THE BRANCH. Second pairs and the slide to the middle: built 2026-11-06 on branch `claude/second-pairs`
-in both repos, NOT on `main`** (the battle revamp's rule; commit e65192b; `docs/reference/cards.md`'s "Double battles,
+**▶ PLAYTEST ON THE LIVE SITE. Second pairs and the slide to the middle: built 2026-11-06 on branch `claude/second-pairs`
+in both repos, merged into `main` the same day at the user's word ("Merge fuck it")** (commit e65192b; `docs/reference/cards.md`'s "Double battles,
 phase 6"). The user's "you choose": five biomes get a second pair with the role they lacked: the Shrine a caller
 (Teddiursa), the Wastes a pack (two Cacturne; a caller first, but it cost ~1.9x), the Ruins a tank (Shellder's Mist
 shielding Corphish), Thornwood a pack (two Carvanha), the Savanna a tank (Cherrim's Safeguard shielding Sunflora); the
@@ -18,7 +18,7 @@ Clearing keeps Sentret alone, the Depths none. And the one of two left standing 
 (`layAlone()`), back to its half on a call for help. Bot check (human, L3, 150 a cell, % of max HP a fight against the biome's other normals): Teddiursa 1.33-1.46x, two Cacturne 1.10x, Shellder 0.98x, Carvanha 1.13x, Cherrim 1.13x (the old pairs 0.85-1.7x in the same runs); default road win % fire / grass / water 48.7 / 41.3 / 27.3 against `main`'s 46.7 / 40.0 / 34.0 (water's -7 inside noise: the two earlier new samples had it at 33.3) node --test and
 double-probe pass. Playtest link: https://rawcdn.githack.com/patreekaRe/pokeDB-3/e65192bf1e53fd2f47e41c19c9cac571b77f7870/index.html?arena=wild&foe=carvanha&biome=thornwood
 (also `foe=teddiursa&biome=shrine`, `cacturne&biome=wastes`, `shellder&biome=ruins`, `cherrim&biome=savanna`).
-**Next: the user's playtest, then a merge of both repos' branch when they say so.**
+**Next: the user plays it on the live site and says if a pair feels unfair or the slide reads badly.**
 
 **▶ PLAYTEST ON THE LIVE SITE. The battle revamp merged into `main` 2026-11-06** (the user's "just merge it"): smarter
 enemies (parts 1 and 2) and double battles phases 1-5 (the two-enemy layout and aiming, pairs with roles in every biome's
