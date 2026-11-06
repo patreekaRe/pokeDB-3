@@ -497,6 +497,11 @@ html:has(body[data-screen="battle-screen"]), body[data-screen="battle-screen"] {
 /* a fallen enemy's plate fades, then goes (fallen() in js/battle.js), and the other's moves up into its place */
 .foe-plate.fading { opacity: 0; transition: opacity 0.4s; }
 .arena.duo .foe-plate.gone { display: none; }
+/* the one of two left standing slides to the middle of its side and stands a single's size (layAlone() in js/battle.js);
+   --duo is registered so it eases with the slide, and the 3D pad follows the box */
+@property --duo { syntax: '<number>'; inherits: true; initial-value: 1; }
+.arena.duo :is(#enemy-zone, #enemy2-zone).alone { width: 100%; --duo: 1; margin-top: calc(var(--base) * 0.16); z-index: 3; }
+.arena.duo .enemy-zone.slides { transition: width 0.55s ease-in-out, margin-top 0.55s ease-in-out, --duo 0.55s ease-in-out; }
 .arena.duo #enemy-plate.gone + #enemy2-plate { margin-top: 0; }
 .dex-mark { flex: none; position: relative; align-self: center; margin: 0 4px 0 0; width: 1.15em; height: 1.15em; font-size: 1rem; cursor: help; }
 .dex-mark[hidden] { display: none; }

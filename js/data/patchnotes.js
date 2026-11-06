@@ -52,7 +52,7 @@ export const NEXT = [
   ...HELD.filter(([on]) => on).map(([, line]) => line),
   ['fixes', 'Every 3D place, from the Clearing to towns, gyms and fights, draws its shadows in a few batches now, so phones run smoother, and towns no longer hitch every few seconds.'],
   ['battle', 'Smarter enemies: some Pokémon strike several times (Fury Swipes 5×3), a few pick moves unpredictably, and bosses and Alphas change tactics at half HP.'],
-  ['battle', 'Double battles: some wild Pokémon come in pairs that guard, power up or call for help. Tap an enemy to aim; Acid and three Max moves hit both.'],
+  ['battle', 'Double battles: some wild Pokémon, two kinds in most biomes, come in pairs that guard, power up or call for help. Tap an enemy to aim; Acid and three Max moves hit both.'],
   ['battle', 'Water\'s Withdraw blocks 9 (12 upgraded), like Flame Wall, since Water\'s slower fights made it the hardest starter against the smarter enemies.'],
 ];
 

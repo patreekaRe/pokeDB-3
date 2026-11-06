@@ -247,7 +247,7 @@ export const ENEMY_DEFS = {
     description: 'Licks honey off its paws. Cute until you get between it and the honey.',
     moves: [
       { kind: 'attack', name: 'Fury Swipes', amount: 2, hits: 3 },
-      { kind: 'defend', name: 'Charm',       amount: 8 },
+      { kind: 'call',   name: 'Call for Help', calls: 'teddiursa', hp: 0.25, dmg: 0.5, instead: { kind: 'defend', name: 'Charm', amount: 8 } },
       { kind: 'attack', name: 'Slash',       amount: 11 },
     ],
   },
@@ -294,10 +294,11 @@ export const ENEMY_DEFS = {
   },
   shellder: {
     name: 'Shellder', type: 'water', hp: 62, ...sprite('shellder'),
+    pack: { mates: ['corphish'], hp: [0.6, 0.4], dmg: 0.6 },
     description: 'Clamps shut in the temple\'s tide pools and waits for a careless foot.',
     moves: [
       { kind: 'attack', name: 'Icicle Spear', amount: 2, hits: 3, type: 'normal' },
-      { kind: 'defend', name: 'Withdraw',      amount: 10 },
+      { kind: 'defend', name: 'Mist',          amount: 8, team: true },
       { kind: 'attack', name: 'Clamp', amount: 11 },
     ],
   },
@@ -422,10 +423,11 @@ export const ENEMY_DEFS = {
   },
   cacturne: {
     name: 'Cacturne', type: 'grass', hp: 64, ...sprite('cacturne'),
+    pack: { mates: ['cacturne'], hp: 0.45, dmg: 0.6 },
     description: 'Stands still all day in the heat, then follows travellers at night.',
     moves: [
       { kind: 'attack', name: 'Needle Arm',   amount: 8 },
-      { kind: 'buff',   name: 'Swords Dance', amount: 2 },
+      { kind: 'buff',   name: 'Swords Dance', amount: 2, team: true },
       { kind: 'attack', name: 'Energy Ball',  amount: 12 },
     ],
   },
@@ -582,10 +584,11 @@ export const ENEMY_DEFS = {
   },
   carvanha: {
     name: 'Carvanha', type: 'water', hp: 60, ...sprite('carvanha'),
+    pack: { mates: ['carvanha'], hp: 0.5, dmg: 0.6 },
     description: 'Packs the jungle\'s rivers. One bite and the whole school knows where you are.',
     moves: [
       { kind: 'attack', name: 'Aqua Jet',    amount: 8 },
-      { kind: 'buff',   name: 'Rage',     amount: 2 },
+      { kind: 'buff',   name: 'Rage',     amount: 2, team: true },
       { kind: 'attack', name: 'Waterfall', amount: 13 },
     ],
   },
@@ -695,9 +698,10 @@ export const ENEMY_DEFS = {
   },
   cherrim: {
     name: 'Cherrim', type: 'grass', hp: 50, ...sprite('cherrim'),
+    pack: { mates: ['sunflora'], hp: [0.6, 0.4], dmg: 0.6 },
     description: 'Stays shut through the long dry spells and bursts open the moment the sun gets fierce.',
     moves: [
-      { kind: 'defend', name: 'Synthesis',    amount: 8 },
+      { kind: 'defend', name: 'Safeguard',    amount: 8, team: true },
       { kind: 'attack', name: 'Magical Leaf', amount: 7 },
       { kind: 'attack', name: 'Petal Dance',  amount: 11 },
     ],
