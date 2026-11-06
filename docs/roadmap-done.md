@@ -3954,3 +3954,132 @@ The double-battles idea's step (a), on `main` by the user's call. `hits`, `atHal
 half-HP moves, 11 multi-hit moves. `tests/enemy-moves.test.mjs`, `tools/enemy-probe.mjs`, `?arena=wild&foe=<id>`.
 Branch `multi-enemy-battles` fast-forwarded to `main` after.
 
+
+### The battle revamp: smarter enemies and double battles (2026-11-04 to 11-06, cloud; merged into `main` 2026-11-06)
+
+The roadmap's entries as they stood at the merge (the "Smarter enemies" section above was reverted off `main` the same
+day and came back with this merge).
+
+**▶ PLAYTEST ON THE BRANCH. Smarter enemies: built 2026-11-04, on branch `smarter-enemies` (commit e9ffd33e), NOT on
+`main`** (the double-battles idea's step (a); `docs/reference/cards.md`'s last section). It went to `main` by mistake
+the same day (the session read "I'd put it on main" as the user's call; the user wanted a playtest branch) and was
+reverted there within the hour; pokeDB-sim's mirror is on its own `smarter-enemies` branch too. Playtest link:
+https://rawcdn.githack.com/patreekaRe/pokeDB-3/441c04ee9da21e9feb953b87daa92531c3778842/index.html (add the flags below to it). Merge both branches into `main` only once the user says so. Multi-hit moves
+("5×3", each hit through your block), a move at half HP once (every Alpha's Frenzy 5×3, a move each for the 9 main bosses),
+a random order for 5 erratic ones (never a move three turns running), Regigigas opening with Slow Start. Bot check (human
+bot, old -> new win %, 150 a cell): Fire L0 76.7 -> 77.3, L3 50.7 -> 50.0; Grass L0 61.3 -> 72.0, L3 44.7 -> 44.7;
+Water L0 60.0 -> 48.7, L3 51.3 -> 36.0. Water confirmed at 300: L0 63.3 -> 56.3, L3 42.3 -> 39.7 (all 450 pooled:
+-8 / -7). So Fire and Grass hold and Water is ~7 points harder, deaths spread over biomes 2-3, no one fight; not
+retuned yet (the user's call: keep it as challenge, or soften Water's matchups). On the playtest link try `?arena=wild&foe=cinccino` (two multi-hits),
+`?arena=elite&foe=sentret` (Frenzy at half HP), `?arena=wild&foe=kangaskhan`. Say if any fight feels unfair or the
+"5×3" bubble reads badly on a phone.
+**Part 2 built 2026-11-04 on the same branch** (commit 441c04e and its docs commit; `docs/reference/cards.md`'s "Part 2"): the
+pool biomes' and the Depths' multi-hits (Fury Swipes, Double Slap, Tail Slap 2×5, Icicle Spear, Fury Attack, Dual Chop), a
+half-HP move for every pool boss and Eternatus (and Porygon-Z), Spinda and Castform at random. Bot check: every cell
+within noise (Water on Ruins -> Thornwood at 300: L0 53.0 -> 51.3, L3 38.3 -> 35.0). On the branch link try
+`?arena=wild&foe=minccino` (2×5) and `?arena=elite&foe=spinda`. Next is the user's: playtest, say "merge" (both repos'
+`smarter-enemies` into `main`), or ask for Water to be softened, the Safari's Pokémon or the gyms next.
+
+**The whole battle revamp stays on branches** (the user's rule, 2026-11-04, CLAUDE.md's "The battle revamp never touches
+`main`"): smarter enemies, double battles and everything after them are built and playtested on their own branches,
+never pushed to `main` until the user says to merge. **No merge for a while** (the user, 2026-11-04, after part 2): the next steps build on the branches;
+the double battles' phases 1 to 4 are done (below); the user's playtest of the phase 4 branch is next.
+
+**Battles with more than one enemy (StS-style)** (an idea, 2026-11-04, on branch `multi-enemy-battles`, never `main`;
+the user's ask: the phone battle feels small, could fights have several enemies like Slay the Spire?). Measured on an
+iPhone 13 (390x664 visible): the arena is 374x337, the enemy's box 178x121 with an 85px sprite, its intent bubble 184px
+wide; on an iPhone SE 72px. Three enemies abreast would leave ~60px sprites and no room for full intents, so the pick
+offered is **Pokémon-style double battles**: at most 2 enemies, only in some fights (pack Pokémon whose dex lines
+already say "hunts in packs": Houndour, the jungle's school), bosses solo or boss + one minion, singles stay the
+default. Needs: `b.enemy` (144 uses in `js/battle.js`) becomes `b.enemies[]` + a target; tap an enemy to target (the
+other dims), a lone enemy auto-targeted so singles play as now; compact intents (icon + number, name in the tip); per-
+enemy statuses (burn, Weak, Vulnerable, Static, Frost, Fault...); which card lines hit all (a new `all: true` key,
+`describe()` "to ALL enemies", a `cardTerms()` line); catching / Poké Balls only once one is left (or aim the ball);
+the 3D arena placing two; `sim/engine.js` mirrored with a bot that targets (lowest HP that dies this turn, else the
+bigger hitter) and a balance pass on encounter HP. Phased: (1) engine + `enemies[]` with one enemy, no visible change;
+(2) the two-enemy layout and targeting on phones; (3) pack encounters in `encounters` data + a few AoE cards;
+(4) the sim + balance. **Phase 1 done 2026-11-04 on branch `multi-enemy-battles`** (commit 53f4339 and its docs
+commit; pokeDB-sim's mirror on its own `multi-enemy-battles` branch; `docs/reference/cards.md`'s "Double battles, phase
+1"): the branch brought up to date (main merged, main's revert of smarter enemies reverted, `smarter-enemies` part 2
+merged), then `b.enemies[]` + `b.target` / `b.acting`, each enemy its own `def`, second form and move order, the enemies'
+turn one enemy at a time, a win once all are down; `b.enemy` / `b.def` read the one in focus. Nothing a player sees
+changed: node --test, tools/enemy-probe.mjs and the new tools/battle-flows-probe.mjs (a wild fight, Eternatus rising, a
+Safari catch, a gym, on a phone viewport) pass, and the sim gives the exact same seeded runs before and after. Minccino's
+Tail Slap reads 3×5 in the Clearing (2×5 plus the biome's +7 shared over the hits; the same before the change).
+**Found, not fixed** (on `main` too): after a gym win a music fade can throw "setValueCurveAtTime overlaps"
+(`pass()` in `js/audio.js`: a pass started within a crossfade of the loop's end starts its fade-in and fade-out at once);
+a fix belongs on `main` (▶ CLOUD, effort low).
+**Phase 2 done 2026-11-04 on branch `claude/two-enemy-layout-targeting-46sg44`** (built from `multi-enemy-battles`, which
+it fast-forwards; commit e624ecb; playtest link https://rawcdn.githack.com/patreekaRe/pokeDB-3/227759fd4cfd434e51ea83119d3939b775b80125/index.html?arena=double; pokeDB-sim's mirror on the same-named branch;
+`docs/reference/cards.md`'s "Double battles, phase 2" and the battle layout file's last paragraph): the games' doubles
+layout (two compact plates stacked top left, the two enemies side by side top right, the left one nearer, each its own
+3D pad), compact move bubbles (icon + number, the name in the tip), each enemy its own box, HP bar, statuses and pops;
+tap an enemy or its plate to aim (also with a card raised; the other dims), the target moving on when it falls while
+the other stands ("The wild X fainted!"), the lethal warning counting both attacks; a fallen enemy's plate goes and the other's moves up (the user's ask, 2026-11-05, commit 0a204b3). Test-only: `?arena=double`
+(`&foe=rattata,sentret`, `&hp=0.5`). node --test, tools/enemy-probe.mjs, tools/battle-flows-probe.mjs and the new
+tools/double-probe.mjs (402x874 and 390x664) pass; the sim's `retarget()` leaves seeded runs unchanged. **The user's
+verdict (2026-11-05): "I kinda like this"** after trying it, the plate fix included. Then (the user, same day: "I don't think the player knows how to switch targets"):
+a gold reticle on the one aimed at, and till the first aim a tapping fingertip on the other and a first-turn note
+(commit 227759f). Offered, not asked for yet: the
+enemy left sliding to the middle and standing a step bigger once it's alone.
+**Phase 3 done 2026-11-05 on branch `claude/double-battles-phase-3-yxc8zz`** (built from the phase 2 branch, which it
+fast-forwards, as that one fast-forwards `multi-enemy-battles`, so any of them can be brought up to it; commits 51c2eea
+and 73106db; pokeDB-sim's mirror on the same-named branch; `docs/reference/cards.md`'s "Double battles, phase 3"): one
+Pokémon in each biome's twelve normals is never met alone, so about one fight a biome is a double. **Pairs with roles**:
+a pack powering each other up (Houndour ×2 in the Shrine, Houndoom + Houndour in the Savanna: Howl +2 to each), a tank
+shielding a hitter (Bouffalant + Tauros in the Wastes, Exeggutor + Simisage in Thornwood: 9 block to each), a caller
+(Sentret in the Clearing, Finneon in the Ruins: Call for Help brings one of its kind in, two calls a fight, only while
+it stands alone). **Hit-both cards**: Acid (Neutral), Max Flare, Max Overgrowth, Max Geyser (`all: true`, "to ALL enemies").
+**Two-enemy rules**: Hail and Sandstorm chip both, Burn / Leech Seed / Static / Fault stay each one's own, Rocky Helmet
+hurts the one attacking. **Catching**: no ball while two stand ("Two are out: knock one out first"); the Safari pairs one
+species only. A double credits both in the Pokédex. Bot check (human, L3, 150 a cell): win rates level with pairs off,
+after the pairs were trimmed from about twice an ordinary fight's cost to 1-1.5x. node --test, card-twins,
+double-probe (51 checks), battle-flows and enemy probes pass. Playtest link (a fresh save, so add `&coins=` if needed):
+https://rawcdn.githack.com/patreekaRe/pokeDB-3/73106db32e13405d11d20a9c73d4595d15a56364/index.html?arena=wild&foe=houndour (also `foe=sentret`,
+`bouffalant`, `exeggutor`, `houndoom`, `finneon`), or start a normal run from the same link and meet them on the map.
+Not done: no patch note yet (the revamp gets one when it merges); the Safari's mixed pairs fight alone.
+**Phase 3's playtest and phase 4 done 2026-11-05 on branch `claude/phase-3-playtest-kn1qzz`** (built from the phase 3
+branch, which it fast-forwards; commits 7e73053 and 440d8a6; pokeDB-sim's mirror on the same-named branch;
+`docs/reference/cards.md`'s "Double battles, phase 4"). The playtest (headless, all six pairs played to the end) found
+three things, all fixed: a tank's 9 block on its partner was gone before the partner's turn ended (every enemy's block now
+goes as the enemies' turn begins, StS's rule); the reward news and the map's revealed room named only one Pokémon ("The
+two wild Houndour fainted!", "Exeggutor and Simisage"). The balance pass (human bot, both pool routes, Levels 0 / 3 / 5):
+Houndoom + Houndour 1.3-1.6x an ordinary fight's HP cost, Bouffalant + Tauros 1.2-1.4x, Exeggutor + Simisage 0.7-1.2x,
+but the callers cost far more (Sentret 1.5-1.9x, Finneon 2.1-2.3x, fainting 24 of 112 at L5), so their helpers came down
+(Sentret's 0.3 HP / 0.6 damage, Finneon's 0.25 / 0.5): now Sentret 1.0-1.6x, Finneon 1.3-1.6x, and L3 win rates with
+pairs on (fire / grass / water 55 / 50 / 31) are level with the screen's pairs off. **Hit-both cards** (the bot now
+values a hit's second target): Max Geyser is taken 38-50% of the times offered, Max Overgrowth 11-29%, Max Flare 5-13%,
+Acid 2-28%; an extra copy in the starting deck (L3, 100 a cell) is worth +15 points for Max Overgrowth, about nothing for
+Max Flare and Max Geyser, and costs 10-18 for Acid (a dead draw in most decks). **A second pair per biome**: the pairs
+now cost about an ordinary fight, so there's room for one, but which Pokémon and what role is a design call (offered,
+not asked for). node --test, card-twins and double-probe (52 checks, a Bouffalant step added) pass. Playtest link:
+https://rawcdn.githack.com/patreekaRe/pokeDB-3/440d8a6b23f1f63eb39cf4fee47de3d68c26aeca/index.html?arena=wild&foe=bouffalant&biome=wastes
+(also `foe=finneon&biome=ruins`, `foe=sentret`, `houndour`, `exeggutor`, `houndoom`), or a normal run from the same
+link. The side-on layout is out (the user's no, 2026-11-05).
+**Phase 5 (Acid only) done 2026-11-06 on branch `claude/acid-damage-vulnerable-fjikmy`** (built from
+`claude/phase-3-playtest-kn1qzz`, which it fast-forwards; commit f374bb2; pokeDB-sim's same-named branch adds the `oldAcid`
+variant). Acid is now 5 damage and 2 Vulnerable to ALL enemies, upgraded 8 and 3 (was 1 and 1; the pick the user confirmed,
+2026-11-06); card-twins, node --test and double-probe pass. Bot (human, L3, 150 a cell, default route, fire / grass / water
+win %): with no extra card, old Acid 50.0 / 39.3 / 34.0, new 44.7 / 38.0 / 34.0 (noise); an extra copy in the starting deck,
+old 41.3 / 30.0 / 28.0 (-9 / -9 / -6), new 34.0 / 30.0 / 26.7 (-11 / -8 / -7). So an extra copy **still costs points**, about
+as much as before (the gap is inside noise), though the bot now takes Acid from 55-64% of the rewards offering it (old 3-20%)
+and plays it five times as often. Not done (the user's call): a stronger Acid (0 PP, or more damage), a second pair in some
+biomes (offered), the enemy left sliding to the middle once alone (offered). Playtest link:
+https://rawcdn.githack.com/patreekaRe/pokeDB-3/f374bb2470c11b66e6749e3c68dae46cfc2d5191/index.html?arena=wild&foe=houndour&cards=acid,acid+
+**Next: the user's playtest, their call on Acid as it stands, then a merge when the user says so.**
+
+> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt (only if the user wants more after the
+> playtest): "On branch `claude/acid-damage-vulnerable-fjikmy` in both repos (never push to main), double battles: <make
+> Acid stronger as the user says / add a second pair to the biomes the user names, each with a role (pack, tank, caller),
+> pairs at 1-1.5x an ordinary fight's HP cost>. Bot check with pokeDB-sim's branch (150 a cell, 300 to confirm; variant
+> `oldAcid` is phase 3's Acid). Run node --test, tools/card-twins.mjs and tools/double-probe.mjs; give me the githack link."
+
+**What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
+StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
+play). What it lacks: (a) **smarter enemies**: built on branch `smarter-enemies` 2026-11-04, waiting on the user's playtest (the
+"Open" entry above). (b) **pairs designed with roles**, not two random Pokémon: a tank
+shielding a hitter, a caller that brings in a helper, a pair that buffs each other; that's what makes two enemies a
+puzzle. (c) **StS's side-on layout** (you on the left, enemies in a row on the right, bigger sprites, a fanned hand):
+roomier on a phone but drops the Pokémon games' diagonal look. **No** (the user, 2026-11-05: "I wana skip the side
+layout"): the doubles keep the Pokémon games' layout. Order: (a) first, then double battles with (b). Branch `multi-enemy-battles` already holds (a) (it was
+fast-forwarded while (a) was briefly on `main`), so its phase 1 starts from the smarter enemies.
