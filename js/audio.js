@@ -886,7 +886,9 @@ class LoopedTrack {
     const source = this.source(this.buffer), gain = ctx.createGain();
     source.connect(gain).connect(this.out);
     if (fadeIn) { gain.gain.value = 0; gain.gain.setValueCurveAtTime(RISE, when, this.xfade); }
-    const handOver = when + (this.loopEnd - this.xfade / 2 - offset);
+    // a pass resumed within a crossfade of the loop's end would start its fall before (or during) its rise, which
+    // setValueCurveAtTime throws on (2026-11-06, after a gym win): the fall waits, playing on past loopEnd a moment
+    const handOver = Math.max(when + (this.loopEnd - this.xfade / 2 - offset), when + (fadeIn ? this.xfade : 0), ctx.currentTime);
     gain.gain.setValueCurveAtTime(FALL, handOver, this.xfade);
     source.start(when, offset);
     source.stop(handOver + this.xfade);

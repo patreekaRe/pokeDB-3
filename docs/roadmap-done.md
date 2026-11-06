@@ -4083,3 +4083,5 @@ puzzle. (c) **StS's side-on layout** (you on the left, enemies in a row on the r
 roomier on a phone but drops the Pokémon games' diagonal look. **No** (the user, 2026-11-05: "I wana skip the side
 layout"): the doubles keep the Pokémon games' layout. Order: (a) first, then double battles with (b). Branch `multi-enemy-battles` already holds (a) (it was
 fast-forwarded while (a) was briefly on `main`), so its phase 1 starts from the smarter enemies.
+
+**Music fade after a gym win: fixed 2026-11-06** (branch `claude/music-fade-gym-wins-pa2dun`): `pass()` in `js/audio.js` holds a pass's fade-out until its fade-in ends (and never before now), so `setValueCurveAtTime` no longer throws "overlaps".

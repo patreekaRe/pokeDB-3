@@ -17,9 +17,6 @@ Pairs also turn up on the Sky Pillar (its fights deal from the main biomes' norm
 Checked at the merge: node --test, card-twins, double-probe, battle-flows and enemy probes, and a short climb smoke run
 in the sim. Left open (the user's calls): Water about 7 points harder with smarter enemies; an extra Acid in the starting
 deck still costs 6-11 points; no full Sky Pillar bot check yet (▶ CLOUD, effort medium, `towerCfg`, old vs new).
-**Found, not fixed** (on `main`): after a gym win a music fade can throw "setValueCurveAtTime overlaps" (`pass()` in
-`js/audio.js`: a pass started within a crossfade of the loop's end starts its fade-in and fade-out at once; ▶ CLOUD,
-effort low).
 
 **▶ PLAYTEST ON THE LIVE SITE. Shadows in a few draws, the hub's fps: done 2026-11-04, on `main`** (the user's ask:
 "improving fps overall especially in the hub, and find more memory leak stuff"; `docs/roadmap-done.md`,
