@@ -553,3 +553,5 @@ wastes (B); % of max HP a fight against the same biome's plain normals, all type
 sample), Shellder 0.98x, Carvanha 1.13x, Cherrim 1.13x, Cacturne as a caller 1.78x / 1.71x (above). The old pairs in the same runs: Sentret 1.1-1.3x,
 Houndour 1.02x, Bouffalant 1.2x, Finneon 1.69x, Exeggutor 0.85x, Houndoom 1.53x. Win % fire / grass / water: default
 50.7 / 32.0 / 33.3, A 48.0 / 42.0 / 29.3, B 46.7 / 34.7 / 28.7.
+Then two Cacturne as a pack (default road, 150 a cell): 1.10x; win % 48.7 / 41.3 / 27.3 against `main`'s data under the
+same bot 46.7 / 40.0 / 34.0 (inside noise; Water's two other samples 33.3).
