@@ -4083,3 +4083,20 @@ puzzle. (c) **StS's side-on layout** (you on the left, enemies in a row on the r
 roomier on a phone but drops the Pokémon games' diagonal look. **No** (the user, 2026-11-05: "I wana skip the side
 layout"): the doubles keep the Pokémon games' layout. Order: (a) first, then double battles with (b). Branch `multi-enemy-battles` already holds (a) (it was
 fast-forwarded while (a) was briefly on `main`), so its phase 1 starts from the smarter enemies.
+
+### Water level again (2026-11-06, cloud; branch `claude/water-difficulty-balance-3dfkq6` in both repos)
+
+The battle revamp's open question: Water ~7 points behind since smarter enemies. Human bot, default road, 150 a cell
+unless said. The sim's new `dumb` variant (smarter enemies' rules off: one hit a move, no half-HP move, no opening, no
+random order) didn't single Water out: off -> on, fire / grass / water L0 79.3 / 63.3 / 57.3 -> 64.0 / 64.0 / 58.0, L3
+56.0 / 50.0 / 36.7 -> 50.0 / 42.0 / 39.3; the rules make Alphas and bosses cost more HP for everyone. What does single
+Water out is fight length: its bosses take 8-11 turns (Fire 5-6), its Alphas 11-14 (6-7), so every buff and half-HP move
+lands more often. Its bad matchups (the Grass wilds: Tangela, Maractus and Cacturne cost it 27-38% of max HP a fight,
+Bellsprout 24%) cost no more than Grass's own (24% a fight, all bad matchups pooled; Water 19%), and softening them
+(the four 13% or 20% less HP, or 13% and 2-3 less damage) moved Water within noise. Card screens (Water only): Water
+Gun 8 L0 / L3 60.7 / 34.7, Water Pulse 7 56.0 / 38.7, Torrent 3 Tide 58.0 / 32.0, **Withdraw 9 66.7 / 49.3** (base 58.0 /
+39.3). Shipped Withdraw 9 (upgraded 12), Flame Wall's numbers again (it was 8 "like Flame Wall" until Fire's lift took
+Flame Wall to 9). Confirmed at 300: L0 57.0 -> 58.7, L3 35.7 -> 46.7; pooled with the screen, 57 / 37 -> 61 / 48. Fire and
+Grass don't hold Withdraw, so they stay at 64 / 50 and 64 / 42. Kenmatta's Water trials' decks hold Withdraw too, a touch
+easier.
+

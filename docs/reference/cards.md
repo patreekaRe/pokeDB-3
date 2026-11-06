@@ -523,3 +523,7 @@ analogy, unmeasured; phase 4 is the full pass.
   worth a card on a lone enemy too (the user's pick). Human bot, L3, 150 a cell, fire / grass / water: with no extra card
   level with old Acid (44.7 / 38.0 / 34.0 vs 50.0 / 39.3 / 34.0); an extra copy still costs -11 / -8 / -7 (old -9 / -9 / -6),
   but the bot takes it from 55-64% of the rewards offering it (old 3-20%).
+- **Water level again (2026-11-06, branch `claude/water-difficulty-balance-3dfkq6`)**: Withdraw 9 (upgraded 12), like Flame
+  Wall. Water's fights run about twice as long as Fire's, so smarter enemies' buffs and half-HP moves land more often on
+  it; softening its bad matchups (the Grass wilds) didn't move the bot, one more block on its four Defends did: L0 / L3
+  57 / 37 -> 61 / 48 (450 a cell), against Fire 64 / 50 and Grass 64 / 42.

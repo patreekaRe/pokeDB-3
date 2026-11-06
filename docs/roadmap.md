@@ -15,11 +15,17 @@ normals, Call for Help, Acid and the three Max moves hitting both, Acid at 2 / 3
 `claude/acid-damage-vulnerable-fjikmy`; the archive's "The battle revamp" holds every phase's notes and bot numbers.
 Pairs also turn up on the Sky Pillar (its fights deal from the main biomes' normals) and, one species only, in the Safari.
 Checked at the merge: node --test, card-twins, double-probe, battle-flows and enemy probes, and a short climb smoke run
-in the sim. Left open (the user's calls): Water about 7 points harder with smarter enemies; an extra Acid in the starting
+in the sim. Left open (the user's calls): an extra Acid in the starting
 deck still costs 6-11 points; no full Sky Pillar bot check yet (▶ CLOUD, effort medium, `towerCfg`, old vs new).
 **Found, not fixed** (on `main`): after a gym win a music fade can throw "setValueCurveAtTime overlaps" (`pass()` in
 `js/audio.js`: a pass started within a crossfade of the loop's end starts its fade-in and fade-out at once; ▶ CLOUD,
 effort low).
+
+**▶ PLAYTEST ON THE BRANCH. Water softened: done 2026-11-06, on branch `claude/water-difficulty-balance-3dfkq6` (both
+repos), NOT on `main`** (the battle revamp's follow-up, so it waits for the user's "merge"; `docs/roadmap-done.md`'s
+"Water level again"). Withdraw 8 -> 9 (upgraded 11 -> 12), Flame Wall's again. Water L0 / L3 57 / 37 -> 61 / 48 (450 a
+cell), Fire 64 / 50 and Grass 64 / 42 untouched. Playtest: https://rawcdn.githack.com/patreekaRe/pokeDB-3/9ead65f3317c54d32aa91521ffe1cc7cdd6c26d0/index.html?coins=5000
+(pick Squirtle; a fight's Withdraw reads 9). Merge both branches into `main` on the user's word.
 
 **▶ PLAYTEST ON THE LIVE SITE. Shadows in a few draws, the hub's fps: done 2026-11-04, on `main`** (the user's ask:
 "improving fps overall especially in the hub, and find more memory leak stuff"; `docs/roadmap-done.md`,
