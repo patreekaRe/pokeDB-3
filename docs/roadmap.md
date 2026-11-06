@@ -9,6 +9,17 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**▶ PLAYTEST ON THE BRANCH. Second pairs and the slide to the middle: built 2026-11-06 on branch `claude/second-pairs`
+in both repos, NOT on `main`** (the battle revamp's rule; commit LASTCOMMIT; `docs/reference/cards.md`'s "Double battles,
+phase 6"). The user's "you choose": five biomes get a second pair with the role they lacked: the Shrine a caller
+(Teddiursa), the Wastes a pack (two Cacturne; a caller first, but it cost ~1.9x), the Ruins a tank (Shellder's Mist
+shielding Corphish), Thornwood a pack (two Carvanha), the Savanna a tank (Cherrim's Safeguard shielding Sunflora); the
+Clearing keeps Sentret alone, the Depths none. And the one of two left standing slides to the middle at a single's size
+(`layAlone()`), back to its half on a call for help. Bot check (human, L3, 150 a cell): BOTNUMBERS. node --test and
+double-probe pass. Playtest link: https://rawcdn.githack.com/patreekaRe/pokeDB-3/LASTCOMMIT/index.html?arena=wild&foe=carvanha&biome=thornwood
+(also `foe=teddiursa&biome=shrine`, `cacturne&biome=wastes`, `shellder&biome=ruins`, `cherrim&biome=savanna`).
+**Next: the user's playtest, then a merge of both repos' branch when they say so.**
+
 **▶ PLAYTEST ON THE LIVE SITE. The battle revamp merged into `main` 2026-11-06** (the user's "just merge it"): smarter
 enemies (parts 1 and 2) and double battles phases 1-5 (the two-enemy layout and aiming, pairs with roles in every biome's
 normals, Call for Help, Acid and the three Max moves hitting both, Acid at 2 / 3 Vulnerable), both repos, from branch
@@ -1245,9 +1256,9 @@ save is on only for `patreekare.github.io` and localhost (`FIREBASE_CONFIG` in `
 starts empty, which keeps a test build from writing over the real save. Possible: let a playtest link sign in and load
 the cloud save read-only (never upload), so a branch is tried on your own progress. Not asked for yet.
 
-**More for double battles** (offered 2026-11-05, not asked for yet): a second pair in some biomes (pack, tank or
-caller, at 1-1.5x an ordinary fight's HP cost); the enemy left sliding to the middle and a step bigger once alone; a
-stronger Acid (0 PP) if it still feels weak; mixed pairs in the Safari. **No**: StS's side-on layout (the user,
+**More for double battles** (offered 2026-11-05): a second pair in some biomes and the enemy left sliding to the middle
+are built on branch `claude/second-pairs` (the "Open" entry at the top). Still offered: a stronger Acid (0 PP) if it
+still feels weak; mixed pairs in the Safari; a second pair in the Clearing (left at one on purpose, the first biome). **No**: StS's side-on layout (the user,
 2026-11-05: "I wana skip the side layout").
 
 **Houses show a lot of empty wall** (an idea, 2026-10-28): with houses framed 8 tiles across, Kurt's Workshop sits low

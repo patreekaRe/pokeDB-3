@@ -423,10 +423,11 @@ export const ENEMY_DEFS = {
   },
   cacturne: {
     name: 'Cacturne', type: 'grass', hp: 64, ...sprite('cacturne'),
+    pack: { mates: ['cacturne'], hp: 0.45, dmg: 0.6 },
     description: 'Stands still all day in the heat, then follows travellers at night.',
     moves: [
       { kind: 'attack', name: 'Needle Arm',   amount: 8 },
-      { kind: 'call',   name: 'Call for Help', calls: 'cacturne', hp: 0.2, dmg: 0.4, instead: { kind: 'defend', name: 'Ingrain', amount: 9 } },
+      { kind: 'buff',   name: 'Swords Dance', amount: 2, team: true },
       { kind: 'attack', name: 'Energy Ball',  amount: 12 },
     ],
   },

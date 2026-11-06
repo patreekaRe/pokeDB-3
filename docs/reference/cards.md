@@ -530,8 +530,11 @@ The user's "you choose" (2026-11-06). Each biome but the Clearing (kept gentle, 
 none) gets a second pair with the role it lacked, so its two pairs play differently. All data, no engine change:
 - **Shrine, a caller**: Teddiursa's Call for Help (in Charm's place; Charm its `instead`) brings in a Teddiursa at 0.25 HP
   and 0.5 damage (Ursaring is a Shrine boss). Beside the Houndour pack.
-- **Wastes, a caller**: Cacturne's (in Swords Dance's place; the dex's "ragtag group" at night), its helper at 0.2 / 0.4 and
-  Ingrain (9 block) instead; at Finneon's 0.25 / 0.5 with Swords Dance instead it cost 1.7-1.8x. Beside the Bouffalant tank.
+- **Wastes, a pack**: two Cacturne (the dex's "ragtag group" following travellers at night), `hp: 0.45`, `dmg: 0.6`, Swords
+  Dance now `team` (+2 to each). Beside the Bouffalant tank. First built as a caller (Call for Help in Swords Dance's place):
+  at Finneon's 0.25 / 0.5 it cost 1.7-1.8x, and its helper trimmed to 0.2 / 0.4 with Ingrain instead still 1.94x (Cacturne
+  alone 16.6% of max HP a fight, as a caller ~30%: at the Wastes' damage a second body and two calls cost too much however
+  small the helper), so a pack, which lands near 1x.
 - **Ruins, a tank**: Shellder's Mist (8 block to each, `team`; its Withdraw 10 was its own) shields Corphish (Swords Dance,
   Crabhammer), `hp: [0.6, 0.4]`, `dmg: 0.6`. Beside the Finneon caller.
 - **Thornwood, a pack**: two Carvanha (`hp: 0.5`, `dmg: 0.6`), Rage now `team` (+2 to each). Beside the Exeggutor tank.
@@ -546,7 +549,7 @@ centre glides from its half to the middle, `--duo` 1, a single's size; `--duo` i
 `layFoes()` clears both. The 3D pads follow the box (`follow()`). `tools/double-probe.mjs` checks it (1px off the column's
 centre at 390x664 and 402x874; both back in their halves after Sentret's second call).
 **Bot check** (human bot, Level 3, 150 a cell; routes default, clearing -> ruins -> thornwood (A), clearing -> savanna ->
-wastes (B); % of max HP a fight against the same biome's plain normals, all types pooled): Teddiursa 1.46x, Shellder 0.98x,
-Carvanha 1.13x, Cherrim 1.13x, Cacturne 1.78x / 1.71x (trimmed, below). The old pairs in the same runs: Sentret 1.1-1.3x,
+wastes (B); % of max HP a fight against the same biome's plain normals, all types pooled): Teddiursa 1.46x (1.33x in a second
+sample), Shellder 0.98x, Carvanha 1.13x, Cherrim 1.13x, Cacturne as a caller 1.78x / 1.71x (above). The old pairs in the same runs: Sentret 1.1-1.3x,
 Houndour 1.02x, Bouffalant 1.2x, Finneon 1.69x, Exeggutor 0.85x, Houndoom 1.53x. Win % fire / grass / water: default
 50.7 / 32.0 / 33.3, A 48.0 / 42.0 / 29.3, B 46.7 / 34.7 / 28.7.
