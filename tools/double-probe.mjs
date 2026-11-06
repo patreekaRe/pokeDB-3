@@ -149,7 +149,7 @@ const start = async (page, url) => {
     await window.__cast('acid');
     return { lost: b.enemies.map((en, i) => was[i] - en.hp - en.block), vuln: b.enemies.map(en => en.vulnerable) };
   });
-  check(s.lost.every(n => n > 0) && s.vuln.every(n => n === 1), `Acid hits both (-${s.lost}) and both are Vulnerable`);
+  check(s.lost.every(n => n > 0) && s.vuln.every(n => n === 2), `Acid hits both (-${s.lost}) and both take 2 Vulnerable`);
   // no ball while two stand; one left, the reason goes
   s = await page.evaluate(() => { const b = window.__battle(); b.catchable = true; b.energy = 9; const two = window.__whyNotThrow(); b.enemies[0].hp = 0; window.__render(); const one = window.__whyNotThrow(); b.catchable = false; return { two, one }; });
   check(/knock one out/.test(s.two ?? '') && !/knock one out/.test(s.one ?? ''), `no ball while two stand ("${s.two}"), one left it may fly`);
