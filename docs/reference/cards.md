@@ -477,7 +477,7 @@ defend (every enemy standing gets it), and `kind: 'call'` (`calls`, `hp`, `inste
 - **A pack that powers each other up**: Houndour's Howl (the Shrine, two Houndours at 0.5 HP) and Houndoom's (the Savanna,
   0.55 and a Houndour at 0.45), +2 strength to each, both at 0.6 damage. The bubble says "+2×2" / "to each of them".
 - **Hit-both cards** (`all: true`; describe() adds "to ALL enemies" to the damage and to each mark, a cardTerms() box "ALL
-  enemies"): Acid (Neutral, 1 PP, 5 to ALL + 1 Vulnerable to ALL, StS's Thunderclap), Max Flare (Fire, 2 PP uncommon, 11 +
+  enemies"): Acid (Neutral, 1 PP, 5 to ALL + 2 Vulnerable to ALL, upgraded 8 + 3; was 1 Vulnerable till phase 5), Max Flare (Fire, 2 PP uncommon, 11 +
   Burn 3), Max Overgrowth (Grass, 2 PP uncommon, 10 + Leech Seed 3), Max Geyser (Water, 1 PP, 8 + 1 Tide, StS's Cleave).
   Nearly every real spread move was already a card, hence the Max moves. Each hits the one aimed at first, then the other,
   each with its own Vulnerable / Frostbite (`damageFor()` per enemy); its marks (`onFoe()`: Burn, Weak, Vulnerable, Leech
@@ -519,3 +519,7 @@ analogy, unmeasured; phase 4 is the full pass.
 - **Hit-both cards** (offered → taken; an extra copy in the starting deck, L3, 100 a cell, against 200 without): Max Geyser
   38-50%, about level; Max Overgrowth 11-29%, +15 points; Max Flare 5-13%, level; Acid 2-28%, -10 to -18 (a dead draw for
   most decks: a candidate to rework, the user's call).
+- **Phase 5 (2026-11-06, branch `claude/acid-damage-vulnerable-fjikmy`)**: Acid to 2 Vulnerable (upgraded 3), so it's
+  worth a card on a lone enemy too (the user's pick). Human bot, L3, 150 a cell, fire / grass / water: with no extra card
+  level with old Acid (44.7 / 38.0 / 34.0 vs 50.0 / 39.3 / 34.0); an extra copy still costs -11 / -8 / -7 (old -9 / -9 / -6),
+  but the bot takes it from 55-64% of the rewards offering it (old 3-20%).

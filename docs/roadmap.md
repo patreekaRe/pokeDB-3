@@ -1328,17 +1328,24 @@ now cost about an ordinary fight, so there's room for one, but which Pokémon an
 not asked for). node --test, card-twins and double-probe (52 checks, a Bouffalant step added) pass. Playtest link:
 https://rawcdn.githack.com/patreekaRe/pokeDB-3/440d8a6b23f1f63eb39cf4fee47de3d68c26aeca/index.html?arena=wild&foe=bouffalant&biome=wastes
 (also `foe=finneon&biome=ruins`, `foe=sentret`, `houndour`, `exeggutor`, `houndoom`), or a normal run from the same
-link. Acid's rework picked (the user asked Claude to choose, 2026-11-05): 2 Vulnerable instead of 1 (upgraded 3), so it's
-worth a card on a lone enemy too, not only in a double; built in phase 5. Offered, not asked for: a second pair in some biomes; the enemy left sliding to
-the middle once alone. **Next: the user's playtest of this branch, then phase 5 (below; Acid only, or Acid plus second
-pairs in the biomes the user names) and a merge when the user says so.** The side-on layout is out (the user's no, 2026-11-05).
+link. The side-on layout is out (the user's no, 2026-11-05).
+**Phase 5 (Acid only) done 2026-11-06 on branch `claude/acid-damage-vulnerable-fjikmy`** (built from
+`claude/phase-3-playtest-kn1qzz`, which it fast-forwards; commit f374bb2; pokeDB-sim's same-named branch adds the `oldAcid`
+variant). Acid is now 5 damage and 2 Vulnerable to ALL enemies, upgraded 8 and 3 (was 1 and 1; the pick the user confirmed,
+2026-11-06); card-twins, node --test and double-probe pass. Bot (human, L3, 150 a cell, default route, fire / grass / water
+win %): with no extra card, old Acid 50.0 / 39.3 / 34.0, new 44.7 / 38.0 / 34.0 (noise); an extra copy in the starting deck,
+old 41.3 / 30.0 / 28.0 (-9 / -9 / -6), new 34.0 / 30.0 / 26.7 (-11 / -8 / -7). So an extra copy **still costs points**, about
+as much as before (the gap is inside noise), though the bot now takes Acid from 55-64% of the rewards offering it (old 3-20%)
+and plays it five times as often. Not done (the user's call): a stronger Acid (0 PP, or more damage), a second pair in some
+biomes (offered), the enemy left sliding to the middle once alone (offered). Playtest link:
+https://rawcdn.githack.com/patreekaRe/pokeDB-3/f374bb2470c11b66e6749e3c68dae46cfc2d5191/index.html?arena=wild&foe=houndour&cards=acid,acid+
+**Next: the user's playtest, their call on Acid as it stands, then a merge when the user says so.**
 
-> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt (only if the user wants it after the
-> playtest): "On branch `claude/phase-3-playtest-kn1qzz` (never push to main), double battles phase 5: rework Acid
-> (an extra copy cost 10-18 points in phase 4) to 5 damage and 2 Vulnerable to ALL enemies, upgraded 8 and 3 (was 1 and
-> 8 / 1; the pick, 2026-11-05, passes card-twins), confirm with the bot that an extra copy no longer costs points and add a second pair to the biomes the user picks, each with a role
-> (pack, tank, caller); keep pairs at 1-1.5x an ordinary fight's HP cost with pokeDB-sim's branch (150 a cell, 300 to
-> confirm). Run node --test, tools/card-twins.mjs and tools/double-probe.mjs; give me the githack link."
+> Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Effort: high. Prompt (only if the user wants more after the
+> playtest): "On branch `claude/acid-damage-vulnerable-fjikmy` in both repos (never push to main), double battles: <make
+> Acid stronger as the user says / add a second pair to the biomes the user names, each with a role (pack, tank, caller),
+> pairs at 1-1.5x an ordinary fight's HP cost>. Bot check with pokeDB-sim's branch (150 a cell, 300 to confirm; variant
+> `oldAcid` is phase 3's Acid). Run node --test, tools/card-twins.mjs and tools/double-probe.mjs; give me the githack link."
 
 **What else would make it feel like StS** (asked the same day; a second enemy alone isn't it). The game already has
 StS's bones (deck, energy, intents, map, elites, relics, Mart / Center / ? rooms, card rewards with Skip, swipe to
