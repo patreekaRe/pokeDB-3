@@ -426,7 +426,7 @@ export const ENEMY_DEFS = {
     description: 'Stands still all day in the heat, then follows travellers at night.',
     moves: [
       { kind: 'attack', name: 'Needle Arm',   amount: 8 },
-      { kind: 'call',   name: 'Call for Help', calls: 'cacturne', hp: 0.25, dmg: 0.5, instead: { kind: 'buff', name: 'Swords Dance', amount: 2 } },
+      { kind: 'call',   name: 'Call for Help', calls: 'cacturne', hp: 0.2, dmg: 0.4, instead: { kind: 'defend', name: 'Ingrain', amount: 9 } },
       { kind: 'attack', name: 'Energy Ball',  amount: 12 },
     ],
   },

@@ -523,3 +523,30 @@ analogy, unmeasured; phase 4 is the full pass.
   worth a card on a lone enemy too (the user's pick). Human bot, L3, 150 a cell, fire / grass / water: with no extra card
   level with old Acid (44.7 / 38.0 / 34.0 vs 50.0 / 39.3 / 34.0); an extra copy still costs -11 / -8 / -7 (old -9 / -9 / -6),
   but the bot takes it from 55-64% of the rewards offering it (old 3-20%).
+
+## Double battles, phase 6: a second pair in five biomes, and the one left sliding to the middle (2026-11-06, branch `claude/second-pairs`)
+
+The user's "you choose" (2026-11-06). Each biome but the Clearing (kept gentle, Sentret only) and the Depths (Mewtwo's,
+none) gets a second pair with the role it lacked, so its two pairs play differently. All data, no engine change:
+- **Shrine, a caller**: Teddiursa's Call for Help (in Charm's place; Charm its `instead`) brings in a Teddiursa at 0.25 HP
+  and 0.5 damage (Ursaring is a Shrine boss). Beside the Houndour pack.
+- **Wastes, a caller**: Cacturne's (in Swords Dance's place; the dex's "ragtag group" at night), its helper at 0.2 / 0.4 and
+  Ingrain (9 block) instead; at Finneon's 0.25 / 0.5 with Swords Dance instead it cost 1.7-1.8x. Beside the Bouffalant tank.
+- **Ruins, a tank**: Shellder's Mist (8 block to each, `team`; its Withdraw 10 was its own) shields Corphish (Swords Dance,
+  Crabhammer), `hp: [0.6, 0.4]`, `dmg: 0.6`. Beside the Finneon caller.
+- **Thornwood, a pack**: two Carvanha (`hp: 0.5`, `dmg: 0.6`), Rage now `team` (+2 to each). Beside the Exeggutor tank.
+- **Savanna, a tank**: Cherrim's Safeguard (8 to each, in Synthesis's place) shields Sunflora, `[0.6, 0.4]`, `0.6`; a Grass
+  pair against the Fire Houndoom pack. Beside it.
+Move names stay in `MOVES` of js/data/real-types-table.js (`tests/realtypes.test.mjs`): Aurora Veil and Flower Shield aren't
+there, hence Mist and Safeguard. In the Safari the mixed pairs (Shellder, Cherrim) fight alone, Carvanha comes as two.
+**The one left slides to the middle** (the idea offered 2026-11-05): `layAlone()` in js/battle.js, from `fallen()` once the
+faint is done and from `callIn()`, puts `.alone` on the zone of the one standing (`width: 100%` of the enemies' column, so its
+centre glides from its half to the middle, `--duo` 1, a single's size; `--duo` is a registered `@property` so it eases) and
+`.slides` (the transition, only with `battleFx()`); a call for help takes it off, so both slide back to their halves.
+`layFoes()` clears both. The 3D pads follow the box (`follow()`). `tools/double-probe.mjs` checks it (1px off the column's
+centre at 390x664 and 402x874; both back in their halves after Sentret's second call).
+**Bot check** (human bot, Level 3, 150 a cell; routes default, clearing -> ruins -> thornwood (A), clearing -> savanna ->
+wastes (B); % of max HP a fight against the same biome's plain normals, all types pooled): Teddiursa 1.46x, Shellder 0.98x,
+Carvanha 1.13x, Cherrim 1.13x, Cacturne 1.78x / 1.71x (trimmed, below). The old pairs in the same runs: Sentret 1.1-1.3x,
+Houndour 1.02x, Bouffalant 1.2x, Finneon 1.69x, Exeggutor 0.85x, Houndoom 1.53x. Win % fire / grass / water: default
+50.7 / 32.0 / 33.3, A 48.0 / 42.0 / 29.3, B 46.7 / 34.7 / 28.7.
