@@ -454,6 +454,7 @@ async function callIn(b, move) {
   let i = b.enemies.findIndex(en => en !== caller && en.hp <= 0);
   if (i < 0) { i = b.enemies.length; b.enemies.push(foe); layFoes(b); }
   else b.enemies[i] = foe;
+  layAlone(b);
   pop('enemy-zone', '📣 Call for Help!', 'note bad');
   log(`${caller.def.name} called for help!`);
   const zone = withFoe(i, () => {
@@ -511,6 +512,18 @@ function fallen(b) {
     if (next >= 0) b.target = next;
   }
   renderAll();
+  setTimeout(() => { if (battle === b && !b.over) layAlone(b); }, battleFx() ? 450 : 0);
+}
+
+/** The one of two left standing slides to the middle of its side and stands a single's size (the roadmap's idea,
+    2026-11-05); a call for help sends it back to its half. The 3D pads follow the page's (follow() in js/arena-3d.js). */
+function layAlone(b) {
+  const one = b.enemies.length > 1 && standingFoes(b) === 1 ? b.enemies.findIndex(en => en.hp > 0) : -1;
+  b.enemies.forEach((_, i) => withFoe(i, () => {
+    const z = $('enemy-zone');
+    if (battleFx() && i === one) z.classList.add('slides');
+    z.classList.toggle('alone', i === one);
+  }));
 }
 
 /** Aim your cards at enemy `i` (a tap on it or its plate): only in a double battle, on your turn, at one still standing. */
@@ -539,6 +552,7 @@ function layFoes(b) {
   const arena = byId('arena');
   FOE_PARTS ??= ['enemy-plate', 'enemy-zone'].map(id => byId(id).cloneNode(true));
   arena.querySelectorAll('.foe2').forEach(n => n.remove());
+  byId('enemy-zone').classList.remove('alone', 'slides');
   const duo = b.enemies.length > 1;
   arena.classList.toggle('duo', duo);
   if (!duo) return;

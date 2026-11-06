@@ -2,7 +2,7 @@
    viewports. Checks the two-enemy layout (two plates, two boxes clear of each other and of your side, compact move
    bubbles, a 3D pad each), a tap on an enemy aiming at it (the other dims), aiming with a card raised (it stays up), the
    lethal warning counting both attacks, the target falling while the other stands (it faints, the aim moves on, the
-   fight goes on) and the win. Phase 3 (2026-11-05): a pack Pokémon's room is a pair (Houndour's), its Howl powers up
+   fight goes on, the one left slides to the middle) and the win. Phase 3 (2026-11-05): a pack Pokémon's room is a pair (Houndour's), its Howl powers up
    both, Sentret's Call for Help brings one in (a third pad, it waits a turn), Acid hits both, Hail and Rocky Helmet
    with two, no ball while two stand, and Bouffalant's Wide Guard lasting Tauros's turn too:
      NODE_PATH=$(npm root -g) node tools/double-probe.mjs
@@ -99,6 +99,13 @@ for (const [w, h] of [[402, 874], [390, 664]]) {
   await page.waitForTimeout(600);
   const [gone, moved] = await Promise.all([page.evaluate(() => getComputedStyle(document.getElementById('enemy-plate')).display), box(page, 'enemy2-plate')]);
   check(gone === 'none' && Math.abs(moved.t - p1.t) <= 1, `its plate goes and the other's moves up into its place (top ${Math.round(moved.t)})`);
+  // the one left slides to the middle of the enemies' side, a single's size (layAlone() in js/battle.js)
+  await page.waitForTimeout(1500);
+  const mid = await page.evaluate(() => {
+    const z = document.getElementById('enemy2-zone'), r = z.getBoundingClientRect(), a = document.getElementById('arena').getBoundingClientRect();
+    return { alone: z.classList.contains('alone'), off: Math.round(r.x + r.width / 2 - (a.x + a.width * 0.75)), duo: getComputedStyle(z).getPropertyValue('--duo').trim() };
+  });
+  check(mid.alone && Math.abs(mid.off) <= 12 && mid.duo === '1', `the one left slides to the middle, a single's size (${mid.off}px off the column's centre, --duo ${mid.duo})`);
   await page.evaluate(() => window.__end());
   s = await page.evaluate(() => { const b = window.__battle(); return { turn: b.turn, over: b.over, hp: b.enemies.map(en => en.hp) }; });
   check(!s.over && s.turn === 2 && s.hp[0] === 0, 'the enemies\' turn: only the one standing acts, then yours');
@@ -182,9 +189,9 @@ const start = async (page, url) => {
     b.enemies[1].moveIndex = b.enemies[1].def.moves.findIndex(m => m.kind === 'call');
     b.block = 999;
     await window.__end();
-    return { n: b.enemies.length, standing: b.enemies.filter(en => en.hp > 0).length, called: b.called, plate: getComputedStyle(document.getElementById('enemy-plate')).display, over: b.over };
+    return { n: b.enemies.length, standing: b.enemies.filter(en => en.hp > 0).length, called: b.called, plate: getComputedStyle(document.getElementById('enemy-plate')).display, over: b.over, alone: document.querySelectorAll('#arena .enemy-zone.alone').length };
   });
-  check(!s.over && s.n === 2 && s.standing === 2 && s.called === 2 && s.plate !== 'none', `the caller fell and the other called one into its place (${s.called} calls, its plate back)`);
+  check(!s.over && s.n === 2 && s.standing === 2 && s.called === 2 && s.plate !== 'none' && !s.alone, `the caller fell and the other called one into its place (${s.called} calls, its plate back, both back in their halves)`);
   s = await page.evaluate(() => { const b = window.__battle(); b.enemies[1].hp = 0; window.__render(); b.enemies[0].moveIndex = b.enemies[0].def.moves.findIndex(m => m.kind === 'call'); return window.__intent(0).name; });
   check(s !== 'Call for Help', `two calls a fight: the third is ${s} instead`);
   check(!errors.length, `no console errors${errors.length ? `: ${errors.join(' | ')}` : ''}`);
