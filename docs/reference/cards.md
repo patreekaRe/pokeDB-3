@@ -555,7 +555,8 @@ Houndour 1.02x, Bouffalant 1.2x, Finneon 1.69x, Exeggutor 0.85x, Houndoom 1.53x.
 50.7 / 32.0 / 33.3, A 48.0 / 42.0 / 29.3, B 46.7 / 34.7 / 28.7.
 Then two Cacturne as a pack (default road, 150 a cell): 1.10x; win % 48.7 / 41.3 / 27.3 against `main`'s data under the
 same bot 46.7 / 40.0 / 34.0 (inside noise; Water's two other samples 33.3).
-- **Water level again (2026-11-06, branch `claude/water-difficulty-balance-3dfkq6`)**: Withdraw 9 (upgraded 12), like Flame
+- **Water level again (2026-11-06, on `main` 2026-11-07)**: Withdraw 9 (upgraded 12), like Flame
   Wall. Water's fights run about twice as long as Fire's, so smarter enemies' buffs and half-HP moves land more often on
   it; softening its bad matchups (the Grass wilds) didn't move the bot, one more block on its four Defends did: L0 / L3
-  57 / 37 -> 61 / 48 (450 a cell), against Fire 64 / 50 and Grass 64 / 42.
+  57 / 37 -> 61 / 48 (450 a cell), against Fire 64 / 50 and Grass 64 / 42. With the second pairs
+  (2026-11-07): Fire 71 / 53, Grass 63 / 41, Water 55 / 28 with Withdraw 8, 63 / 41 with 9.

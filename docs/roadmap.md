@@ -32,11 +32,10 @@ deck still costs 6-11 points; no full Sky Pillar bot check yet (▶ CLOUD, effor
 `js/audio.js`: a pass started within a crossfade of the loop's end starts its fade-in and fade-out at once; ▶ CLOUD,
 effort low).
 
-**▶ PLAYTEST ON THE BRANCH. Water softened: done 2026-11-06, on branch `claude/water-difficulty-balance-3dfkq6` (both
-repos), NOT on `main`** (the battle revamp's follow-up, so it waits for the user's "merge"; `docs/roadmap-done.md`'s
-"Water level again"). Withdraw 8 -> 9 (upgraded 11 -> 12), Flame Wall's again. Water L0 / L3 57 / 37 -> 61 / 48 (450 a
-cell), Fire 64 / 50 and Grass 64 / 42 untouched. Playtest: https://rawcdn.githack.com/patreekaRe/pokeDB-3/9ead65f3317c54d32aa91521ffe1cc7cdd6c26d0/index.html?coins=5000
-(pick Squirtle; a fight's Withdraw reads 9). Merge both branches into `main` on the user's word.
+**▶ PLAYTEST ON THE LIVE SITE. Water softened: done 2026-11-06, on `main` since 2026-11-07** (the user's "just choose
+for me" to the safe route; `docs/roadmap-done.md`'s "Water level again"). Withdraw 8 -> 9 (upgraded 11 -> 12), Flame
+Wall's again. Re-checked on top of the second pairs (150 a cell, L0 / L3): Fire 71 / 53, Grass 63 / 41, Water 55 / 28
+with Withdraw 8 -> 63 / 41 with 9. On a phone: pick Squirtle and say if Water's fights feel fair, biome 2's most of all.
 
 **▶ PLAYTEST ON THE LIVE SITE. Shadows in a few draws, the hub's fps: done 2026-11-04, on `main`** (the user's ask:
 "improving fps overall especially in the hub, and find more memory leak stuff"; `docs/roadmap-done.md`,

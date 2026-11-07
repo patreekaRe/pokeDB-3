@@ -4084,7 +4084,7 @@ roomier on a phone but drops the Pokémon games' diagonal look. **No** (the user
 layout"): the doubles keep the Pokémon games' layout. Order: (a) first, then double battles with (b). Branch `multi-enemy-battles` already holds (a) (it was
 fast-forwarded while (a) was briefly on `main`), so its phase 1 starts from the smarter enemies.
 
-### Water level again (2026-11-06, cloud; branch `claude/water-difficulty-balance-3dfkq6` in both repos)
+### Water level again (2026-11-06, cloud; on `main` 2026-11-07)
 
 The battle revamp's open question: Water ~7 points behind since smarter enemies. Human bot, default road, 150 a cell
 unless said. The sim's new `dumb` variant (smarter enemies' rules off: one hit a move, no half-HP move, no opening, no
@@ -4099,4 +4099,7 @@ Gun 8 L0 / L3 60.7 / 34.7, Water Pulse 7 56.0 / 38.7, Torrent 3 Tide 58.0 / 32.0
 Flame Wall to 9). Confirmed at 300: L0 57.0 -> 58.7, L3 35.7 -> 46.7; pooled with the screen, 57 / 37 -> 61 / 48. Fire and
 Grass don't hold Withdraw, so they stay at 64 / 50 and 64 / 42. Kenmatta's Water trials' decks hold Withdraw too, a touch
 easier.
+Re-checked after merging `main`'s second pairs (they made Cacturne a pack), 150 a cell, L0 / L3: Fire 71.3 / 52.7, Grass
+62.7 / 40.7, Water with Withdraw 8 55.3 / 28.0, with 9 62.7 / 41.3. The pairs widened Water's gap; Withdraw 9 still closes
+it. Pushed to `main` at the user's "just choose for me" (the safe route: re-check, then merge).
 
